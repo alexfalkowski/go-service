@@ -164,6 +164,10 @@ matching skill for the task.
   options and uses the typed `ReceiverFunc`, which matches the SDK receive
   handler shape. Do not flag this unless dependency behavior or call arguments
   change.
+- JSON decoding intentionally keeps the standard library's duplicate object key
+  behavior, where later values replace earlier values. Do not flag this as a
+  finding unless a public API starts promising duplicate-key rejection or this
+  repository adds a strict JSON decoder mode.
 
 ## Testing, Style, And Docs
 

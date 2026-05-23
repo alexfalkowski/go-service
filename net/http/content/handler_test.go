@@ -32,23 +32,34 @@ func TestNewRequestHandlerPrefersContentType(t *testing.T) {
 	require.JSONEq(t, `{"Greeting":"Hello Bob","Meta":null}`, res.Body.String())
 }
 
-func TestNewRequestHandlerUsesMsgPack(t *testing.T) {
-	handler := content.NewRequestHandler(test.Content, func(_ context.Context, req *test.Request) (*test.Response, error) {
-		return &test.Response{Greeting: "Hello " + req.Name}, nil
-	})
-	body := bytes.NewBuffer(nil)
-	require.NoError(t, test.Encoder.Get("msgpack").Encode(body, &test.Request{Name: "Bob"}))
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", body)
-	req.Header.Set(content.TypeKey, media.MessagePack+"; profile=test")
-	res := httptest.NewRecorder()
+func TestNewRequestHandlerRejectsUnsafeBinaryRequestBody(t *testing.T) {
+	for _, tc := range []struct {
+		mediaType string
+		kind      string
+	}{
+		{mediaType: "application/gob", kind: "gob"},
+		{mediaType: media.MessagePack + "; profile=test", kind: "msgpack"},
+	} {
+		t.Run(tc.kind, func(t *testing.T) {
+			called := false
+			handler := content.NewRequestHandler(test.Content, func(_ context.Context, req *test.Request) (*test.Response, error) {
+				called = true
+				return &test.Response{Greeting: "Hello " + req.Name}, nil
+			})
+			body := bytes.NewBuffer(nil)
+			require.NoError(t, test.Encoder.Get(tc.kind).Encode(body, &test.Request{Name: "Bob"}))
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", body)
+			req.Header.Set(content.TypeKey, tc.mediaType)
+			res := httptest.NewRecorder()
 
-	handler.ServeHTTP(res, req)
+			handler.ServeHTTP(res, req)
 
-	var response test.Response
-	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, media.MessagePack, res.Header().Get(content.TypeKey))
-	require.NoError(t, test.Encoder.Get("msgpack").Decode(res.Body, &response))
-	require.Equal(t, "Hello Bob", response.Greeting)
+			require.False(t, called)
+			require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
+			require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
+			require.Equal(t, "http: unsupported media type", strings.TrimSpace(res.Body.String()))
+		})
+	}
 }
 
 func TestNewRequestHandlerTreatsInternalErrorContentTypeAsText(t *testing.T) {

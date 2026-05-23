@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -27,4 +28,13 @@ func TestDecode(t *testing.T) {
 
 	require.NoError(t, encoder.Decode(bytes.NewBufferString("test: test"), &msg))
 	require.Equal(t, map[string]string{"test": "test"}, msg)
+}
+
+func TestDecodeRejectsTrailingDocument(t *testing.T) {
+	encoder := yaml.NewEncoder()
+	var msg map[string]string
+
+	err := encoder.Decode(bytes.NewBufferString("test: test\n---\ntest: other"), &msg)
+
+	require.ErrorIs(t, err, errors.ErrTrailingData)
 }

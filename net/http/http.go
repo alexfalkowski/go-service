@@ -77,6 +77,9 @@ const StatusTemporaryRedirect = http.StatusTemporaryRedirect
 // StatusTooManyRequests is an alias of http.StatusTooManyRequests.
 const StatusTooManyRequests = http.StatusTooManyRequests
 
+// StatusUnsupportedMediaType is an alias of http.StatusUnsupportedMediaType.
+const StatusUnsupportedMediaType = http.StatusUnsupportedMediaType
+
 // StatusUnauthorized is an alias of http.StatusUnauthorized.
 const StatusUnauthorized = http.StatusUnauthorized
 

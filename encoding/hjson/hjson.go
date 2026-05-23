@@ -36,5 +36,8 @@ func (e *Encoder) Decode(r io.Reader, v any) error {
 		return err
 	}
 
-	return hjson.Unmarshal(data, v)
+	options := hjson.DefaultDecoderOptions()
+	options.DisallowDuplicateKeys = true
+
+	return hjson.UnmarshalWithOptions(data, v, options)
 }

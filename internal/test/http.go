@@ -27,8 +27,6 @@ func MessageMediaTypes() []MessageMediaType {
 		{Name: "yaml", ContentType: media.YAML, Kind: "yaml"},
 		{Name: "yml", ContentType: "application/yml", Kind: "yml"},
 		{Name: "toml", ContentType: media.TOML, Kind: "toml"},
-		{Name: "gob", ContentType: "application/gob", Kind: "gob"},
-		{Name: "msgpack", ContentType: media.MessagePack, Kind: "msgpack"},
 	}
 }
 

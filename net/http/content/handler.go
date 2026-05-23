@@ -40,7 +40,11 @@ func NewRequestHandler[Req any, Res any](cont *Content, handler RequestHandler[R
 		req := ptr.Zero[Req]()
 
 		request := meta.Request(ctx)
-		mediaType := cont.NewFromContentType(request)
+		mediaType, err := cont.NewFromRequestBody(request)
+		if err != nil {
+			return nil, status.SafeError(http.StatusUnsupportedMediaType, err)
+		}
+
 		if err := mediaType.Encoder.Decode(request.Body, req); err != nil {
 			return nil, status.BadRequestError(err)
 		}
