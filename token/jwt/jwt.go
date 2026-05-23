@@ -52,7 +52,7 @@ type Token struct {
 //
 //   - kid: from cfg.KeyID
 func (t *Token) Generate(aud, sub string) (string, error) {
-	if t.signer == nil || len(t.signer.PrivateKey) == 0 || t.generator == nil {
+	if t.signer == nil || len(t.signer.PrivateKey) != ed25519.PrivateKeySize || t.generator == nil {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
 
@@ -82,12 +82,16 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //   - The issuer claim ("iss") matches cfg.Issuer.
 //   - The audience claim ("aud") contains the expected aud.
 //   - Registered claim time validity using jwt.RegisteredClaims.Valid (exp/nbf/iat).
+//   - The signed lifetime (exp - iat) does not exceed cfg.Expiration.
 //
 // This method returns sentinel errors from token/errors for some common classes of
 // failures (issuer/audience mismatches and validate-time algorithm/kid mismatches).
 // Parse/validation errors produced by the upstream JWT library may be returned as-is.
 func (t *Token) Verify(token, aud string) (string, error) {
 	if t.verifier == nil || len(t.verifier.PublicKey) == 0 {
+		return strings.Empty, errors.ErrInvalidConfig
+	}
+	if t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
 
@@ -111,6 +115,9 @@ func (t *Token) Verify(token, aud string) (string, error) {
 	}
 
 	if err := validateRequiredClaims(claims); err != nil {
+		return strings.Empty, err
+	}
+	if err := validateLifetime(claims, t.cfg.Expiration); err != nil {
 		return strings.Empty, err
 	}
 
@@ -141,6 +148,14 @@ func validateRequiredClaims(claims *jwt.RegisteredClaims) error {
 
 	if strings.IsEmpty(claims.Subject) {
 		return errors.ErrInvalidSubject
+	}
+
+	return nil
+}
+
+func validateLifetime(claims *jwt.RegisteredClaims, maxLifetime time.Duration) error {
+	if !claims.ExpiresAt.After(claims.IssuedAt.Time) || claims.ExpiresAt.Sub(claims.IssuedAt.Time) > maxLifetime.Duration() {
+		return errors.ErrInvalidTime
 	}
 
 	return nil

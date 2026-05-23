@@ -80,11 +80,15 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //   - token is not expired
 //   - token is valid at the current time (iat/nbf semantics as defined by the upstream library)
 //   - audience matches aud (aud)
+//   - the signed lifetime (exp - iat) does not exceed cfg.Expiration
 //
 // On failure, this method returns errors from the upstream PASETO library or from key
 // construction. It does not currently map failures onto shared sentinel errors.
 func (t *Token) Verify(token, aud string) (string, error) {
 	if t.verifier == nil || len(t.verifier.PublicKey) == 0 {
+		return strings.Empty, errors.ErrInvalidConfig
+	}
+	if t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
 
@@ -104,5 +108,37 @@ func (t *Token) Verify(token, aud string) (string, error) {
 		return strings.Empty, err
 	}
 
-	return to.GetSubject()
+	if err := validateLifetime(to, t.cfg.Expiration); err != nil {
+		return strings.Empty, err
+	}
+
+	return subject(to)
+}
+
+func subject(token *paseto.Token) (string, error) {
+	sub, err := token.GetSubject()
+	if err != nil {
+		return strings.Empty, err
+	}
+	if strings.IsEmpty(sub) {
+		return strings.Empty, errors.ErrInvalidSubject
+	}
+
+	return sub, nil
+}
+
+func validateLifetime(token *paseto.Token, maxLifetime time.Duration) error {
+	issuedAt, err := token.GetIssuedAt()
+	if err != nil {
+		return err
+	}
+	expiresAt, err := token.GetExpiration()
+	if err != nil {
+		return err
+	}
+	if !expiresAt.After(issuedAt) || expiresAt.Sub(issuedAt) > maxLifetime.Duration() {
+		return errors.ErrInvalidTime
+	}
+
+	return nil
 }

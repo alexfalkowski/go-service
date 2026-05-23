@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	token "github.com/alexfalkowski/go-service/v2/token/errors"
 )
 
@@ -39,7 +40,7 @@ func parseClaims(tkn string) (*claims, []byte, string, error) {
 	return c, encoded, rawSignature, nil
 }
 
-func validateClaims(c *claims, aud string, now int64) error {
+func validateClaims(c *claims, aud string, now int64, maxLifetime time.Duration) error {
 	if c.Audience != aud {
 		return token.ErrInvalidAudience
 	}
@@ -47,6 +48,9 @@ func validateClaims(c *claims, aud string, now int64) error {
 		return crypto.ErrInvalidMatch
 	}
 	if c.IssuedAt <= 0 || c.IssuedAt > now || c.ExpiresAt <= now || c.ExpiresAt <= c.IssuedAt {
+		return token.ErrInvalidTime
+	}
+	if c.ExpiresAt-c.IssuedAt > maxLifetime.Duration().Nanoseconds() {
 		return token.ErrInvalidTime
 	}
 

@@ -44,7 +44,7 @@ type Config struct {
 	Secret string `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
 
 	// Issuer is written to and verified against the `iss` claim.
-	Issuer string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty"`
+	Issuer string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty" validate:"required"`
 
 	// Expiration is the duration used to set token expiration.
 	//

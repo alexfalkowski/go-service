@@ -69,6 +69,22 @@ func TestVerify(t *testing.T) {
 	}
 }
 
+func TestVerifyRejectsPasetoEmptySubject(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
+
+	raw, err := tkn.Generate("hello", strings.Empty)
+	require.NoError(t, err)
+
+	sub, err := tkn.Verify(raw, "hello")
+	require.Equal(t, strings.Empty, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidSubject)
+}
+
 func TestUnknownKindConfig(t *testing.T) {
 	cfg := test.NewToken("none")
 	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)

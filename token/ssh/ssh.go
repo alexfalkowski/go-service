@@ -146,6 +146,10 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 // On success, Verify returns the extracted key name. On failure, it always
 // returns an empty name alongside the error.
 func (t *Token) Verify(tkn, aud string) (string, error) {
+	if t.cfg.Expiration <= 0 {
+		return strings.Empty, token.ErrInvalidConfig
+	}
+
 	data, encoded, key, err := parseClaims(tkn)
 	if err != nil {
 		return strings.Empty, err
@@ -174,7 +178,7 @@ func (t *Token) Verify(tkn, aud string) (string, error) {
 		return strings.Empty, err
 	}
 
-	if err := validateClaims(data, aud, time.Now().UnixNano()); err != nil {
+	if err := validateClaims(data, aud, time.Now().UnixNano(), t.cfg.Expiration); err != nil {
 		return strings.Empty, err
 	}
 
