@@ -70,6 +70,15 @@ matching skill for the task.
   wires `debug.Module`; do not flag `transport.NewServers` requiring
   `*debug.Server` unless a public API starts promising standalone
   `transport.Module` composition without the standard `module.Server` bundle.
+- Server defaults that use `net.DefaultAddress`, including the debug server's
+  `tcp://:6060` fallback, intentionally bind all interfaces so containerized
+  workloads remain reachable through Kubernetes Services, probes, ingress
+  controllers, and sidecars. Do not flag this solely because debug endpoints can
+  be reached remotely when the debug server is enabled; restrict exposure with
+  explicit addresses, TLS/mTLS, NetworkPolicy, ingress/firewall, or
+  service-mesh policy. Only report concrete bugs such as accidental listener
+  changes, ignored explicit addresses, missing documented protections, or a
+  public API promise of localhost-only debug binding.
 - `cli.RunCode` returns `os.ExitCodeSuccess` on success, preserves non-zero
   shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
   returns `os.ExitCodeFailure`.

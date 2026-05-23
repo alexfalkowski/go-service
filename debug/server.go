@@ -56,7 +56,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
-	httpServer := http.NewServer(params.Config.Options, params.Config.Timeout, params.Mux)
+	httpServer := http.NewServer(params.Config.Options, params.Config.GetTimeout(), params.Mux)
 
 	cfg, err := newConfig(params.FS, params.Config)
 	if err != nil {
