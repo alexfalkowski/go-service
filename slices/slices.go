@@ -4,13 +4,13 @@ import (
 	"iter"
 	"slices"
 
-	"github.com/alexfalkowski/go-service/v2/structs"
+	"github.com/alexfalkowski/go-service/v2/reflect"
 )
 
-// AppendNotZero appends elems to slice, skipping elements that are the zero value for T.
+// AppendNotZero appends elems to slice, skipping nil and zero elements.
 //
-// “Zero” is determined using structs.IsZero, which compares the element against the
-// type’s zero value using == (therefore T must be comparable).
+// Zero values are determined using reflect.IsZero, which supports non-comparable
+// values such as slices, maps, funcs, and structs containing them.
 //
 // This helper preserves the relative order of appended elements and returns the
 // resulting slice.
@@ -20,31 +20,9 @@ import (
 //	var out []string
 //	out = slices.AppendNotZero(out, "", "a", "", "b")
 //	// out == []string{"a", "b"}
-func AppendNotZero[T comparable](slice []T, elems ...T) []T {
+func AppendNotZero[T any](slice []T, elems ...T) []T {
 	for _, elem := range elems {
-		if structs.IsZero(elem) {
-			continue
-		}
-		slice = append(slice, elem)
-	}
-	return slice
-}
-
-// AppendNotNil appends elems to slice, skipping nil elements.
-//
-// This helper is useful when building slices of optional pointer values where nil
-// indicates “not provided”. It preserves the relative order of appended elements
-// and returns the resulting slice.
-//
-// Example:
-//
-//	var out []*int
-//	var a = 1
-//	out = slices.AppendNotNil(out, nil, &a, nil)
-//	// out contains only &a
-func AppendNotNil[T any](slice []*T, elems ...*T) []*T {
-	for _, elem := range elems {
-		if structs.IsNil(elem) {
+		if reflect.IsZero(elem) {
 			continue
 		}
 		slice = append(slice, elem)

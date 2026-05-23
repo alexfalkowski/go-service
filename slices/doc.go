@@ -11,18 +11,12 @@
 //
 // # Conditional append helpers
 //
-// AppendNotZero appends elements to a slice while skipping elements that are the
-// zero value of the element type.
+// AppendNotZero appends elements to a slice while skipping elements that are nil
+// or the zero value of the element type.
 //
 // This is useful when building option lists, attribute sets, or filter lists where
 // zero values should be treated as “not provided”.
-//
-// AppendNotNil appends pointer elements to a slice while skipping nil pointers.
-//
-// This is useful when building slices of optional pointers where nil indicates the
-// absence of a value.
-//
-// Both helpers preserve the relative order of the elements they append and return
+// The helper preserves the relative order of the elements it appends and returns
 // the resulting slice.
 //
 // # Searching helpers
@@ -43,7 +37,7 @@
 //
 // These helpers are designed to be predictable and side-effect free aside from
 // modifying the returned slice as normal for append-style operations. They do not
-// mutate elements (beyond appending) and they do not perform deep equality checks;
-// “zero” is defined by Go’s == comparison against the zero value for comparable
-// types.
+// mutate elements beyond appending them. “Zero” is defined by reflect.IsZero, so
+// nil slices and maps are skipped, while non-nil empty slices and maps are
+// appended.
 package slices

@@ -25,3 +25,17 @@ func TestIsNilWithValue(t *testing.T) {
 func TestIsNilWithNonNillableKind(t *testing.T) {
 	require.False(t, reflect.IsNil(42))
 }
+
+func TestIsZero(t *testing.T) {
+	require.True(t, reflect.IsZero(nil))
+}
+
+func TestIsZeroWithTypedNil(t *testing.T) {
+	var err error = (*test.NilError)(nil)
+
+	require.True(t, reflect.IsZero(err))
+}
+
+func TestIsZeroWithValue(t *testing.T) {
+	require.False(t, reflect.IsZero("value"))
+}
