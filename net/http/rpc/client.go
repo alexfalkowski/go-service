@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
+	"github.com/alexfalkowski/go-service/v2/reflect"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
@@ -106,10 +107,10 @@ type Client struct {
 //
 // The res parameter is typically a pointer to the destination value (for example *MyResponse).
 func (c *Client) Post(ctx context.Context, path string, req, res any) error {
-	if req == nil {
+	if reflect.IsNil(req) {
 		return ErrInvalidRequest
 	}
-	if res == nil {
+	if reflect.IsNil(res) {
 		return ErrInvalidResponse
 	}
 
