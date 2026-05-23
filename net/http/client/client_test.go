@@ -163,28 +163,34 @@ func TestDoDetachesRequestBodyFromResponseBuffer(t *testing.T) {
 	require.JSONEq(t, `{"Name":"Bob"}`, string(data))
 }
 
-func TestDoRedirectFollowAllowsCrossOriginCredentialRoundTrip(t *testing.T) {
+func TestDoDefaultRedirectRejectsCrossOriginCredentialRoundTrip(t *testing.T) {
 	var urls []string
 	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		urls = append(urls, req.URL.String())
-		if len(urls) == 1 {
-			return &http.Response{
-				StatusCode: http.StatusTemporaryRedirect,
-				Header:     http.Header{"Location": []string{"https://other.example.com/target"}},
-				Body:       http.NoBody,
-				Request:    req,
-			}, nil
-		}
-
-		require.Equal(t, "Bearer secret", req.Header.Get("Authorization"))
 		return &http.Response{
-			StatusCode: http.StatusOK,
-			Header:     http.Header{content.TypeKey: []string{media.Text}},
-			Body:       io.NopCloser(strings.NewReader("ok")),
+			StatusCode: http.StatusTemporaryRedirect,
+			Header:     http.Header{"Location": []string{"https://other.example.com/target"}},
+			Body:       http.NoBody,
 			Request:    req,
 		}, nil
 	})
 	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(authRoundTripper{RoundTripper: rt}))
+
+	err := c.Get(t.Context(), "https://example.com/start", client.Options{})
+
+	require.NoError(t, err)
+	require.Equal(t, []string{"https://example.com/start"}, urls)
+}
+
+func TestDoRedirectFollowAllowsExplicitCrossOriginCredentialRoundTrip(t *testing.T) {
+	var urls []string
+	rt := redirectingAuthRoundTripper(t, &urls, "https://other.example.com/target")
+	c := client.NewClient(
+		test.Content,
+		test.Pool,
+		client.WithRoundTripper(authRoundTripper{RoundTripper: rt}),
+		client.WithRedirect(client.RedirectFollow),
+	)
 
 	err := c.Get(t.Context(), "https://example.com/start", client.Options{})
 
@@ -218,25 +224,7 @@ func TestDoRedirectSameOriginRejectsCrossOriginCredentialRoundTrip(t *testing.T)
 
 func TestDoRedirectSameOriginAllowsSameOriginCredentialRoundTrip(t *testing.T) {
 	var urls []string
-	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		urls = append(urls, req.URL.String())
-		if len(urls) == 1 {
-			return &http.Response{
-				StatusCode: http.StatusTemporaryRedirect,
-				Header:     http.Header{"Location": []string{"https://example.com/target"}},
-				Body:       http.NoBody,
-				Request:    req,
-			}, nil
-		}
-
-		require.Equal(t, "Bearer secret", req.Header.Get("Authorization"))
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Header:     http.Header{content.TypeKey: []string{media.Text}},
-			Body:       io.NopCloser(strings.NewReader("ok")),
-			Request:    req,
-		}, nil
-	})
+	rt := redirectingAuthRoundTripper(t, &urls, "https://example.com/target")
 	c := client.NewClient(
 		test.Content,
 		test.Pool,
@@ -282,4 +270,28 @@ func (r authRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	cloned := req.Clone(req.Context())
 	cloned.Header.Set("Authorization", "Bearer secret")
 	return r.RoundTripper.RoundTrip(cloned)
+}
+
+func redirectingAuthRoundTripper(t *testing.T, urls *[]string, target string) http.RoundTripper {
+	t.Helper()
+
+	return test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		*urls = append(*urls, req.URL.String())
+		if len(*urls) == 1 {
+			return &http.Response{
+				StatusCode: http.StatusTemporaryRedirect,
+				Header:     http.Header{"Location": []string{target}},
+				Body:       http.NoBody,
+				Request:    req,
+			}, nil
+		}
+
+		require.Equal(t, "Bearer secret", req.Header.Get("Authorization"))
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     http.Header{content.TypeKey: []string{media.Text}},
+			Body:       io.NopCloser(strings.NewReader("ok")),
+			Request:    req,
+		}, nil
+	})
 }
