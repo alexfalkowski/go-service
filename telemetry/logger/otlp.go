@@ -5,18 +5,30 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
-	otlp "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
-func newOtlpLogger(params LoggerParams) *slog.Logger {
-	exporter, err := otlp.New(context.Background(), otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
-	runtime.Must(err)
+func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
+	if err := otlp.ValidateEndpoint(params.Config.URL, params.Config.Headers); err != nil {
+		return nil, err
+	}
+
+	opts := []otlploghttp.Option{otlploghttp.WithHeaders(params.Config.Headers)}
+	if !strings.IsEmpty(params.Config.URL) {
+		opts = append(opts, otlploghttp.WithEndpointURL(params.Config.URL))
+	}
+
+	exporter, err := otlploghttp.New(context.Background(), opts...)
+	if err != nil {
+		return nil, err
+	}
 
 	attrs := resource.NewWithAttributes(
 		attributes.SchemaURL,
@@ -39,5 +51,5 @@ func newOtlpLogger(params LoggerParams) *slog.Logger {
 		},
 	})
 
-	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider))
+	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider)), nil
 }

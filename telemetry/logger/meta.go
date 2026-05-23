@@ -2,10 +2,13 @@ package logger
 
 import (
 	"log/slog"
+	"unicode/utf8"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/meta"
 )
+
+const maxMetaValueLength = 1024
 
 // Meta extracts context metadata and returns it as slog attributes.
 //
@@ -19,8 +22,23 @@ func Meta(ctx context.Context) []slog.Attr {
 	fields := make([]slog.Attr, len(strings))
 	index := 0
 	for k, v := range strings {
-		fields[index] = slog.String(k, v)
+		fields[index] = slog.String(k, truncateMetaValue(v))
 		index++
 	}
-	return fields
+	return fields[:index]
+}
+
+func truncateMetaValue(value string) string {
+	if len(value) <= maxMetaValueLength {
+		return value
+	}
+
+	for index := range value {
+		if index > maxMetaValueLength {
+			_, size := utf8.DecodeLastRuneInString(value[:index])
+			return value[:index-size]
+		}
+	}
+
+	return value[:maxMetaValueLength]
 }

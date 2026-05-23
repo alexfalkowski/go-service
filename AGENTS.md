@@ -34,8 +34,14 @@ matching skill for the task.
   - For each package and subpackage under `<package>`, launch multiple agents.
   - Each agent should perform a thorough and accurate `$code-review` and
     `$security-audit`.
-  - After all agents finish, aggregate findings into `FINDINGS.md`.
-  - As findings are fixed, remove them from `FINDINGS.md`.
+  - After all agents finish, aggregate all confirmed findings into
+    `FINDINGS.md` before making fixes.
+  - Present `FINDINGS.md` and a proposed fix plan to the user.
+  - Do not fix findings in the same pass unless the user explicitly asks to
+    proceed after reviewing `FINDINGS.md`, or already requested automatic fixes.
+  - Keep `FINDINGS.md` as the working review ledger while fixes are in
+    progress.
+  - As each finding is fixed and validated, remove it from `FINDINGS.md`.
   - Once all findings are resolved, delete `FINDINGS.md`.
 
 ## Layout And Wiring

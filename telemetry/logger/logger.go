@@ -140,10 +140,6 @@ type LoggerParams struct {
 //
 // NewLogger returns [ErrNotFound] when Config.Kind is unknown and
 // [ErrInvalidLevel] when Config.Level is unsupported.
-//
-// NewLogger may panic if the selected logger kind performs mandatory startup
-// wiring that fails. In particular, the "otlp" logger panics if its exporter
-// cannot be created.
 func NewLogger(params LoggerParams) (*Logger, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -263,7 +259,7 @@ func (l *Logger) GetLogger() *slog.Logger {
 func newLogger(params LoggerParams) (*slog.Logger, error) {
 	switch params.Config.Kind {
 	case "otlp":
-		return newOtlpLogger(params), nil
+		return newOtlpLogger(params)
 	case "json":
 		return newJSONLogger(params), nil
 	case "text":

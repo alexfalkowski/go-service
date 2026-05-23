@@ -29,7 +29,7 @@ import (
 //   - derives IP address information from trusted forwarding headers or, if
 //     absent, from the gRPC peer address
 //   - parses the "authorization" header into the request attribute model
-//   - stores "geolocation" when present
+//   - stores "geolocation" as ignored when present
 //   - sets response header metadata including "service-version" and
 //     "request-id"
 //
@@ -195,7 +195,7 @@ func serverAuthorization(ctx context.Context) (meta.Value, error) {
 
 func serverGeolocation(ctx context.Context) meta.Value {
 	if id := serverValue(ctx, "geolocation"); !strings.IsEmpty(id) {
-		return meta.String(id)
+		return meta.Ignored(id)
 	}
 	return meta.Blank()
 }

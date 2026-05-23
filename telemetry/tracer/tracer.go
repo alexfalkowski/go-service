@@ -4,11 +4,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-sync"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -70,7 +72,16 @@ func Register(params TracerParams) error {
 
 	switch params.Config.Kind {
 	case "otlp":
-		client := otlp.NewClient(otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
+		if err := otlp.ValidateEndpoint(params.Config.URL, params.Config.Headers); err != nil {
+			return prefix(err)
+		}
+
+		opts := []otlptracehttp.Option{otlptracehttp.WithHeaders(params.Config.Headers)}
+		if !strings.IsEmpty(params.Config.URL) {
+			opts = append(opts, otlptracehttp.WithEndpointURL(params.Config.URL))
+		}
+
+		client := otlptracehttp.NewClient(opts...)
 		exporter := otlptrace.NewUnstarted(client)
 		attrs := resource.NewWithAttributes(
 			attributes.SchemaURL,

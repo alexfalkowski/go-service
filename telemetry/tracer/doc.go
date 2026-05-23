@@ -45,4 +45,9 @@
 // literal value) and are resolved by telemetry/header.Map.Secrets or
 // telemetry/header.Map.MustSecrets by the consumer that projects configuration before
 // constructing exporters.
+//
+// When Config.Headers is non-empty, non-loopback "http://" OTLP endpoints are
+// rejected to avoid sending credential-bearing headers over cleartext transport.
+// Use "https://" for external collectors. Local development collectors on
+// "localhost" or loopback IP addresses may use "http://".
 package tracer
