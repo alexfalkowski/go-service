@@ -32,10 +32,10 @@ type Config struct {
 	ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime,omitempty" json:"conn_max_lifetime,omitempty" toml:"conn_max_lifetime,omitempty" validate:"gte=0"`
 
 	// MaxOpenConns is the maximum number of open connections to the database.
-	MaxOpenConns int `yaml:"max_open_conns,omitempty" json:"max_open_conns,omitempty" toml:"max_open_conns,omitempty"`
+	MaxOpenConns int `yaml:"max_open_conns,omitempty" json:"max_open_conns,omitempty" toml:"max_open_conns,omitempty" validate:"gte=0"`
 
 	// MaxIdleConns is the maximum number of connections in the idle connection pool.
-	MaxIdleConns int `yaml:"max_idle_conns,omitempty" json:"max_idle_conns,omitempty" toml:"max_idle_conns,omitempty"`
+	MaxIdleConns int `yaml:"max_idle_conns,omitempty" json:"max_idle_conns,omitempty" toml:"max_idle_conns,omitempty" validate:"gte=0"`
 }
 
 // IsEnabled reports whether SQL configuration is present.

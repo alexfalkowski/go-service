@@ -3,7 +3,7 @@ package sql
 import (
 	"database/sql"
 
-	"github.com/linxGnu/mssqlx"
+	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
 )
 
 // DB aliases `database/sql`.DB.
@@ -12,15 +12,15 @@ import (
 // while preserving standard-library behavior.
 type DB = sql.DB
 
-// DBs is an alias of mssqlx.DBs.
+// DBs is an alias of driver.DBs.
 //
 // It represents the master/slave SQL pool collection used by go-service SQL
-// integrations and preserves the upstream behavior exactly.
+// integrations.
 //
-// The value groups master and replica `sqlx.DB` pools behind a single type with
-// helper methods for querying masters, slaves, and running operations against
-// the configured pools.
-type DBs = mssqlx.DBs
+// The value wraps the upstream master/slave pool collection and embeds it so
+// callers can use the usual pool helper methods while go-service-owned cleanup,
+// such as metric unregistration, stays attached to Destroy.
+type DBs = driver.DBs
 
 // Rows aliases `database/sql`.Rows.
 //
@@ -36,7 +36,7 @@ func Open(driverName, dataSourceName string) (*DB, error) {
 	return sql.Open(driverName, dataSourceName)
 }
 
-// ConnectMasterSlaves is a thin wrapper around mssqlx.ConnectMasterSlaves.
+// ConnectMasterSlaves is a thin wrapper around driver.ConnectMasterSlaves.
 //
 // It opens a master/slave SQL pool collection for a registered `database/sql`
 // driver name and returns any per-DSN connection errors produced by the
@@ -46,5 +46,5 @@ func Open(driverName, dataSourceName string) (*DB, error) {
 // registry. The returned `DBs` value may contain zero or more master and slave
 // pools depending on the provided DSN lists.
 func ConnectMasterSlaves(name string, masterDSNs, slaveDSNs []string) (*DBs, []error) {
-	return mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
+	return driver.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
 }

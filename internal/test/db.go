@@ -5,7 +5,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
 
@@ -74,7 +73,7 @@ func (w *World) registerDatabase() {
 				return nil
 			}
 
-			return errors.Join(w.DB.Destroy()...)
+			return w.DB.Destroy()
 		},
 	})
 }

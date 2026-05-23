@@ -13,3 +13,13 @@ func TestConfigRejectsNegativeConnMaxLifetime(t *testing.T) {
 	cfg := &config.Config{ConnMaxLifetime: -time.Second}
 	require.Error(t, test.Validator.Struct(cfg))
 }
+
+func TestConfigRejectsNegativeMaxOpenConns(t *testing.T) {
+	cfg := &config.Config{MaxOpenConns: -1}
+	require.Error(t, test.Validator.Struct(cfg))
+}
+
+func TestConfigRejectsNegativeMaxIdleConns(t *testing.T) {
+	cfg := &config.Config{MaxIdleConns: -1}
+	require.Error(t, test.Validator.Struct(cfg))
+}

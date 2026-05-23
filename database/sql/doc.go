@@ -14,17 +14,14 @@
 //
 // This package also exposes the shared master/slave pool abstraction used by
 // repository code:
-//   - `DBs`, the go-service alias for the upstream pool collection type, and
+//   - `DBs`, the go-service wrapper for the upstream pool collection type, and
 //   - `ConnectMasterSlaves`, the go-service wrapper for opening those pools.
 //
 // This keeps internal code on a go-service import path instead of importing the
-// upstream helper package directly where the package graph allows it.
-//
-// Driver-oriented subpackages such as `database/sql/driver` and
-// `database/sql/pg` still use the upstream pool package internally because the
-// root `database/sql` package already depends on those subpackages for config
-// and module composition. Re-importing the root package from those subpackages
-// would create an import cycle.
+// upstream helper package directly where the package graph allows it. The
+// wrapper embeds the upstream type so existing query/ping/pool helper methods
+// are still available, while go-service-owned cleanup remains attached to
+// `Destroy`.
 //
 // # Master/slave pools and telemetry
 //
