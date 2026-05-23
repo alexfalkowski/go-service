@@ -13,7 +13,9 @@ import (
 
 // NewGenerator constructs a Generator that produces RSA key pairs.
 //
-// The provided generator is used as the cryptographically-secure randomness source for key generation.
+// The generator parameter is retained for API consistency with other crypto
+// generators. With Go 1.26 and later, crypto/rsa.GenerateKey uses the standard
+// library's secure random source and ignores the supplied reader by default.
 func NewGenerator(generator *rand.Generator) *Generator {
 	return &Generator{generator: generator}
 }
@@ -26,6 +28,8 @@ type Generator struct {
 // Generate returns an RSA public/private key pair encoded as PEM strings.
 //
 // The generated key size is 4096 bits.
+// With Go 1.26 and later, crypto/rsa.GenerateKey uses the standard library's
+// secure random source and ignores this Generator's injected reader by default.
 //
 // The returned PEM blocks are compatible with the expectations of `crypto/rsa.Config`:
 //

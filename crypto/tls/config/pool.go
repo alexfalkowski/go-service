@@ -8,6 +8,10 @@ import (
 
 // NewCertPool resolves and parses cfg's configured CA bundle.
 func NewCertPool(fs *os.FS, cfg *Config) (*x509.CertPool, error) {
+	if !cfg.HasCA() {
+		return nil, ErrInvalidCA
+	}
+
 	ca, err := cfg.GetCA(fs)
 	if err != nil {
 		return nil, err
