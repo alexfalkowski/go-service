@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/stretchr/testify/require"
 )
@@ -80,4 +81,60 @@ func TestInvalid(t *testing.T) {
 
 	token = paseto.NewToken(nil, signer, verifier, gen)
 	require.Nil(t, token)
+}
+
+func TestInvalidConfigDoesNotPanic(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+
+	t.Run("generate without signer", func(t *testing.T) {
+		token := paseto.NewToken(cfg.Paseto, nil, verifier, gen)
+
+		tkn, err := token.Generate("hello", test.UserID.String())
+		require.Empty(t, tkn)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
+
+	t.Run("generate without private key", func(t *testing.T) {
+		token := paseto.NewToken(cfg.Paseto, &ed25519.Signer{}, verifier, gen)
+
+		tkn, err := token.Generate("hello", test.UserID.String())
+		require.Empty(t, tkn)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
+
+	t.Run("generate without generator", func(t *testing.T) {
+		token := paseto.NewToken(cfg.Paseto, signer, verifier, nil)
+
+		tkn, err := token.Generate("hello", test.UserID.String())
+		require.Empty(t, tkn)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
+
+	t.Run("verify without verifier", func(t *testing.T) {
+		valid := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
+		tkn, err := valid.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
+
+		token := paseto.NewToken(cfg.Paseto, signer, nil, gen)
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
+
+	t.Run("verify without public key", func(t *testing.T) {
+		valid := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
+		tkn, err := valid.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
+
+		token := paseto.NewToken(cfg.Paseto, signer, &ed25519.Verifier{}, gen)
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
 }

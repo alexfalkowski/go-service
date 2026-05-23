@@ -27,8 +27,7 @@ func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Ge
 // Issued tokens use standard registered claims (jwt.RegisteredClaims) and include a
 // "kid" header to bind the token to a configured key identity.
 //
-// Note: This type assumes cfg, signer, verifier, and generator are non-nil. If you
-// construct a Token with missing dependencies, methods may panic.
+// Missing generation or verification dependencies are reported as token/errors.ErrInvalidConfig.
 type Token struct {
 	cfg       *Config
 	signer    *ed25519.Signer
@@ -53,6 +52,10 @@ type Token struct {
 //
 //   - kid: from cfg.KeyID
 func (t *Token) Generate(aud, sub string) (string, error) {
+	if t.signer == nil || len(t.signer.PrivateKey) == 0 || t.generator == nil {
+		return strings.Empty, errors.ErrInvalidConfig
+	}
+
 	key := t.signer.PrivateKey
 	now := time.Now()
 	claims := &jwt.RegisteredClaims{
@@ -84,6 +87,10 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 // failures (issuer/audience mismatches and validate-time algorithm/kid mismatches).
 // Parse/validation errors produced by the upstream JWT library may be returned as-is.
 func (t *Token) Verify(token, aud string) (string, error) {
+	if t.verifier == nil || len(t.verifier.PublicKey) == 0 {
+		return strings.Empty, errors.ErrInvalidConfig
+	}
+
 	claims := &jwt.RegisteredClaims{}
 
 	_, err := jwt.ParseWithClaims(token, claims, t.validate)
@@ -100,6 +107,10 @@ func (t *Token) Verify(token, aud string) (string, error) {
 	}
 
 	if err := claims.Valid(); err != nil {
+		return strings.Empty, err
+	}
+
+	if err := validateRequiredClaims(claims); err != nil {
 		return strings.Empty, err
 	}
 
@@ -121,4 +132,16 @@ func (j *Token) validate(token *jwt.Token) (any, error) {
 	}
 
 	return j.verifier.PublicKey, nil
+}
+
+func validateRequiredClaims(claims *jwt.RegisteredClaims) error {
+	if claims.ExpiresAt == nil || claims.IssuedAt == nil || claims.NotBefore == nil {
+		return errors.ErrInvalidTime
+	}
+
+	if strings.IsEmpty(claims.Subject) {
+		return errors.ErrInvalidSubject
+	}
+
+	return nil
 }

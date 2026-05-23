@@ -4,7 +4,9 @@ import (
 	"testing"
 
 	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
+	cryptossh "github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
+	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -67,6 +69,31 @@ func TestInvalidExpired(t *testing.T) {
 	require.NotEmpty(t, tkn)
 
 	time.Sleep(time.Millisecond)
+
+	sub, err := token.Verify(tkn, "/service.Method")
+	require.Empty(t, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidTime)
+}
+
+func TestInvalidMissingIssuedAt(t *testing.T) {
+	cfg := test.NewToken("ssh").SSH
+	signer, err := cryptossh.NewSigner(test.FS, cfg.Key.Config)
+	require.NoError(t, err)
+
+	claims := map[string]any{
+		"ver": "v1",
+		"kid": cfg.Key.Name,
+		"aud": "/service.Method",
+		"exp": time.Now().Add(time.Hour.Duration()).UnixNano(),
+	}
+	encoded, err := json.Marshal(claims)
+	require.NoError(t, err)
+
+	signature, err := signer.Sign(encoded)
+	require.NoError(t, err)
+
+	token := ssh.NewToken(cfg, test.FS)
+	tkn := strings.Join(".", base64.Encode(encoded), base64.Encode(signature))
 
 	sub, err := token.Verify(tkn, "/service.Method")
 	require.Empty(t, sub)
