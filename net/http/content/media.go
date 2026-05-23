@@ -8,6 +8,7 @@ import (
 const (
 	jsonKind                 = "json"
 	errorSubtype             = "error"
+	gobSubtype               = "gob"
 	messagePackSubtype       = "msgpack"
 	vendorMessagePackSubtype = "vnd.msgpack"
 )
@@ -49,6 +50,11 @@ type Media struct {
 // IsError reports whether the media subtype represents an error payload.
 func (t Media) IsError() bool {
 	return t.Subtype == errorSubtype
+}
+
+// IsRequestBodySupported reports whether the media type is allowed for decoding HTTP request bodies.
+func (t Media) IsRequestBodySupported() bool {
+	return t.Subtype != gobSubtype && t.Subtype != messagePackSubtype
 }
 
 func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {

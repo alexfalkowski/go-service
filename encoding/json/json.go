@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
 
@@ -58,9 +59,18 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 //
 // In most cases v should be a pointer to the destination value, such as
 // `*MyStruct` or `*map[string]any`. Decode is equivalent to calling
-// `json.NewDecoder(r).Decode(v)`.
+// `json.NewDecoder(r).Decode(v)`, then requiring the stream to contain no
+// additional JSON values.
+//
+// Duplicate JSON object keys keep the standard library's last-wins behavior.
 func (e *Encoder) Decode(r io.Reader, v any) error {
-	return json.NewDecoder(r).Decode(v)
+	decoder := json.NewDecoder(r)
+	if err := decoder.Decode(v); err != nil {
+		return err
+	}
+
+	var extra any
+	return errors.TrailingData(decoder.Decode(&extra))
 }
 
 // Marshal encodes v as JSON using the standard library implementation.

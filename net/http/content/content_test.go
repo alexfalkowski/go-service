@@ -110,6 +110,20 @@ func TestNewFromContentTypeFallsBackFromInternalErrorMedia(t *testing.T) {
 	require.Same(t, test.Encoder.Get("plain"), media.Encoder)
 }
 
+func TestNewFromRequestBodyRejectsUnsafeBinaryMedia(t *testing.T) {
+	for _, mediaType := range []string{"application/gob", media.MessagePack + "; profile=test"} {
+		t.Run(mediaType, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+			req.Header.Set(content.TypeKey, mediaType)
+
+			media, err := test.Content.NewFromRequestBody(req)
+
+			require.ErrorIs(t, err, content.ErrUnsupportedRequestMedia)
+			require.False(t, media.IsRequestBodySupported())
+		})
+	}
+}
+
 func TestNewFromMediaWithParameters(t *testing.T) {
 	tests := []struct {
 		name      string

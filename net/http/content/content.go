@@ -62,6 +62,19 @@ func (c *Content) NewFromContentType(req *http.Request) Media {
 	return c.newRequestMedia(req.Header.Get(TypeKey))
 }
 
+// NewFromRequestBody parses the request Content-Type header and returns a matching Media for body decoding.
+//
+// It rejects media types that are available for internal use but intentionally unsupported for public
+// request-body decoding.
+func (c *Content) NewFromRequestBody(req *http.Request) (Media, error) {
+	media := c.NewFromContentType(req)
+	if !media.IsRequestBodySupported() {
+		return media, ErrUnsupportedRequestMedia
+	}
+
+	return media, nil
+}
+
 // NewFromMedia parses mediaType and returns a matching Media.
 //
 // If parsing fails, it falls back to JSON.

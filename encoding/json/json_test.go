@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/stretchr/testify/require"
@@ -26,6 +27,22 @@ func TestDecode(t *testing.T) {
 
 	require.NoError(t, encoder.Decode(bytes.NewBufferString("{\"test\":\"test\"}"), &msg))
 	require.Equal(t, map[string]string{"test": "test"}, msg)
+}
+
+func TestDecodeRejectsTrailingData(t *testing.T) {
+	for _, input := range []string{
+		`{"test":"test"} garbage`,
+		`{"test":"test"}{"test":"other"}`,
+	} {
+		t.Run(input, func(t *testing.T) {
+			encoder := json.NewEncoder()
+			var msg map[string]string
+
+			err := encoder.Decode(bytes.NewBufferString(input), &msg)
+
+			require.ErrorIs(t, err, errors.ErrTrailingData)
+		})
+	}
 }
 
 func TestMarshal(t *testing.T) {

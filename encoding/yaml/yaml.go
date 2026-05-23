@@ -1,6 +1,7 @@
 package yaml
 
 import (
+	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	yaml "go.yaml.in/yaml/v3"
 )
@@ -28,7 +29,13 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode reads YAML from r and decodes it into v.
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
-// This is a thin wrapper around `yaml.NewDecoder(r).Decode(v)`.
+// Decode reads one YAML document and rejects additional documents in the same stream.
 func (e *Encoder) Decode(r io.Reader, v any) error {
-	return yaml.NewDecoder(r).Decode(v)
+	decoder := yaml.NewDecoder(r)
+	if err := decoder.Decode(v); err != nil {
+		return err
+	}
+
+	var extra any
+	return errors.TrailingData(decoder.Decode(&extra))
 }
