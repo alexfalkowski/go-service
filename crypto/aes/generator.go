@@ -14,10 +14,10 @@ type Generator struct {
 	generator *rand.Generator
 }
 
-// Generate returns a base64-encoded text key suitable for AES-256.
+// Generate returns a 32-character alphanumeric key suitable for AES-256.
 //
-// The generated key represents 32 random bytes (256 bits) encoded as base64 text.
-// Callers that need the raw key bytes should decode the returned string.
+// The generated key is safe to store in text configuration and can be used
+// directly as 32-byte AES key material.
 func (g *Generator) Generate() (string, error) {
 	return g.generator.GenerateText(32)
 }

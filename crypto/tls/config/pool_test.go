@@ -30,9 +30,22 @@ func TestNewCertPool(t *testing.T) {
 }
 
 func TestNewCertPoolInvalid(t *testing.T) {
-	_, err := tls.NewCertPool(test.FS, &tls.Config{CA: "invalid ca"})
-	require.Error(t, err)
-	require.True(t, errors.Is(err, tls.ErrInvalidCA))
+	tests := []struct {
+		config *tls.Config
+		name   string
+	}{
+		{name: "nil config"},
+		{name: "empty config", config: &tls.Config{}},
+		{name: "invalid ca", config: &tls.Config{CA: "invalid ca"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tls.NewCertPool(test.FS, tt.config)
+			require.Error(t, err)
+			require.True(t, errors.Is(err, tls.ErrInvalidCA))
+		})
+	}
 }
 
 func TestNewCertPoolSourceError(t *testing.T) {
