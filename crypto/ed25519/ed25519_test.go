@@ -116,6 +116,31 @@ func TestInvalidSignature(t *testing.T) {
 	require.ErrorIs(t, verifier.Verify(e, strings.Bytes("bob")), errors.ErrInvalidMatch)
 }
 
+func TestInvalidSignerPrivateKey(t *testing.T) {
+	tests := []struct {
+		signer *ed25519.Signer
+		name   string
+	}{
+		{name: "nil signer", signer: nil},
+		{name: "zero value signer", signer: &ed25519.Signer{}},
+		{name: "short private key", signer: &ed25519.Signer{PrivateKey: []byte("short")}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var (
+				sig []byte
+				err error
+			)
+			require.NotPanics(t, func() {
+				sig, err = tt.signer.Sign(strings.Bytes("test"))
+			})
+			require.Nil(t, sig)
+			require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+		})
+	}
+}
+
 func TestInvalidKeyType(t *testing.T) {
 	public, private, err := rsa.NewGenerator(rand.NewGenerator(rand.NewReader())).Generate()
 	require.NoError(t, err)

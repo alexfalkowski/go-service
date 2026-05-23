@@ -1,8 +1,7 @@
 package ssh
 
 import (
-	"crypto/ed25519"
-
+	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -43,5 +42,12 @@ type Signer struct {
 // Ed25519 signing does not return an error for a valid private key; this method returns a nil error
 // for API compatibility with other signers.
 func (s *Signer) Sign(msg []byte) ([]byte, error) {
+	if s == nil {
+		return nil, crypto.ErrInvalidKeySize
+	}
+	if err := ed25519.ValidatePrivateKey(s.PrivateKey); err != nil {
+		return nil, err
+	}
+
 	return ed25519.Sign(s.PrivateKey, msg), nil
 }

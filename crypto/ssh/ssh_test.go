@@ -5,6 +5,7 @@ import (
 	"encoding/pem"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
@@ -69,6 +70,14 @@ func TestInvalidConfig(t *testing.T) {
 	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: test.FilePath("secrets/redis")})
 	require.Error(t, err)
 
+	public := sshPublic(t)
+
+	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: `from="10.0.0.0/8" ` + public})
+	require.ErrorIs(t, err, errors.ErrInvalidKeyFormat)
+
+	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: public + "\n" + public})
+	require.ErrorIs(t, err, errors.ErrInvalidKeyFormat)
+
 	_, err = ssh.NewSigner(test.FS, &ssh.Config{Private: test.FilePath("secrets/redis")})
 	require.Error(t, err)
 
@@ -102,6 +111,31 @@ func TestInvalidSignature(t *testing.T) {
 	require.ErrorIs(t, verifier.Verify(e, strings.Bytes("bob")), errors.ErrInvalidMatch)
 }
 
+func TestInvalidSignerPrivateKey(t *testing.T) {
+	tests := []struct {
+		signer *ssh.Signer
+		name   string
+	}{
+		{name: "nil signer", signer: nil},
+		{name: "zero value signer", signer: &ssh.Signer{}},
+		{name: "short private key", signer: &ssh.Signer{PrivateKey: []byte("short")}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var (
+				sig []byte
+				err error
+			)
+			require.NotPanics(t, func() {
+				sig, err = tt.signer.Sign(strings.Bytes("test"))
+			})
+			require.Nil(t, sig)
+			require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+		})
+	}
+}
+
 func TestInvalidKeyType(t *testing.T) {
 	public, private, err := rsa.NewGenerator(rand.NewGenerator(rand.NewReader())).Generate()
 	require.NoError(t, err)
@@ -126,4 +160,13 @@ func TestInvalidKeyType(t *testing.T) {
 		_, signerErr = ssh.NewSigner(test.FS, &ssh.Config{Private: private})
 	})
 	require.ErrorIs(t, signerErr, errors.ErrInvalidKeyType)
+}
+
+func sshPublic(t *testing.T) string {
+	t.Helper()
+
+	data, err := test.FS.ReadSource(test.FilePath("secrets/ssh_public"))
+	require.NoError(t, err)
+
+	return bytes.String(data)
 }

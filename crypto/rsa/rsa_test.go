@@ -18,6 +18,16 @@ func TestGenerator(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, pub)
 	require.NotEmpty(t, pri)
+
+	cfg := &rsa.Config{Public: pub, Private: pri}
+
+	publicKey, err := cfg.PublicKey(test.PEM)
+	require.NoError(t, err)
+	require.Equal(t, rsa.KeySize, publicKey.N.BitLen())
+
+	privateKey, err := cfg.PrivateKey(test.PEM)
+	require.NoError(t, err)
+	require.Equal(t, rsa.KeySize, privateKey.N.BitLen())
 }
 
 func TestValid(t *testing.T) {
@@ -104,5 +114,24 @@ func TestInvalid(t *testing.T) {
 		Public:  test.FilePath("secrets/rsa_public"),
 		Private: test.FilePath("secrets/ed25519_private"),
 	})
+	require.Error(t, err)
+
+	cfg = &rsa.Config{
+		Public:  test.FilePath("secrets/rsa_2048_public"),
+		Private: test.FilePath("secrets/rsa_2048_private"),
+	}
+
+	_, err = rsa.NewEncryptor(rand, test.PEM, cfg)
+	require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+
+	_, err = rsa.NewDecryptor(rand, test.PEM, cfg)
+	require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+}
+
+func TestInvalidConfigParse(t *testing.T) {
+	_, err := (&rsa.Config{Public: test.FilePath("secrets/rsa_public_invalid")}).PublicKey(test.PEM)
+	require.Error(t, err)
+
+	_, err = (&rsa.Config{Private: test.FilePath("secrets/rsa_private_invalid")}).PrivateKey(test.PEM)
 	require.Error(t, err)
 }

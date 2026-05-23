@@ -9,6 +9,10 @@
 //     signature, MAC, or hash did not match the message.
 //   - ErrInvalidKeyType: key material decoded successfully, but the contained
 //     key algorithm did not match what the caller expected.
+//   - ErrInvalidKeySize: key material decoded successfully, but the key size
+//     does not satisfy the package policy for the operation.
+//   - ErrInvalidKeyFormat: key material decoded successfully, but used an
+//     unsupported syntactic form.
 //
 // These sentinels are intentionally small and reusable so higher-level
 // packages can add context by wrapping them without losing comparability.

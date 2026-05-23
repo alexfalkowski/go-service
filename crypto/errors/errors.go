@@ -19,3 +19,11 @@ var ErrMissingKey = errors.New("crypto: missing key")
 // (for example Ed25519) when the provided data decodes successfully as some
 // other key type.
 var ErrInvalidKeyType = errors.New("crypto: invalid key type")
+
+// ErrInvalidKeySize indicates that parsed key material was valid, but its size
+// does not satisfy the package policy for the cryptographic operation.
+var ErrInvalidKeySize = errors.New("crypto: invalid key size")
+
+// ErrInvalidKeyFormat indicates that parsed key material used a syntactic form
+// that is not supported by the package.
+var ErrInvalidKeyFormat = errors.New("crypto: invalid key format")

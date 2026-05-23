@@ -6,6 +6,7 @@
 //   - private key: PEM block "RSA PRIVATE KEY" containing PKCS#1-encoded bytes (x509.ParsePKCS1PrivateKey)
 //
 // It also provides Encryptor/Decryptor helpers that use RSA-OAEP with SHA-512.
+// Configured keys must use a modulus of at least KeySize bits.
 //
 // Configuration values are typically loaded using the go-service "source string" pattern (for example "env:NAME",
 // "file:/path", or a literal PEM value) via crypto/pem.Decoder.
