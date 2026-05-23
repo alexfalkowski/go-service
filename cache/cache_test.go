@@ -93,6 +93,18 @@ func TestMaxSizeOnGetAllowsEncodedValueLargerThanLimit(t *testing.T) {
 	require.Equal(t, "ok", *value)
 }
 
+func TestMaxSizeOnGetRejectsEncodedValueTooLarge(t *testing.T) {
+	cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+	cfg.MaxSize = 4
+	world := test.NewStartedWorld(t,
+		test.WithWorldCacheConfig(cfg),
+		test.WithWorldCacheDriver(&test.Cache{Value: base64.Encode(make([]byte, 7))}),
+	)
+
+	err := world.Get(t.Context(), "test", ptr.Zero[string]())
+	require.ErrorIs(t, err, errors.ErrTooLarge)
+}
+
 func TestExpiredCache(t *testing.T) {
 	config := test.NewCacheConfig("sync", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
