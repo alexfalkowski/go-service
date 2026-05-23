@@ -22,6 +22,12 @@ func TestEncode(t *testing.T) {
 	require.Equal(t, "test: test", strings.TrimSpace(bytes.String()))
 }
 
+func TestEncodeReturnsError(t *testing.T) {
+	encoder := yaml.NewEncoder()
+
+	require.Error(t, encoder.Encode(test.ErrWriter{}, map[string]string{"test": "test"}))
+}
+
 func TestDecode(t *testing.T) {
 	encoder := yaml.NewEncoder()
 	var msg map[string]string

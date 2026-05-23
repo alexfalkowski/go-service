@@ -19,6 +19,10 @@ import "github.com/alexfalkowski/go-service/v2/io"
 // value so the decoder can mutate it (e.g. *MyStruct). Implementations may return an error if v is not
 // a supported type (for example encoding/errors.ErrInvalidType).
 //
+// Structured single-value decoders should reject additional encoded values after the first payload,
+// either by consuming the whole input or by returning encoding/errors.ErrTrailingData. Stream or
+// passthrough encoders may delegate full-consumption semantics to the concrete value they decode into.
+//
 // Some implementations buffer the remaining contents of r before decoding. When r contains untrusted
 // input, callers must bound it before calling Decode. Standard go-service HTTP and cache wiring applies
 // those limits before values reach encoders.

@@ -3,6 +3,7 @@ package bytes
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v2/reflect"
 )
 
 // NewEncoder constructs a passthrough encoder for stream-capable types.
@@ -31,12 +32,12 @@ type Encoder struct{}
 // If v does not implement io.WriterTo, Encode returns encoding/errors.ErrInvalidType.
 // Any error returned by WriteTo is returned.
 func (e *Encoder) Encode(w io.Writer, v any) error {
-	to, ok := v.(io.WriterTo)
-	if !ok {
-		return errors.ErrInvalidType
+	to, err := writerTo(v)
+	if err != nil {
+		return err
 	}
 
-	_, err := to.WriteTo(w)
+	_, err = to.WriteTo(w)
 	return err
 }
 
@@ -47,15 +48,33 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // destination is repopulated rather than appended to.
 // Any error returned by ReadFrom is returned.
 func (e *Encoder) Decode(r io.Reader, v any) error {
-	from, ok := v.(io.ReaderFrom)
-	if !ok {
-		return errors.ErrInvalidType
+	from, err := readerFrom(v)
+	if err != nil {
+		return err
 	}
 
-	if reset, ok := v.(io.Resetter); ok {
+	if reset, ok := v.(io.Resetter); ok && !reflect.IsNil(reset) {
 		reset.Reset()
 	}
 
-	_, err := from.ReadFrom(r)
+	_, err = from.ReadFrom(r)
 	return err
+}
+
+func writerTo(v any) (io.WriterTo, error) {
+	to, ok := v.(io.WriterTo)
+	if !ok || reflect.IsNil(to) {
+		return nil, errors.ErrInvalidType
+	}
+
+	return to, nil
+}
+
+func readerFrom(v any) (io.ReaderFrom, error) {
+	from, ok := v.(io.ReaderFrom)
+	if !ok || reflect.IsNil(from) {
+		return nil, errors.ErrInvalidType
+	}
+
+	return from, nil
 }

@@ -21,6 +21,15 @@ func TestEncode(t *testing.T) {
 	require.JSONEq(t, "{\"test\":\"test\"}", bytes.String(bytes.TrimSpace(test.Pool.Copy(buffer))))
 }
 
+func TestEncodeReturnsError(t *testing.T) {
+	buffer := test.Pool.Get()
+	defer test.Pool.Put(buffer)
+
+	encoder := json.NewEncoder()
+
+	require.Error(t, encoder.Encode(buffer, func() {}))
+}
+
 func TestDecode(t *testing.T) {
 	encoder := json.NewEncoder()
 	var msg map[string]string

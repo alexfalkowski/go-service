@@ -21,6 +21,15 @@ func TestEncode(t *testing.T) {
 	require.Equal(t, `test = "test"`, strings.TrimSpace(bytes.String()))
 }
 
+func TestEncodeReturnsError(t *testing.T) {
+	bytes := test.Pool.Get()
+	defer test.Pool.Put(bytes)
+
+	encoder := toml.NewEncoder()
+
+	require.Error(t, encoder.Encode(bytes, func() {}))
+}
+
 func TestDecode(t *testing.T) {
 	encoder := toml.NewEncoder()
 	var msg map[string]string

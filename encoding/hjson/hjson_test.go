@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
@@ -21,6 +22,19 @@ func TestEncode(t *testing.T) {
 	require.Contains(t, buf.String(), "test")
 }
 
+func TestEncodeReturnsError(t *testing.T) {
+	encoder := hjson.NewEncoder()
+	buf := &bytes.Buffer{}
+
+	require.Error(t, encoder.Encode(buf, func() {}))
+}
+
+func TestEncodeReturnsWriteError(t *testing.T) {
+	encoder := hjson.NewEncoder()
+
+	require.ErrorIs(t, encoder.Encode(test.ErrWriter{}, &message{Test: "test"}), test.ErrFailed)
+}
+
 func TestDecode(t *testing.T) {
 	encoder := hjson.NewEncoder()
 	msg := &message{}
@@ -34,7 +48,6 @@ func TestDecodeRejectsDuplicateKeys(t *testing.T) {
 	msg := &message{}
 
 	err := encoder.Decode(bytes.NewBufferString("{\n  test: first\n  test: second\n}\n"), msg)
-
 	require.Error(t, err)
 	require.Contains(t, strings.ToLower(err.Error()), "duplicate")
 }
