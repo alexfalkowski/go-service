@@ -83,7 +83,10 @@ func WithMaxResponseSize(size bytes.Size) ClientOption {
 
 // WithRedirect sets the redirect policy used by the underlying http.Client.
 //
-// If not provided, NewClient uses RedirectFollow, which preserves standard library redirect behavior.
+// If not provided, NewClient uses RedirectSameOrigin so credential/signature
+// middleware supplied through WithRoundTripper cannot be replayed to a different
+// origin by an upstream redirect. Use RedirectFollow to opt into standard
+// library cross-origin redirect behavior.
 func WithRedirect(redirect Redirect) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.redirect = redirect
@@ -293,7 +296,7 @@ func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {
 }
 
 func options(opts ...ClientOption) *clientOpts {
-	os := &clientOpts{}
+	os := &clientOpts{redirect: RedirectSameOrigin}
 	for _, o := range opts {
 		o.apply(os)
 	}
