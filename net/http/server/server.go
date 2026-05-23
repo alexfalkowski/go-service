@@ -89,6 +89,8 @@ func (s *Server) Serve() error {
 //
 // The provided context controls shutdown deadlines/cancellation.
 func (s *Server) Shutdown(ctx context.Context) error {
+	defer s.listener.Close()
+
 	return s.server.Shutdown(ctx)
 }
 

@@ -15,6 +15,14 @@ func TestParseInvalidMediaType(t *testing.T) {
 	require.True(t, errors.Is(err, media.ErrInvalidType))
 }
 
+func TestParseNormalizesMediaTypeCase(t *testing.T) {
+	value, subtype, err := media.Parse("Application/YAML; profile=test")
+
+	require.NoError(t, err)
+	require.Equal(t, media.YAML, value)
+	require.Equal(t, "yaml", subtype)
+}
+
 func TestTypeByExtension(t *testing.T) {
 	require.Equal(t, "image/svg+xml", media.TypeByExtension(".svg"))
 }

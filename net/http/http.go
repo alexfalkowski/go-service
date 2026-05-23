@@ -197,6 +197,11 @@ func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
 	}
 }
 
+// IgnoreRedirect returns redirect responses without following them.
+func IgnoreRedirect(_ *Request, _ []*Request) error {
+	return ErrUseLastResponse
+}
+
 // SameOriginRedirect allows redirects only when the next request stays on the same scheme and host.
 //
 // It is intended for clients that add credentials or signatures in RoundTripper middleware, where Go's

@@ -56,6 +56,26 @@ func TestNewFromRequestFallsBackToAccept(t *testing.T) {
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
 }
 
+func TestNewFromRequestNormalizesMediaTypeCase(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.TypeKey, "Application/YAML")
+
+	media := test.Content.NewFromRequest(req)
+
+	require.Equal(t, "yaml", media.Subtype)
+	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
+}
+
+func TestNewFromRequestNormalizesAcceptMediaTypeCase(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.AcceptKey, "Application/YAML, Application/TOML")
+
+	media := test.Content.NewFromRequest(req)
+
+	require.Equal(t, "yaml", media.Subtype)
+	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
+}
+
 func TestNewFromRequestFallsBackFromInternalErrorMedia(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 	req.Header.Set(content.AcceptKey, media.Error)

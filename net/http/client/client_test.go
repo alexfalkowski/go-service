@@ -162,3 +162,124 @@ func TestDoDetachesRequestBodyFromResponseBuffer(t *testing.T) {
 	require.NoError(t, err)
 	require.JSONEq(t, `{"Name":"Bob"}`, string(data))
 }
+
+func TestDoRedirectFollowAllowsCrossOriginCredentialRoundTrip(t *testing.T) {
+	var urls []string
+	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		urls = append(urls, req.URL.String())
+		if len(urls) == 1 {
+			return &http.Response{
+				StatusCode: http.StatusTemporaryRedirect,
+				Header:     http.Header{"Location": []string{"https://other.example.com/target"}},
+				Body:       http.NoBody,
+				Request:    req,
+			}, nil
+		}
+
+		require.Equal(t, "Bearer secret", req.Header.Get("Authorization"))
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     http.Header{content.TypeKey: []string{media.Text}},
+			Body:       io.NopCloser(strings.NewReader("ok")),
+			Request:    req,
+		}, nil
+	})
+	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(authRoundTripper{RoundTripper: rt}))
+
+	err := c.Get(t.Context(), "https://example.com/start", client.Options{})
+
+	require.NoError(t, err)
+	require.Equal(t, []string{"https://example.com/start", "https://other.example.com/target"}, urls)
+}
+
+func TestDoRedirectSameOriginRejectsCrossOriginCredentialRoundTrip(t *testing.T) {
+	var urls []string
+	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		urls = append(urls, req.URL.String())
+		return &http.Response{
+			StatusCode: http.StatusTemporaryRedirect,
+			Header:     http.Header{"Location": []string{"https://other.example.com/target"}},
+			Body:       http.NoBody,
+			Request:    req,
+		}, nil
+	})
+	c := client.NewClient(
+		test.Content,
+		test.Pool,
+		client.WithRoundTripper(authRoundTripper{RoundTripper: rt}),
+		client.WithRedirect(client.RedirectSameOrigin),
+	)
+
+	err := c.Get(t.Context(), "https://example.com/start", client.Options{})
+
+	require.NoError(t, err)
+	require.Equal(t, []string{"https://example.com/start"}, urls)
+}
+
+func TestDoRedirectSameOriginAllowsSameOriginCredentialRoundTrip(t *testing.T) {
+	var urls []string
+	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		urls = append(urls, req.URL.String())
+		if len(urls) == 1 {
+			return &http.Response{
+				StatusCode: http.StatusTemporaryRedirect,
+				Header:     http.Header{"Location": []string{"https://example.com/target"}},
+				Body:       http.NoBody,
+				Request:    req,
+			}, nil
+		}
+
+		require.Equal(t, "Bearer secret", req.Header.Get("Authorization"))
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     http.Header{content.TypeKey: []string{media.Text}},
+			Body:       io.NopCloser(strings.NewReader("ok")),
+			Request:    req,
+		}, nil
+	})
+	c := client.NewClient(
+		test.Content,
+		test.Pool,
+		client.WithRoundTripper(authRoundTripper{RoundTripper: rt}),
+		client.WithRedirect(client.RedirectSameOrigin),
+	)
+
+	err := c.Get(t.Context(), "https://example.com/start", client.Options{})
+
+	require.NoError(t, err)
+	require.Equal(t, []string{"https://example.com/start", "https://example.com/target"}, urls)
+}
+
+func TestDoRedirectIgnoreRejectsRedirectRoundTrip(t *testing.T) {
+	var urls []string
+	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		urls = append(urls, req.URL.String())
+		return &http.Response{
+			StatusCode: http.StatusTemporaryRedirect,
+			Header:     http.Header{"Location": []string{"https://example.com/target"}},
+			Body:       http.NoBody,
+			Request:    req,
+		}, nil
+	})
+	c := client.NewClient(
+		test.Content,
+		test.Pool,
+		client.WithRoundTripper(rt),
+		client.WithRedirect(client.RedirectIgnore),
+	)
+
+	err := c.Get(t.Context(), "https://example.com/start", client.Options{})
+
+	require.NoError(t, err)
+	require.Equal(t, []string{"https://example.com/start"}, urls)
+}
+
+type authRoundTripper struct {
+	http.RoundTripper
+}
+
+func (r authRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	cloned := req.Clone(req.Context())
+	cloned.Header.Set("Authorization", "Bearer secret")
+	return r.RoundTripper.RoundTrip(cloned)
+}

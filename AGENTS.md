@@ -103,6 +103,14 @@ matching skill for the task.
   query/header/body leakage issue unless the logger starts recording
   `RawQuery`, `RequestURI`, headers, cookies, or bodies, or a specific route
   places secrets in path segments contrary to service policy.
+- OpenTelemetry HTTP client instrumentation is delegated to upstream
+  `otelhttp.NewTransport`, which currently records semantic-convention URL
+  attributes from the request URL and may include `RawQuery` in `url.full`.
+  Treat this as a documented third-party instrumentation behavior, not a local
+  `net/http` finding. Do not flag it unless this repository adds local URL
+  attribute construction, logging/export code that records queries directly, or
+  a supported upstream option that can sanitize this behavior without mutating
+  the outbound request.
 - gRPC telemetry logging intentionally records raw error values for operator
   diagnostics. Client-facing safety is handled by gRPC status/error rendering;
   logs are backend observability data and should be protected by deployment log

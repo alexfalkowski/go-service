@@ -87,6 +87,8 @@ func (s *Server) Serve() error {
 // deadline before graceful shutdown completes, Shutdown force-stops the server
 // and returns ctx.Err().
 func (s *Server) Shutdown(ctx context.Context) error {
+	defer s.listener.Close()
+
 	done := make(chan struct{})
 
 	go func() {

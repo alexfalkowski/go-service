@@ -73,6 +73,11 @@ func TestSameOriginRedirect(t *testing.T) {
 	}
 }
 
+func TestIgnoreRedirect(t *testing.T) {
+	err := http.IgnoreRedirect(nil, nil)
+	require.ErrorIs(t, err, http.ErrUseLastResponse)
+}
+
 func TestHandleWhenTelemetryDisabled(t *testing.T) {
 	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})

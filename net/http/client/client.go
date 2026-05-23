@@ -23,11 +23,23 @@ type ClientOption interface {
 	apply(opts *clientOpts)
 }
 
+// Redirect configures how Client handles HTTP redirects.
+type Redirect int
+
+// RedirectFollow follows redirects using the standard library default policy.
+const RedirectFollow Redirect = iota
+
+// RedirectIgnore returns redirect responses without following them.
+const RedirectIgnore Redirect = 1
+
+// RedirectSameOrigin follows redirects only when scheme and host are unchanged.
+const RedirectSameOrigin Redirect = 2
+
 type clientOpts struct {
 	roundTripper    http.RoundTripper
 	timeout         time.Duration
 	maxResponseSize bytes.Size
-	ignoreRedirect  bool
+	redirect        Redirect
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -69,13 +81,12 @@ func WithMaxResponseSize(size bytes.Size) ClientOption {
 	})
 }
 
-// WithIgnoreRedirect disables automatic redirect following.
+// WithRedirect sets the redirect policy used by the underlying http.Client.
 //
-// When set, the underlying http.Client.CheckRedirect is configured to return http.ErrUseLastResponse,
-// causing the underlying client to use the last response instead of following the redirect.
-func WithIgnoreRedirect() ClientOption {
+// If not provided, NewClient uses RedirectFollow, which preserves standard library redirect behavior.
+func WithRedirect(redirect Redirect) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.ignoreRedirect = true
+		o.redirect = redirect
 	})
 }
 
@@ -91,10 +102,11 @@ func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOp
 	os := options(opts...)
 	client := http.NewClient(os.roundTripper, os.timeout)
 
-	if os.ignoreRedirect {
-		client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
-			return http.ErrUseLastResponse
-		}
+	switch os.redirect {
+	case RedirectIgnore:
+		client.CheckRedirect = http.IgnoreRedirect
+	case RedirectSameOrigin:
+		client.CheckRedirect = http.SameOriginRedirect
 	}
 
 	return &Client{client: client, content: content, pool: pool, maxResponseSize: os.maxResponseSize.Bytes()}
