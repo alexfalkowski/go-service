@@ -75,6 +75,23 @@ func TestInvalidExpired(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidTime)
 }
 
+func TestInvalidLifetimeExceedsConfig(t *testing.T) {
+	genCfg := test.NewToken("ssh").SSH
+	genCfg.Expiration = time.Hour
+	generator := ssh.NewToken(genCfg, test.FS)
+
+	verifyCfg := test.NewToken("ssh").SSH
+	verifyCfg.Expiration = time.Minute
+	verifier := ssh.NewToken(verifyCfg, test.FS)
+
+	tkn, err := generator.Generate("/service.Method", strings.Empty)
+	require.NoError(t, err)
+
+	sub, err := verifier.Verify(tkn, "/service.Method")
+	require.Empty(t, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidTime)
+}
+
 func TestInvalidMissingIssuedAt(t *testing.T) {
 	cfg := test.NewToken("ssh").SSH
 	signer, err := cryptossh.NewSigner(test.FS, cfg.Key.Config)
@@ -152,6 +169,7 @@ func TestInvalid(t *testing.T) {
 	require.NoError(t, err)
 
 	token = ssh.NewToken(&ssh.Config{
+		Expiration: time.Hour,
 		Keys: ssh.Keys{
 			&ssh.Key{
 				Name:   "other",

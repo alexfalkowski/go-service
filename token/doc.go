@@ -18,6 +18,23 @@
 // Concrete packages document their own token formats, claims, cryptographic
 // algorithms, and validation semantics.
 //
+// # Cross-kind verification consistency
+//
+// The supported token kinds intentionally share the same high-level verification
+// contract where their formats overlap:
+//
+//   - generated tokens bind the requested audience to the token,
+//   - verification requires the expected audience to match,
+//   - generated tokens include an issued-at time and expiration,
+//   - verification rejects tokens that are not currently valid, and
+//   - verification rejects tokens whose signed lifetime exceeds the verifier's
+//     configured Expiration.
+//
+// For JWT and PASETO, the returned identity is the non-empty subject claim
+// ("sub"). For SSH-style tokens, the returned identity is the non-empty key id
+// ("kid"), because that format authenticates a signing key name rather than a
+// subject claim.
+//
 // # Facade behavior and unknown kinds
 //
 // The Token facade is intentionally conservative when Config.Kind is unknown:

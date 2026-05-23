@@ -198,6 +198,40 @@ func TestInvalidMissingClaims(t *testing.T) {
 	}
 }
 
+func TestInvalidLifetimeExceedsConfig(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	generator := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: time.Hour, KeyID: cfg.JWT.KeyID}, signer, verifier, gen)
+	verifierToken := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: time.Minute, KeyID: cfg.JWT.KeyID}, signer, verifier, gen)
+
+	tkn, err := generator.Generate("hello", test.UserID.String())
+	require.NoError(t, err)
+
+	sub, err := verifierToken.Verify(tkn, "hello")
+	require.Empty(t, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidTime)
+}
+
+func TestInvalidVerifyExpirationConfig(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	generator := jwt.NewToken(cfg.JWT, signer, verifier, gen)
+	verifierToken := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, KeyID: cfg.JWT.KeyID}, signer, verifier, gen)
+
+	tkn, err := generator.Generate("hello", test.UserID.String())
+	require.NoError(t, err)
+
+	sub, err := verifierToken.Verify(tkn, "hello")
+	require.Empty(t, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidConfig)
+}
+
 func TestInvalidConfigDoesNotPanic(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	ec := test.NewEd25519()
@@ -252,6 +286,17 @@ func TestInvalidConfigDoesNotPanic(t *testing.T) {
 		require.Empty(t, sub)
 		require.ErrorIs(t, err, errors.ErrInvalidConfig)
 	})
+}
+
+func TestInvalidPrivateKeyDoesNotPanic(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	token := jwt.NewToken(cfg.JWT, &ed25519.Signer{PrivateKey: []byte("short")}, verifier, uuid.NewGenerator())
+
+	tkn, err := token.Generate("hello", test.UserID.String())
+	require.Empty(t, tkn)
+	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 
 func validClaims(cfg *jwt.Config, gen *uuid.Generator, now time.Time) *v4.RegisteredClaims {
