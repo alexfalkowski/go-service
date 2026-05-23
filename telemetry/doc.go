@@ -29,6 +29,14 @@
 // A nil Config typically means “telemetry disabled” at the top level, while subpackages may also support
 // their own enable/disable semantics (for example nil config or empty kind).
 //
+// # OTLP endpoint security
+//
+// Logger, metrics, and tracer OTLP exporters may send Config.Headers as outbound
+// request headers. When headers are configured, non-loopback "http://" endpoints
+// are rejected to avoid sending credential-bearing headers over cleartext
+// transport. Use "https://" for external collectors. Local development
+// collectors on "localhost" or loopback IP addresses may use "http://".
+//
 // # Global propagation (Register)
 //
 // Register configures the global OpenTelemetry TextMapPropagator to a composite propagator containing:

@@ -6,8 +6,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
+	httpmeta "github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,23 +18,23 @@ func TestWithContent(t *testing.T) {
 	res := httptest.NewRecorder()
 	enc := test.NewEncoder(nil)
 
-	ctx := meta.WithContent(t.Context(), req, res, enc)
+	ctx := httpmeta.WithContent(t.Context(), req, res, enc)
 
-	require.Same(t, req, meta.Request(ctx))
-	require.Same(t, res, meta.Response(ctx))
-	require.Same(t, enc, meta.Encoder(ctx))
+	require.Same(t, req, httpmeta.Request(ctx))
+	require.Same(t, res, httpmeta.Response(ctx))
+	require.Same(t, enc, httpmeta.Encoder(ctx))
 }
 
 func TestWithContentAllowsPartialContent(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	ctx := meta.WithContent(t.Context(), nil, res, nil)
+	ctx := httpmeta.WithContent(t.Context(), nil, res, nil)
 
-	require.Same(t, res, meta.Response(ctx))
+	require.Same(t, res, httpmeta.Response(ctx))
 }
 
 func TestRoundTripperAppendDoesNotOverwriteRequestID(t *testing.T) {
-	roundTripper := meta.NewRoundTripper(
+	roundTripper := httpmeta.NewRoundTripper(
 		env.UserAgent("agent"),
 		test.StaticIDGenerator("request-id"),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
@@ -56,7 +57,7 @@ func TestRoundTripperAppendDoesNotOverwriteRequestID(t *testing.T) {
 }
 
 func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
-	roundTripper := meta.NewRoundTripper(
+	roundTripper := httpmeta.NewRoundTripper(
 		env.UserAgent("agent"),
 		test.StaticIDGenerator("request-id"),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
@@ -77,7 +78,7 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 }
 
 func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
-	handler := meta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
 	res := httptest.NewRecorder()
@@ -87,5 +88,21 @@ func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
 
 		require.Equal(t, []string{"1", "v2"}, res.Header().Values("Service-Version"))
 		require.Equal(t, []string{"request-id"}, res.Header().Values("Request-Id"))
+	})
+}
+
+func TestHandlerStoresGeolocationAsIgnored(t *testing.T) {
+	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
+	require.NoError(t, err)
+	req.Header.Set("Geolocation", "geo:47,11")
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
+		geolocation := meta.Geolocation(req.Context())
+
+		require.Equal(t, "geo:47,11", geolocation.Value())
+		require.Empty(t, geolocation.String())
+		require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.GeolocationKey)
 	})
 }

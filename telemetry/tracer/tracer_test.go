@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/telemetry/header"
+	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel"
@@ -55,4 +57,19 @@ func TestRegisterInvalidKind(t *testing.T) {
 	})
 
 	require.ErrorIs(t, err, tracer.ErrNotFound)
+}
+
+func TestRegisterInvalidOTLPEndpoint(t *testing.T) {
+	err := tracer.Register(tracer.TracerParams{
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config: &tracer.Config{
+			Kind: "otlp",
+			URL:  "http://collector.example.com/v1/traces",
+			Headers: header.Map{
+				"Authorization": "Bearer token",
+			},
+		},
+	})
+
+	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }

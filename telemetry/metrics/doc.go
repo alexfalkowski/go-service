@@ -37,6 +37,13 @@
 //
 // If Config.Kind is unknown, NewReader returns ErrNotFound.
 //
+// # OTLP endpoint security
+//
+// When Config.Headers is non-empty, non-loopback "http://" OTLP endpoints are
+// rejected to avoid sending credential-bearing headers over cleartext transport.
+// Use "https://" for external collectors. Local development collectors on
+// "localhost" or loopback IP addresses may use "http://".
+//
 // # Global provider installation
 //
 // When enabled, NewMeterProvider installs the constructed provider as the process-wide
