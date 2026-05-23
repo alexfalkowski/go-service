@@ -3,7 +3,9 @@ package rsa
 import (
 	"crypto/rsa"
 	"crypto/x509"
+	"fmt"
 
+	"github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 )
 
@@ -43,7 +45,15 @@ func (c *Config) PublicKey(decoder *pem.Decoder) (*rsa.PublicKey, error) {
 		return nil, err
 	}
 
-	return x509.ParsePKCS1PublicKey(d)
+	key, err := x509.ParsePKCS1PublicKey(d)
+	if err != nil {
+		return nil, err
+	}
+	if err := validatePublicKey(key); err != nil {
+		return nil, err
+	}
+
+	return key, nil
 }
 
 // PrivateKey loads and parses the configured RSA private key.
@@ -55,5 +65,31 @@ func (c *Config) PrivateKey(decoder *pem.Decoder) (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 
-	return x509.ParsePKCS1PrivateKey(d)
+	key, err := x509.ParsePKCS1PrivateKey(d)
+	if err != nil {
+		return nil, err
+	}
+	if err := validatePrivateKey(key); err != nil {
+		return nil, err
+	}
+
+	return key, nil
+}
+
+func validatePublicKey(key *rsa.PublicKey) error {
+	size := key.N.BitLen()
+	if size < KeySize {
+		return fmt.Errorf("rsa: invalid public key size %d: %w", size, errors.ErrInvalidKeySize)
+	}
+
+	return nil
+}
+
+func validatePrivateKey(key *rsa.PrivateKey) error {
+	size := key.N.BitLen()
+	if size < KeySize {
+		return fmt.Errorf("rsa: invalid private key size %d: %w", size, errors.ErrInvalidKeySize)
+	}
+
+	return key.Validate()
 }

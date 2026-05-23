@@ -16,6 +16,7 @@ import (
 //
 // Expected key formats:
 //   - Public: SSH authorized_keys format (parsed via ssh.ParseAuthorizedKey).
+//     Comments are allowed, but authorized_keys options and trailing entries are rejected.
 //   - Private: SSH private key format (parsed via ssh.ParseRawPrivateKey).
 //
 // If the provided key material is a valid SSH key but not an Ed25519 key,
@@ -58,10 +59,15 @@ func (c *Config) PublicKey(fs *os.FS) (ed25519.PublicKey, error) {
 		return nil, errors.ErrMissingKey
 	}
 
-	//nolint:dogsled
-	parsed, _, _, _, err := ssh.ParseAuthorizedKey(data)
+	parsed, _, options, rest, err := ssh.ParseAuthorizedKey(data)
 	if err != nil {
 		return nil, err
+	}
+	if len(options) > 0 {
+		return nil, fmt.Errorf("ssh: unsupported authorized key options: %w", errors.ErrInvalidKeyFormat)
+	}
+	if len(rest) > 0 {
+		return nil, fmt.Errorf("ssh: unsupported authorized key trailing data: %w", errors.ErrInvalidKeyFormat)
 	}
 
 	key, ok := parsed.(ssh.CryptoPublicKey)

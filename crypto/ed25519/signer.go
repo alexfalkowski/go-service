@@ -41,5 +41,12 @@ type Signer struct {
 // Ed25519 signing does not return an error for a valid private key; this method returns a nil error
 // for API compatibility with other signers.
 func (s *Signer) Sign(msg []byte) ([]byte, error) {
+	if s == nil {
+		return nil, crypto.ErrInvalidKeySize
+	}
+	if err := ValidatePrivateKey(s.PrivateKey); err != nil {
+		return nil, err
+	}
+
 	return ed25519.Sign(s.PrivateKey, msg), nil
 }
