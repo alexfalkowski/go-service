@@ -46,7 +46,7 @@ func validateClaims(c *claims, aud string, now int64) error {
 	if c.Version != tokenVersion {
 		return crypto.ErrInvalidMatch
 	}
-	if c.IssuedAt > now || c.ExpiresAt <= now || c.ExpiresAt <= c.IssuedAt {
+	if c.IssuedAt <= 0 || c.IssuedAt > now || c.ExpiresAt <= now || c.ExpiresAt <= c.IssuedAt {
 		return token.ErrInvalidTime
 	}
 

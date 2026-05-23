@@ -19,6 +19,10 @@
 //   - The model is resolved with os.FS.ReadSource and parsed by Casbin.
 //   - The policy is resolved with os.FS.ReadSource and loaded using Casbin's string adapter.
 //
+// Security note: Casbin's string adapter ignores malformed policy-line errors.
+// Policy content is treated as trusted deployment configuration here, and startup
+// still fails for empty policy content or invalid model construction.
+//
 // Model and Policy support go-service source strings such as "env:" and "file:",
 // plus literal content.
 //

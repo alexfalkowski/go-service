@@ -30,6 +30,7 @@
 //     invalid encoding, etc.).
 //   - ErrInvalidIssuer: issuer ("iss") claim mismatch.
 //   - ErrInvalidAudience: audience ("aud") claim mismatch.
+//   - ErrInvalidSubject: missing or invalid subject ("sub") claim.
 //   - ErrInvalidAlgorithm: algorithm mismatch (token signed/encrypted with an unexpected
 //     algorithm).
 //   - ErrInvalidKeyID: missing or unexpected key identifier (for example JWT "kid").

@@ -24,11 +24,11 @@ import "github.com/alexfalkowski/go-service/v2/time"
 // This is part of the verification contract and helps prevent accepting tokens minted for a
 // different key identity.
 //
-// # Expiration parsing and panics
+// # Validation
 //
-// Issuance uses Expiration directly. Invalid config-file values fail during decoding because
-// the field is encoded as a Go duration string. If your deployment requires additional
-// validation policy, apply it earlier during configuration loading.
+// Issuer and KeyID are required because generated tokens must be verifiable by
+// this package. Expiration must be greater than zero because zero-duration tokens
+// are immediately expired.
 //
 // # Enablement
 //
@@ -36,18 +36,18 @@ import "github.com/alexfalkowski/go-service/v2/time"
 // NewToken returns nil.
 type Config struct {
 	// Issuer is written to and verified against the `iss` claim.
-	Issuer string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty"`
+	Issuer string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty" validate:"required"`
 
 	// KeyID is written to and verified against the JWT header `kid`.
 	//
 	// Note: this repository's JWT verification expects the `kid` header to be set and
 	// to match this value exactly.
-	KeyID string `yaml:"kid,omitempty" json:"kid,omitempty" toml:"kid,omitempty"`
+	KeyID string `yaml:"kid,omitempty" json:"kid,omitempty" toml:"kid,omitempty" validate:"required"`
 
 	// Expiration is the duration used to set and validate the `exp` claim.
 	//
 	// In config files it is encoded as a Go duration string, for example "15m" or "24h".
-	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"gte=0"`
+	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"gt=0"`
 }
 
 // IsEnabled reports whether JWT configuration is present.

@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/token/errors"
 )
 
 // NewToken constructs a Token that issues and validates PASETO v4 public (asymmetric) tokens.
@@ -26,8 +27,7 @@ func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Ge
 //
 // Issued tokens set common PASETO claims and identity fields (jti/iat/nbf/exp/iss/aud/sub).
 //
-// Note: This type assumes cfg, signer, verifier, and generator are non-nil. If you
-// construct a Token with missing dependencies, methods may panic.
+// Missing generation or verification dependencies are reported as token/errors.ErrInvalidConfig.
 type Token struct {
 	cfg       *Config
 	signer    *ed25519.Signer
@@ -48,6 +48,10 @@ type Token struct {
 //   - aud: set to the provided aud
 //   - sub: set to the provided sub
 func (t *Token) Generate(aud, sub string) (string, error) {
+	if t.signer == nil || len(t.signer.PrivateKey) == 0 || t.generator == nil {
+		return strings.Empty, errors.ErrInvalidConfig
+	}
+
 	now := time.Now()
 	token := paseto.NewToken()
 	token.SetJti(t.generator.Generate())
@@ -80,6 +84,10 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 // On failure, this method returns errors from the upstream PASETO library or from key
 // construction. It does not currently map failures onto shared sentinel errors.
 func (t *Token) Verify(token, aud string) (string, error) {
+	if t.verifier == nil || len(t.verifier.PublicKey) == 0 {
+		return strings.Empty, errors.ErrInvalidConfig
+	}
+
 	parser := paseto.NewParser()
 	parser.AddRule(paseto.IssuedBy(t.cfg.Issuer))
 	parser.AddRule(paseto.NotExpired())

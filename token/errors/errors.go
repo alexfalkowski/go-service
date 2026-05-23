@@ -27,6 +27,12 @@ var (
 	// mismatch. Implementations should wrap this error to preserve additional context.
 	ErrInvalidAudience = errors.New("token: invalid audience")
 
+	// ErrInvalidSubject is a sentinel error indicating the subject claim is invalid.
+	//
+	// For claim-based token formats, this commonly corresponds to a missing or empty
+	// "sub" claim after the token has otherwise been structurally and cryptographically validated.
+	ErrInvalidSubject = errors.New("token: invalid subject")
+
 	// ErrInvalidAlgorithm is a sentinel error indicating the token used an unexpected algorithm.
 	//
 	// Implementations may return or wrap this when a token is signed/encrypted with an
