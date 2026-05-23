@@ -140,6 +140,10 @@ func (c *Cache) encode(value any) (string, error) {
 }
 
 func (c *Cache) decode(value string, field any) error {
+	if int64(len(value)) > base64.EncodedLen(c.cfg.GetMaxSize()) {
+		return errors.ErrTooLarge
+	}
+
 	decoded, err := base64.Decode(value)
 	if err != nil {
 		return err
