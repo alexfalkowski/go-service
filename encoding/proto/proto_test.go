@@ -3,6 +3,7 @@ package proto_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -146,6 +147,23 @@ func TestInvalidJSONDecodeDoesNotRead(t *testing.T) {
 	require.Zero(t, reader.Reads)
 }
 
+func TestEncodeReturnsWriteError(t *testing.T) {
+	encoders := []struct {
+		encoder encoding.Encoder
+		name    string
+	}{
+		{encoder: proto.NewBinary(), name: "binary"},
+		{encoder: proto.NewJSON(), name: "json"},
+		{encoder: proto.NewText(), name: "text"},
+	}
+
+	for _, tt := range encoders {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Error(t, tt.encoder.Encode(test.ErrWriter{}, &health.Response{Status: health.Serving}))
+		})
+	}
+}
+
 func TestErrBinaryDecode(t *testing.T) {
 	encoder := proto.NewBinary()
 	var msg health.Response
@@ -162,4 +180,46 @@ func TestErrJSONDecode(t *testing.T) {
 	encoder := proto.NewJSON()
 	var msg health.Response
 	require.Error(t, encoder.Decode(&test.ErrReaderCloser{}, &msg))
+}
+
+func TestInvalidTypedNilEncode(t *testing.T) {
+	encoders := []struct {
+		encoder encoding.Encoder
+		name    string
+	}{
+		{encoder: proto.NewBinary(), name: "binary"},
+		{encoder: proto.NewJSON(), name: "json"},
+		{encoder: proto.NewText(), name: "text"},
+	}
+
+	for _, tt := range encoders {
+		t.Run(tt.name, func(t *testing.T) {
+			var msg *health.Response
+
+			err := tt.encoder.Encode(io.Discard, msg)
+			require.ErrorIs(t, err, errors.ErrInvalidType)
+		})
+	}
+}
+
+func TestInvalidTypedNilDecodeDoesNotRead(t *testing.T) {
+	encoders := []struct {
+		encoder encoding.Encoder
+		name    string
+	}{
+		{encoder: proto.NewBinary(), name: "binary"},
+		{encoder: proto.NewJSON(), name: "json"},
+		{encoder: proto.NewText(), name: "text"},
+	}
+
+	for _, tt := range encoders {
+		t.Run(tt.name, func(t *testing.T) {
+			reader := &test.TrackingReader{Err: io.EOF}
+			var msg *health.Response
+
+			err := tt.encoder.Decode(reader, msg)
+			require.ErrorIs(t, err, errors.ErrInvalidType)
+			require.Zero(t, reader.Reads)
+		})
+	}
 }

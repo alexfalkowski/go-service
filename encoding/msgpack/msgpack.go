@@ -2,6 +2,8 @@ package msgpack
 
 import (
 	"github.com/Basekick-Labs/msgpack/v6"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
 
@@ -20,7 +22,13 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 
 // Decode reads MessagePack from r and decodes it into v.
 func (e *Encoder) Decode(r io.Reader, v any) error {
-	return msgpack.NewDecoder(r).Decode(v)
+	decoder := msgpack.NewDecoder(r)
+	if err := decoder.Decode(v); err != nil {
+		return err
+	}
+
+	var extra any
+	return errors.TrailingData(decoder.Decode(&extra))
 }
 
 // Marshal encodes v as MessagePack.
@@ -30,5 +38,5 @@ func Marshal(v any) ([]byte, error) {
 
 // Unmarshal decodes MessagePack data into v.
 func Unmarshal(data []byte, v any) error {
-	return msgpack.Unmarshal(data, v)
+	return NewEncoder().Decode(bytes.NewReader(data), v)
 }

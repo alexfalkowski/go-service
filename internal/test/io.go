@@ -41,3 +41,19 @@ func (r *TrackingReader) Read(_ []byte) (int, error) {
 	r.Reads++
 	return 0, r.Err
 }
+
+// ErrWriter is an io.Writer test double whose writes fail with ErrFailed.
+type ErrWriter struct{}
+
+// Write returns ErrFailed.
+func (ErrWriter) Write([]byte) (int, error) {
+	return 0, ErrFailed
+}
+
+// ErrWriterTo is an io.WriterTo test double whose writes fail with ErrFailed.
+type ErrWriterTo struct{}
+
+// WriteTo returns ErrFailed.
+func (ErrWriterTo) WriteTo(io.Writer) (int64, error) {
+	return 0, ErrFailed
+}

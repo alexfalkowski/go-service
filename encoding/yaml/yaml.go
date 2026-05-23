@@ -21,9 +21,15 @@ type Encoder struct{}
 
 // Encode writes v to w as YAML.
 //
-// This is a thin wrapper around `yaml.NewEncoder(w).Encode(v)`.
+// Encode closes the upstream YAML encoder after writing so final buffered data and
+// finalization errors are handled.
 func (e *Encoder) Encode(w io.Writer, v any) error {
-	return yaml.NewEncoder(w).Encode(v)
+	encoder := yaml.NewEncoder(w)
+	if err := encoder.Encode(v); err != nil {
+		return err
+	}
+
+	return encoder.Close()
 }
 
 // Decode reads YAML from r and decodes it into v.

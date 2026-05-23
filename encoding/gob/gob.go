@@ -3,6 +3,7 @@ package gob
 import (
 	"encoding/gob"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
 
@@ -29,7 +30,13 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode reads gob from r and decodes it into v.
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
-// This is a thin wrapper around `gob.NewDecoder(r).Decode(v)`.
+// Decode reads one gob value and rejects additional values in the same stream.
 func (e *Encoder) Decode(r io.Reader, v any) error {
-	return gob.NewDecoder(r).Decode(v)
+	decoder := gob.NewDecoder(r)
+	if err := decoder.Decode(v); err != nil {
+		return err
+	}
+
+	var extra any
+	return errors.TrailingData(decoder.Decode(&extra))
 }

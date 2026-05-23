@@ -1,7 +1,6 @@
 package proto
 
 import (
-	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"google.golang.org/protobuf/proto"
 )
@@ -26,9 +25,9 @@ type Binary struct{}
 // If v does not implement proto.Message, Encode returns encoding/errors.ErrInvalidType.
 // Any marshaling error from proto.Marshal and any write error from w.Write is returned.
 func (e *Binary) Encode(w io.Writer, v any) error {
-	msg, ok := v.(proto.Message)
-	if !ok {
-		return errors.ErrInvalidType
+	msg, err := message(v)
+	if err != nil {
+		return err
 	}
 
 	bytes, err := proto.Marshal(msg)
@@ -50,9 +49,9 @@ func (e *Binary) Encode(w io.Writer, v any) error {
 //
 // Any read error from io.ReadAll and any unmarshal error from proto.Unmarshal is returned.
 func (e *Binary) Decode(r io.Reader, v any) error {
-	msg, ok := v.(proto.Message)
-	if !ok {
-		return errors.ErrInvalidType
+	msg, err := message(v)
+	if err != nil {
+		return err
 	}
 
 	bytes, _, err := io.ReadAll(r)

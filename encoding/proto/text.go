@@ -1,10 +1,8 @@
 package proto
 
 import (
-	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"google.golang.org/protobuf/encoding/prototext"
-	"google.golang.org/protobuf/proto"
 )
 
 // NewText constructs a protobuf text encoder.
@@ -27,9 +25,9 @@ type Text struct{}
 // If v does not implement proto.Message, Encode returns encoding/errors.ErrInvalidType.
 // Any marshaling error from prototext.Marshal and any write error from w.Write is returned.
 func (e *Text) Encode(w io.Writer, v any) error {
-	msg, ok := v.(proto.Message)
-	if !ok {
-		return errors.ErrInvalidType
+	msg, err := message(v)
+	if err != nil {
+		return err
 	}
 
 	bytes, err := prototext.Marshal(msg)
@@ -51,9 +49,9 @@ func (e *Text) Encode(w io.Writer, v any) error {
 //
 // Any read error from io.ReadAll and any unmarshal error from prototext.Unmarshal is returned.
 func (e *Text) Decode(r io.Reader, v any) error {
-	msg, ok := v.(proto.Message)
-	if !ok {
-		return errors.ErrInvalidType
+	msg, err := message(v)
+	if err != nil {
+		return err
 	}
 
 	bytes, _, err := io.ReadAll(r)
