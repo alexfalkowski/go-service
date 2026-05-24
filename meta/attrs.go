@@ -23,6 +23,11 @@ const (
 	// For example: an HTTP method name, an RPC method name, or a logical operation name.
 	MethodKey = "method"
 
+	// ServiceMethodKey is the attribute key used for transport service-method names.
+	//
+	// For example: an HTTP route path or a gRPC full method name.
+	ServiceMethodKey = "serviceMethod"
+
 	// CodeKey is the attribute key used for status codes.
 	//
 	// For example: an HTTP status code or a gRPC status code.
@@ -96,6 +101,20 @@ func WithService(value Value) Pair {
 // The pair stores value under MethodKey.
 func WithMethod(value Value) Pair {
 	return NewPair(MethodKey, value)
+}
+
+// WithServiceMethod creates a service-method pair for WithAttributes.
+//
+// The pair stores value under ServiceMethodKey.
+func WithServiceMethod(value Value) Pair {
+	return NewPair(ServiceMethodKey, value)
+}
+
+// ServiceMethod returns the stored service-method attribute from ctx.
+//
+// If no value is present, this returns the zero-value Value.
+func ServiceMethod(ctx context.Context) Value {
+	return Attribute(ctx, ServiceMethodKey)
 }
 
 // WithCode creates a status code pair for WithAttributes.

@@ -27,6 +27,7 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 		ctx = meta.WithAttributes(ctx,
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(id),
+			meta.WithServiceMethod(meta.String(fullMethod)),
 		)
 		ctx = NewOutgoingContext(ctx, md)
 		return invoker(ctx, fullMethod, req, resp, conn, opts...)
@@ -49,6 +50,7 @@ func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) gr
 		ctx = meta.WithAttributes(ctx,
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(id),
+			meta.WithServiceMethod(meta.String(fullMethod)),
 		)
 		ctx = NewOutgoingContext(ctx, md)
 		return streamer(ctx, desc, conn, fullMethod, opts...)

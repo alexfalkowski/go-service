@@ -28,6 +28,13 @@ func TestValidLimiter(t *testing.T) {
 	require.NoError(t, limiter.Close(t.Context()))
 }
 
+func TestNewKeyMapIncludesServiceMethod(t *testing.T) {
+	key := limiter.NewKeyMap()["service-method"]
+	ctx := meta.WithAttributes(t.Context(), meta.WithServiceMethod(meta.String("GET /users/{id}")))
+
+	require.Equal(t, meta.String("GET /users/{id}"), key(ctx))
+}
+
 func TestMissingLimiter(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{}

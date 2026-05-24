@@ -26,6 +26,7 @@ import (
 //   - copies incoming metadata from the request context
 //   - resolves "user-agent" and "request-id", preferring existing context
 //     attributes and then incoming metadata values
+//   - stores the RPC full method name as the service-method attribute
 //   - derives IP address information from trusted forwarding headers or, if
 //     absent, from the gRPC peer address
 //   - parses the "authorization" header into the request attribute model
@@ -56,6 +57,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 		ctx = meta.WithAttributes(ctx,
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(id),
+			meta.WithServiceMethod(meta.String(info.FullMethod)),
 			meta.WithIPAddr(ip),
 			meta.WithIPAddrKind(kind),
 			meta.WithGeolocation(geolocation),
@@ -102,6 +104,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 		ctx = meta.WithAttributes(ctx,
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(id),
+			meta.WithServiceMethod(meta.String(info.FullMethod)),
 			meta.WithIPAddr(ip),
 			meta.WithIPAddrKind(kind),
 			meta.WithGeolocation(geolocation),
