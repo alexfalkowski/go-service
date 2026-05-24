@@ -78,6 +78,13 @@ matching skill for the task.
   insecure DSN could be supplied; only report concrete bugs such as accidental
   DSN rewriting, secret leakage, or a public API promise to enforce secure DSN
   policy.
+- RSA public-key loading intentionally validates the repository's key-size
+  policy and delegates deeper RSA parameter checks, such as public exponent
+  usability, to the standard library operations that consume the key. Do not
+  flag `crypto/rsa.Config.PublicKey` merely because `Encrypt` can later return a
+  standard-library error for an unusual parsed key parameter; only report
+  concrete bugs such as panics, accepted weak key sizes, secret leakage, or a
+  public API promise to fully validate every RSA parameter at load time.
 - Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
 - `net/header.ForwardedIPs` is intentionally an exported mutable list, similar

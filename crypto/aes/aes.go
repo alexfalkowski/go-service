@@ -14,6 +14,15 @@ import (
 // ErrInvalidLength is returned when a ciphertext is too short to contain the required nonce prefix.
 var ErrInvalidLength = errors.New("aes: invalid length")
 
+// ErrInvalidPlaintextLength is returned when plaintext exceeds AES-GCM's per-nonce maximum.
+var ErrInvalidPlaintextLength = errors.New("aes: invalid plaintext length")
+
+// maxGCMPlaintextSize is GCM's per-nonce plaintext limit: 2^32 - 2 AES blocks.
+//
+// GCM uses a 32-bit counter internally and reserves counter values, so the standard-library
+// implementation panics above this limit. Check it before Seal so Encrypt can return an error.
+const maxGCMPlaintextSize = ((1 << 32) - 2) * aes.BlockSize
+
 // NewCipher constructs an AES-GCM Cipher when configuration is enabled.
 //
 // Disabled behavior: if cfg is nil (disabled), NewCipher returns (nil, nil).
@@ -59,8 +68,13 @@ type Cipher struct {
 // A fresh nonce is generated for each call and is prefixed to the returned byte slice so Decrypt can recover it.
 // The returned slice includes the GCM authentication tag as produced by cipher.AEAD.Seal.
 //
-// Errors are returned if nonce generation fails or if the configured key is invalid for AES.
+// Errors are returned if plaintext exceeds AES-GCM's per-nonce maximum, nonce generation fails,
+// or the configured key is invalid for AES.
 func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
+	if int64(len(msg)) > maxGCMPlaintextSize {
+		return nil, ErrInvalidPlaintextLength
+	}
+
 	aead, err := c.aead()
 	if err != nil {
 		return nil, err

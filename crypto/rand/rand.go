@@ -5,11 +5,15 @@ import (
 	"math/big"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+// ErrInvalidSize is returned when a random value size is negative.
+var ErrInvalidSize = errors.New("rand: invalid size")
 
 // NewReader returns a cryptographically secure random Reader.
 //
@@ -51,6 +55,10 @@ func (g *Generator) Read(b []byte) (int, error) {
 // The returned bytes are read directly from the underlying Reader and may span
 // the full 0-255 byte range.
 func (g *Generator) GenerateBytes(size int) ([]byte, error) {
+	if size < 0 {
+		return nil, ErrInvalidSize
+	}
+
 	data := make([]byte, size)
 	_, err := g.Read(data)
 	if err != nil {
@@ -66,6 +74,10 @@ func (g *Generator) GenerateBytes(size int) ([]byte, error) {
 // suitable for text tokens but not a substitute for GenerateBytes when binary
 // randomness is required.
 func (g *Generator) GenerateText(size int) (string, error) {
+	if size < 0 {
+		return strings.Empty, ErrInvalidSize
+	}
+
 	data := make([]byte, size)
 	length := int64(len(letters))
 

@@ -38,3 +38,22 @@ func TestInvalidRand(t *testing.T) {
 	_, err = gen.GenerateText(5)
 	require.Error(t, err)
 }
+
+func TestInvalidSize(t *testing.T) {
+	gen := rand.NewGenerator(rand.NewReader())
+
+	var data []byte
+	var err error
+	require.NotPanics(t, func() {
+		data, err = gen.GenerateBytes(-1)
+	})
+	require.Nil(t, data)
+	require.ErrorIs(t, err, rand.ErrInvalidSize)
+
+	var text string
+	require.NotPanics(t, func() {
+		text, err = gen.GenerateText(-1)
+	})
+	require.Empty(t, text)
+	require.ErrorIs(t, err, rand.ErrInvalidSize)
+}
