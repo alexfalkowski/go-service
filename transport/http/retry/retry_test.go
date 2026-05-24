@@ -335,6 +335,28 @@ func TestRoundTripperDoesNotRetryNonReplayableRequestBody(t *testing.T) {
 	require.Equal(t, []string{"hello"}, rt.Bodies)
 }
 
+func TestRoundTripperReturnsGetBodyError(t *testing.T) {
+	wantErr := test.ErrFailed
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://example.com", strings.NewReader("hello"))
+	require.NoError(t, err)
+	req.GetBody = func() (io.ReadCloser, error) {
+		return nil, wantErr
+	}
+
+	res, err := retrying.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, wantErr)
+	require.Equal(t, 1, rt.Calls)
+}
+
 func TestRoundTripperPreservesRetryableStatusError(t *testing.T) {
 	rt := &test.ErrorRoundTripper{Err: status.Errorf(http.StatusTooManyRequests, "limiter: too many requests")}
 	retrying := retry.NewRoundTripper(&retry.Config{
@@ -367,6 +389,31 @@ func TestRoundTripperPreservesRecoverableTransportError(t *testing.T) {
 	require.Nil(t, res)
 	require.ErrorIs(t, err, wantErr)
 	require.Equal(t, 2, rt.Calls)
+}
+
+func TestRoundTripperRetriesAttemptTimeout(t *testing.T) {
+	var calls int
+	transport := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		calls++
+		if calls == 1 {
+			<-req.Context().Done()
+			return nil, req.Context().Err()
+		}
+
+		return test.ResponseWithStatus(http.StatusOK), nil
+	})
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  50 * time.Millisecond,
+		Backoff:  time.Millisecond,
+	}, transport)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 2, calls)
 }
 
 func TestRoundTripperDoesNotRetryUnhandledTransportError(t *testing.T) {
