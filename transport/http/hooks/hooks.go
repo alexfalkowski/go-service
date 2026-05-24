@@ -196,6 +196,10 @@ type RoundTripper struct {
 // If the configured hook is nil, RoundTrip delegates directly to the underlying RoundTripper without
 // mutating the request.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	if http.IsCrossOriginRedirect(req) {
+		return nil, http.ErrUseLastResponse
+	}
+
 	if r.hook == nil {
 		return r.RoundTripper.RoundTrip(req)
 	}

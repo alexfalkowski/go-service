@@ -2,13 +2,13 @@ package http_test
 
 import (
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -90,9 +90,51 @@ func TestSameOrigin(t *testing.T) {
 	require.False(t, http.SameOrigin(prev, nil))
 }
 
+func TestIsCrossOriginRedirect(t *testing.T) {
+	prev, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/start", http.NoBody)
+	require.NoError(t, err)
+
+	same, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/next", http.NoBody)
+	require.NoError(t, err)
+	same.Response = &http.Response{Request: prev}
+
+	different, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://other.example.com/next", http.NoBody)
+	require.NoError(t, err)
+	different.Response = &http.Response{Request: prev}
+
+	require.False(t, http.IsCrossOriginRedirect(nil))
+	require.False(t, http.IsCrossOriginRedirect(prev))
+	require.False(t, http.IsCrossOriginRedirect(same))
+	require.True(t, http.IsCrossOriginRedirect(different))
+}
+
 func TestIgnoreRedirect(t *testing.T) {
 	err := http.IgnoreRedirect(nil, nil)
 	require.ErrorIs(t, err, http.ErrUseLastResponse)
+}
+
+func TestParseServiceMethod(t *testing.T) {
+	tests := []struct {
+		name    string
+		url     string
+		method  string
+		service string
+		action  string
+	}{
+		{name: "service route", method: http.MethodGet, url: "/test/hello", service: "test", action: "hello"},
+		{name: "deep service route", method: http.MethodPost, url: "/test/users/123", service: "test", action: "users/123"},
+		{name: "root", method: http.MethodGet, url: "/", service: "root", action: "get"},
+		{name: "single segment", method: http.MethodPost, url: "/health", service: "health", action: "post"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(t.Context(), test.method, test.url, http.NoBody)
+			service, action := http.ParseServiceMethod(req)
+			require.Equal(t, test.service, service)
+			require.Equal(t, test.action, action)
+		})
+	}
 }
 
 func TestHandleWhenTelemetryDisabled(t *testing.T) {

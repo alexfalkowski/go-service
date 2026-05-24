@@ -312,11 +312,13 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 //   - metadata propagation interceptor (user-agent and request-id)
 //   - any custom interceptors provided via `WithClientUnaryInterceptors`
 //   - a timeout interceptor
+//   - optional limiter interceptor (when configured)
 //   - optional circuit breaker interceptor (when enabled via `WithClientBreaker`)
 //   - optional retry interceptor (when configured)
 //   - optional logging interceptor (when configured)
 //   - optional token injection interceptor (when configured)
-//   - optional limiter interceptor (when configured)
+//
+// The limiter stays before the breaker so local quota denials are not counted as upstream failures.
 func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor {
 	os := options(opts...)
 	unary := []grpc.UnaryClientInterceptor{}
@@ -324,6 +326,10 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
 	unary = append(unary, os.unary...)
 	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(os.timeout))
+
+	if os.limiter != nil {
+		unary = append(unary, limiter.UnaryClientInterceptor(os.limiter))
+	}
 
 	if os.breaker {
 		unary = append(unary, breaker.UnaryClientInterceptor(os.breakerOptions...))
@@ -339,10 +345,6 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 
 	if os.gen != nil {
 		unary = append(unary, token.UnaryClientInterceptor(os.id, os.gen))
-	}
-
-	if os.limiter != nil {
-		unary = append(unary, limiter.UnaryClientInterceptor(os.limiter))
 	}
 
 	return unary

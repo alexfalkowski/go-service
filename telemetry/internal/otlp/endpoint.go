@@ -2,9 +2,9 @@ package otlp
 
 import (
 	"net/netip"
-	"net/url"
 
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 

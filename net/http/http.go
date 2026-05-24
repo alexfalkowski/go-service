@@ -3,15 +3,15 @@ package http
 import (
 	"net/http"
 	"net/http/httptrace"
-	"net/url"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/net/http/telemetry"
+	"github.com/alexfalkowski/go-service/v2/net/url"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -218,6 +218,15 @@ func SameOrigin(prev, next *url.URL) bool {
 	return prev.Scheme == next.Scheme && prev.Host == next.Host
 }
 
+// IsCrossOriginRedirect reports whether req is a redirected request whose previous request used a different origin.
+func IsCrossOriginRedirect(req *Request) bool {
+	if req == nil || req.Response == nil || req.Response.Request == nil {
+		return false
+	}
+
+	return !SameOrigin(req.Response.Request.URL, req.URL)
+}
+
 // SameOriginRedirect allows redirects only when the next request stays on the same scheme and host.
 //
 // It is intended for clients that add credentials or signatures in RoundTripper middleware, where Go's
@@ -326,8 +335,7 @@ func NewServer(options options.Map, timeout time.Duration, handler Handler) *Ser
 //
 //	/<service>/<method>
 //
-// If the request path matches that shape (as determined by net/grpc/strings.SplitServiceMethod),
-// ParseServiceMethod returns the extracted service/method pair.
+// If the request path matches that shape, ParseServiceMethod returns the extracted service/method pair.
 //
 // Otherwise it falls back to:
 //   - method: lower-cased HTTP method (e.g. "get", "post")
@@ -336,7 +344,7 @@ func NewServer(options options.Map, timeout time.Duration, handler Handler) *Ser
 //   - otherwise the path without the leading "/" (e.g. "/health" -> "health")
 func ParseServiceMethod(req *http.Request) (string, string) {
 	path := req.URL.Path
-	if service, method, ok := strings.SplitServiceMethod(path); ok {
+	if service, method, ok := url.SplitPath(path); ok {
 		return service, method
 	}
 
