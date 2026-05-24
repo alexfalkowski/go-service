@@ -25,6 +25,9 @@ func (c *Compressor) Compress(data []byte, size bytes.Size) ([]byte, error) {
 	if int64(len(data)) > size.Bytes() {
 		return nil, errors.ErrTooLarge
 	}
+	if s2.MaxEncodedLen(len(data)) < 0 {
+		return nil, errors.ErrTooLarge
+	}
 
 	return s2.Encode(nil, data), nil
 }
