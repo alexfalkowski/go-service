@@ -89,3 +89,19 @@ func TestClip(t *testing.T) {
 	require.Equal(t, []string{"first", "next"}, first)
 	require.Equal(t, []string{"second"}, second)
 }
+
+func TestContains(t *testing.T) {
+	type names []string
+
+	t.Run("present", func(t *testing.T) {
+		require.True(t, slices.Contains(names{"alice", "bob"}, "bob"))
+	})
+
+	t.Run("missing", func(t *testing.T) {
+		require.False(t, slices.Contains(names{"alice", "bob"}, "eve"))
+	})
+
+	t.Run("empty", func(t *testing.T) {
+		require.False(t, slices.Contains(names{}, "alice"))
+	})
+}

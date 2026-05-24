@@ -2,18 +2,8 @@ package strings
 
 import (
 	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
-
-var ignorablePaths = []string{
-	"healthz",
-	"livez",
-	"readyz",
-	"metrics",
-	"favicon",
-	"favicon.ico",
-}
 
 const (
 	// Empty is an alias for strings.Empty.
@@ -51,27 +41,6 @@ func IsEmpty(s string) bool {
 // Join is an alias for strings.Join.
 func Join(sep string, ss ...string) string {
 	return strings.Join(sep, ss...)
-}
-
-// IsIgnorable reports whether path should be treated as ignorable by HTTP middleware.
-//
-// Matching is exact by path segment so only well-known operational endpoints such as
-// `/<service>/healthz` or `/<service>/metrics` are ignored.
-func IsIgnorable(path string) bool {
-	path = strings.Trim(path, "/")
-	if strings.IsEmpty(path) {
-		return false
-	}
-	if strings.Count(path, "/") > 1 {
-		return false
-	}
-
-	last := path
-	if idx := strings.LastIndex(path, "/"); idx >= 0 {
-		last = path[idx+1:]
-	}
-
-	return slices.Contains(ignorablePaths, last)
 }
 
 // IsOperationPath reports whether path is a service-owned operational endpoint.
