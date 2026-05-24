@@ -27,28 +27,6 @@ matching skill for the task.
 - TLS fixtures: `mkcert -install` then `make create-certs`.
 - `encode-config` expects GNU `base64 -w 0`; on macOS/BSD use `base64 | tr -d '\n'`.
 
-## Review Workflows
-
-- When the user asks "Do a deep dive secure code review of <package>",
-  interpret it as:
-  - For each package and subpackage under `<package>`, launch multiple agents.
-  - Each agent should perform a thorough and accurate `$code-review` and
-    `$security-audit`.
-  - After all agents finish, aggregate all confirmed findings into
-    `FINDINGS.md` before making fixes.
-  - Findings must be concrete bugs, security issues, compatibility breaks, or
-    violated public contracts with user-visible impact. Do not report optional
-    regression tests, unused convenience aliases, API symmetry, or documentation
-    polish as findings by themselves; list them only as testing gaps or
-    optional follow-up notes.
-  - Present `FINDINGS.md` and a proposed fix plan to the user.
-  - Do not fix findings in the same pass unless the user explicitly asks to
-    proceed after reviewing `FINDINGS.md`, or already requested automatic fixes.
-  - Keep `FINDINGS.md` as the working review ledger while fixes are in
-    progress.
-  - As each finding is fixed and validated, remove it from `FINDINGS.md`.
-  - Once all findings are resolved, delete `FINDINGS.md`.
-
 ## Layout And Wiring
 
 - Feature packages usually use `config.go`, `module.go`, plus implementation files.
