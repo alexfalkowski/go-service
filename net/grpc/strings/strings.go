@@ -2,6 +2,7 @@ package strings
 
 import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
+	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -26,11 +27,6 @@ func Contains(s, substr string) bool {
 // HasPrefix is an alias for strings.HasPrefix.
 func HasPrefix(s, prefix string) bool {
 	return strings.HasPrefix(s, prefix)
-}
-
-// Concat is an alias for strings.Concat.
-func Concat(ss ...string) string {
-	return strings.Concat(ss...)
 }
 
 // Cut is an alias for strings.Cut.
@@ -78,10 +74,5 @@ func SplitServiceMethod(name string) (string, string, bool) {
 	if !IsFullMethod(name) {
 		return "", "", false
 	}
-	return strings.Cut(name[1:], "/")
-}
-
-// ToLower is an alias for strings.ToLower.
-func ToLower(s string) string {
-	return strings.ToLower(s)
+	return url.SplitPath(name)
 }

@@ -124,6 +124,30 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 	require.Nil(t, req.Header)
 }
 
+func TestRoundTripperDoesNotSignCrossOriginRedirect(t *testing.T) {
+	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	require.NoError(t, err)
+
+	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	called := false
+	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		called = true
+		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
+	}))
+
+	prev := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "https://example.com/events", http.NoBody)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "https://attacker.example.com/events", http.NoBody)
+	req.Response = &http.Response{Request: prev}
+
+	res, err := rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, http.ErrUseLastResponse)
+	require.False(t, called)
+	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookID))
+	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookSignature))
+	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookTimestamp))
+}
+
 func TestHandler(t *testing.T) {
 	handler := hooks.NewHandler(nil)
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
