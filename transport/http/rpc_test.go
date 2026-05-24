@@ -185,7 +185,7 @@ func TestRPCNotFound(t *testing.T) {
 	res, body, err := world.ResponseWithBody(t.Context(), world.PathServerURL("http", "missing"), http.MethodPost, header, http.NoBody)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
-	require.Equal(t, media.WithUTF8(media.Error), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(content.TypeKey))
 	require.Equal(t, "http: not found", body)
 }
 

@@ -8,6 +8,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 )
 
+var (
+	errorContentType = media.MustParse(media.Error).WithUTF8()
+	textContentType  = media.MustParse(media.Text).WithUTF8()
+)
+
 // WriteError writes an error response to res.
 //
 // Content-Type:
@@ -33,7 +38,7 @@ import (
 func WriteError(res http.ResponseWriter, err error) error {
 	header := res.Header()
 	header.Del("Content-Length")
-	header.Set("Content-Type", media.WithUTF8(media.Error))
+	header.Set("Content-Type", errorContentType)
 	header.Set("X-Content-Type-Options", "nosniff")
 
 	code := Code(err)
@@ -54,7 +59,7 @@ func WriteError(res http.ResponseWriter, err error) error {
 func WriteText(res http.ResponseWriter, text string) error {
 	header := res.Header()
 	header.Del("Content-Length")
-	header.Set("Content-Type", media.WithUTF8(media.Text))
+	header.Set("Content-Type", textContentType)
 	header.Set("X-Content-Type-Options", "nosniff")
 
 	res.WriteHeader(http.StatusOK)

@@ -40,7 +40,7 @@ func TestRouteSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, media.WithUTF8(media.HTML), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/html; charset=utf-8", res.Header.Get(content.TypeKey))
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
@@ -64,7 +64,7 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, media.WithUTF8(media.HTML), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/html; charset=utf-8", res.Header.Get(content.TypeKey))
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
@@ -86,7 +86,7 @@ func TestRouteError(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	require.Equal(t, media.WithUTF8(media.HTML), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/html; charset=utf-8", res.Header.Get(content.TypeKey))
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
@@ -109,7 +109,7 @@ func TestNotFound(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
-	require.Equal(t, media.WithUTF8(media.HTML), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/html; charset=utf-8", res.Header.Get(content.TypeKey))
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
@@ -130,7 +130,7 @@ func TestNotFoundUsesContentFallbackWithoutHTMLAccept(t *testing.T) {
 	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
-	require.Equal(t, media.WithUTF8(media.Error), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(content.TypeKey))
 	require.Equal(t, "http: not found", body)
 }
 
@@ -152,7 +152,7 @@ func TestNotFoundHandlesHTMXRequest(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
-	require.Equal(t, media.WithUTF8(media.HTML), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/html; charset=utf-8", res.Header.Get(content.TypeKey))
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
@@ -172,7 +172,7 @@ func TestStaticFileSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, media.WithUTF8(media.Text), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get(content.TypeKey))
 }
 
 func TestStaticFileError(t *testing.T) {
@@ -202,7 +202,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, media.WithUTF8(media.Text), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get(content.TypeKey))
 }
 
 func TestStaticPathValueError(t *testing.T) {

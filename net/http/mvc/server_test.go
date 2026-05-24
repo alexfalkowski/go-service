@@ -247,7 +247,7 @@ func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	require.Empty(t, res.Body.String())
-	require.Equal(t, media.WithUTF8(media.HTML), res.Header().Get(content.TypeKey))
+	require.Equal(t, "text/html; charset=utf-8", res.Header().Get(content.TypeKey))
 }
 
 func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
@@ -305,7 +305,7 @@ func TestNotFoundHandlesNotFound(t *testing.T) {
 	mvc.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusNotFound, res.Code)
-	require.Equal(t, media.WithUTF8(media.HTML), res.Header().Get(content.TypeKey))
+	require.Equal(t, "text/html; charset=utf-8", res.Header().Get(content.TypeKey))
 	require.Contains(t, res.Body.String(), "404 Not Found")
 }
 
@@ -403,7 +403,7 @@ func TestFallback(t *testing.T) {
 			}
 
 			require.Equal(t, http.StatusNotFound, res.Code)
-			require.Equal(t, media.WithUTF8(media.HTML), res.Header().Get(content.TypeKey))
+			require.Equal(t, "text/html; charset=utf-8", res.Header().Get(content.TypeKey))
 			require.Contains(t, res.Body.String(), "404 Not Found")
 		})
 	}

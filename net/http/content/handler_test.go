@@ -28,7 +28,7 @@ func TestNewRequestHandlerPrefersContentType(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, media.WithUTF8(media.JSON), res.Header().Get(content.TypeKey))
+	require.Equal(t, media.JSON, res.Header().Get(content.TypeKey))
 	require.JSONEq(t, `{"Greeting":"Hello Bob","Meta":null}`, res.Body.String())
 }
 
@@ -56,7 +56,7 @@ func TestNewRequestHandlerRejectsUnsafeBinaryRequestBody(t *testing.T) {
 
 			require.False(t, called)
 			require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
-			require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
+			require.Equal(t, "text/error; charset=utf-8", res.Header().Get(content.TypeKey))
 			require.Equal(t, "http: unsupported media type", strings.TrimSpace(res.Body.String()))
 		})
 	}
@@ -74,7 +74,7 @@ func TestNewRequestHandlerTreatsInternalErrorContentTypeAsText(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, media.WithUTF8(media.Text), res.Header().Get(content.TypeKey))
+	require.Equal(t, "text/plain; charset=utf-8", res.Header().Get(content.TypeKey))
 	require.Equal(t, "Hello Bob", res.Body.String())
 }
 
@@ -90,7 +90,7 @@ func TestNewHandlerTreatsInternalErrorAcceptAsText(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, media.WithUTF8(media.Text), res.Header().Get(content.TypeKey))
+	require.Equal(t, "text/plain; charset=utf-8", res.Header().Get(content.TypeKey))
 	require.Equal(t, "Hello Bob", res.Body.String())
 }
 
@@ -107,7 +107,7 @@ func TestNewHandlerReplacesExistingContentType(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, []string{media.WithUTF8(media.Text)}, res.Header().Values(content.TypeKey))
+	require.Equal(t, []string{"text/plain; charset=utf-8"}, res.Header().Values(content.TypeKey))
 	require.Equal(t, "Hello Bob", res.Body.String())
 }
 
@@ -127,7 +127,7 @@ func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
-	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
+	require.Equal(t, "text/error; charset=utf-8", res.Header().Get(content.TypeKey))
 	require.Equal(t, "http: internal server error", strings.TrimSpace(res.Body.String()))
 	require.NotContains(t, res.Body.String(), "partial")
 }
@@ -138,6 +138,6 @@ func TestNotFoundHandlerWritesStatusError(t *testing.T) {
 
 	require.True(t, content.NotFoundHandler()(res, req))
 	require.Equal(t, http.StatusNotFound, res.Code)
-	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
+	require.Equal(t, "text/error; charset=utf-8", res.Header().Get(content.TypeKey))
 	require.Equal(t, "http: not found", strings.TrimSpace(res.Body.String()))
 }

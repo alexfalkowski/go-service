@@ -4,6 +4,7 @@ import (
 	"mime"
 
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -67,6 +68,68 @@ const YAML = "application/yaml"
 // ErrInvalidType is returned when a media type cannot be parsed.
 var ErrInvalidType = errors.New("media: invalid type")
 
+// Parse parses value into a Type.
+func Parse(value string) (Type, error) {
+	mediaType, params, err := mime.ParseMediaType(value)
+	if err != nil {
+		return Type{}, ErrInvalidType
+	}
+
+	_, subtype, ok := strings.Cut(mediaType, "/")
+	if !ok || strings.IsEmpty(subtype) {
+		return Type{}, ErrInvalidType
+	}
+
+	_, hasCharset := params["charset"]
+	subtype = normalizeSubtype(subtype)
+
+	return Type{hasCharset: hasCharset, source: value, subtype: subtype, value: mediaType}, nil
+}
+
+// MustParse parses value into a Type and panics if parsing fails.
+func MustParse(value string) Type {
+	mediaType, err := Parse(value)
+	runtime.Must(err)
+
+	return mediaType
+}
+
+// Type is a parsed media type.
+type Type struct {
+	source     string
+	subtype    string
+	value      string
+	hasCharset bool
+}
+
+// IsZero reports whether the type has not been initialized.
+func (t Type) IsZero() bool {
+	return strings.IsEmpty(t.value)
+}
+
+// String returns the normalized base media type.
+func (t Type) String() string {
+	return t.value
+}
+
+// Subtype returns the parsed media subtype.
+func (t Type) Subtype() string {
+	return t.subtype
+}
+
+// WithUTF8 appends a UTF-8 charset parameter to text media types.
+func (t Type) WithUTF8() string {
+	if !strings.HasPrefix(t.value, "text/") {
+		return t.source
+	}
+
+	if t.hasCharset {
+		return t.source
+	}
+
+	return strings.Concat(t.source, "; ", "charset=utf-8")
+}
+
 // TypeByExtension returns the media type associated with ext.
 //
 // It wraps mime.TypeByExtension so HTTP packages can use the shared media package
@@ -75,40 +138,10 @@ func TypeByExtension(ext string) string {
 	return mime.TypeByExtension(ext)
 }
 
-// Parse parses value into a base media type and subtype.
-//
-// Parameters are ignored because content negotiation only uses the base media type.
-func Parse(value string) (string, string, error) {
-	mediaType, subtype, _, err := parse(value)
-	return mediaType, subtype, err
-}
-
-// WithUTF8 appends a UTF-8 charset parameter to text media types.
-//
-// Non-text media types and media types that already contain a charset parameter are returned unchanged.
-func WithUTF8(mediaType string) string {
-	value, _, params, err := parse(mediaType)
-	if err != nil || !strings.HasPrefix(value, "text/") {
-		return mediaType
+func normalizeSubtype(subtype string) string {
+	if subtype == "vnd.msgpack" {
+		return "msgpack"
 	}
 
-	if _, ok := params["charset"]; ok {
-		return mediaType
-	}
-
-	return strings.Concat(mediaType, "; ", "charset=utf-8")
-}
-
-func parse(value string) (string, string, map[string]string, error) {
-	mediaType, params, err := mime.ParseMediaType(value)
-	if err != nil {
-		return strings.Empty, strings.Empty, nil, ErrInvalidType
-	}
-
-	_, subtype, ok := strings.Cut(mediaType, "/")
-	if !ok || strings.IsEmpty(subtype) {
-		return strings.Empty, strings.Empty, nil, ErrInvalidType
-	}
-
-	return mediaType, subtype, params, nil
+	return subtype
 }

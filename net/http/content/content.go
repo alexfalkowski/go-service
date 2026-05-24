@@ -3,7 +3,6 @@ package content
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-sync"
 )
@@ -68,7 +67,7 @@ func (c *Content) NewFromContentType(req *http.Request) Media {
 // request-body decoding.
 func (c *Content) NewFromRequestBody(req *http.Request) (Media, error) {
 	media := c.NewFromContentType(req)
-	if !media.IsRequestBodySupported() {
+	if !media.CanDecodeRequest() {
 		return media, ErrUnsupportedRequestMedia
 	}
 
@@ -90,7 +89,7 @@ func firstMediaType(value string) string {
 func (c *Content) newRequestMedia(mediaType string) Media {
 	m := NewMedia(mediaType, c.enc)
 	if m.IsError() {
-		return newMedia(media.Text, "plain", c.enc)
+		return newKnownMedia(textType, "plain", c.enc)
 	}
 
 	return m

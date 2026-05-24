@@ -55,7 +55,7 @@ func TestReadinessNoop(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, "SERVING", body)
-	require.Equal(t, media.WithUTF8(media.Text), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get(content.TypeKey))
 }
 
 func TestInvalidHealth(t *testing.T) {
@@ -72,7 +72,7 @@ func TestInvalidHealth(t *testing.T) {
 
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 	require.Equal(t, "http: service unavailable", body)
-	require.Equal(t, media.WithUTF8(media.Error), res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(content.TypeKey))
 }
 
 func TestMissingHealth(t *testing.T) {
