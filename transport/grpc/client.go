@@ -135,8 +135,9 @@ func WithClientBreaker(opts ...breaker.Option) ClientOption {
 
 // WithClientTLS enables TLS for the client connection using sec.
 //
-// TLS configuration is materialized when building dial options. If TLS is enabled, source strings may be
-// resolved via the package-registered filesystem (see the package `Register` function).
+// TLS configuration is materialized when building dial options. A non-nil sec enables TLS, including an
+// empty config that relies on system roots and the target host name. Source strings may be resolved via the
+// package-registered filesystem (see the package `Register` function).
 func WithClientTLS(sec *tls.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.security = sec
@@ -235,7 +236,7 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 //   - if keepalive ping or timeout are not set (0), they default to the resolved timeout.
 //
 // Transport security:
-//   - if TLS is enabled, TLS config is constructed using the package-registered filesystem (see `Register`)
+//   - if TLS is requested, TLS config is constructed using the package-registered filesystem (see `Register`)
 //     to resolve TLS source strings.
 //   - otherwise, insecure transport credentials are used.
 //     This default is intended for local and in-cluster/container traffic where transport security is provided
@@ -252,7 +253,7 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	}
 
 	var security grpc.DialOption
-	if os.security.IsEnabled() {
+	if os.security != nil {
 		conf, err := client.NewConfig(fs, os.security)
 		if err != nil {
 			return nil, err

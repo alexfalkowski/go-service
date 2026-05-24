@@ -26,6 +26,10 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 			name:   "negative expiration",
 			config: &paseto.Config{Issuer: "iss", Expiration: -time.Second},
 		},
+		{
+			name:   "zero expiration",
+			config: &paseto.Config{Issuer: "iss"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -101,6 +105,18 @@ func TestInvalidVerifyExpirationConfig(t *testing.T) {
 
 	sub, err := verifierToken.Verify(tkn, "hello")
 	require.Empty(t, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidConfig)
+}
+
+func TestInvalidGenerateExpirationConfig(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	token := paseto.NewToken(&paseto.Config{Issuer: cfg.Paseto.Issuer}, signer, verifier, uuid.NewGenerator())
+
+	tkn, err := token.Generate("hello", test.UserID.String())
+	require.Empty(t, tkn)
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 

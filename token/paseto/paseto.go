@@ -51,6 +51,9 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 	if t.signer == nil || len(t.signer.PrivateKey) == 0 || t.generator == nil {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
+	if t.cfg.Expiration <= 0 {
+		return strings.Empty, errors.ErrInvalidConfig
+	}
 
 	now := time.Now()
 	token := paseto.NewToken()
