@@ -48,8 +48,11 @@ func Join(sep string, ss ...string) string {
 // Matching is exact so application routes such as "/admin/metrics" are not
 // treated as transport operation endpoints for auth or rate-limit bypasses.
 func IsOperationPath(name env.Name, path string) bool {
-	path = strings.Trim(path, "/")
-	service, operation, ok := strings.Cut(path, "/")
+	if strings.IsEmpty(path) || path[0] != '/' {
+		return false
+	}
+
+	service, operation, ok := strings.Cut(path[1:], "/")
 	if !ok || service != name.String() {
 		return false
 	}

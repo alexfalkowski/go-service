@@ -22,6 +22,11 @@ func TestIsOperationPath(t *testing.T) {
 		{name: "wrong service healthz", path: "/admin/healthz", match: false},
 		{name: "nested metrics", path: "/service/admin/metrics", match: false},
 		{name: "bare metrics", path: "/metrics", match: false},
+		{name: "no leading slash metrics", path: "service/metrics", match: false},
+		{name: "trailing slash metrics", path: "/service/metrics/", match: false},
+		{name: "double leading slash metrics", path: "//service/metrics", match: false},
+		{name: "double trailing slash metrics", path: "/service/metrics//", match: false},
+		{name: "double leading and trailing slash metrics", path: "//service/metrics//", match: false},
 		{name: "favicon ico", path: "/favicon.ico", match: false},
 	}
 
