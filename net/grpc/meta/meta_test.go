@@ -36,6 +36,26 @@ func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestUnaryClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
+	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs(
+		"user-agent", "",
+		"request-id", "",
+	))
+	interceptor := grpcmeta.UnaryClientInterceptor(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id"))
+
+	err := interceptor(ctx, "/greet.v1.Greeter/SayHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
+		md, ok := grpcmeta.FromOutgoingContext(ctx)
+		require.True(t, ok)
+		require.Equal(t, []string{"fallback-agent"}, md.Get("user-agent"))
+		require.Equal(t, []string{"generated-id"}, md.Get("request-id"))
+		require.Equal(t, grpcmeta.String("fallback-agent"), grpcmeta.UserAgent(ctx))
+		require.Equal(t, grpcmeta.String("generated-id"), meta.RequestID(ctx))
+
+		return nil
+	})
+	require.NoError(t, err)
+}
+
 func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 	ctx := grpcmeta.WithAttributes(t.Context(),
 		grpcmeta.WithUserAgent(grpcmeta.String("current-agent")),
@@ -51,6 +71,30 @@ func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 		require.True(t, ok)
 		require.Equal(t, []string{"current-agent"}, md.Get("user-agent"))
 		require.Equal(t, []string{"current-id"}, md.Get("request-id"))
+
+		return nil, nil
+	}
+
+	stream, err := interceptor(
+		ctx, &grpc.StreamDesc{ServerStreams: true}, nil, "/greet.v1.Greeter/SayStreamHello", streamer,
+	)
+	require.NoError(t, err)
+	require.Nil(t, stream)
+}
+
+func TestStreamClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
+	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs(
+		"user-agent", "",
+		"request-id", "",
+	))
+	interceptor := grpcmeta.StreamClientInterceptor(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id"))
+	streamer := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
+		md, ok := grpcmeta.FromOutgoingContext(ctx)
+		require.True(t, ok)
+		require.Equal(t, []string{"fallback-agent"}, md.Get("user-agent"))
+		require.Equal(t, []string{"generated-id"}, md.Get("request-id"))
+		require.Equal(t, grpcmeta.String("fallback-agent"), grpcmeta.UserAgent(ctx))
+		require.Equal(t, grpcmeta.String("generated-id"), meta.RequestID(ctx))
 
 		return nil, nil
 	}
