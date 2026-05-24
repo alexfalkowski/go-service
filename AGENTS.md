@@ -93,6 +93,12 @@ matching skill for the task.
   deduplicate by request id when duplicate processing would be unsafe. Do not
   flag the default HTTP/gRPC retry policy merely because metadata injects
   request ids before retry.
+- `net/http/status.Code(err)` usually returns a valid HTTP status code because
+  repository code should construct HTTP status errors with the constants exposed
+  by `net/http` (for example `http.StatusBadRequest`) or intentionally supported
+  valid custom codes such as `499`. Do not flag hypothetical invalid
+  `WriteHeader` panics from manually constructed bogus codes unless a concrete
+  public API path accepts untrusted status codes or starts promising validation.
 - gRPC client constructor options use the package's last-wins functional option
   convention. `WithClientDialOption`, `WithClientUnaryInterceptors`, and
   `WithClientStreamInterceptors` expect all custom values for one client

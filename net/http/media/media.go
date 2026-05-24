@@ -79,25 +79,36 @@ func TypeByExtension(ext string) string {
 //
 // Parameters are ignored because content negotiation only uses the base media type.
 func Parse(value string) (string, string, error) {
-	mediaType, _, _ := strings.Cut(value, ";")
-	mediaType = strings.ToLower(strings.TrimSpace(mediaType))
-
-	_, subtype, ok := strings.Cut(mediaType, "/")
-	if !ok || strings.IsEmpty(subtype) {
-		return strings.Empty, strings.Empty, ErrInvalidType
-	}
-
-	return mediaType, subtype, nil
+	mediaType, subtype, _, err := parse(value)
+	return mediaType, subtype, err
 }
 
 // WithUTF8 appends a UTF-8 charset parameter to text media types.
 //
 // Non-text media types and media types that already contain a charset parameter are returned unchanged.
 func WithUTF8(mediaType string) string {
-	value, _, err := Parse(mediaType)
-	if err != nil || !strings.HasPrefix(value, "text/") || strings.Contains(mediaType, "charset=") {
+	value, _, params, err := parse(mediaType)
+	if err != nil || !strings.HasPrefix(value, "text/") {
+		return mediaType
+	}
+
+	if _, ok := params["charset"]; ok {
 		return mediaType
 	}
 
 	return strings.Concat(mediaType, "; ", "charset=utf-8")
+}
+
+func parse(value string) (string, string, map[string]string, error) {
+	mediaType, params, err := mime.ParseMediaType(value)
+	if err != nil {
+		return strings.Empty, strings.Empty, nil, ErrInvalidType
+	}
+
+	_, subtype, ok := strings.Cut(mediaType, "/")
+	if !ok || strings.IsEmpty(subtype) {
+		return strings.Empty, strings.Empty, nil, ErrInvalidType
+	}
+
+	return mediaType, subtype, params, nil
 }
