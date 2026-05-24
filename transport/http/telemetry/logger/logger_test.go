@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"log/slog"
-	"net/http"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	httplogger "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/stretchr/testify/require"

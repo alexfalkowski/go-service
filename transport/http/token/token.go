@@ -159,6 +159,10 @@ type RoundTripper struct {
 //   - If token generation fails, it returns an unauthorized status error.
 //   - If token generation returns an empty token, it returns an unauthorized status error with `header.ErrInvalidAuthorization`.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	if isCrossOriginRedirect(req) {
+		return nil, http.ErrUseLastResponse
+	}
+
 	token, err := r.generator.Generate(req.URL.Path, r.id.String())
 	if err != nil {
 		return nil, status.UnauthorizedError(err)
@@ -176,4 +180,12 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 	cloned.Header.Set("Authorization", auth.Value())
 	return r.RoundTripper.RoundTrip(cloned)
+}
+
+func isCrossOriginRedirect(req *http.Request) bool {
+	if req.Response == nil || req.Response.Request == nil {
+		return false
+	}
+
+	return !http.SameOrigin(req.Response.Request.URL, req.URL)
 }

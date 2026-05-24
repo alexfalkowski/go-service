@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 	"net/http/httptrace"
+	"net/url"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
@@ -52,6 +53,9 @@ const StatusGatewayTimeout = http.StatusGatewayTimeout
 
 // StatusOK is an alias of http.StatusOK.
 const StatusOK = http.StatusOK
+
+// StatusNoContent is an alias of http.StatusNoContent.
+const StatusNoContent = http.StatusNoContent
 
 // StatusRequestEntityTooLarge is an alias of http.StatusRequestEntityTooLarge.
 const StatusRequestEntityTooLarge = http.StatusRequestEntityTooLarge
@@ -205,6 +209,15 @@ func IgnoreRedirect(_ *Request, _ []*Request) error {
 	return ErrUseLastResponse
 }
 
+// SameOrigin reports whether prev and next use the same URL scheme and host.
+func SameOrigin(prev, next *url.URL) bool {
+	if prev == nil || next == nil {
+		return false
+	}
+
+	return prev.Scheme == next.Scheme && prev.Host == next.Host
+}
+
 // SameOriginRedirect allows redirects only when the next request stays on the same scheme and host.
 //
 // It is intended for clients that add credentials or signatures in RoundTripper middleware, where Go's
@@ -217,7 +230,7 @@ func SameOriginRedirect(req *Request, via []*Request) error {
 
 	prev := via[len(via)-1].URL
 	next := req.URL
-	if prev.Scheme == next.Scheme && prev.Host == next.Host {
+	if SameOrigin(prev, next) {
 		return nil
 	}
 

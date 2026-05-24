@@ -1,9 +1,15 @@
 package hooks
 
 import (
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 )
+
+// ErrBinaryEncoding is returned when a webhook-protected event uses binary HTTP encoding.
+var ErrBinaryEncoding = errors.New("events: binary encoding is not supported for webhooks")
 
 // Webhook is an alias for `transport/http/hooks.Webhook`.
 //
@@ -21,6 +27,10 @@ type Webhook = hooks.Webhook
 //
 // If hook is nil, the returned handler behaves as a pass-through wrapper.
 func NewHandler(hook *Webhook, handler http.Handler) *Handler {
+	if hook == nil {
+		return &Handler{Handler: handler}
+	}
+
 	return &Handler{handler: hooks.NewHandler(hook), Handler: handler}
 }
 
@@ -28,8 +38,8 @@ func NewHandler(hook *Webhook, handler http.Handler) *Handler {
 //
 // When webhook support is disabled, Handler becomes a pass-through wrapper.
 type Handler struct {
-	handler *hooks.Handler
 	http.Handler
+	handler *hooks.Handler
 }
 
 // ServeHTTP verifies the webhook signature and then delegates to the wrapped handler.
@@ -49,5 +59,20 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if hasBinaryHeaders(req.Header) {
+		_ = status.WriteError(resp, status.BadRequestError(ErrBinaryEncoding))
+		return
+	}
+
 	h.handler.ServeHTTP(resp, req, h.Handler.ServeHTTP)
+}
+
+func hasBinaryHeaders(header http.Header) bool {
+	for key := range header {
+		if strings.HasPrefix(strings.ToLower(key), "ce-") {
+			return true
+		}
+	}
+
+	return false
 }
