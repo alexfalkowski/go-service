@@ -13,6 +13,7 @@
 //   - "user-agent": meta.UserAgent
 //   - "ip": meta.IPAddr
 //   - "user-id": meta.UserID
+//   - "service-method": meta.ServiceMethod
 //
 // The configured kind is typically provided via `Config.Kind`. If the kind is not present in the KeyMap,
 // limiter construction fails with ErrMissingKey.
@@ -32,6 +33,10 @@
 // The "user-id" key uses the verified principal stored in metadata. For
 // JWT/PASETO tokens this is the subject claim; for SSH tokens this is the
 // verified key name returned by the token verifier.
+//
+// The "service-method" key uses transport metadata populated by the HTTP and
+// gRPC metadata layers. HTTP stores the matched request pattern when available
+// and otherwise the URL path; gRPC stores the full method name.
 //
 // # In-memory behavior and lifecycle
 //

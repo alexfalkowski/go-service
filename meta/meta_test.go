@@ -68,6 +68,7 @@ func TestPairHelpers(t *testing.T) {
 		{name: "system", key: meta.SystemKey, value: "system", pair: meta.WithSystem},
 		{name: "service", key: meta.ServiceKey, value: "service", pair: meta.WithService},
 		{name: "method", key: meta.MethodKey, value: "method", pair: meta.WithMethod},
+		{name: "service method", key: meta.ServiceMethodKey, value: "service-method", pair: meta.WithServiceMethod},
 		{name: "code", key: meta.CodeKey, value: "code", pair: meta.WithCode},
 		{name: "duration", key: meta.DurationKey, value: "duration", pair: meta.WithDuration},
 		{name: "user agent", key: meta.UserAgentKey, value: "user-agent", pair: meta.WithUserAgent},
@@ -117,6 +118,11 @@ func TestWithAttributesKeepsParentContextIsolated(t *testing.T) {
 func TestUserID(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(), meta.WithUserID(meta.String("user-id")))
 	require.Equal(t, meta.String("user-id"), meta.UserID(ctx))
+}
+
+func TestServiceMethod(t *testing.T) {
+	ctx := meta.WithAttributes(t.Context(), meta.WithServiceMethod(meta.String("service-method")))
+	require.Equal(t, meta.String("service-method"), meta.ServiceMethod(ctx))
 }
 
 func TestGeolocation(t *testing.T) {

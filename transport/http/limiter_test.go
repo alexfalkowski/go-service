@@ -31,7 +31,7 @@ func TestUnlimited(t *testing.T) {
 }
 
 func TestServerLimiter(t *testing.T) {
-	for _, f := range []string{"user-agent", "ip"} {
+	for _, f := range []string{"user-agent", "ip", "service-method"} {
 		t.Run(f, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
 				test.WithWorldTelemetry("otlp"),
@@ -75,7 +75,7 @@ func TestServerLimiterDoesNotBypassApplicationMetricsPath(t *testing.T) {
 }
 
 func TestClientLimiter(t *testing.T) {
-	for _, f := range []string{"user-agent", "ip"} {
+	for _, f := range []string{"user-agent", "ip", "service-method"} {
 		t.Run(f, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
 				test.WithWorldTelemetry("otlp"),

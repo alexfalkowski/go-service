@@ -77,6 +77,24 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 	require.Nil(t, req.Header)
 }
 
+func TestRoundTripperStoresServiceMethod(t *testing.T) {
+	roundTripper := httpmeta.NewRoundTripper(
+		env.UserAgent("agent"),
+		test.StaticIDGenerator("request-id"),
+		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			require.Equal(t, meta.String("/users/123"), meta.ServiceMethod(req.Context()))
+
+			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
+		}),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com/users/123", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := roundTripper.RoundTrip(req)
+	require.NoError(t, err)
+	require.NoError(t, res.Body.Close())
+}
+
 func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
 	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
@@ -88,6 +106,29 @@ func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
 
 		require.Equal(t, []string{"1", "v2"}, res.Header().Values("Service-Version"))
 		require.Equal(t, []string{"request-id"}, res.Header().Values("Request-Id"))
+	})
+}
+
+func TestHandlerStoresServiceMethodFromPath(t *testing.T) {
+	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/users/123", http.NoBody)
+	require.NoError(t, err)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
+		require.Equal(t, meta.String("/users/123"), meta.ServiceMethod(req.Context()))
+	})
+}
+
+func TestHandlerStoresServiceMethodFromPattern(t *testing.T) {
+	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/users/123", http.NoBody)
+	require.NoError(t, err)
+	req.Pattern = "GET /users/{id}"
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
+		require.Equal(t, meta.String("GET /users/{id}"), meta.ServiceMethod(req.Context()))
 	})
 }
 

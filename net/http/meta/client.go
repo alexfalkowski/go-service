@@ -46,6 +46,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx = meta.WithAttributes(ctx,
 		meta.WithUserAgent(userAgent),
 		meta.WithRequestID(requestID),
+		meta.WithServiceMethod(meta.String(req.URL.Path)),
 	)
 
 	cloned := req.Clone(ctx)

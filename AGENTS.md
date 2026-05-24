@@ -105,7 +105,13 @@ matching skill for the task.
   construction to be passed in a single call; repeated calls intentionally
   replace earlier values. Do not flag this as dropped configuration unless a
   public API starts promising accumulation across repeated option helpers.
-- Transport limiter keys are `"user-agent"`, `"ip"`, and `"user-id"`; `"token"` is intentionally not a limiter key. Server limiters run after metadata extraction and token verification, so `"user-id"` is the verified principal (JWT/PASETO subject or SSH key name), and missing, malformed, or invalid auth is rejected before the limiter by design. Do not flag that bypass; use an external edge/gateway/ingress/load-balancer/service-mesh limiter when those attempts need quota enforcement.
+- Transport limiter keys are `"user-agent"`, `"ip"`, `"user-id"`, and
+  `"service-method"`; `"token"` is intentionally not a limiter key. Server
+  limiters run after metadata extraction and token verification, so `"user-id"`
+  is the verified principal (JWT/PASETO subject or SSH key name), and missing,
+  malformed, or invalid auth is rejected before the limiter by design. Do not
+  flag that bypass; use an external edge, gateway, ingress, load balancer, or
+  service mesh limiter when those attempts need quota enforcement.
 - The built-in transport limiter is intentionally in-memory and per-process. Treat it as a last-resort local safeguard; prefer external edge/gateway/ingress/load-balancer/service-mesh limiting for production abuse protection.
 - HTTP telemetry logger service/method derivation may include request URL path
   segments for non-canonical HTTP routes. This is intentional for client and
