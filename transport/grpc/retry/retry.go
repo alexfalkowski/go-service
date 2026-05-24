@@ -26,7 +26,7 @@ type Policy func(ctx context.Context, fullMethod string, req any) bool
 
 // StandardReadMethods allows retries for AIP-style read methods named Get* or List*.
 func StandardReadMethods(_ context.Context, fullMethod string, _ any) bool {
-	_, method, _ := strings.SplitServiceMethod(fullMethod)
+	_, method := grpc.ParseServiceMethod(fullMethod)
 
 	return strings.HasPrefix(method, "Get") || strings.HasPrefix(method, "List")
 }

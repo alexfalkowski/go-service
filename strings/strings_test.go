@@ -44,3 +44,22 @@ func TestLastIndex(t *testing.T) {
 		})
 	}
 }
+
+func TestCount(t *testing.T) {
+	tests := []struct {
+		name   string
+		s      string
+		substr string
+		want   int
+	}{
+		{name: "matches", s: "/greet.v1.Greeter/SayHello", substr: "/", want: 2},
+		{name: "missing", s: "greet.v1.Greeter", substr: "/", want: 0},
+		{name: "empty substr", s: "service", substr: "", want: 8},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.want, strings.Count(test.s, test.substr))
+		})
+	}
+}

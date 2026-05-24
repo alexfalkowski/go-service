@@ -2,7 +2,6 @@ package strings
 
 import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
-	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -54,25 +53,4 @@ func IsOperationMethod(name string) bool {
 	default:
 		return false
 	}
-}
-
-// IsFullMethod reports whether name is of the form `/package.service/method`.
-//
-// This is the canonical shape of gRPC full method names as they appear in interceptors (for example
-// "/helloworld.Greeter/SayHello").
-func IsFullMethod(name string) bool {
-	// Buf-managed protos in this repo require a package, so service names are
-	// expected to include a package-qualified dot, e.g. "/greet.v1.Greeter/SayHello".
-	return strings.HasPrefix(name, "/") && strings.Count(name, "/") == 2 && strings.Count(name, ".") > 0
-}
-
-// SplitServiceMethod splits a gRPC full method name into service and method components.
-//
-// If name is not a valid gRPC full method (see IsFullMethod), it returns ("", "", false).
-// Otherwise it returns ("package.service", "method", true).
-func SplitServiceMethod(name string) (string, string, bool) {
-	if !IsFullMethod(name) {
-		return "", "", false
-	}
-	return url.SplitPath(name)
 }

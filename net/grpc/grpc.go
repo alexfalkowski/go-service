@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
@@ -139,6 +140,18 @@ type TransportCredentials = credentials.TransportCredentials
 // StatusText returns the standard gRPC status text for the code.
 func StatusText(code codes.Code) string {
 	return codes.StatusText(code)
+}
+
+// ParseServiceMethod derives a logical service and method name from a gRPC full method.
+//
+// If name can be split as a slash-prefixed path, ParseServiceMethod returns the extracted service/method pair.
+// Otherwise it returns "root" for both values.
+func ParseServiceMethod(name string) (string, string) {
+	if service, method, ok := url.SplitPath(name); ok {
+		return service, method
+	}
+
+	return "root", "root"
 }
 
 // StatsHandler returns a ServerOption that installs h as the server stats handler.

@@ -27,29 +27,3 @@ func TestIsOperationMethod(t *testing.T) {
 		})
 	}
 }
-
-func TestSplitServiceMethod(t *testing.T) {
-	tests := []struct {
-		name    string
-		full    string
-		service string
-		method  string
-		ok      bool
-	}{
-		{name: "full method", full: "/greet.v1.Greeter/SayHello", service: "greet.v1.Greeter", method: "SayHello", ok: true},
-		{name: "missing package", full: "/Greeter/SayHello"},
-		{name: "missing leading slash", full: "greet.v1.Greeter/SayHello"},
-		{name: "missing method", full: "/greet.v1.Greeter"},
-		{name: "extra path segment", full: "/greet.v1.Greeter/SayHello/Again"},
-		{name: "empty method", full: "/greet.v1.Greeter/"},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			service, method, ok := strings.SplitServiceMethod(test.full)
-			require.Equal(t, test.service, service)
-			require.Equal(t, test.method, method)
-			require.Equal(t, test.ok, ok)
-		})
-	}
-}

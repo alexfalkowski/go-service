@@ -153,11 +153,11 @@ matching skill for the task.
 - gRPC service and method names are generated from Buf-managed proto files such
   as `internal/test/greet/v1/service.proto`, which require package-qualified
   service names and valid RPC method names. Do not flag
-  `net/grpc/strings.IsFullMethod` or `SplitServiceMethod` merely because a
-  hypothetical manually constructed method string like `/pkg.Service/` or
-  `/svc/Get.Name` could parse as a full method. Only report a concrete issue if
-  untrusted, non-generated method strings are used for a security decision, or a
-  public API promises strict validation of arbitrary method strings.
+  `net/grpc.ParseServiceMethod` merely because a hypothetical manually
+  constructed method string like `/pkg.Service/` or `/svc/Get.Name` could split
+  or fall back to `root`. Only report a concrete issue if untrusted,
+  non-generated method strings are used for a security decision, or a public API
+  promises strict validation of arbitrary method strings.
 - MVC controller errors render a client-safe `mvc.Error` model; `mvcModelError` metadata intentionally remains the raw error string for compatibility and must not be rendered unless diagnostic detail exposure is acceptable.
 - MVC not-found handling intentionally uses a simple `Accept` header check for
   `text/html` and does not fully evaluate quality weights such as
