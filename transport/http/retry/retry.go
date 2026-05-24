@@ -153,16 +153,16 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *roundTripAttempt) (*http.Response, error) {
-	ctx, cancel := r.withAttemptTimeout(ctx)
+	attemptCtx, cancel := r.withAttemptTimeout(ctx)
 	defer cancel()
 
-	attemptReq, err := attempt.request(req, ctx)
+	attemptReq, err := attempt.request(req, attemptCtx)
 	if err != nil {
 		return nil, err
 	}
 
 	res, err := r.RoundTripper.RoundTrip(attemptReq)
-	if retryErr := attempt.retry(ctx, req, res, err, r.maxRetries); retryErr != nil {
+	if retryErr := attempt.retry(ctx, attemptCtx, req, res, err, r.maxRetries); retryErr != nil {
 		return nil, retryErr
 	}
 
@@ -205,8 +205,8 @@ func (a *roundTripAttempt) request(req *http.Request, ctx context.Context) (*htt
 	return attemptReq, nil
 }
 
-func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *http.Response, err error, maxRetries uint64) error {
-	ok, retryErr := shouldRetryAttempt(ctx, res, err)
+func (a *roundTripAttempt) retry(ctx, attemptCtx context.Context, req *http.Request, res *http.Response, err error, maxRetries uint64) error {
+	ok, retryErr := shouldRetryAttempt(ctx, attemptCtx, res, err)
 	if !ok {
 		return nil
 	}
@@ -228,9 +228,14 @@ func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *ht
 	return retry.RetryableError(retryErr)
 }
 
-func shouldRetryAttempt(ctx context.Context, res *http.Response, err error) (bool, error) {
+func shouldRetryAttempt(ctx, attemptCtx context.Context, res *http.Response, err error) (bool, error) {
 	if err := ctx.Err(); err != nil {
 		return false, err
+	}
+
+	if err := attemptCtx.Err(); err != nil {
+		cause := context.Cause(attemptCtx)
+		return errors.Is(cause, ErrAttemptTimeout), cause
 	}
 
 	if isTransportError(res, err) {
