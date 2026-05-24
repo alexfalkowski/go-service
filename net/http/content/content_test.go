@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
@@ -15,7 +16,7 @@ func TestNewFromMedia(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			media := test.Content.NewFromMedia(tc.mediaType)
 
-			require.Equal(t, tc.subtype, media.Subtype)
+			require.Equal(t, tc.subtype, media.Subtype())
 			require.Same(t, test.Encoder.Get(tc.kind), media.Encoder)
 		})
 	}
@@ -29,7 +30,7 @@ func TestNewFromRequest(t *testing.T) {
 
 			media := test.Content.NewFromRequest(req)
 
-			require.Equal(t, tc.subtype, media.Subtype)
+			require.Equal(t, tc.subtype, media.Subtype())
 			require.Same(t, test.Encoder.Get(tc.kind), media.Encoder)
 		})
 	}
@@ -42,7 +43,7 @@ func TestNewFromRequestPrefersContentType(t *testing.T) {
 
 	media := test.Content.NewFromRequest(req)
 
-	require.Equal(t, "toml", media.Subtype)
+	require.Equal(t, "toml", media.Subtype())
 	require.Same(t, test.Encoder.Get("toml"), media.Encoder)
 }
 
@@ -52,7 +53,7 @@ func TestNewFromRequestFallsBackToAccept(t *testing.T) {
 
 	media := test.Content.NewFromRequest(req)
 
-	require.Equal(t, "yaml", media.Subtype)
+	require.Equal(t, "yaml", media.Subtype())
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
 }
 
@@ -62,7 +63,7 @@ func TestNewFromRequestNormalizesMediaTypeCase(t *testing.T) {
 
 	media := test.Content.NewFromRequest(req)
 
-	require.Equal(t, "yaml", media.Subtype)
+	require.Equal(t, "yaml", media.Subtype())
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
 }
 
@@ -72,7 +73,7 @@ func TestNewFromRequestNormalizesAcceptMediaTypeCase(t *testing.T) {
 
 	media := test.Content.NewFromRequest(req)
 
-	require.Equal(t, "yaml", media.Subtype)
+	require.Equal(t, "yaml", media.Subtype())
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
 }
 
@@ -82,7 +83,7 @@ func TestNewFromRequestFallsBackFromInternalErrorMedia(t *testing.T) {
 
 	media := test.Content.NewFromRequest(req)
 
-	require.Equal(t, "plain", media.Subtype)
+	require.Equal(t, "plain", media.Subtype())
 	require.Same(t, test.Encoder.Get("plain"), media.Encoder)
 }
 
@@ -94,7 +95,7 @@ func TestNewFromContentType(t *testing.T) {
 
 			media := test.Content.NewFromContentType(req)
 
-			require.Equal(t, tc.subtype, media.Subtype)
+			require.Equal(t, tc.subtype, media.Subtype())
 			require.Same(t, test.Encoder.Get(tc.kind), media.Encoder)
 		})
 	}
@@ -106,7 +107,7 @@ func TestNewFromContentTypeFallsBackFromInternalErrorMedia(t *testing.T) {
 
 	media := test.Content.NewFromContentType(req)
 
-	require.Equal(t, "plain", media.Subtype)
+	require.Equal(t, "plain", media.Subtype())
 	require.Same(t, test.Encoder.Get("plain"), media.Encoder)
 }
 
@@ -119,7 +120,7 @@ func TestNewFromRequestBodyRejectsUnsafeBinaryMedia(t *testing.T) {
 			media, err := test.Content.NewFromRequestBody(req)
 
 			require.ErrorIs(t, err, content.ErrUnsupportedRequestMedia)
-			require.False(t, media.IsRequestBodySupported())
+			require.False(t, media.CanDecodeRequest())
 		})
 	}
 }
@@ -140,8 +141,8 @@ func TestNewFromMediaWithParameters(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			media := test.Content.NewFromMedia(tt.mediaType)
 
-			require.Equal(t, tt.expected, media.Type)
-			require.Equal(t, tt.subtype, media.Subtype)
+			require.Equal(t, tt.expected, media.String())
+			require.Equal(t, tt.subtype, media.Subtype())
 			require.Same(t, test.Encoder.Get(tt.kind), media.Encoder)
 		})
 	}
@@ -150,7 +151,16 @@ func TestNewFromMediaWithParameters(t *testing.T) {
 func TestNewFromMediaPreservesInternalErrorMedia(t *testing.T) {
 	media := test.Content.NewFromMedia(media.Error)
 
-	require.Equal(t, "error", media.Subtype)
+	require.Equal(t, "error", media.Subtype())
+	require.Nil(t, media.Encoder)
+}
+
+func TestNewMediaFallsBackToJSONWhenKnownEncoderIsMissing(t *testing.T) {
+	enc := &encoding.Map{}
+	media := content.NewMedia(media.HumanJSON, enc)
+
+	require.Equal(t, "json", media.Subtype())
+	require.Equal(t, "application/json", media.String())
 	require.Nil(t, media.Encoder)
 }
 

@@ -235,7 +235,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 		return errors.Prefix("http: new request", err)
 	}
 
-	request.Header.Set(content.TypeKey, mediaType.Type)
+	request.Header.Set(content.TypeKey, mediaType.String())
 
 	response, err := c.client.Do(request)
 	if err != nil {

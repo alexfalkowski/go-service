@@ -17,6 +17,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
+var htmlContentType = media.MustParse(media.HTML).WithUTF8()
+
 // NotFound registers controller as the MVC not-found renderer.
 //
 // It returns false when MVC is not defined (see IsDefined).
@@ -74,7 +76,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
-		res.Header().Set(content.TypeKey, media.WithUTF8(media.HTML))
+		res.Header().Set(content.TypeKey, htmlContentType)
 
 		ctx := req.Context()
 		ctx = meta.WithContent(ctx, req, res, nil)
@@ -173,7 +175,7 @@ func staticStatusCode(err error) int {
 func setStaticContentType(res http.ResponseWriter, name string) {
 	mediaType := media.TypeByExtension(path.Ext(name))
 	if !strings.IsEmpty(mediaType) {
-		res.Header().Set(content.TypeKey, media.WithUTF8(mediaType))
+		res.Header().Set(content.TypeKey, media.MustParse(mediaType).WithUTF8())
 	}
 }
 
@@ -196,7 +198,7 @@ func writeNotFound(req *http.Request, res http.ResponseWriter) {
 	}
 
 	err := status.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound))
-	res.Header().Set(content.TypeKey, media.WithUTF8(media.HTML))
+	res.Header().Set(content.TypeKey, htmlContentType)
 	ctx := req.Context()
 	ctx = meta.WithContent(ctx, req, res, nil)
 	ctx = meta.WithAttributes(ctx, meta.NewPair("mvcModelError", meta.Error(err)))
