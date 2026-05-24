@@ -130,16 +130,21 @@ type RoundTripper struct {
 //   - If the request is not allowed, it returns an HTTP 429 status error.
 //   - Otherwise, it delegates to the underlying RoundTripper.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	return http.ClosingRoundTripper(r.roundTrip).RoundTrip(req)
+}
+
+func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool) {
 	ctx := req.Context()
 
 	ok, _, err := r.limiter.Take(ctx)
 	if err != nil {
-		return nil, err
+		return nil, err, true
 	}
 
 	if !ok {
-		return nil, status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
+		return nil, status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests)), true
 	}
 
-	return r.RoundTripper.RoundTrip(req)
+	res, err := r.RoundTripper.RoundTrip(req)
+	return res, err, false
 }

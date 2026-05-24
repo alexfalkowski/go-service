@@ -6,9 +6,11 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/url"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -106,6 +108,34 @@ func TestIsCrossOriginRedirect(t *testing.T) {
 	require.False(t, http.IsCrossOriginRedirect(prev))
 	require.False(t, http.IsCrossOriginRedirect(same))
 	require.True(t, http.IsCrossOriginRedirect(different))
+}
+
+func TestClosingRoundTripperClosesBodyWhenRequested(t *testing.T) {
+	rt := http.ClosingRoundTripper(func(*http.Request) (*http.Response, error, bool) {
+		return nil, io.ErrUnexpectedEOF, true
+	})
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", body)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, io.ErrUnexpectedEOF)
+	require.True(t, body.Closed)
+}
+
+func TestClosingRoundTripperLeavesDelegatedBodyOpen(t *testing.T) {
+	rt := http.ClosingRoundTripper(func(*http.Request) (*http.Response, error, bool) {
+		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil, false
+	})
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", body)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+	require.NoError(t, res.Body.Close())
+	require.False(t, body.Closed)
 }
 
 func TestIgnoreRedirect(t *testing.T) {

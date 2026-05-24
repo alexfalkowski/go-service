@@ -84,6 +84,10 @@ type RoundTripper struct {
 //   - Responses that match the configured failure-status predicate are counted as failures for breaker
 //     accounting, but the response is still returned to the caller with a nil error.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	return http.ClosingRoundTripper(r.roundTrip).RoundTrip(req)
+}
+
+func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool) {
 	cb := r.get(req)
 	v, err := cb.Execute(func() (any, error) {
 		resp, err := r.RoundTripper.RoundTrip(req)
@@ -99,12 +103,13 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	})
 	if err != nil {
 		if re, ok := errors.AsType[responseError](err); ok {
-			return re.resp, nil
+			return re.resp, nil, false
 		}
 
-		return nil, err
+		return nil, err, errors.Is(err, breaker.ErrOpenState) || errors.Is(err, breaker.ErrTooManyRequests)
 	}
-	return v.(*http.Response), nil
+
+	return v.(*http.Response), nil, false
 }
 
 func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {

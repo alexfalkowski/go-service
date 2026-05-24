@@ -162,6 +162,23 @@ type ResponseWriter = http.ResponseWriter
 // standard library semantics.
 type RoundTripper = http.RoundTripper
 
+// ClosingRoundTripper adapts a function to RoundTripper while making request-body ownership explicit.
+//
+// The function's third return value reports whether ClosingRoundTripper should close req.Body before returning.
+// Return true when the function rejects the request locally without delegating to another RoundTripper.
+// Return false after delegating because the delegated RoundTripper owns the request body.
+type ClosingRoundTripper func(req *Request) (*Response, error, bool)
+
+// RoundTrip calls s and closes req.Body when s asks it to.
+func (s ClosingRoundTripper) RoundTrip(req *Request) (*Response, error) {
+	res, err, closeBody := s(req)
+	if closeBody && req != nil && req.Body != nil && req.Body != NoBody {
+		_ = req.Body.Close()
+	}
+
+	return res, err
+}
+
 // DefaultTransport is an alias for http.DefaultTransport.
 var DefaultTransport = http.DefaultTransport
 

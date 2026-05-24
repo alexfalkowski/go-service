@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"github.com/stretchr/testify/require"
@@ -136,7 +137,8 @@ func TestRoundTripperDoesNotSignCrossOriginRedirect(t *testing.T) {
 	}))
 
 	prev := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "https://example.com/events", http.NoBody)
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "https://attacker.example.com/events", http.NoBody)
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "https://attacker.example.com/events", body)
 	req.Response = &http.Response{Request: prev}
 
 	res, err := rt.RoundTrip(req)
@@ -146,6 +148,7 @@ func TestRoundTripperDoesNotSignCrossOriginRedirect(t *testing.T) {
 	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookID))
 	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookSignature))
 	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookTimestamp))
+	require.True(t, body.Closed)
 }
 
 func TestHandler(t *testing.T) {

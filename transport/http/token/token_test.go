@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/stretchr/testify/require"
 )
@@ -47,4 +48,45 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, res.Body.Close())
 	require.Nil(t, req.Header)
+}
+
+func TestRoundTripperClosesBodyOnGenerateError(t *testing.T) {
+	roundTripper := token.NewRoundTripper(
+		env.UserID("service-user"),
+		test.NewGenerator("", test.ErrGenerate),
+		test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+			t.Fatal("unexpected round trip")
+			return nil, nil
+		}),
+	)
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com/hello", body)
+	require.NoError(t, err)
+
+	res, err := roundTripper.RoundTrip(req)
+	require.Nil(t, res)
+	require.Error(t, err)
+	require.True(t, body.Closed)
+}
+
+func TestRoundTripperClosesBodyOnCrossOriginRedirect(t *testing.T) {
+	roundTripper := token.NewRoundTripper(
+		env.UserID("service-user"),
+		test.NewGenerator("fresh-token", nil),
+		test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+			t.Fatal("unexpected round trip")
+			return nil, nil
+		}),
+	)
+	prev, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "https://example.com/hello", http.NoBody)
+	require.NoError(t, err)
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "https://other.example.com/hello", body)
+	require.NoError(t, err)
+	req.Response = &http.Response{Request: prev}
+
+	res, err := roundTripper.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, http.ErrUseLastResponse)
+	require.True(t, body.Closed)
 }

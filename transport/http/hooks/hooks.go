@@ -196,12 +196,17 @@ type RoundTripper struct {
 // If the configured hook is nil, RoundTrip delegates directly to the underlying RoundTripper without
 // mutating the request.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	return http.ClosingRoundTripper(r.roundTrip).RoundTrip(req)
+}
+
+func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool) {
 	if http.IsCrossOriginRedirect(req) {
-		return nil, http.ErrUseLastResponse
+		return nil, http.ErrUseLastResponse, true
 	}
 
 	if r.hook == nil {
-		return r.RoundTripper.RoundTrip(req)
+		res, err := r.RoundTripper.RoundTrip(req)
+		return res, err, false
 	}
 
 	cloned := req.Clone(req.Context())
@@ -209,11 +214,12 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err := r.hook.Sign(cloned); err != nil {
 		closeBody(body)
 
-		return nil, err
+		return nil, err, false
 	}
 	closeBody(body)
 
-	return r.RoundTripper.RoundTrip(cloned)
+	res, err := r.RoundTripper.RoundTrip(cloned)
+	return res, err, false
 }
 
 func closeBody(body io.ReadCloser) {
