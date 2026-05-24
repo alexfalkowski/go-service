@@ -107,8 +107,6 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 
 // UnaryClientInterceptor returns a gRPC unary client interceptor that logs the RPC outcome.
 //
-// Operation RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsOperationMethod`).
-//
 // Logged attributes include:
 //   - system: "grpc"
 //   - service/method: derived from the gRPC full method name
@@ -129,10 +127,6 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 // contain credentials, tokens, request data, or other secrets.
 func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		if strings.IsOperationMethod(fullMethod) {
-			return invoker(ctx, fullMethod, req, resp, conn, opts...)
-		}
-
 		service, method, _ := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
 		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
@@ -153,8 +147,6 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor returns a gRPC stream client interceptor that logs stream creation.
-//
-// Operation RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsOperationMethod`).
 //
 // It logs whether the client stream was opened successfully. Terminal stream
 // status may surface later through RecvMsg, SendMsg, or generated helpers such
@@ -180,10 +172,6 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 // contain credentials, tokens, request data, or other secrets.
 func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		if strings.IsOperationMethod(fullMethod) {
-			return streamer(ctx, desc, conn, fullMethod, opts...)
-		}
-
 		service, method, _ := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)

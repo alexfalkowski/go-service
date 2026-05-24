@@ -25,3 +25,22 @@ func TestIsAnyEmpty(t *testing.T) {
 		})
 	}
 }
+
+func TestLastIndex(t *testing.T) {
+	tests := []struct {
+		name   string
+		s      string
+		substr string
+		want   int
+	}{
+		{name: "last match", s: "/service/admin/metrics", substr: "/", want: 14},
+		{name: "missing", s: "service", substr: "/", want: -1},
+		{name: "empty substr", s: "service", substr: "", want: 7},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.want, strings.LastIndex(test.s, test.substr))
+		})
+	}
+}

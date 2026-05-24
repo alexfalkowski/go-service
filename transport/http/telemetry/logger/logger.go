@@ -19,7 +19,7 @@ type Logger = logger.Logger
 // NewHandler constructs HTTP server logging middleware.
 //
 // The returned handler logs the outcome of each request after next has completed, including duration
-// and response status code. Ignorable paths (health/metrics/etc.) are skipped.
+// and response status code. Service-owned operation paths (health/metrics/etc.) are skipped.
 func NewHandler(name env.Name, logger *Logger) *Handler {
 	return &Handler{name: name, logger: logger}
 }
@@ -32,7 +32,7 @@ type Handler struct {
 
 // ServeHTTP logs the request outcome after next completes.
 //
-// Ignorable paths (health/metrics/etc.) bypass logging (see `net/http/strings.IsIgnorable`).
+// Service-owned operation paths (health/metrics/etc.) bypass logging (see `net/http/strings.IsOperationPath`).
 //
 // Logged attributes include:
 //   - system: "http"
@@ -68,7 +68,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 // NewRoundTripper constructs HTTP client logging middleware.
 //
 // The returned RoundTripper logs request outcomes (duration and status) and then delegates to the
-// underlying transport. Ignorable paths (health/metrics/etc.) are skipped.
+// underlying transport.
 func NewRoundTripper(logger *Logger, r http.RoundTripper) *RoundTripper {
 	return &RoundTripper{logger: logger, RoundTripper: r}
 }
@@ -80,8 +80,6 @@ type RoundTripper struct {
 }
 
 // RoundTrip logs the request outcome and delegates to the underlying RoundTripper.
-//
-// Ignorable paths (health/metrics/etc.) bypass logging (see `net/http/strings.IsIgnorable`).
 //
 // Logged attributes include:
 //   - system: "http"
@@ -98,10 +96,6 @@ type RoundTripper struct {
 // If resp is nil (for example, due to a transport error), it is treated as HTTP 500 for level selection.
 // The log message includes the derived method and service.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if strings.IsIgnorable(req.URL.Path) {
-		return r.RoundTripper.RoundTrip(req)
-	}
-
 	service, method := http.ParseServiceMethod(req)
 	start := time.Now()
 	ctx := req.Context()

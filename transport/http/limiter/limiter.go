@@ -54,7 +54,7 @@ type Handler struct {
 
 // ServeHTTP enforces the configured limiter.
 //
-// Ignorable paths (health/metrics/etc.) bypass limiting (see `net/http/strings.IsIgnorable`).
+// Service-owned operation paths (health/metrics/etc.) bypass limiting (see `net/http/strings.IsOperationPath`).
 //
 // Behavior:
 //   - If `Take` returns an error, it writes an internal server error response.

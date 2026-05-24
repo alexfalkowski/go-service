@@ -87,7 +87,7 @@ type Handler struct {
 
 // ServeHTTP verifies the request Authorization token and stores the verified subject in the context.
 //
-// Ignorable paths (health/metrics/etc.) bypass verification (see `net/http/strings.IsIgnorable`).
+// Service-owned operation paths (health/metrics/etc.) bypass verification (see `net/http/strings.IsOperationPath`).
 //
 // The handler expects an Authorization value to be available in the request context (typically injected by
 // `net/http/meta.Handler`). It verifies the token using verifier, scoping verification to the request path.
