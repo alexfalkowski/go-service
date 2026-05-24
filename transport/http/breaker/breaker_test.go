@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	"github.com/stretchr/testify/require"
 )
@@ -30,6 +31,32 @@ func TestRoundTripperOpensOnTransportError(t *testing.T) {
 	res, err = rt.RoundTrip(req)
 	require.Nil(t, res)
 	require.ErrorIs(t, err, breaker.ErrOpenState)
+}
+
+func TestRoundTripperClosesBodyWhenBreakerIsOpen(t *testing.T) {
+	rt := breaker.NewRoundTripper(
+		&test.StatusRoundTripper{Status: http.StatusInternalServerError},
+		breaker.WithSettings(breaker.Settings{
+			ReadyToTrip: func(counts breaker.Counts) bool {
+				return counts.ConsecutiveFailures >= 1
+			},
+		}),
+	)
+	first, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(first)
+	require.NoError(t, err)
+	require.NoError(t, res.Body.Close())
+
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", body)
+	require.NoError(t, err)
+
+	res, err = rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, breaker.ErrOpenState)
+	require.True(t, body.Closed)
 }
 
 func TestRoundTripperOpensOnFailureStatus(t *testing.T) {

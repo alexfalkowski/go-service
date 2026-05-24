@@ -116,6 +116,11 @@ matching skill for the task.
   attribute construction, logging/export code that records queries directly, or
   a supported upstream option that can sanitize this behavior without mutating
   the outbound request.
+- HTTP client `RoundTripper` implementations that can return locally before
+  delegating to another `RoundTripper` must make request-body ownership explicit
+  with `net/http.ClosingRoundTripper`. Return the closing adapter's close-body
+  flag as true only for local rejection paths, and false after delegating
+  because the delegated transport owns `req.Body` closure.
 - gRPC telemetry logging intentionally records raw error values for operator
   diagnostics. Client-facing safety is handled by gRPC status/error rendering;
   logs are backend observability data and should be protected by deployment log
