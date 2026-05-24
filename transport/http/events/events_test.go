@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	transportevents "github.com/alexfalkowski/go-service/v2/transport/http/events"
@@ -96,8 +97,7 @@ func TestSenderWithWebhookDoesNotFollowCrossOriginRedirect(t *testing.T) {
 	hook, err := hooks.NewHook(test.FS, test.NewHook())
 	require.NoError(t, err)
 
-	sender, err := transportevents.NewSender(httphooks.NewWebhook(hook, uuid.NewGenerator()))
-	require.NoError(t, err)
+	sender := transportevents.NewSender(httphooks.NewWebhook(hook, uuid.NewGenerator()))
 
 	e := events.NewEvent()
 	e.SetSource("example/uri")
@@ -108,6 +108,41 @@ func TestSenderWithWebhookDoesNotFollowCrossOriginRedirect(t *testing.T) {
 	require.True(t, protocol.IsNACK(result))
 	require.NotEmpty(t, trustedSignature)
 	require.Empty(t, attackerSignature)
+}
+
+func TestSenderUsesStructuredEncoding(t *testing.T) {
+	contentTypes := make(chan string, 1)
+	specVersions := make(chan string, 1)
+	bodies := make(chan string, 1)
+	readErrors := make(chan error, 1)
+
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		data, _, err := io.ReadAll(req.Body)
+		contentTypes <- req.Header.Get("Content-Type")
+		specVersions <- req.Header.Get("Ce-Specversion")
+		bodies <- bytes.String(data)
+		readErrors <- err
+
+		res.WriteHeader(http.StatusNoContent)
+	}))
+	t.Cleanup(server.Close)
+
+	sender := transportevents.NewSender(nil)
+
+	e := events.NewEvent()
+	e.SetID("event-1")
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
+
+	result := sender.Send(events.ContextWithTarget(t.Context(), server.URL+"/events"), e)
+	require.NoError(t, <-readErrors)
+	require.True(t, protocol.IsACK(result))
+	require.Equal(t, "application/cloudevents+json", <-contentTypes)
+	require.Empty(t, <-specVersions)
+	body := <-bodies
+	require.Contains(t, body, `"id":"event-1"`)
+	require.Contains(t, body, `"type":"example.type"`)
 }
 
 func TestReceiveUsesServerMaxReceiveSizeBeforeWebhookVerification(t *testing.T) {

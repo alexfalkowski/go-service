@@ -23,7 +23,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -153,7 +152,7 @@ type World struct {
 	*cloudevents.Event
 	*events.Receiver
 	*cache.Cache
-	Sender client.Client
+	Sender *events.Sender
 	Rest   *rest.Client
 
 	DB         *sql.DBs

@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -71,6 +72,22 @@ func TestSameOriginRedirect(t *testing.T) {
 			require.ErrorIs(t, err, tt.want)
 		})
 	}
+}
+
+func TestSameOrigin(t *testing.T) {
+	prev, err := url.Parse("https://example.com/start")
+	require.NoError(t, err)
+
+	same, err := url.Parse("https://example.com/next")
+	require.NoError(t, err)
+
+	different, err := url.Parse("https://other.example.com/next")
+	require.NoError(t, err)
+
+	require.True(t, http.SameOrigin(prev, same))
+	require.False(t, http.SameOrigin(prev, different))
+	require.False(t, http.SameOrigin(nil, same))
+	require.False(t, http.SameOrigin(prev, nil))
 }
 
 func TestIgnoreRedirect(t *testing.T) {

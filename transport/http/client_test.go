@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"net/http/httptest"
 	"testing"
 
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
@@ -41,4 +42,32 @@ func TestClientWithTokenDoesNotFollowCrossOriginRedirect(t *testing.T) {
 	require.NoError(t, err)
 
 	require.ErrorIs(t, client.CheckRedirect(next, []*http.Request{prev}), http.ErrUseLastResponse)
+}
+
+func TestRoundTripperWithTokenDoesNotSendAuthorizationToCrossOriginRedirect(t *testing.T) {
+	var attackerAuthorization string
+	attacker := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
+		attackerAuthorization = req.Header.Get("Authorization")
+	}))
+	t.Cleanup(attacker.Close)
+
+	var trustedAuthorization string
+	trusted := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		trustedAuthorization = req.Header.Get("Authorization")
+		res.Header().Set("Location", attacker.URL+"/target")
+		res.WriteHeader(http.StatusTemporaryRedirect)
+	}))
+	t.Cleanup(trusted.Close)
+
+	rt, err := transporthttp.NewRoundTripper(
+		transporthttp.WithClientTokenGenerator(env.UserID("service-user"), test.NewGenerator("secret", nil)),
+	)
+	require.NoError(t, err)
+
+	client := &http.Client{Transport: rt}
+	res, err := client.Get(trusted.URL + "/start")
+	require.ErrorIs(t, err, http.ErrUseLastResponse)
+	require.Nil(t, res)
+	require.Equal(t, "Bearer secret", trustedAuthorization)
+	require.Empty(t, attackerAuthorization)
 }
