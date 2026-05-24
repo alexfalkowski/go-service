@@ -15,9 +15,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConfigRejectsNegativeExpiration(t *testing.T) {
-	cfg := &ssh.Config{Expiration: -time.Second}
-	require.Error(t, test.Validator.Struct(cfg))
+func TestConfigRejectsInvalidExpiration(t *testing.T) {
+	tests := []struct {
+		config *ssh.Config
+		name   string
+	}{
+		{name: "negative", config: &ssh.Config{Expiration: -time.Second}},
+		{name: "zero", config: &ssh.Config{}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Error(t, test.Validator.Struct(tt.config))
+		})
+	}
 }
 
 func TestValid(t *testing.T) {
