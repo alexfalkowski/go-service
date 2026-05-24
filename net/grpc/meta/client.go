@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -89,7 +90,7 @@ func clientUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgen
 	if ua := meta.UserAgent(ctx); !ua.IsEmpty() {
 		return ua
 	}
-	if ua := md.Get("user-agent"); len(ua) > 0 {
+	if ua := md.Get("user-agent"); len(ua) > 0 && !strings.IsEmpty(ua[0]) {
 		return meta.String(ua[0])
 	}
 
@@ -100,7 +101,7 @@ func clientRequestID(ctx context.Context, generator id.Generator, md metadata.MD
 	if id := meta.RequestID(ctx); !id.IsEmpty() {
 		return id
 	}
-	if id := md.Get("request-id"); len(id) > 0 {
+	if id := md.Get("request-id"); len(id) > 0 && !strings.IsEmpty(id[0]) {
 		return meta.String(id[0])
 	}
 
