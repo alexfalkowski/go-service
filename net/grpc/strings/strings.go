@@ -1,6 +1,9 @@
 package strings
 
-import "github.com/alexfalkowski/go-service/v2/strings"
+import (
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
+	"github.com/alexfalkowski/go-service/v2/strings"
+)
 
 const (
 	// Empty is an alias for strings.Empty.
@@ -49,16 +52,12 @@ func Join(sep string, ss ...string) string {
 //
 // Matching is exact for the standard gRPC health service methods.
 func IsOperationMethod(name string) bool {
-	service, method, ok := SplitServiceMethod(name)
-	if !ok {
+	switch name {
+	case health.CheckFullMethodName, health.ListFullMethodName, health.WatchFullMethodName:
+		return true
+	default:
 		return false
 	}
-
-	if service != "grpc.health.v1.Health" {
-		return false
-	}
-
-	return method == "Check" || method == "Watch" || method == "List"
 }
 
 // IsFullMethod reports whether name is of the form `/package.service/method`.
