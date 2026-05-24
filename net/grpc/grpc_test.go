@@ -14,6 +14,28 @@ func TestStatusText(t *testing.T) {
 	require.Equal(t, codes.Unauthenticated.String(), grpc.StatusText(codes.Unauthenticated))
 }
 
+func TestParseServiceMethod(t *testing.T) {
+	tests := []struct {
+		name    string
+		full    string
+		service string
+		method  string
+	}{
+		{name: "full method", full: "/greet.v1.Greeter/SayHello", service: "greet.v1.Greeter", method: "SayHello"},
+		{name: "missing leading slash", full: "greet.v1.Greeter/SayHello", service: "root", method: "root"},
+		{name: "missing method", full: "/greet.v1.Greeter", service: "root", method: "root"},
+		{name: "empty method", full: "/greet.v1.Greeter/", service: "root", method: "root"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			service, method := grpc.ParseServiceMethod(test.full)
+			require.Equal(t, test.service, service)
+			require.Equal(t, test.method, method)
+		})
+	}
+}
+
 func TestNewServerWithAdvancedOptions(t *testing.T) {
 	opts := options.Map{
 		"max_concurrent_streams":   "7",

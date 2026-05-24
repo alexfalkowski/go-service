@@ -11,6 +11,7 @@
 //   - thin helper functions that forward to common constructors and options
 //     such as StatsHandler, Header, ChainUnaryInterceptor, Creds, NewTLS,
 //     NewInsecureCredentials, and UseCompressor
+//   - ParseServiceMethod for deriving service/method names from gRPC full method strings
 //   - a convenience NewServer constructor that applies standard server-side
 //     keepalive configuration and registers gRPC reflection
 //

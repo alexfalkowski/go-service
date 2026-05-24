@@ -43,7 +43,7 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
-		service, method, _ := strings.SplitServiceMethod(info.FullMethod)
+		service, method := grpc.ParseServiceMethod(info.FullMethod)
 		start := time.Now()
 		resp, err := handler(ctx, req)
 
@@ -85,7 +85,7 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 			return handler(srv, stream)
 		}
 
-		service, method, _ := strings.SplitServiceMethod(info.FullMethod)
+		service, method := grpc.ParseServiceMethod(info.FullMethod)
 		start := time.Now()
 		ctx := stream.Context()
 		err := handler(srv, stream)
@@ -127,7 +127,7 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 // contain credentials, tokens, request data, or other secrets.
 func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		service, method, _ := strings.SplitServiceMethod(fullMethod)
+		service, method := grpc.ParseServiceMethod(fullMethod)
 		start := time.Now()
 		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
 
@@ -172,7 +172,7 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 // contain credentials, tokens, request data, or other secrets.
 func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		service, method, _ := strings.SplitServiceMethod(fullMethod)
+		service, method := grpc.ParseServiceMethod(fullMethod)
 		start := time.Now()
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
 
