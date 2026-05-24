@@ -45,6 +45,13 @@ type Verifier struct {
 // Note: Ed25519 verification is a boolean check and does not return an error on failure. This method
 // returns a sentinel error to provide a uniform verification API across crypto implementations.
 func (v *Verifier) Verify(sig, msg []byte) error {
+	if v == nil {
+		return crypto.ErrInvalidKeySize
+	}
+	if len(v.PublicKey) != ed25519.PublicKeySize {
+		return crypto.ErrInvalidKeySize
+	}
+
 	ok := ed25519.Verify(v.PublicKey, msg, sig)
 	if !ok {
 		return crypto.ErrInvalidMatch

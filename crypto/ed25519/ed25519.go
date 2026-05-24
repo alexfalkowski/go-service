@@ -10,13 +10,28 @@ import (
 // PrivateKeySize is the size, in bytes, of an Ed25519 private key.
 const PrivateKeySize = ed25519.PrivateKeySize
 
+// PublicKeySize is the size, in bytes, of an Ed25519 public key.
+const PublicKeySize = ed25519.PublicKeySize
+
 // PrivateKey is the type of an Ed25519 private key.
 type PrivateKey = ed25519.PrivateKey
+
+// PublicKey is the type of an Ed25519 public key.
+type PublicKey = ed25519.PublicKey
 
 // ValidatePrivateKey reports whether key has the Ed25519 private-key size required for signing.
 func ValidatePrivateKey(key ed25519.PrivateKey) error {
 	if len(key) != PrivateKeySize {
 		return fmt.Errorf("ed25519: invalid private key size %d: %w", len(key), errors.ErrInvalidKeySize)
+	}
+
+	return nil
+}
+
+// ValidatePublicKey reports whether key has the Ed25519 public-key size required for verification.
+func ValidatePublicKey(key ed25519.PublicKey) error {
+	if len(key) != PublicKeySize {
+		return fmt.Errorf("ed25519: invalid public key size %d: %w", len(key), errors.ErrInvalidKeySize)
 	}
 
 	return nil

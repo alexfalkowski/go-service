@@ -136,6 +136,27 @@ func TestInvalidSignerPrivateKey(t *testing.T) {
 	}
 }
 
+func TestInvalidVerifierPublicKey(t *testing.T) {
+	tests := []struct {
+		verifier *ssh.Verifier
+		name     string
+	}{
+		{name: "nil verifier", verifier: nil},
+		{name: "zero value verifier", verifier: &ssh.Verifier{}},
+		{name: "short public key", verifier: &ssh.Verifier{PublicKey: []byte("short")}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var err error
+			require.NotPanics(t, func() {
+				err = tt.verifier.Verify(strings.Bytes("sig"), strings.Bytes("test"))
+			})
+			require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+		})
+	}
+}
+
 func TestInvalidKeyType(t *testing.T) {
 	public, private, err := rsa.NewGenerator(rand.NewGenerator(rand.NewReader())).Generate()
 	require.NoError(t, err)
