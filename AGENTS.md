@@ -83,6 +83,18 @@ matching skill for the task.
   passing absurd configured `bytes.Size` values directly to it; callers that
   compare configuration-sized limits, such as cache decode size guards, must
   guard those limits before calling it.
+- `bytes.ParseSize` intentionally delegates human-readable size parsing to
+  `github.com/docker/go-units` for compatibility with existing configuration
+  values. Do not flag upstream float-to-int range behavior from absurdly large
+  size strings as a local issue unless this repository adds a public promise to
+  reject every representability edge case or a concrete supported path shows an
+  unsafe limit being applied from such a value. Do not flag accepted suffix
+  spellings such as `MiB` merely because `go-units.FromHumanSize` treats them
+  as decimal multipliers; that compatibility is documented local behavior. Do
+  not flag `bytes.Size` marshal/unmarshal round-trip failures for exabyte-scale
+  values solely because `go-units.HumanSize` can format suffixes that
+  `go-units.FromHumanSize` does not parse; that is accepted upstream behavior
+  unless this repository adds a strict round-trip promise for those values.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
 - PostgreSQL DSN security options, including TLS/`sslmode`, are intentionally
   part of the DSN supplied by the service configuration. `database/sql/pg`

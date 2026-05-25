@@ -70,8 +70,8 @@ func (m Map) Uint32(key string, fallback uint32) uint32 {
 
 // Size returns a byte-size option for key if present; otherwise it returns fallback.
 //
-// The stored value must be a human-readable SI size string accepted by bytes.ParseSize, such as "64B",
-// "2MB", or "4GB".
+// The stored value must be a human-readable decimal size string accepted by bytes.ParseSize, such
+// as "64B", "2MB", or "4GB".
 //
 // Failure mode: if key is present but the value cannot be parsed as a size, Size will panic because
 // it uses bytes.MustParseSize. Use this helper only when the option values are validated or come from
