@@ -8,7 +8,11 @@ import (
 // NoPrefix is a convenience constant for passing an empty prefix to export helpers.
 const NoPrefix = strings.Empty
 
-const meta = context.Key("meta")
+// contextKey is the package-private type used for metadata context storage.
+type contextKey struct{}
+
+// metaKey keeps metadata storage isolated from exported string-backed context keys.
+var metaKey contextKey
 
 // WithAttributes returns a copy of ctx with all provided attributes stored.
 //
@@ -20,7 +24,7 @@ func WithAttributes(ctx context.Context, pairs ...Pair) context.Context {
 		return ctx
 	}
 
-	return context.WithValue(ctx, meta, attributes(ctx).AddPairs(pairs...))
+	return context.WithValue(ctx, metaKey, attributes(ctx).AddPairs(pairs...))
 }
 
 // Attribute returns the stored attribute value for key.

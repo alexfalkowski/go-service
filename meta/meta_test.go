@@ -3,6 +3,7 @@ package meta_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/stretchr/testify/require"
 )
@@ -55,6 +56,19 @@ func TestWithAttributesReturnsSameContextWithoutPairs(t *testing.T) {
 	ctx := t.Context()
 
 	require.Same(t, ctx, meta.WithAttributes(ctx))
+}
+
+func TestWithAttributesDoesNotCollideWithStringContextKey(t *testing.T) {
+	ctx := context.WithValue(t.Context(), context.Key("meta"), "bad")
+
+	require.NotPanics(t, func() {
+		require.True(t, meta.Attribute(ctx, meta.RequestIDKey).IsEmpty())
+	})
+
+	ctx = meta.WithAttributes(ctx, meta.WithRequestID(meta.String("request-id")))
+
+	require.Equal(t, "bad", ctx.Value(context.Key("meta")))
+	require.Equal(t, meta.String("request-id"), meta.Attribute(ctx, meta.RequestIDKey))
 }
 
 func TestPairHelpers(t *testing.T) {
