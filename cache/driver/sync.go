@@ -36,7 +36,7 @@ func (d *syncDriver) Fetch(ctx context.Context, key string) (string, error) {
 	}
 
 	if !value.expiresAt.IsZero() && time.Now().After(value.expiresAt) {
-		d.items.Delete(key)
+		d.items.CompareAndDelete(key, value)
 
 		return "", ErrExpired
 	}
