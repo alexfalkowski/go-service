@@ -2,7 +2,6 @@ package base64
 
 import (
 	"encoding/base64"
-	"math"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -21,10 +20,6 @@ func Encode(src []byte) string {
 // EncodedLen returns the length in bytes of the standard base64 encoding of size.
 func EncodedLen(size bytes.Size) int64 {
 	n := size.Bytes()
-	if n > math.MaxInt {
-		return math.MaxInt64
-	}
-
 	return int64(base64.StdEncoding.EncodedLen(int(n)))
 }
 

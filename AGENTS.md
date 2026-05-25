@@ -42,6 +42,8 @@ matching skill for the task.
 - `config.NewDecoder` resolves `-i` as `file:<path>`, `env:<ENV_VAR>`, or a default config file named for the service.
 - Default file lookup checks the executable directory, `$XDG_CONFIG_HOME/<serviceName>/`, and `/etc/<serviceName>/`.
 - Many config fields use source strings through `os.FS.ReadSource`: `env:NAME`, `file:/path`, or a literal value.
+- Service configuration files should contain configuration values and secret
+  source references, not raw passwords or credentials.
 - Nil pointer sub-configs usually mean "disabled".
 - Standard module wiring is the supported path. Do not flag hypothetical failures that require hand-wiring an incomplete DI graph unless the public API explicitly promises that custom construction mode.
 
@@ -76,6 +78,11 @@ matching skill for the task.
   concurrent manual `cache.Register`, `cache.Get`, or `cache.Persist` calls
   unless a concrete public API path starts promising concurrent manual
   re-registration or the repository adds such a runtime path.
+- `encoding/base64.EncodedLen` intentionally follows the standard library's
+  `EncodedLen(int)` contract. Do not flag hypothetical integer overflow from
+  passing absurd configured `bytes.Size` values directly to it; callers that
+  compare configuration-sized limits, such as cache decode size guards, must
+  guard those limits before calling it.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
 - PostgreSQL DSN security options, including TLS/`sslmode`, are intentionally
   part of the DSN supplied by the service configuration. `database/sql/pg`
@@ -205,6 +212,12 @@ matching skill for the task.
   behavior, where later values replace earlier values. Do not flag this as a
   finding unless a public API starts promising duplicate-key rejection or this
   repository adds a strict JSON decoder mode.
+- HJSON duplicate-key errors intentionally preserve upstream diagnostic detail,
+  including duplicate decoded values, to keep bad configuration files
+  debuggable. Configuration files are not expected to contain raw passwords or
+  credentials; they should contain source references such as `env:NAME` or
+  `file:/path`. Do not flag this as a secret leak unless a concrete code path
+  starts placing raw secrets into HJSON configuration contrary to that policy.
 
 ## Testing, Style, And Docs
 
