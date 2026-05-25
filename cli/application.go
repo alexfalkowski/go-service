@@ -132,7 +132,21 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 				return a.prefix(name, err)
 			}
 
-			return a.prefix(name, app.Stop(a.stopContext(ctx)))
+			var code int
+			select {
+			case signal := <-app.Wait():
+				code = signal.ExitCode
+			default:
+			}
+
+			if err := app.Stop(a.stopContext(ctx)); err != nil {
+				return a.prefix(name, err)
+			}
+			if code > 0 {
+				return a.prefix(name, shutdownError(code))
+			}
+
+			return nil
 		},
 	}
 	runtime.Must(a.register(cmd))
