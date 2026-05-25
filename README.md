@@ -841,8 +841,9 @@ on clients when the dial address differs from the certificate DNS name.
 
 Important note:
 
-- If you are using `go-service-template` or composing the standard bundles such as `module.Server`, `module.Client`, or `transport.Module`, the required transport registration is handled for you by DI.
-- You only need to call transport-level `Register(...)` functions yourself when you intentionally wire transports manually or compose lower-level packages outside the standard module graph.
+- If you are using `go-service-template` or composing server transport bundles such as `module.Server` or `transport.Module`, the required transport registration is handled for you by DI.
+- `module.Client` does not wire transports by default. Add `transport.Module`, the relevant transport submodule, or call the transport-level `Register(...)` functions when a client process constructs HTTP or gRPC TLS config from source strings such as `file:`.
+- You only need to call transport-level `Register(...)` functions yourself when you intentionally wire transports manually or compose lower-level packages outside the transport module graph.
 - If you are wiring server lifecycle manually, use `net/server.Register(...)`.
 
 ### Forwarded IPs and reflection

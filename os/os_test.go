@@ -16,6 +16,7 @@ func TestEnv(t *testing.T) {
 	value, ok := os.LookupEnv(key)
 	require.True(t, ok)
 	require.Equal(t, "test", value)
+	require.Contains(t, os.Environ(), key+"=test")
 	require.NoError(t, os.Unsetenv(key))
 	value, ok = os.LookupEnv(key)
 	require.False(t, ok)

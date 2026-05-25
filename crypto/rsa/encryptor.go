@@ -46,7 +46,7 @@ type Encryptor struct {
 //   - hash: SHA-512
 //   - label: nil
 //
-// The randomness source is the injected crypto/rand generator.
+// The randomness source is the injected generator's reader.
 func (e *Encryptor) Encrypt(msg []byte) ([]byte, error) {
-	return rsa.EncryptOAEP(sha512.New(), e.generator, e.publicKey, msg, nil)
+	return rsa.EncryptOAEP(sha512.New(), e.generator.Reader(), e.publicKey, msg, nil)
 }

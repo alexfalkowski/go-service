@@ -1,6 +1,7 @@
 package rand
 
 import (
+	"crypto/fips140"
 	"crypto/rand"
 	"math/big"
 
@@ -19,13 +20,16 @@ var ErrInvalidSize = errors.New("rand: invalid size")
 //
 // This is a thin wrapper around crypto/rand.Reader.
 func NewReader() Reader {
-	return rand.Reader
+	if fips140.Enforced() {
+		return rand.Reader
+	}
+
+	return Reader(rand.Reader)
 }
 
 // Reader is a cryptographically secure random source.
 //
-// It is defined as an aliasable type so it can be injected/mocked in tests while still behaving like
-// an io.Reader.
+// It is intentionally the same shape as io.Reader while remaining part of this package's crypto API.
 type Reader io.Reader
 
 // NewGenerator constructs a Generator that draws randomness from reader.
@@ -41,6 +45,11 @@ func NewGenerator(reader Reader) *Generator {
 // bytes or random text.
 type Generator struct {
 	reader Reader
+}
+
+// Reader returns the source used by the Generator.
+func (g *Generator) Reader() Reader {
+	return g.reader
 }
 
 // Read fills b with random bytes read from the underlying Reader.
