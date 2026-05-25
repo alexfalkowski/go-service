@@ -137,8 +137,17 @@ type RoundTripper struct {
 // this implementation relies on `req.GetBody`; when it is nil for a request with a body, the first attempt
 // is still executed but any retryable result is treated as non-retryable to avoid reusing a consumed body.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	return http.ClosingRoundTripper(r.roundTrip).RoundTrip(req)
+}
+
+func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool) {
+	if err := req.Context().Err(); err != nil {
+		return nil, err, true
+	}
+
 	if r.policy != nil && !r.policy(req) {
-		return r.RoundTripper.RoundTrip(req)
+		res, err := r.RoundTripper.RoundTrip(req)
+		return res, err, false
 	}
 
 	attempt := &roundTripAttempt{}
@@ -149,7 +158,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	backoff := retry.WithMaxRetries(r.maxRetries, retry.NewConstant(r.backoff.Duration()))
 	res, err := retry.DoValue(req.Context(), backoff, operation)
-	return res, err
+	return res, err, false
 }
 
 func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *roundTripAttempt) (*http.Response, error) {
