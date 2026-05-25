@@ -4,8 +4,10 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/stretchr/testify/require"
@@ -193,6 +195,10 @@ func sayStreamHello(t *testing.T, client v1.GreeterServiceClient) error {
 	}
 
 	if err := stream.Send(&v1.SayStreamHelloRequest{Name: "test"}); err != nil {
+		if errors.Is(err, io.EOF) {
+			_, err = stream.Recv()
+		}
+
 		return err
 	}
 

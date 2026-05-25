@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
@@ -52,7 +53,12 @@ type Server struct {
 //   - If the requested service does not exist, it returns `codes.NotFound`.
 //   - Otherwise, it returns a `Response` whose status is derived from the observer's error state.
 func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response, error) {
-	observer, err := s.server.Observer(req.GetService(), "grpc")
+	service := req.GetService()
+	if strings.IsEmpty(service) {
+		return &health.Response{Status: s.overallStatus()}, nil
+	}
+
+	observer, err := s.server.Observer(service, "grpc")
 	if err != nil {
 		return nil, status.SafeError(codes.NotFound, err)
 	}
@@ -111,7 +117,21 @@ func (s *Server) status(observer *subscriber.Observer) health.Status {
 	return health.Serving
 }
 
+func (s *Server) overallStatus() health.Status {
+	for _, observer := range s.server.Observers("grpc") {
+		if s.status(observer) != health.Serving {
+			return health.NotServing
+		}
+	}
+
+	return health.Serving
+}
+
 func (s *Server) watchStatus(service string) health.Status {
+	if strings.IsEmpty(service) {
+		return s.overallStatus()
+	}
+
 	observer, err := s.server.Observer(service, "grpc")
 	if err != nil {
 		return health.ServiceUnknown

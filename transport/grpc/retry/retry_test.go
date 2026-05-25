@@ -31,6 +31,23 @@ func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 	require.Equal(t, 1, calls)
 }
 
+func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsZero(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(&config.Config{
+		Attempts: 0,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	})
+
+	calls := 0
+	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.Unavailable, "unavailable")
+	})
+
+	require.Error(t, err)
+	require.Equal(t, 1, calls)
+}
+
 func TestUnaryClientInterceptorRetriesSafeMethodWhenAttemptsIsTwo(t *testing.T) {
 	interceptor := retry.UnaryClientInterceptor(&config.Config{
 		Attempts: 2,
@@ -104,6 +121,35 @@ func TestUnaryClientInterceptorDoesNotRetryDataLossByDefault(t *testing.T) {
 
 	require.Error(t, err)
 	require.Equal(t, 1, calls)
+}
+
+func TestUnaryClientInterceptorDoesNotRetryContextStatusCodesByDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		code codes.Code
+	}{
+		{name: "deadline exceeded", code: codes.DeadlineExceeded},
+		{name: "canceled", code: codes.Canceled},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interceptor := retry.UnaryClientInterceptor(&config.Config{
+				Attempts: 2,
+				Timeout:  time.Second,
+				Backoff:  time.Millisecond,
+			})
+
+			calls := 0
+			err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+				calls++
+				return status.Error(tt.code, tt.name)
+			})
+
+			require.Error(t, err)
+			require.Equal(t, 1, calls)
+		})
+	}
 }
 
 func TestUnaryClientInterceptorDoesNotRetryWhenPolicyDeniesMethod(t *testing.T) {
