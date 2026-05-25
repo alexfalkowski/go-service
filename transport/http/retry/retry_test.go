@@ -357,6 +357,30 @@ func TestRoundTripperReturnsGetBodyError(t *testing.T) {
 	require.Equal(t, 1, rt.Calls)
 }
 
+func TestRoundTripperClosesBodyWhenContextAlreadyCanceled(t *testing.T) {
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusOK}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+	ctx, cancel := context.WithCancel(ctx)
+	cancel()
+
+	body := &test.TrackedBody{Reader: strings.NewReader("hello")}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://example.com", body)
+	require.NoError(t, err)
+	req.Body = body
+
+	res, err := retrying.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, context.Canceled)
+	require.Equal(t, 0, rt.Calls)
+	require.True(t, body.Closed)
+}
+
 func TestRoundTripperPreservesRetryableStatusError(t *testing.T) {
 	rt := &test.ErrorRoundTripper{Err: status.Errorf(http.StatusTooManyRequests, "limiter: too many requests")}
 	retrying := retry.NewRoundTripper(&retry.Config{
