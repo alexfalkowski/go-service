@@ -79,7 +79,7 @@ func (s Storage) key(prefix, key string) string {
 }
 
 func attributes(ctx context.Context) Storage {
-	m := ctx.Value(meta)
+	m := ctx.Value(metaKey)
 	if m == nil {
 		// Nil Storage avoids allocating on read-only paths; map reads, ranges, and the first AddPairs call are nil-safe.
 		return nil
