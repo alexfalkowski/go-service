@@ -1,17 +1,16 @@
 package driver
 
 import (
+	"fmt"
+
 	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/redis/go-redis/v9"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
-type logger struct{}
-
-// Printf implements the redis.Logger interface and is intentionally a no-op.
-func (logger) Printf(_ context.Context, _ string, _ ...any) {
-	// Do nothing here
+type redisLogger struct {
+	logger *logger.Logger
 }
 
-func init() {
-	redis.SetLogger(&logger{})
+func (l redisLogger) Printf(ctx context.Context, format string, args ...any) {
+	l.logger.LogAttrs(ctx, logger.LevelWarn, logger.NewText("redis: "+fmt.Sprintf(format, args...)))
 }

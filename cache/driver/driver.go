@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -35,6 +36,9 @@ type DriverParams struct {
 	Lifecycle di.Lifecycle
 	FS        *os.FS
 	Config    *cache.Config
+
+	// Logger routes Redis client logs through the go-service logger when configured.
+	Logger *logger.Logger
 }
 
 // NewDriver constructs a cache Driver for the configured backend.
@@ -89,6 +93,9 @@ func NewDriver(params DriverParams) (Driver, error) {
 
 		opts.MaintNotificationsConfig = &notifications.Config{
 			Mode: notifications.ModeDisabled,
+		}
+		if params.Logger != nil {
+			client.SetLogger(redisLogger{logger: params.Logger})
 		}
 
 		redisClient := client.NewClient(opts)

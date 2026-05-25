@@ -70,6 +70,12 @@ matching skill for the task.
   return the raw serve error from `Stop`.
 - `telemetry.Register()` installs the global OpenTelemetry propagator.
 - `cache.Register(...)` sets the package-level cache used by generic cache helpers.
+  It is intentionally called by the supported wiring path during startup/test
+  setup, not as a concurrent runtime reconfiguration API. Do not flag
+  unsynchronized global-state or nil-pointer issues based solely on hypothetical
+  concurrent manual `cache.Register`, `cache.Get`, or `cache.Persist` calls
+  unless a concrete public API path starts promising concurrent manual
+  re-registration or the repository adds such a runtime path.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
 - PostgreSQL DSN security options, including TLS/`sslmode`, are intentionally
   part of the DSN supplied by the service configuration. `database/sql/pg`
