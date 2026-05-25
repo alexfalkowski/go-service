@@ -108,6 +108,13 @@ matching skill for the task.
   insecure DSN could be supplied; only report concrete bugs such as accidental
   DSN rewriting, secret leakage, or a public API promise to enforce secure DSN
   policy.
+- SQL OpenTelemetry query text capture is disabled by the supported
+  `database/sql/pg` DI wiring, and ping spans are disabled by the upstream
+  zero-value `otelsql.SpanOptions`. Do not flag lower-level manual
+  `database/sql/telemetry.WithSpanOptions` use solely because a caller could
+  replace those defaults unless a supported config/DI path exposes that option,
+  raw SQL text is emitted by repository code, or the public API starts promising
+  safe merging of arbitrary span options.
 - RSA public-key loading intentionally validates the repository's key-size
   policy and delegates deeper RSA parameter checks, such as public exponent
   usability, to the standard library operations that consume the key. Do not
