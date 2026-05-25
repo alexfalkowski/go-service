@@ -31,8 +31,12 @@ const PB Size = Size(units.PB)
 // It is a named type over int64 so it can expose config-friendly text and JSON
 // marshaling helpers while remaining easy to convert at API boundaries.
 //
-// Size uses the SI units understood by `github.com/docker/go-units`, such as
-// `B`, `kB`, `MB`, `GB`, and `TB`, rather than IEC binary units like `MiB`.
+// Size uses the decimal units understood by `github.com/docker/go-units`, such
+// as `B`, `kB`, `MB`, `GB`, and `TB`.
+//
+// Formatting and parsing intentionally follow go-units compatibility behavior.
+// They are not a strict inverse for exabyte-scale values because go-units can
+// format larger suffixes than FromHumanSize parses.
 type Size int64
 
 // Bytes returns s as a raw byte count.
@@ -84,16 +88,18 @@ func (s *Size) UnmarshalJSON(data []byte) error {
 	return s.UnmarshalText([]byte(text))
 }
 
-// ParseSize parses a human-readable SI size string.
+// ParseSize parses a human-readable decimal size string.
 //
-// The input uses decimal SI units such as `64B`, `2MB`, or `4GB`. Parsing is
-// delegated to `github.com/docker/go-units`.
+// The input uses the suffix compatibility rules from
+// `github.com/docker/go-units.FromHumanSize`. Parsed values are decimal sizes,
+// so accepted suffix spellings such as `MB` and `MiB` both use the decimal `M`
+// multiplier.
 func ParseSize(s string) (Size, error) {
 	size, err := units.FromHumanSize(s)
 	return Size(size), err
 }
 
-// MustParseSize parses s as a human-readable SI size string and panics if parsing fails.
+// MustParseSize parses s as a human-readable decimal size string and panics if parsing fails.
 //
 // This helper is intended for strict startup/configuration paths where an invalid
 // size is considered a fatal configuration/programming error. It panics by
