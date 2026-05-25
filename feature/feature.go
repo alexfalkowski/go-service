@@ -42,8 +42,8 @@ type ProviderParams struct {
 //   - If a MetricProvider is available, Register installs OpenTelemetry hooks so evaluations emit metrics
 //     and traces.
 //   - Register appends lifecycle hooks that:
-//   - set the OpenFeature provider during application start (openfeature.SetProviderAndWait), and
-//   - shut down the OpenFeature SDK during application stop (openfeature.Shutdown).
+//   - set the OpenFeature provider during application start, and
+//   - shut down the OpenFeature SDK during application stop.
 func Register(params ProviderParams) {
 	if params.FeatureProvider == nil {
 		return
@@ -57,14 +57,10 @@ func Register(params ProviderParams) {
 	}
 
 	params.Lifecycle.Append(di.Hook{
-		OnStart: func(_ context.Context) error {
-			return openfeature.SetProviderAndWait(params.FeatureProvider)
+		OnStart: func(ctx context.Context) error {
+			return openfeature.SetProviderWithContextAndWait(ctx, params.FeatureProvider)
 		},
-		OnStop: func(_ context.Context) error {
-			openfeature.Shutdown()
-
-			return nil
-		},
+		OnStop: openfeature.ShutdownWithContext,
 	})
 }
 
