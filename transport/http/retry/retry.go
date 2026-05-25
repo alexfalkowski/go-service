@@ -8,11 +8,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 	"github.com/alexfalkowski/go-sync"
 	retryable "github.com/hashicorp/go-retryablehttp"
-	"github.com/sethvargo/go-retry"
 )
 
 // Config is an alias for `github.com/alexfalkowski/go-service/v2/transport/retry.Config`.
@@ -76,7 +76,7 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 //
 // Attempts/backoff:
 // `cfg.Attempts` is interpreted as the total attempt count (initial attempt + retries). Since
-// `sethvargo/go-retry` expects a retry count, NewRoundTripper converts it via `cfg.MaxRetries()`
+// the shared retry helper expects a retry count, NewRoundTripper converts it via `cfg.MaxRetries()`
 // before wrapping the constant backoff in `WithMaxRetries`.
 //
 // Policy behavior:
@@ -124,7 +124,7 @@ type RoundTripper struct {
 //   - it clones the request and replays the body when needed,
 //   - it checks whether the response/status error carries a retryable HTTP status code, and
 //   - it uses `retryablehttp.DefaultRetryPolicy` for transport error classification, and
-//   - if retryable, it returns a retryable error (`retry.RetryableError`) so the backoff schedules another attempt.
+//   - if retryable, it returns a retryable error so the backoff schedules another attempt.
 //
 // When the policy deems the result non-retryable, RoundTrip returns the response/error as produced by the
 // underlying transport.
@@ -156,7 +156,7 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 		return r.attempt(ctx, req, attempt)
 	}
 
-	backoff := retry.WithMaxRetries(r.maxRetries, retry.NewConstant(r.backoff.Duration()))
+	backoff := retry.WithMaxRetries(r.maxRetries, retry.NewConstant(r.backoff))
 	res, err := retry.DoValue(req.Context(), backoff, operation)
 	return res, err, false
 }

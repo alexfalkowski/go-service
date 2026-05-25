@@ -5,9 +5,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
+	"github.com/alexfalkowski/go-service/v2/retry"
+	"github.com/alexfalkowski/go-service/v2/time"
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 )
 
 // Config is an alias for `github.com/alexfalkowski/go-service/v2/transport/retry.Config`.
@@ -48,19 +50,16 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 
 // UnaryClientInterceptor returns a gRPC unary client interceptor that retries failed calls.
 //
-// The interceptor is built using `go-grpc-middleware`'s retry interceptor and is intended to be used on the
-// client side.
-//
 // Behavior:
 //   - It checks whether the logical RPC is eligible for retry using policies.
 //   - It uses the typed per-attempt timeout from cfg.GetTimeout() and the backoff duration from cfg.
 //   - It retries up to `cfg.MaxAttempts()` total attempts (including the initial attempt).
-//   - It applies a per-attempt timeout (`retry.WithPerRetryTimeout`) so each attempt is bounded.
-//   - It uses a linear backoff strategy with a step duration derived from `cfg.GetBackoff()`.
+//   - It applies a per-attempt timeout so each attempt is bounded.
+//   - It uses a constant backoff duration derived from `cfg.GetBackoff()`.
 //
 // Failure classification:
 // Retries are only attempted for selected gRPC status codes. This implementation currently retries on
-// `codes.Unavailable` (see `retry.WithCodes` in the implementation).
+// `codes.Unavailable`.
 //
 // Policy behavior:
 // When no policy is provided, only side-effect-safe unary RPCs are eligible for retry: AIP-style read methods,
@@ -72,20 +71,38 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 // status codes will not be retried by default.
 func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInterceptor {
 	policy := composePolicy(policies)
-	interceptor := retry.UnaryClientInterceptor(
-		retry.WithCodes(codes.Unavailable),
-		retry.WithMax(uint(cfg.MaxAttempts())),
-		retry.WithBackoff(retry.BackoffLinear(cfg.GetBackoff().Duration())),
-		retry.WithPerRetryTimeout(cfg.GetTimeout().Duration()),
-	)
+	maxAttempts := cfg.MaxAttempts()
+	timeout := cfg.GetTimeout()
+	backoffDuration := cfg.GetBackoff()
 
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if !policy(ctx, fullMethod, req) {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
-		return interceptor(ctx, fullMethod, req, resp, conn, invoker, opts...)
+		return invokeWithRetries(ctx, maxAttempts, backoffDuration, func(ctx context.Context) error {
+			attemptCtx, cancel := context.WithTimeout(ctx, timeout)
+			defer cancel()
+
+			return invoker(attemptCtx, fullMethod, req, resp, conn, opts...)
+		})
 	}
+}
+
+func invokeWithRetries(ctx context.Context, maxAttempts uint64, backoffDuration time.Duration, attempt func(context.Context) error) error {
+	if maxAttempts == 0 {
+		return attempt(ctx)
+	}
+
+	retries := retry.WithMaxRetries(maxAttempts-1, retry.NewConstant(backoffDuration))
+	return retry.Do(ctx, retries, func(ctx context.Context) error {
+		err := attempt(ctx)
+		if err == nil || status.Code(err) != codes.Unavailable {
+			return err
+		}
+
+		return retry.RetryableError(err)
+	})
 }
 
 func composePolicy(policies []Policy) Policy {

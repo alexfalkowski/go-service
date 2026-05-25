@@ -46,7 +46,7 @@ func TestCheck(t *testing.T) {
 func TestInvalidCheck(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
-	requireObservedHealth(t, world.GRPCHealth, test.Name.String(), false)
+	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -58,6 +58,37 @@ func TestInvalidCheck(t *testing.T) {
 	ctx := meta.NewOutgoingContext(t.Context(), md)
 
 	resp, err := client.Check(ctx, req)
+	require.NoError(t, err)
+
+	require.Equal(t, health.NotServing, resp.GetStatus())
+}
+
+func TestOverallCheck(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
+	requireGRPCReady(t, world)
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := health.NewClient(conn)
+
+	resp, err := client.Check(t.Context(), &health.Request{})
+	require.NoError(t, err)
+
+	require.Equal(t, health.Serving, resp.GetStatus())
+}
+
+func TestInvalidOverallCheck(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
+	requireGRPCReady(t, world)
+	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := health.NewClient(conn)
+
+	resp, err := client.Check(t.Context(), &health.Request{})
 	require.NoError(t, err)
 
 	require.Equal(t, health.NotServing, resp.GetStatus())
@@ -187,7 +218,7 @@ func TestWatchServerLimiter(t *testing.T) {
 func TestInvalidWatch(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
-	requireObservedHealth(t, world.GRPCHealth, test.Name.String(), false)
+	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -199,6 +230,49 @@ func TestInvalidWatch(t *testing.T) {
 	defer cancel()
 
 	wc, err := client.Watch(ctx, req)
+	require.NoError(t, err)
+
+	resp, err := wc.Recv()
+	require.NoError(t, err)
+
+	require.Equal(t, health.NotServing, resp.GetStatus())
+	requireWatchStaysOpen(t, cancel, wc)
+}
+
+func TestOverallWatch(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
+	requireGRPCReady(t, world)
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := health.NewClient(conn)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	wc, err := client.Watch(ctx, &health.Request{})
+	require.NoError(t, err)
+
+	resp, err := wc.Recv()
+	require.NoError(t, err)
+
+	require.Equal(t, health.Serving, resp.GetStatus())
+	requireWatchStaysOpen(t, cancel, wc)
+}
+
+func TestInvalidOverallWatch(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
+	requireGRPCReady(t, world)
+	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := health.NewClient(conn)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	wc, err := client.Watch(ctx, &health.Request{})
 	require.NoError(t, err)
 
 	resp, err := wc.Recv()
@@ -348,17 +422,13 @@ func requireGRPCConn(t *testing.T, world *test.World) *grpc.ClientConn {
 	return conn
 }
 
-func requireObservedHealth(t *testing.T, server *server.Server, service string, healthy bool) {
+func requireUnhealthyObservedHealth(t *testing.T, server *server.Server, service string) {
 	t.Helper()
 
 	observer, err := server.Observer(service, "grpc")
 	require.NoError(t, err)
 
 	require.Eventually(t, func() bool {
-		if healthy {
-			return observer.Error() == nil
-		}
-
 		return observer.Error() != nil
 	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
 }
