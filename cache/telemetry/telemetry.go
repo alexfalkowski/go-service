@@ -19,10 +19,15 @@ func InstrumentTracing(client client.UniversalClient) error {
 
 // InstrumentMetrics instruments a Redis client for OpenTelemetry metrics.
 //
-// This is a thin wrapper around redisotel.InstrumentMetrics.
+// This is a thin wrapper around redisotel.InstrumentMetrics. If closeChan is
+// provided, observable callbacks are unregistered when it is closed.
 //
 // The provided client is modified in place to emit Redis client metrics. The
 // wrapper does not change upstream behavior or error semantics.
-func InstrumentMetrics(client client.UniversalClient) error {
-	return redisotel.InstrumentMetrics(client)
+func InstrumentMetrics(client client.UniversalClient, closeChan ...chan struct{}) error {
+	if len(closeChan) == 0 {
+		return redisotel.InstrumentMetrics(client)
+	}
+
+	return redisotel.InstrumentMetrics(client, redisotel.WithCloseChan(closeChan[0]))
 }

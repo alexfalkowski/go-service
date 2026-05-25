@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"go.opentelemetry.io/otel/metric"
 	sdk "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 )
 
 // MeterProvider is an alias for metric.MeterProvider.
@@ -17,6 +18,9 @@ type Registration = metric.Registration
 
 // Reader is an alias for sdkmetric.Reader.
 type Reader = sdk.Reader
+
+// ResourceMetrics is an alias for metricdata.ResourceMetrics.
+type ResourceMetrics = metricdata.ResourceMetrics
 
 // NewMeter returns a Meter from provider using the service name and version.
 //

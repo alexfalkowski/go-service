@@ -118,7 +118,7 @@ func registerDriver(t *testing.T) string {
 func requireDBStatsMetrics(t *testing.T, reader metrics.Reader) {
 	t.Helper()
 
-	got := &metricdata.ResourceMetrics{}
+	got := &metrics.ResourceMetrics{}
 	require.NoError(t, reader.Collect(t.Context(), got))
 	require.Len(t, got.ScopeMetrics, 1)
 	require.Len(t, got.ScopeMetrics[0].Metrics, 7)
@@ -127,7 +127,7 @@ func requireDBStatsMetrics(t *testing.T, reader metrics.Reader) {
 func requireNoDBStatsMetrics(t *testing.T, reader metrics.Reader) {
 	t.Helper()
 
-	got := &metricdata.ResourceMetrics{}
+	got := &metrics.ResourceMetrics{}
 	require.NoError(t, reader.Collect(t.Context(), got))
 	require.Empty(t, got.ScopeMetrics)
 }
@@ -135,7 +135,7 @@ func requireNoDBStatsMetrics(t *testing.T, reader metrics.Reader) {
 func requireDBSystemName(t *testing.T, reader metrics.Reader, name string) {
 	t.Helper()
 
-	got := &metricdata.ResourceMetrics{}
+	got := &metrics.ResourceMetrics{}
 	require.NoError(t, reader.Collect(t.Context(), got))
 
 	for _, scope := range got.ScopeMetrics {

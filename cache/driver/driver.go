@@ -30,6 +30,9 @@ var ErrMissing = errors.New("cache: missing")
 // ErrNotFound is returned when the configured cache driver kind is unknown.
 var ErrNotFound = errors.New("cache: driver not found")
 
+// ErrInvalidURL is returned when a cache backend URL cannot be parsed.
+var ErrInvalidURL = errors.New("cache: invalid driver url")
+
 // DriverParams defines dependencies for constructing a Driver.
 type DriverParams struct {
 	di.In
@@ -81,43 +84,54 @@ func NewDriver(params DriverParams) (Driver, error) {
 
 	switch cfg.Kind {
 	case "redis":
-		data, err := params.FS.ReadSource(cfg.Options["url"].(string))
-		if err != nil {
-			return nil, err
-		}
-
-		opts, err := client.ParseURL(bytes.String(data))
-		if err != nil {
-			return nil, err
-		}
-
-		opts.MaintNotificationsConfig = &notifications.Config{
-			Mode: notifications.ModeDisabled,
-		}
-		if params.Logger != nil {
-			client.SetLogger(redisLogger{logger: params.Logger})
-		}
-
-		redisClient := client.NewClient(opts)
-		if tracer.IsEnabled() {
-			runtime.Must(telemetry.InstrumentTracing(redisClient))
-		}
-		if metrics.IsEnabled() {
-			runtime.Must(telemetry.InstrumentMetrics(redisClient))
-		}
-
-		params.Lifecycle.Append(di.Hook{
-			OnStop: func(context.Context) error {
-				return redisClient.Close()
-			},
-		})
-
-		return &redisDriver{client: redisClient}, nil
+		return newRedisDriver(params)
 	case "sync":
 		return &syncDriver{}, nil
 	default:
 		return nil, ErrNotFound
 	}
+}
+
+func newRedisDriver(params DriverParams) (Driver, error) {
+	data, err := params.FS.ReadSource(params.Config.Options["url"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	opts, err := client.ParseURL(bytes.String(data))
+	if err != nil {
+		return nil, ErrInvalidURL
+	}
+
+	opts.MaintNotificationsConfig = &notifications.Config{
+		Mode: notifications.ModeDisabled,
+	}
+	if params.Logger != nil {
+		client.SetLogger(redisLogger{logger: params.Logger})
+	}
+
+	redisClient := client.NewClient(opts)
+	if tracer.IsEnabled() {
+		runtime.Must(telemetry.InstrumentTracing(redisClient))
+	}
+
+	var metricsClose chan struct{}
+	if metrics.IsEnabled() {
+		metricsClose = make(chan struct{})
+		runtime.Must(telemetry.InstrumentMetrics(redisClient, metricsClose))
+	}
+
+	params.Lifecycle.Append(di.Hook{
+		OnStop: func(context.Context) error {
+			if metricsClose != nil {
+				close(metricsClose)
+			}
+
+			return redisClient.Close()
+		},
+	})
+
+	return &redisDriver{client: redisClient}, nil
 }
 
 // Driver is the minimal cache backend interface used by the cache facade.

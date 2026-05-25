@@ -8,6 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/time"
 	redis "github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
@@ -50,6 +53,52 @@ func TestRedisClientClosesOnStop(t *testing.T) {
 	require.ErrorIs(t, err, redis.ErrClosed)
 }
 
+func TestRedisParseURLDoesNotLeakCredentials(t *testing.T) {
+	url := "redis://user:" + "secret%zz@localhost:6379"
+	cfg := &config.Config{
+		Kind: "redis",
+		Options: map[string]any{
+			"url": url,
+		},
+	}
+
+	_, err := driver.NewDriver(driver.DriverParams{
+		Lifecycle: fxtest.NewLifecycle(t),
+		FS:        test.FS,
+		Config:    cfg,
+	})
+
+	require.ErrorIs(t, err, driver.ErrInvalidURL)
+	require.NotContains(t, err.Error(), "secret")
+	require.NotContains(t, err.Error(), "redis://user")
+}
+
+func TestRedisMetricsUnregisterOnStop(t *testing.T) {
+	reader := setupMetrics(t)
+	lc := fxtest.NewLifecycle(t)
+	cfg := &config.Config{
+		Kind: "redis",
+		Options: map[string]any{
+			"url": "redis://localhost:6379",
+		},
+	}
+
+	_, err := driver.NewDriver(driver.DriverParams{
+		Lifecycle: lc,
+		FS:        test.FS,
+		Config:    cfg,
+	})
+	require.NoError(t, err)
+
+	lc.RequireStart()
+	require.Positive(t, redisMetricCount(t, reader))
+
+	lc.RequireStop()
+	require.Eventually(t, func() bool {
+		return redisMetricCount(t, reader) == 0
+	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
+}
+
 func TestSyncDriverHonorsCanceledContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
@@ -61,4 +110,44 @@ func TestSyncDriverHonorsCanceledContext(t *testing.T) {
 	require.ErrorIs(t, err, context.Canceled)
 	require.ErrorIs(t, d.Delete(ctx, "key"), context.Canceled)
 	require.ErrorIs(t, d.Flush(ctx), context.Canceled)
+}
+
+func setupMetrics(t *testing.T) metrics.Reader {
+	t.Helper()
+
+	test.ResetTelemetry(t)
+	t.Cleanup(func() {
+		test.ResetTelemetry(t)
+	})
+
+	reader := metrics.NewManualReader()
+	metrics.NewMeterProvider(metrics.MeterProviderParams{
+		Lifecycle:   fxtest.NewLifecycle(t),
+		Config:      &metrics.Config{},
+		Reader:      reader,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+
+	return reader
+}
+
+func redisMetricCount(t *testing.T, reader metrics.Reader) int {
+	t.Helper()
+
+	got := &metrics.ResourceMetrics{}
+	require.NoError(t, reader.Collect(t.Context(), got))
+
+	count := 0
+	for _, scope := range got.ScopeMetrics {
+		for _, metric := range scope.Metrics {
+			if strings.HasPrefix(metric.Name, "db.client.connections.") {
+				count++
+			}
+		}
+	}
+
+	return count
 }
