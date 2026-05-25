@@ -26,3 +26,21 @@ func TestValidateEndpointInvalidURL(t *testing.T) {
 	require.Error(t, err)
 	require.NotErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
+
+func TestValidateRequiredEndpoint(t *testing.T) {
+	headers := map[string]string{"Authorization": "Bearer token"}
+
+	require.ErrorIs(t, otlp.ValidateRequiredEndpoint("", headers), otlp.ErrMissingEndpoint)
+	require.NoError(t, otlp.ValidateRequiredEndpoint("https://collector.example.com/v1/traces", headers))
+
+	err := otlp.ValidateRequiredEndpoint("http://collector.example.com/v1/traces", headers)
+	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+}
+
+func TestValidateRequiredEndpointIgnoresEnv(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", "https://collector.example.com/v1/traces")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://collector.example.com")
+
+	err := otlp.ValidateRequiredEndpoint("", map[string]string{"Authorization": "Bearer token"})
+	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
+}

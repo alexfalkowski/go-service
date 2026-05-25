@@ -32,3 +32,19 @@ func TestInvalidOTLPEndpoint(t *testing.T) {
 	_, err := metrics.NewReader(lc, test.Name, cfg)
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
+
+func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", "http://collector.example.com/v1/metrics")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://collector.example.com")
+
+	lc := fxtest.NewLifecycle(t)
+	cfg := &metrics.Config{
+		Kind: "otlp",
+		Headers: header.Map{
+			"Authorization": "Bearer token",
+		},
+	}
+
+	_, err := metrics.NewReader(lc, test.Name, cfg)
+	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
+}

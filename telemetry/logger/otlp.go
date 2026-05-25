@@ -16,7 +16,7 @@ import (
 )
 
 func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
-	if err := otlp.ValidateEndpoint(params.Config.URL, params.Config.Headers); err != nil {
+	if err := otlp.ValidateRequiredEndpoint(params.Config.URL, params.Config.Headers); err != nil {
 		return nil, err
 	}
 
@@ -51,5 +51,28 @@ func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
 		},
 	})
 
-	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider)), nil
+	handler := otelslog.NewHandler(params.Name.String(), otelslog.WithLoggerProvider(provider))
+
+	return slog.New(&levelHandler{handler: handler, level: level(params.Config)}), nil
+}
+
+type levelHandler struct {
+	handler slog.Handler
+	level   slog.Level
+}
+
+func (h *levelHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return level >= h.level && h.handler.Enabled(ctx, level)
+}
+
+func (h *levelHandler) Handle(ctx context.Context, record slog.Record) error {
+	return h.handler.Handle(ctx, record)
+}
+
+func (h *levelHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &levelHandler{handler: h.handler.WithAttrs(attrs), level: h.level}
+}
+
+func (h *levelHandler) WithGroup(name string) slog.Handler {
+	return &levelHandler{handler: h.handler.WithGroup(name), level: h.level}
 }

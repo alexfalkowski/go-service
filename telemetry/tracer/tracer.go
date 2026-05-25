@@ -72,7 +72,7 @@ func Register(params TracerParams) error {
 
 	switch params.Config.Kind {
 	case "otlp":
-		if err := otlp.ValidateEndpoint(params.Config.URL, params.Config.Headers); err != nil {
+		if err := otlp.ValidateRequiredEndpoint(params.Config.URL, params.Config.Headers); err != nil {
 			return prefix(err)
 		}
 
