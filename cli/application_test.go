@@ -1,6 +1,7 @@
 package cli_test
 
 import (
+	"log/slog"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/cli"
@@ -273,6 +274,22 @@ func TestApplicationServerShutdownExitCodeIsReturned(t *testing.T) {
 	require.Equal(t, 3, app.RunCode(t.Context()))
 }
 
+func TestApplicationServerShutdownExitCodeIsReturnedWhenStopFails(t *testing.T) {
+	os.Args = []string{test.Name.String(), "server"}
+	cli.Name = test.Name
+	cli.Version = test.Version
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			c.AddServer("server", "Start the server.", shutdownExitCodeAndStopErrorOption(3))
+		},
+	)
+
+	err := app.Run(t.Context())
+	require.ErrorIs(t, err, test.ErrFailed)
+	require.Equal(t, 3, app.RunCode(t.Context()))
+}
+
 func TestApplicationClientShutdownExitCodeIsReturned(t *testing.T) {
 	os.Args = []string{test.Name.String(), "client"}
 	cli.Name = test.Name
@@ -294,6 +311,22 @@ func TestApplicationClientShutdownExitCodeIsReturned(t *testing.T) {
 		},
 	)
 
+	require.Equal(t, 3, app.RunCode(t.Context()))
+}
+
+func TestApplicationClientShutdownExitCodeIsReturnedWhenStopFails(t *testing.T) {
+	os.Args = []string{test.Name.String(), "client"}
+	cli.Name = test.Name
+	cli.Version = test.Version
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			c.AddClient("client", "Start the client.", shutdownExitCodeAndStopErrorOption(3))
+		},
+	)
+
+	err := app.Run(t.Context())
+	require.ErrorIs(t, err, test.ErrFailed)
 	require.Equal(t, 3, app.RunCode(t.Context()))
 }
 
@@ -335,4 +368,21 @@ func TestApplicationInvalidClient(t *testing.T) {
 			require.Contains(t, err.Error(), "unknown port")
 		})
 	}
+}
+
+func shutdownExitCodeAndStopErrorOption(code int) di.Option {
+	return di.Module(
+		di.NoLogger,
+		di.Constructor(slog.Default),
+		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
+			lc.Append(di.Hook{
+				OnStart: func(context.Context) error {
+					return sh.Shutdown(di.ExitCode(code))
+				},
+				OnStop: func(context.Context) error {
+					return test.ErrFailed
+				},
+			})
+		}),
+	)
 }

@@ -85,11 +85,8 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 			case <-ctx.Done():
 			}
 
-			if err := app.Stop(a.stopContext(ctx)); err != nil {
-				return a.prefix(name, err)
-			}
-			if code > 0 {
-				return a.prefix(name, shutdownError(code))
+			if err := a.shutdownError(name, app.Stop(a.stopContext(ctx)), code); err != nil {
+				return err
 			}
 
 			return nil
@@ -139,11 +136,8 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 			default:
 			}
 
-			if err := app.Stop(a.stopContext(ctx)); err != nil {
-				return a.prefix(name, err)
-			}
-			if code > 0 {
-				return a.prefix(name, shutdownError(code))
+			if err := a.shutdownError(name, app.Stop(a.stopContext(ctx)), code); err != nil {
+				return err
 			}
 
 			return nil
@@ -207,6 +201,14 @@ func (a *Application) register(command cmd.Command) error {
 
 func (a *Application) prefix(prefix string, err error) error {
 	return errors.Prefix(prefix+": failed to run", di.RootCause(err))
+}
+
+func (a *Application) shutdownError(name string, err error, code int) error {
+	if code > 0 {
+		err = errors.Join(err, shutdownError(code))
+	}
+
+	return a.prefix(name, err)
 }
 
 func (a *Application) code(err error) int {

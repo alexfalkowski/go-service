@@ -72,6 +72,13 @@ matching skill for the task.
 - `cli.RunCode` returns `os.ExitCodeSuccess` on success, preserves non-zero
   shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
   returns `os.ExitCodeFailure`.
+- `cli.Application.Run` intentionally sanitizes Go test harness `-test.*`
+  arguments before handing `os.Args` to the command runner because this
+  repository commonly exercises CLI applications through Go test binaries. Do
+  not flag this solely because a hypothetical downstream command could define a
+  user-facing flag with the reserved `test.` prefix; report only concrete
+  breakage in a supported CLI contract or an explicit public promise to
+  preserve `-test.*` command flags.
 - `net/server.Service` intentionally logs asynchronous `Server.Serve` errors
   and requests shutdown with `di.ExitCode(os.ExitCodeServeFailure)`; it does not
   return the raw serve error from `Stop`.
