@@ -96,7 +96,7 @@ func (s *Server) Register() error {
 	}
 
 	if s.RegisterDebug {
-		debugServer, err := NewDebugServer(s.DebugConfig, s.Logger)
+		debugServer, err := NewDebugServer(s.Lifecycle, s.DebugConfig, s.Logger)
 		if err != nil {
 			return err
 		}

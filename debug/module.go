@@ -1,11 +1,7 @@
 package debug
 
 import (
-	"github.com/alexfalkowski/go-service/v2/debug/fgprof"
 	"github.com/alexfalkowski/go-service/v2/debug/http"
-	"github.com/alexfalkowski/go-service/v2/debug/pprof"
-	"github.com/alexfalkowski/go-service/v2/debug/psutil"
-	"github.com/alexfalkowski/go-service/v2/debug/statsviz"
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
@@ -17,7 +13,7 @@ import (
 //
 //   - the debug server (`*debug.Server`) via `NewServer` (returns nil when disabled), and
 //
-//   - registrations for optional debug endpoints:
+//   - `Register`, the front door for optional debug endpoint registration:
 //
 //   - statsviz under /debug/statsviz
 //
@@ -27,13 +23,10 @@ import (
 //
 //   - psutil under /debug/psutil
 //
-// The endpoint registrations attach handlers to the debug mux. The mux is then used by the debug server
-// when it is enabled via configuration.
+// Register attaches handlers to the debug mux only when the debug server is enabled. The mux is then
+// used by the debug server when it is enabled via configuration.
 var Module = di.Module(
 	di.Constructor(http.NewServeMux),
 	di.Constructor(NewServer),
-	di.Register(statsviz.Register),
-	di.Register(pprof.Register),
-	di.Register(fgprof.Register),
-	di.Register(psutil.Register),
+	di.Register(Register),
 )

@@ -4,5 +4,5 @@
 // collect wall-clock based profiles to diagnose CPU, blocking, and scheduling
 // issues.
 //
-// Start with `Module`.
+// It is registered by the root debug package.
 package fgprof

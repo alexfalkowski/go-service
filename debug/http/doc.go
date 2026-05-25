@@ -1,9 +1,8 @@
 // Package http provides debug HTTP routing helpers for go-service.
 //
 // This package provides a small wrapper around go-service's `net/http` primitives to build a
-// dedicated debug endpoint router. Other debug subpackages (for example `debug/pprof`,
-// `debug/fgprof`, `debug/statsviz`, and `debug/psutil`) register their handlers on the mux
-// returned by `NewServeMux`.
+// dedicated debug endpoint router. The root debug package registers its built-in
+// endpoint handlers on the mux returned by `NewServeMux`.
 //
 // # Routing conventions
 //
