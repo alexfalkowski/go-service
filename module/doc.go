@@ -15,7 +15,7 @@
 //     server-side transports, telemetry, debugging, health checks, and common integrations).
 //
 //   - `Client`: a typical client composition (builds on Library and adds configuration decoding,
-//     client-side transports/integrations, telemetry, and common client helpers).
+//     telemetry, and common client integrations/helpers). It does not wire transports by default.
 //
 // # Enablement and configuration
 //

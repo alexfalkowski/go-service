@@ -40,6 +40,11 @@ func LookupEnv(key string) (string, bool) {
 	return os.LookupEnv(key)
 }
 
+// Environ returns a copy of strings representing the environment.
+func Environ() []string {
+	return os.Environ()
+}
+
 // Setenv sets the value of the environment variable named by key to value.
 func Setenv(key, value string) error {
 	return os.Setenv(key, value)
