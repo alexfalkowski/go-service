@@ -356,8 +356,6 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 // Any additional opts are appended after the keepalive options and may further
 // customize server behavior (for example interceptors, credentials, or stats handlers).
 func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption) *Server {
-	timeout = options.NonNegativeDuration("timeout", timeout)
-
 	os := make([]ServerOption, 0, 8+len(opts))
 	os = append(os, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 		MinTime:             options.NonNegativeDuration("keepalive_enforcement_policy_ping_min_time", timeout).Duration(),
