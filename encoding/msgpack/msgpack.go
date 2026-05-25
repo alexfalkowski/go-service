@@ -27,8 +27,8 @@ func (e *Encoder) Decode(r io.Reader, v any) error {
 		return err
 	}
 
-	var extra any
-	return errors.TrailingData(decoder.Decode(&extra))
+	_, err := decoder.PeekCode()
+	return errors.TrailingData(err)
 }
 
 // Marshal encodes v as MessagePack.

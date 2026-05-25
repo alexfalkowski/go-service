@@ -1,6 +1,7 @@
 package cache_test
 
 import (
+	"math"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -103,6 +104,19 @@ func TestMaxSizeOnGetRejectsEncodedValueTooLarge(t *testing.T) {
 
 	err := world.Get(t.Context(), "test", ptr.Zero[string]())
 	require.ErrorIs(t, err, errors.ErrTooLarge)
+}
+
+func TestMaxSizeOnGetAllowsHugeConfiguredLimit(t *testing.T) {
+	cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+	cfg.MaxSize = bytes.Size(math.MaxInt64)
+	world := test.NewStartedWorld(t,
+		test.WithWorldCacheConfig(cfg),
+		test.WithWorldCacheDriver(&test.Cache{Value: base64.Encode(strings.Bytes(`"ok"`))}),
+	)
+
+	value := ptr.Zero[string]()
+	require.NoError(t, world.Get(t.Context(), "test", value))
+	require.Equal(t, "ok", *value)
 }
 
 func TestExpiredCache(t *testing.T) {

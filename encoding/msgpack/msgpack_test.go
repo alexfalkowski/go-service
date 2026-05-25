@@ -93,6 +93,17 @@ func TestUnmarshalRejectsTrailingValue(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrTrailingData)
 }
 
+func TestUnmarshalRejectsLargeTrailingHeader(t *testing.T) {
+	data, err := msgpack.Marshal(map[string]string{"test": "test"})
+	require.NoError(t, err)
+	data = append(data, 0xdd, 0xff, 0xff, 0xff, 0xff)
+
+	var actual map[string]string
+	err = msgpack.Unmarshal(data, &actual)
+
+	require.ErrorIs(t, err, errors.ErrTrailingData)
+}
+
 func TestUnmarshalReturnsDecodeError(t *testing.T) {
 	var actual map[string]string
 

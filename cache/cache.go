@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"math"
+
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
@@ -16,6 +18,9 @@ import (
 	"github.com/alexfalkowski/go-sync"
 	"google.golang.org/protobuf/proto"
 )
+
+// maxBase64EncodedLenInput is the largest decoded-size limit whose padded base64 length fits in int.
+const maxBase64EncodedLenInput = math.MaxInt / 4 * 3
 
 // CacheParams defines dependencies for constructing a Cache.
 //
@@ -140,7 +145,8 @@ func (c *Cache) encode(value any) (string, error) {
 }
 
 func (c *Cache) decode(value string, field any) error {
-	if int64(len(value)) > base64.EncodedLen(c.cfg.GetMaxSize()) {
+	maxSize := c.cfg.GetMaxSize()
+	if maxSize.Bytes() <= maxBase64EncodedLenInput && int64(len(value)) > base64.EncodedLen(maxSize) {
 		return errors.ErrTooLarge
 	}
 
