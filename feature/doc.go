@@ -11,13 +11,17 @@
 // provided by the consuming service).
 //
 // When a provider is present, `Register` appends lifecycle hooks that:
-//   - call `openfeature.SetProviderAndWait` during application start, and
-//   - call `openfeature.Shutdown` during application stop.
+//   - call `openfeature.SetProviderWithContextAndWait` during application start, and
+//   - call `openfeature.ShutdownWithContext` during application stop.
 //
 // # Telemetry hooks
 //
 // When a metrics provider is available, `Register` installs OpenTelemetry hooks for OpenFeature so
 // evaluations can emit metrics and traces.
+//
+// Trace event attributes are produced by the upstream OpenFeature OpenTelemetry hook. They may include
+// OpenFeature semantic-convention fields such as the targeting key and evaluated flag value. Treat
+// feature trace data as operational telemetry and protect exporter/back-end access accordingly.
 //
 // # Clients
 //

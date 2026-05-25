@@ -235,6 +235,14 @@ matching skill for the task.
   credentials; they should contain source references such as `env:NAME` or
   `file:/path`. Do not flag this as a secret leak unless a concrete code path
   starts placing raw secrets into HJSON configuration contrary to that policy.
+- OpenFeature trace event attributes are produced by the upstream
+  `hooks.NewTracesHook` implementation and may include semantic-convention
+  fields such as the evaluation context targeting key and evaluated flag value.
+  Treat this as documented upstream instrumentation behavior; protect telemetry
+  exporter and backend access controls. Do not flag it as a local `feature`
+  issue unless this repository adds local feature trace attribute construction,
+  logs/exports those values independently, or starts promising sanitized feature
+  trace events by default.
 
 ## Testing, Style, And Docs
 
