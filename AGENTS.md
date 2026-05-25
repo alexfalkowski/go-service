@@ -243,6 +243,14 @@ matching skill for the task.
   issue unless this repository adds local feature trace attribute construction,
   logs/exports those values independently, or starts promising sanitized feature
   trace events by default.
+- The UUIDv7 generator intentionally calls `google/uuid.EnableRandPool` at
+  package init time. UUID is the default ID generator and sits on request
+  metadata hot paths; the process-wide heap-backed random pool tradeoff is
+  accepted for these operational identifiers, which are not secrets or bearer
+  tokens. Do not flag this as a global-state or security issue unless the
+  generator starts being used for secret material, the upstream pool semantics
+  change materially, or a public API starts promising no `google/uuid` global
+  mutation.
 
 ## Testing, Style, And Docs
 
