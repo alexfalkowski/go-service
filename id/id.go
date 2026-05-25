@@ -46,8 +46,8 @@ type MapParams struct {
 //   - "nanoid"
 //   - "xid"
 //
-// Callers can add additional kinds or override existing kinds by mutating the returned Map
-// (this package does not currently expose a Register method; the map is typically fixed by wiring).
+// The map is fixed by standard wiring. Services that need custom generator kinds should provide
+// custom DI wiring for Map or Generator selection.
 func NewMap(params MapParams) *Map {
 	return &Map{
 		generators: map[string]Generator{
