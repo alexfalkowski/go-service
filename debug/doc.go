@@ -9,10 +9,11 @@
 //
 //   - A debug HTTP server (`Server`) that runs independently from the main service server.
 //   - A debug router (`debug/http.ServeMux`) used to register endpoints.
-//   - Optional endpoint registrations provided by subpackages (e.g. pprof, fgprof, statsviz, psutil).
+//   - Built-in endpoint registrations installed through `Register`.
 //
-// The actual endpoints are registered via the debug module wiring (see `Module`) which composes the
-// subpackages and installs their handlers onto the debug mux.
+// `Register` is the public front door for endpoint registration. The debug module wiring
+// uses it to install the built-in handlers onto the debug mux, and callers that construct
+// a debug server manually should use it instead of depending on endpoint implementation packages.
 //
 // # Configuration and enablement
 //
@@ -26,5 +27,5 @@
 // strings and build the runtime `*crypto/tls.Config` assigned to the underlying
 // HTTP server.
 //
-// Start with `Module` and `NewServer`.
+// Start with `Module`, `NewServer`, and `Register`.
 package debug

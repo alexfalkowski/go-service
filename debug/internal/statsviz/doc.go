@@ -4,5 +4,5 @@
 // inspect runtime behavior (for example goroutines, heap, and other runtime stats)
 // from a browser.
 //
-// Start with `Module`.
+// It is registered by the root debug package.
 package statsviz
