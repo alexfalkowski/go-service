@@ -133,3 +133,59 @@ func TestInvalidOTLPEndpoint(t *testing.T) {
 	_, err := logger.NewLogger(params)
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
+
+func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "http://collector.example.com/v1/logs")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://collector.example.com")
+
+	lc := fxtest.NewLifecycle(t)
+	cfg := &logger.Config{
+		Kind: "otlp",
+		Headers: header.Map{
+			"Authorization": "Bearer token",
+		},
+	}
+	params := logger.LoggerParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}
+
+	_, err := logger.NewLogger(params)
+	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
+}
+
+func TestOTLPLoggerUsesConfiguredLevel(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &logger.Config{
+		Kind:  "otlp",
+		Level: "error",
+		URL:   "https://localhost:4318/v1/logs",
+	}
+	params := logger.LoggerParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}
+
+	log, err := logger.NewLogger(params)
+	require.NoError(t, err)
+
+	ctx := t.Context()
+	require.False(t, log.Enabled(ctx, slog.LevelInfo))
+	require.False(t, log.Enabled(ctx, slog.LevelWarn))
+	require.True(t, log.Enabled(ctx, slog.LevelError))
+
+	child := log.With("component", "test").WithGroup("otlp")
+	require.False(t, child.Enabled(ctx, slog.LevelWarn))
+	require.True(t, child.Enabled(ctx, slog.LevelError))
+	require.NotPanics(t, func() {
+		child.ErrorContext(ctx, "exported")
+	})
+}

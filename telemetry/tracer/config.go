@@ -23,8 +23,8 @@ type Config struct {
 
 	// URL is the destination endpoint for the selected Kind, when applicable.
 	//
-	// For "otlp", this is the OTLP/HTTP traces endpoint URL. It must be a valid HTTP URL
-	// when set.
+	// For "otlp", this is the required OTLP/HTTP traces endpoint URL. It must be a
+	// valid HTTP URL.
 	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty" validate:"omitempty,http_url"`
 }
 

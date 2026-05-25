@@ -38,7 +38,7 @@ func EnableTracer(tb testing.TB) {
 
 	require.NoError(tb, tracer.Register(tracer.TracerParams{
 		Lifecycle:   fxtest.NewLifecycle(tb),
-		Config:      &tracer.Config{Kind: "otlp"},
+		Config:      &tracer.Config{Kind: "otlp", URL: "https://localhost:4318/v1/traces"},
 		ID:          ID,
 		Name:        Name,
 		Version:     Version,
