@@ -1,6 +1,8 @@
 package bytes
 
 import (
+	"strconv"
+
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	units "github.com/docker/go-units"
@@ -50,10 +52,9 @@ func (s Size) String() string {
 	return units.HumanSize(float64(s.Bytes()))
 }
 
-// MarshalText encodes s using the same decimal size string returned by
-// [Size.String].
+// MarshalText encodes s as an exact raw byte count with a `B` suffix.
 func (s Size) MarshalText() ([]byte, error) {
-	return []byte(s.String()), nil
+	return []byte(strconv.FormatInt(s.Bytes(), 10) + "B"), nil
 }
 
 // UnmarshalText parses a decimal size string into s.
@@ -70,9 +71,14 @@ func (s *Size) UnmarshalText(text []byte) error {
 	return nil
 }
 
-// MarshalJSON encodes s as a quoted decimal size string, such as `"4MB"`.
+// MarshalJSON encodes s as a quoted exact raw byte count, such as `"4000000B"`.
 func (s Size) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.String())
+	text, err := s.MarshalText()
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(string(text))
 }
 
 // UnmarshalJSON decodes a quoted decimal size string into s.

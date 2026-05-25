@@ -17,15 +17,29 @@ func TestDefaultSize(t *testing.T) {
 }
 
 func TestSizeTextRoundTrip(t *testing.T) {
-	size := bytes.MustParseSize("4MB")
+	tests := []struct {
+		name string
+		text string
+		size bytes.Size
+	}{
+		{name: "decimal boundary", size: bytes.MustParseSize("4MB"), text: "4000000B"},
+		{name: "above byte boundary", size: bytes.Size(1001), text: "1001B"},
+		{name: "binary megabyte", size: bytes.Size(1048576), text: "1048576B"},
+		{name: "below decimal megabyte", size: bytes.Size(999999), text: "999999B"},
+		{name: "above decimal megabyte", size: bytes.Size(1000001), text: "1000001B"},
+	}
 
-	text, err := size.MarshalText()
-	require.NoError(t, err)
-	require.Equal(t, "4MB", string(text))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			text, err := tt.size.MarshalText()
+			require.NoError(t, err)
+			require.Equal(t, tt.text, string(text))
 
-	var decoded bytes.Size
-	require.NoError(t, decoded.UnmarshalText(text))
-	require.Equal(t, size, decoded)
+			var decoded bytes.Size
+			require.NoError(t, decoded.UnmarshalText(text))
+			require.Equal(t, tt.size, decoded)
+		})
+	}
 }
 
 func TestSizeJSONRoundTrip(t *testing.T) {
@@ -34,6 +48,18 @@ func TestSizeJSONRoundTrip(t *testing.T) {
 	data, err := json.Marshal(size)
 	require.NoError(t, err)
 	require.Equal(t, `"64B"`, string(data))
+
+	var decoded bytes.Size
+	require.NoError(t, json.Unmarshal(data, &decoded))
+	require.Equal(t, size, decoded)
+}
+
+func TestSizeJSONRoundTripPreservesByteCount(t *testing.T) {
+	size := bytes.Size(1048576)
+
+	data, err := json.Marshal(size)
+	require.NoError(t, err)
+	require.Equal(t, `"1048576B"`, string(data))
 
 	var decoded bytes.Size
 	require.NoError(t, json.Unmarshal(data, &decoded))
