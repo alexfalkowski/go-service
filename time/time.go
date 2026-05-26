@@ -13,6 +13,12 @@ const RFC3339 = time.RFC3339
 // set to the standard library type.
 type Ticker = time.Ticker
 
+// Timer is the go-service timer type used across the repository.
+//
+// It is a type alias of time.Timer, meaning it has identical semantics and method
+// set to the standard library type.
+type Timer = time.Timer
+
 // Time is the go-service time type used across the repository.
 //
 // It is a type alias of time.Time, meaning it has identical semantics and method
@@ -25,6 +31,13 @@ type Time = time.Time
 // This is a thin wrapper around time.After and does not change semantics.
 func After(d Duration) <-chan Time {
 	return time.After(d.Duration())
+}
+
+// NewTimer returns a new [Timer] that will send the current time on its channel after at least duration d.
+//
+// This is a thin wrapper around time.NewTimer and does not change semantics.
+func NewTimer(d Duration) *Timer {
+	return time.NewTimer(d.Duration())
 }
 
 // NewTicker returns a new [Ticker] containing a channel that will send the current time on the channel after each tick.
