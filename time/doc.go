@@ -8,7 +8,8 @@
 //     go-service can consistently import go-service packages while still using the
 //     underlying time semantics.
 //
-//     Exported types include Time (an alias of time.Time), Duration (a named type over
+//     Exported types include Time (an alias of time.Time), Timer and Ticker
+//     (aliases of time.Timer and time.Ticker), Duration (a named type over
 //     time.Duration), common duration constants (Second, Minute, Hour, etc.), and RFC3339.
 //
 //  2. Optional network time sourcing.
@@ -24,8 +25,9 @@
 //   - Time aliases time.Time.
 //   - Duration wraps time.Duration and adds Text/JSON marshaling helpers while preserving
 //     Go duration string semantics.
-//   - Now, Since, Sleep, and ParseDuration forward to time.Now, time.Since,
-//     time.Sleep, and time.ParseDuration respectively.
+//   - Now, Since, Sleep, NewTimer, NewTicker, and ParseDuration forward to
+//     time.Now, time.Since, time.Sleep, time.NewTimer, time.NewTicker, and
+//     time.ParseDuration respectively.
 //   - Constants such as Second, Minute, Hour, and RFC3339 mirror the standard library
 //     values.
 //
