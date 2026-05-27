@@ -38,9 +38,10 @@
 //
 // # Notes
 //
-// This package does not define new semantics or attribute keys. It only re-exports
-// upstream OpenTelemetry semantic convention identifiers behind go-service imports.
-// For authoritative definitions and version-specific details, consult the upstream
-// OpenTelemetry semantic conventions documentation for the version vendored by this
-// repository.
+// This package does not define new attribute keys. Most helpers are direct aliases
+// or wrappers for upstream OpenTelemetry semantic convention identifiers behind
+// go-service imports. DeploymentEnvironmentName also normalizes common local
+// environment aliases to the stable upstream enum values. For authoritative
+// definitions and version-specific details, consult the upstream OpenTelemetry
+// semantic conventions documentation for the version vendored by this repository.
 package attributes
