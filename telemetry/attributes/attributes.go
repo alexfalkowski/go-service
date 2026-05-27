@@ -2,7 +2,7 @@ package attributes
 
 import (
 	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.40.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
 )
 
 // SchemaURL is the OpenTelemetry semantic conventions schema URL used by this package.
@@ -91,6 +91,17 @@ func ServiceVersion(val string) attribute.KeyValue {
 //
 // Parameters:
 //   - val: the deployment environment name, such as "prod" or "staging"
-func DeploymentEnvironmentName(val string) attribute.KeyValue {
-	return semconv.DeploymentEnvironmentName(val)
+func DeploymentEnvironmentName(env string) attribute.KeyValue {
+	switch env {
+	case "prod", "production":
+		return semconv.DeploymentEnvironmentNameProduction
+	case "staging":
+		return semconv.DeploymentEnvironmentNameStaging
+	case "qa", "test", "testing":
+		return semconv.DeploymentEnvironmentNameTest
+	case "dev", "development":
+		return semconv.DeploymentEnvironmentNameDevelopment
+	}
+
+	return semconv.DeploymentEnvironmentNameDevelopment
 }
