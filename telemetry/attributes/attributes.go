@@ -61,36 +61,40 @@ func HostID(val string) attribute.KeyValue {
 	return semconv.HostID(val)
 }
 
-// ServiceName returns a service.name attribute with value val.
+// ServiceName returns a service.name attribute with value name.
 //
 // This is a thin wrapper around semconv.ServiceName and is typically used when
 // constructing a Resource to describe the running service.
 //
 // Parameters:
-//   - val: the logical service name to report in telemetry
-func ServiceName(val string) attribute.KeyValue {
-	return semconv.ServiceName(val)
+//   - name: the logical service name to report in telemetry
+func ServiceName(name string) attribute.KeyValue {
+	return semconv.ServiceName(name)
 }
 
-// ServiceVersion returns a service.version attribute with value val.
+// ServiceVersion returns a service.version attribute with value version.
 //
 // This is a thin wrapper around semconv.ServiceVersion and is typically used when
 // constructing a Resource to describe the running service.
 //
 // Parameters:
-//   - val: the version string to report for the running service build
-func ServiceVersion(val string) attribute.KeyValue {
-	return semconv.ServiceVersion(val)
+//   - version: the version string to report for the running service build
+func ServiceVersion(version string) attribute.KeyValue {
+	return semconv.ServiceVersion(version)
 }
 
-// DeploymentEnvironmentName returns a deployment.environment.name attribute with value val.
+// DeploymentEnvironmentName returns a deployment.environment.name attribute for env.
 //
-// This is a thin wrapper around semconv.DeploymentEnvironmentName and is typically
-// used when constructing a Resource to describe the deployment environment (for
-// example "prod", "staging").
+// It maps common environment names onto the stable OpenTelemetry enum values:
+// "prod" and "production" become "production"; "staging" remains "staging";
+// "qa", "test", and "testing" become "test"; "dev" and "development" become
+// "development". Unknown or empty values default to "development".
+//
+// It is typically used when constructing a Resource to describe the deployment
+// environment.
 //
 // Parameters:
-//   - val: the deployment environment name, such as "prod" or "staging"
+//   - env: the deployment environment name, such as "prod" or "staging"
 func DeploymentEnvironmentName(env string) attribute.KeyValue {
 	switch env {
 	case "prod", "production":
