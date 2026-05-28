@@ -28,6 +28,27 @@ func TestValidLimiter(t *testing.T) {
 	require.NoError(t, limiter.Close(t.Context()))
 }
 
+func TestTake(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 2, Interval: time.Second}
+
+	limiter, err := limiter.NewLimiter(lc, m, config)
+	require.NoError(t, err)
+	require.NotNil(t, limiter)
+	defer func() {
+		require.NoError(t, limiter.Close(t.Context()))
+	}()
+
+	ctx := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("test-agent")))
+
+	ok, header, err := limiter.Take(ctx)
+
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, "limit=2, remaining=1", header)
+}
+
 func TestNewKeyMapIncludesServiceMethod(t *testing.T) {
 	key := limiter.NewKeyMap()["service-method"]
 	ctx := meta.WithAttributes(t.Context(), meta.WithServiceMethod(meta.String("GET /users/{id}")))
