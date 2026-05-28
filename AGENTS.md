@@ -82,6 +82,13 @@ matching skill for the task.
 - `net/server.Service` intentionally logs asynchronous `Server.Serve` errors
   and requests shutdown with `di.ExitCode(os.ExitCodeServeFailure)`; it does not
   return the raw serve error from `Stop`.
+- gRPC `Server.Serve` returns `nil` when `Stop` or `GracefulStop` is called
+  after serving has started. `grpc.ErrServerStopped` is only returned when
+  `Serve` is called after the server was already stopped. Do not flag normal
+  DI-managed gRPC shutdown as a serve-failure bug based solely on
+  `ErrServerStopped` speculation; report only a concrete supported lifecycle
+  path that demonstrates `Serve` is invoked after `Stop`/`GracefulStop` and
+  causes an incorrect exit code.
 - `telemetry.Register()` installs the global OpenTelemetry propagator.
 - `cache.Register(...)` sets the package-level cache used by generic cache helpers.
   It is intentionally called by the supported wiring path during startup/test
