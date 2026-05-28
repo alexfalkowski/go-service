@@ -85,6 +85,16 @@ func TestNewConfigWithCAOnly(t *testing.T) {
 	require.NotNil(t, tlsConfig.RootCAs)
 }
 
+func TestNewConfigWithServerNameOnly(t *testing.T) {
+	tlsConfig, err := client.NewConfig(test.FS, &config.Config{ServerName: "localhost"})
+	require.NoError(t, err)
+	require.NotNil(t, tlsConfig)
+	require.Equal(t, uint16(tls.VersionTLS12), tlsConfig.MinVersion)
+	require.Empty(t, tlsConfig.Certificates)
+	require.Nil(t, tlsConfig.RootCAs)
+	require.Equal(t, "localhost", tlsConfig.ServerName)
+}
+
 func TestNewConfigInvalidKeyPair(t *testing.T) {
 	_, err := client.NewConfig(test.FS, &config.Config{
 		Cert: test.FilePath("certs/client-cert.pem"),
