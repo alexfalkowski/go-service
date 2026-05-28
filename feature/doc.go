@@ -10,9 +10,16 @@
 // is a no-op when no `openfeature.FeatureProvider` is available in the DI graph (i.e. it is not
 // provided by the consuming service).
 //
+// This repository does not construct or connect a built-in OpenFeature provider from `feature.Config`.
+// Consuming services that need a remote or custom provider should use that config in their own provider
+// constructor and provide the resulting `openfeature.FeatureProvider` to the DI graph.
+//
 // When a provider is present, `Register` appends lifecycle hooks that:
 //   - call `openfeature.SetProviderWithContextAndWait` during application start, and
 //   - call `openfeature.ShutdownWithContext` during application stop.
+//
+// Register uses OpenFeature's package-level SDK APIs, so provider registration, hooks, and shutdown are
+// process-global effects.
 //
 // # Telemetry hooks
 //

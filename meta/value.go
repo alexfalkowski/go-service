@@ -31,8 +31,8 @@ func Ignored(value string) Value {
 
 // Redacted constructs a Value that renders as a fixed-length mask of '*' characters.
 //
-// The rendered value has the same length as the underlying value, which can be useful to preserve the
-// shape of data without revealing the contents.
+// The rendered value uses one '*' per UTF-8 rune in the underlying value, which can be useful to
+// preserve the shape of data without revealing the contents.
 //
 // Note: the underlying value is still stored in-context and can be retrieved via Value.Value(). Use this
 // only when it is acceptable for in-process code to access the raw value.
@@ -111,7 +111,7 @@ func ToIgnored(st fmt.Stringer) Value {
 //   - normal: renders the underlying value as-is
 //   - blank: renders as empty
 //   - ignored: renders as empty (while still retaining the underlying value in-context)
-//   - redacted: renders as asterisks with the same length as the underlying value
+//   - redacted: renders as asterisks with one '*' per UTF-8 rune in the underlying value
 //
 // Note: Value.String intentionally does not distinguish between blank and ignored during rendering; both
 // render as empty. The difference is semantic at construction time.
@@ -132,9 +132,9 @@ func (v Value) IsEmpty() bool {
 
 // String renders v according to its kind.
 //
-// For redacted values, the returned string is a mask of '*' characters with the same length as the underlying
-// value. For ignored values, it returns an empty string. For normal and blank values, it returns the underlying
-// value (blank values use an empty underlying string).
+// For redacted values, the returned string is a mask of '*' characters with one '*' per UTF-8 rune in
+// the underlying value. For ignored values, it returns an empty string. For normal and blank values, it
+// returns the underlying value (blank values use an empty underlying string).
 //
 //nolint:exhaustive
 func (v Value) String() string {

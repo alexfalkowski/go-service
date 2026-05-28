@@ -2,7 +2,8 @@
 //
 // It provides constructors, interceptors, and Fx module wiring for:
 //   - gRPC servers (`NewServer`) with standardized interceptors (metadata, logging, auth, rate limiting, etc.).
-//   - gRPC clients (`NewClient`) with standardized dial options and client interceptors (timeouts, retries, breakers, auth, etc.).
+//   - gRPC clients (`NewClient`) with standardized dial options and client interceptors (metadata, auth,
+//     logging, unary timeout/retry/breaker policy, etc.).
 //
 // The primary entrypoint for DI wiring is `Module`, which composes this package with supporting subpackages:
 // breaker, retry, limiter, metadata extraction/injection, token auth, and the gRPC health wiring in
@@ -25,6 +26,8 @@
 //
 // Client-side concerns are expressed via options such as `WithClientTimeout`, `WithClientRetry`, `WithClientBreaker`,
 // `WithClientLimiter`, and token-generator options. These options configure which interceptors are installed.
+// Timeout, retry, and breaker options are installed on unary calls only; streaming callers should use explicit
+// context deadlines or custom stream interceptors for stream-specific timeout, retry, or breaker behavior.
 //
 // # Manual composition note (TLS filesystem)
 //

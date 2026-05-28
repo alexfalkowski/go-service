@@ -13,7 +13,8 @@
 // For example, calling Get("/health", handler) registers the route pattern "GET /health".
 //
 // The handlers are constructed using net/http/content helpers (NewHandler/NewRequestHandler), which:
-//   - select an encoder based on the request Content-Type,
+//   - select an encoder based on the request Content-Type, falling back to the first Accept media type when
+//     Content-Type is absent,
 //   - decode request bodies (where applicable), and
 //   - encode responses using the negotiated media type.
 //

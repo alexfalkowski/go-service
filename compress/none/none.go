@@ -15,9 +15,9 @@ func NewCompressor() *Compressor {
 
 // Compressor implements a no-op compression codec.
 //
-// Compress returns the input unchanged, and Decompress returns the input unchanged with a nil error.
-// This is useful when you want to disable compression while still satisfying the common compression
-// interface.
+// Compress and Decompress return the input unchanged when it is within the configured size limit.
+// They return compress/errors.ErrTooLarge when the input exceeds that limit.
+// This is useful when you want to disable compression while still satisfying the common compression interface.
 type Compressor struct{}
 
 // Compress returns data unchanged.

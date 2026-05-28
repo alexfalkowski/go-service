@@ -79,6 +79,9 @@ func (c *Config) GetTimeout() time.Duration {
 // If cfg has a CA configured, NewConfig uses it as ClientCAs and sets
 // ClientAuth to tls.RequireAndVerifyClientCert. Without CA, the server config
 // does not request client certificates.
+//
+// Any configured TLS material requires a complete server certificate/key pair.
+// A CA-only configuration returns ErrMissingKeyPair.
 func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
 	config := &tls.Config{
 		MinVersion: tls.VersionTLS12,

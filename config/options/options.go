@@ -87,7 +87,10 @@ func (m Map) Size(key string, fallback bytes.Size) bytes.Size {
 	return fallback
 }
 
-// IntSize returns a byte-size option as an int and panics if the resolved size overflows int.
+// IntSize returns a byte-size option as an int.
+//
+// It resolves the value with Size, so it panics if the option value cannot be
+// parsed as a size or if the resolved size overflows int.
 func (m Map) IntSize(key string, fallback bytes.Size) int {
 	size := m.Size(key, fallback)
 	if size.Bytes() > math.MaxInt {
@@ -97,7 +100,10 @@ func (m Map) IntSize(key string, fallback bytes.Size) int {
 	return int(size.Bytes())
 }
 
-// Int32Size returns a byte-size option as an int32 and panics if the resolved size overflows int32.
+// Int32Size returns a byte-size option as an int32.
+//
+// It resolves the value with Size, so it panics if the option value cannot be
+// parsed as a size or if the resolved size overflows int32.
 func (m Map) Int32Size(key string, fallback bytes.Size) int32 {
 	size := m.Size(key, fallback)
 	if size.Bytes() > math.MaxInt32 {
@@ -108,7 +114,10 @@ func (m Map) Int32Size(key string, fallback bytes.Size) int32 {
 	return int32(size.Bytes())
 }
 
-// Uint32Size returns a byte-size option as a uint32 and panics if the resolved size overflows uint32.
+// Uint32Size returns a byte-size option as a uint32.
+//
+// It resolves the value with Size, so it panics if the option value cannot be
+// parsed as a size or if the resolved size overflows uint32.
 func (m Map) Uint32Size(key string, fallback bytes.Size) uint32 {
 	size := m.Size(key, fallback)
 	if size.Bytes() > math.MaxUint32 {

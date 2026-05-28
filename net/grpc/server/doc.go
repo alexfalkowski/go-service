@@ -14,9 +14,10 @@
 //
 // # Address format
 //
-// The bind address is read from `net/grpc/config.Config.Address` and is expected
-// to be in the go-service network address format (for example "tcp://:9090").
-// Internally this is split into network/address and then passed to net.Listen.
+// The bind address is read from `net/grpc/config.Config.Address`. It may use the
+// go-service network address format (for example "tcp://:9090") or a raw listen
+// address such as ":9090", which defaults to the "tcp" network. Internally this
+// is split into network/address and then passed to net.Listen.
 //
 // # Relationship to other packages
 //

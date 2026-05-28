@@ -17,7 +17,8 @@ import (
 //	Route("/greet.v1.Greeter/SayHello", handler) // registers "POST /greet.v1.Greeter/SayHello"
 //
 // The handler is constructed using net/http/content.NewRequestHandler, which:
-//   - selects an encoder based on the request Content-Type,
+//   - selects an encoder based on the request Content-Type, falling back to the first Accept media type when
+//     Content-Type is absent,
 //   - decodes the request body into a newly allocated request model, and
 //   - encodes the returned response model using the negotiated media type.
 //

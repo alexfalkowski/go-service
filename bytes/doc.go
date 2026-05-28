@@ -18,7 +18,9 @@
 //
 // # Human-readable sizes
 //
-// `Size` is a named byte-count type that marshals to and from human-readable SI strings such as
-// `64B`, `2MB`, and `4GB`. It is intended for typed configuration surfaces that need text/JSON
-// encoding while still being easy to convert back to raw bytes.
+// `Size` is a named byte-count type for typed configuration surfaces. `String` and `ParseSize`
+// use human-readable decimal size strings such as `64B`, `2MB`, and `4GB`.
+//
+// Text and JSON marshaling emit exact raw byte counts with a `B` suffix, such as `4000000B`.
+// Text and JSON unmarshaling accept the same decimal size inputs as `ParseSize`.
 package bytes

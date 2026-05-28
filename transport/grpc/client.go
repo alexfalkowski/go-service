@@ -79,13 +79,13 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 	})
 }
 
-// WithClientTimeout sets the default per-RPC timeout applied by the timeout interceptor.
+// WithClientTimeout sets the default per-RPC timeout applied by the unary timeout interceptor.
 //
 // If unset or negative, a default timeout is applied (see `NewDialOptions` defaults).
 //
 // Note: this timeout is enforced via an interceptor and is independent from any deadlines already set
 // on the incoming context; the interceptor will typically only apply a timeout when a deadline is not
-// already present.
+// already present. Streaming callers should use explicit context deadlines or a custom stream interceptor.
 func WithClientTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = timeout
@@ -125,7 +125,8 @@ func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {
 // WithClientBreaker enables circuit breaking for unary client calls.
 //
 // Circuit breakers are keyed per RPC full method name. Failure accounting is controlled by the
-// breaker options (for example, which gRPC status codes count as failures).
+// breaker options (for example, which gRPC status codes count as failures). Streaming callers should
+// use a custom stream interceptor for stream-specific breaker behavior.
 func WithClientBreaker(opts ...breaker.Option) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.breaker = true

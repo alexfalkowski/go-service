@@ -87,7 +87,7 @@ The repo is intentionally split between high-level service composition and lower
 - `transport/...` contains the higher-level service transport layer: composed HTTP/gRPC stacks, policy middleware, operational endpoints, and transport-specific modules
 - `internal/test/` contains the shared test world and fixtures used across packages
 
-As a rule of thumb: if you want protocol primitives or shared helpers, start in `net/...`; if you want service wiring and middleware policy, start in `transport/...`.
+As a rule of thumb: if you want protocol primitives or shared helpers, start in `net/...`; if you want service wiring and middleware policy, start in `transport/...`. Shared metadata, header, and lifecycle helpers live under `net/...`, including `net/http/meta`, `net/grpc/meta`, `net/header`, and `net/server.Register`.
 
 For most service authors, the right starting point is still the high-level module bundles rather than these lower-level packages directly.
 
@@ -134,14 +134,19 @@ Config input is routed by a flag called `-i`:
 
   HJSON works the same way, for example `hjson:<base64-content>`.
 
+  The repository helper `make kind=status encode-config` uses GNU `base64 -w 0`; on macOS/BSD, use `base64 | tr -d '\n'` for the equivalent single-line payload.
+
 - Otherwise (no `file:`/`env:` prefix), the decoder falls back to **default lookup**, searching for:
 
   `<serviceName>.{yaml,yml,hjson,toml,json}`
 
-  in:
+  Default lookup checks extensions first (`.yaml`, `.yml`, `.hjson`, `.toml`, `.json`), and for each extension checks:
   - executable directory
   - `$XDG_CONFIG_HOME/<serviceName>/` (via `os.UserConfigDir()`)
   - `/etc/<serviceName>/`
+
+> [!IMPORTANT]
+> Because the user config directory is part of that search, runtimes using default lookup are expected to provide `HOME` or `XDG_CONFIG_HOME`. Services that cannot rely on those environment variables should pass an explicit `-i file:<path>` or `-i env:<ENV_VAR>` source.
 
 ### Typed decoding and validation
 
@@ -242,10 +247,9 @@ Encoding kinds used by subsystems that support encoding:
 - `octet-stream`
 - `markdown`
 
-Notes:
-
-- `plain`, `octet-stream`, and `markdown` all map to the bytes passthrough encoder.
-- Protobuf binary/text/JSON kinds have multiple aliases; the list above reflects the built-in registry.
+> [!NOTE]
+> - `plain`, `octet-stream`, and `markdown` all map to the bytes passthrough encoder.
+> - Protobuf binary/text/JSON kinds have multiple aliases; the list above reflects the built-in registry.
 
 ---
 
@@ -263,12 +267,14 @@ cache:
     url: env:CACHE_URL
 ```
 
-Notes:
-
-- Built-in driver kinds in this repo are `redis` and `sync`.
-- `kind` is still wiring-dependent in practice: services can register additional drivers.
-- `max_size` limits encoded cache values before compression, after compression, and after decompression. A zero value uses the default `4MB`.
-- `options` is backend-specific and decoded as `map[string]any`.
+> [!NOTE]
+> - Built-in driver kinds in this repo are `redis` and `sync`.
+> - Unknown `kind` values return `cache/driver.ErrNotFound`.
+> - Unknown or empty `compressor` values fall back to `none`.
+> - For normal values, unknown or empty `encoder` values fall back to `json`.
+> - Cache operations use `plain` for `io.WriterTo`/`io.ReaderFrom` stream values and `proto` for protobuf messages, regardless of the configured `encoder`.
+> - `max_size` limits encoded cache values before compression, after compression, and after decompression. A zero value uses the default `4MB`.
+> - `options` is backend-specific and decoded as `map[string]any`.
 
 ---
 
@@ -301,9 +307,9 @@ feature:
     server_name: localhost
 ```
 
-Notes:
-
-- Presence enables the feature subsystem configuration-wise, but you still need to register an OpenFeature provider in your service wiring.
+> [!NOTE]
+> - Presence enables the feature subsystem configuration-wise, but this repository does not construct a built-in OpenFeature provider from this config.
+> - Services that need a remote or custom provider should use `feature.Config` in their own provider constructor and provide the resulting `openfeature.FeatureProvider` in DI; `feature.Module` registers that supplied provider with the OpenFeature SDK lifecycle.
 
 ---
 
@@ -323,6 +329,10 @@ does not store or reject previously seen webhook ids. Receivers that perform
 non-idempotent work should deduplicate or process idempotently using
 `Webhook-Id` or the event id, backed by durable shared storage when running more
 than one receiver instance.
+
+> [!IMPORTANT]
+> Webhook-protected CloudEvents must use structured HTTP encoding. Binary-mode
+> CloudEvents with `ce-*` headers are rejected before signature verification.
 
 ---
 
@@ -347,9 +357,12 @@ id:
 
 ## Runtime enhancements
 
-The runtime is enhanced with:
+Server commands created through `cli.Application.AddServer` include `runtime.Module`, which currently enables:
 
 - [automemlimit](https://github.com/KimMachineGun/automemlimit)
+
+> [!NOTE]
+> This registration is best-effort and does not fail startup if a memory limit cannot be applied. Direct Fx compositions and client-style commands should include `runtime.Module` explicitly when they want this behavior.
 
 ---
 
@@ -462,10 +475,12 @@ telemetry:
       Authorization: env:OTLP_LOGS_AUTH
 ```
 
-Notes:
+> [!NOTE]
+> - `headers` values are source strings.
+> - Telemetry header maps are resolved during config projection; unset `env:` values and unreadable `file:` values fail fast (panic during startup).
 
-- `headers` values are source strings.
-- Telemetry header maps are resolved during config projection; unset `env:` values and unreadable `file:` values fail fast (panic during startup).
+> [!WARNING]
+> OTLP exporters reject non-loopback `http://` endpoints when headers are configured. Use HTTPS for remote collectors that require authorization headers; cleartext with headers is accepted only for local loopback endpoints.
 
 ### Metrics
 
@@ -508,9 +523,8 @@ telemetry:
       Authorization: env:OTLP_TRACES_AUTH
 ```
 
-Note:
-
-- Current tracer wiring exports via OTLP/HTTP when tracer config is present.
+> [!NOTE]
+> Current tracer wiring exports via OTLP/HTTP when `telemetry.tracer.kind` is `otlp` and `url` is configured.
 
 ### Telemetry libraries used
 
@@ -553,9 +567,8 @@ transport:
 The model is based on Casbin RBAC:
 <https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf>
 
-Note:
-
-- `access.model` and `access.policy` are resolved through `os.FS.ReadSource`; use `file:` for files, `env:` for environment-provided content, or literal content.
+> [!NOTE]
+> `access.model` and `access.policy` are resolved through `os.FS.ReadSource`; use `file:` for files, `env:` for environment-provided content, or literal content.
 
 ### JWT
 
@@ -577,6 +590,9 @@ Important behavior:
 - JWT verification requires the `kid` header to exist and match `kid` in config exactly.
 - `exp` is parsed as a Go duration string; invalid values can fail fast.
 
+> [!IMPORTANT]
+> JWT generation and verification use Ed25519 signing and verification key material supplied through DI, typically from the crypto subsystem and standard module wiring.
+
 ### Paseto
 
 Paseto config:
@@ -591,9 +607,8 @@ transport:
         exp: 1h
 ```
 
-Note:
-
-- The current PASETO implementation issues **v4 public** tokens using Ed25519 key material provided via wiring (not directly from `paseto.secret`). If you want config-driven key material, load it via the crypto subsystem and wire signer/verifier appropriately.
+> [!NOTE]
+> The current PASETO implementation issues **v4 public** tokens using Ed25519 key material provided via wiring (not directly from `paseto.secret`). If you want config-driven key material, load it via the crypto subsystem and wire signer/verifier appropriately.
 
 ### SSH tokens
 
@@ -632,12 +647,11 @@ transport:
             public: file:/keys/old.pub
 ```
 
-Notes:
-
-- `ssh.key` is used for minting tokens (requires private key).
-- `ssh.keys` is used for verification (public keys).
-- `ssh.exp` sets the token validity window; SSH keys remain long-lived, while generated tokens are short-lived.
-- The config does not enforce that the signing key name exists in the verification set; include it if you want round-trip.
+> [!NOTE]
+> - `ssh.key` is used for minting tokens (requires private key).
+> - `ssh.keys` is used for verification (public keys).
+> - `ssh.exp` sets the token validity window; SSH keys remain long-lived, while generated tokens are short-lived.
+> - The config does not enforce that the signing key name exists in the verification set; include it if you want round-trip.
 
 ---
 
@@ -663,13 +677,12 @@ transport:
       interval: 1s
 ```
 
-Note:
-
-- `interval` is parsed as a Go duration string. Invalid values can fail fast.
-- The built-in limiter is an in-memory, per-process safeguard. Use it as a last resort and prefer an external edge, gateway, ingress, load balancer, or service-mesh limiter for production abuse protection.
-- The `user-id` key uses the verified principal stored in metadata. For JWT/PASETO tokens this is the subject claim; for SSH tokens this is the verified key name.
-- The `service-method` key uses HTTP route/path metadata or the gRPC full method name.
-- Server-side HTTP and gRPC limiters run after metadata extraction and token verification, so missing, malformed, or invalid authorization is rejected before it reaches the limiter. This is intentional; enforce quotas for those attempts with an external edge, gateway, ingress, load balancer, or service-mesh limiter.
+> [!NOTE]
+> - `interval` is parsed as a Go duration string. Invalid values can fail fast.
+> - The built-in limiter is an in-memory, per-process safeguard. Use it as a last resort and prefer an external edge, gateway, ingress, load balancer, or service-mesh limiter for production abuse protection.
+> - The `user-id` key uses the verified principal stored in metadata. For JWT/PASETO tokens this is the subject claim; for SSH tokens this is the verified key name.
+> - The `service-method` key uses HTTP route/path metadata or the gRPC full method name.
+> - Server-side HTTP and gRPC limiters run after metadata extraction and token verification, so missing, malformed, or invalid authorization is rejected before it reaches the limiter. This is intentional; enforce quotas for those attempts with an external edge, gateway, ingress, load balancer, or service-mesh limiter.
 
 ---
 
@@ -709,7 +722,7 @@ Supported stacks include:
 
 ### HTTP content types
 
-The HTTP REST and RPC helpers resolve encoders from the request `Content-Type`.
+The HTTP REST and RPC helpers resolve encoders from the request `Content-Type`, falling back to the first `Accept` media type when `Content-Type` is absent.
 
 Built-in text/object payload media types include:
 
@@ -718,11 +731,14 @@ Built-in text/object payload media types include:
 - `application/yaml`
 - `application/yml`
 - `application/toml`
-- `application/vnd.msgpack`
-- `application/gob`
 - `application/octet-stream`
 - `text/plain`
 - `text/markdown`
+
+Internal binary payload media types include:
+
+- `application/vnd.msgpack`
+- `application/gob`
 
 Built-in protobuf-oriented media type aliases include:
 
@@ -737,11 +753,12 @@ Built-in protobuf-oriented media type aliases include:
 - `application/prototxt`
 - `application/pbtxt`
 
-Notes:
-
-- `application/hjson` maps to the built-in `hjson` encoder kind.
-- Unknown or invalid request media types fall back to JSON selection.
-- `text/error` is reserved for error responses and should not be sent by clients as a request content type.
+> [!NOTE]
+> - `application/hjson` maps to the built-in `hjson` encoder kind.
+> - Unknown or invalid request media types fall back to JSON selection.
+> - `text/error` is reserved for error responses and should not be sent by clients as a request content type.
+>
+> `application/vnd.msgpack` and `application/gob` can be resolved as media types, but REST/RPC request-body decoding rejects them with HTTP 415.
 
 ### HTTP route misses
 
@@ -776,13 +793,12 @@ transport:
     timeout: 10s
 ```
 
-Notes:
-
-- Address format should be `<network>://<address>` (for example `tcp://:8000`).
-- If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
-- `max_receive_size` limits inbound payload size. A zero value uses the default `4MB`.
-- For HTTP, `max_receive_size` applies per request body. For gRPC, it applies per inbound unary request and per inbound stream message.
-- MVC does not enforce its own body-size caps; supported HTTP server wiring applies `max_receive_size` before MVC handlers run, and go-service HTTP clients apply their configured response-size cap when reading responses.
+> [!NOTE]
+> - Address may use `<network>://<address>` (for example `tcp://:8000`) or a raw listen address such as `:8000`, which defaults to the `tcp` network.
+> - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
+> - `max_receive_size` limits inbound payload size. A zero value uses the default `4MB`.
+> - For HTTP, `max_receive_size` applies per request body. For gRPC, it applies per inbound unary request and per inbound stream message.
+> - MVC does not enforce its own body-size caps; supported HTTP server wiring applies `max_receive_size` before MVC handlers run, and go-service HTTP clients apply their configured response-size cap when reading responses.
 
 Receive-limit example:
 
@@ -839,18 +855,22 @@ Set `ca` on server TLS config to require and verify client certificates for mTLS
 config to verify server certificates issued by the same local or private CA. `server_name` is only needed
 on clients when the dial address differs from the certificate DNS name.
 
-Important note:
-
-- If you are using `go-service-template` or composing server transport bundles such as `module.Server` or `transport.Module`, the required transport registration is handled for you by DI.
-- `module.Client` does not wire transports by default. Add `transport.Module`, the relevant transport submodule, or call the transport-level `Register(...)` functions when a client process constructs HTTP or gRPC TLS config from source strings such as `file:`.
-- You only need to call transport-level `Register(...)` functions yourself when you intentionally wire transports manually or compose lower-level packages outside the transport module graph.
-- If you are wiring server lifecycle manually, use `net/server.Register(...)`.
+> [!IMPORTANT]
+> If you are using `go-service-template` or composing server transport bundles such as `module.Server` or `transport.Module`, the required transport registration is handled for you by DI.
+>
+> `module.Client` does not wire transports by default. Add `transport.Module`, the relevant transport submodule, or call the transport-level `Register(...)` functions when a client process constructs HTTP or gRPC TLS config from source strings such as `file:`.
+>
+> You only need to call transport-level `Register(...)` functions yourself when you intentionally wire transports manually or compose lower-level packages outside the transport module graph.
+>
+> If you are wiring server lifecycle manually, use `net/server.Register(...)`.
 
 ### Forwarded IPs and reflection
 
-HTTP and gRPC metadata extraction intentionally trusts common forwarded IP headers/metadata such as `X-Forwarded-For`, `X-Real-IP`, `CF-Connecting-IP`, and `True-Client-IP`. Services that rely on extracted IPs for logging, policy, or rate limiting should only receive traffic through trusted edge infrastructure that strips or overwrites client-supplied forwarding headers.
+> [!WARNING]
+> HTTP and gRPC metadata extraction intentionally trusts common forwarded IP headers/metadata such as `X-Forwarded-For`, `X-Real-IP`, `CF-Connecting-IP`, and `True-Client-IP`. Services that rely on extracted IPs for logging, policy, or rate limiting should only receive traffic through trusted edge infrastructure that strips or overwrites client-supplied forwarding headers.
 
-gRPC server reflection is intentionally always registered by `net/grpc.NewServer` so internal tooling can discover services. Services that should not expose reflection publicly should restrict access with bind addresses, TLS/client authentication, ingress policy, firewall rules, or service-mesh authorization.
+> [!WARNING]
+> gRPC server reflection is intentionally always registered by `net/grpc.NewServer` so internal tooling can discover services. Services that should not expose reflection publicly should restrict access with bind addresses, TLS/client authentication, ingress policy, firewall rules, or service-mesh authorization.
 
 ### Transport Dependencies
 
@@ -896,11 +916,10 @@ crypto:
     private: file:test/secrets/ssh_private
 ```
 
-Notes:
-
-- AES keys must be 16/24/32 bytes after resolving the source string.
-- RSA keys expect PKCS#1 PEM blocks (`RSA PUBLIC KEY` / `RSA PRIVATE KEY`).
-- Ed25519 expects PKIX `PUBLIC KEY` and PKCS#8 `PRIVATE KEY` PEM blocks.
+> [!NOTE]
+> - AES keys must be 16/24/32 bytes after resolving the source string.
+> - RSA keys expect PKCS#1 PEM blocks (`RSA PUBLIC KEY` / `RSA PRIVATE KEY`) and must be at least 4096 bits.
+> - Ed25519 expects PKIX `PUBLIC KEY` and PKCS#8 `PRIVATE KEY` PEM blocks.
 
 ### Crypto Dependencies
 
@@ -929,6 +948,9 @@ debug:
 ```
 
 All debug endpoints are namespaced by service name: `/<name>/debug/...`.
+
+> [!WARNING]
+> If `debug.address` is omitted while debug is enabled, the debug server binds to `tcp://:6060`. Set an explicit address, TLS/mTLS, and network or policy controls appropriate for the deployment.
 
 ### statsviz
 
@@ -973,6 +995,8 @@ GET http://localhost:6060/<name>/debug/psutil
 ### Style
 
 This repo generally follows the [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md).
+
+Exported Go identifiers should have GoDoc comments, and each comment should start with the identifier name or `Deprecated:`.
 
 ### Development Dependencies
 
@@ -1063,8 +1087,12 @@ make sec
 make benchmarks
 make http-benchmarks
 make grpc-benchmarks
+make sql-benchmarks
+make cache-benchmarks
 make bytes-benchmarks
 make strings-benchmarks
+make id-benchmarks
+make http-content-benchmarks
 ```
 
 ### Coverage reports
@@ -1090,20 +1118,3 @@ make database-diagram
 make telemetry-diagram
 make transport-diagram
 ```
-
-### Documentation
-
-All exported identifiers should have GoDoc comments, and each comment should start with the identifier name (or `Deprecated:`).
-
-### Additional gotchas
-
-- `make kind=status encode-config` uses `base64 -w 0` (GNU style). On macOS/BSD use `base64 | tr -d '\n'`.
-- If you enable transport TLS and wire transports manually (without `transport.Module` or the higher-level `module.Server` bundle), call:
-  - `transport/http.Register(fs)`
-  - `transport/grpc.Register(fs)`
-- Services built from `go-service-template` normally do not need to call those registration helpers directly.
-- Shared metadata and header helpers live under `net/...`, for example:
-  - `net/http/meta`
-  - `net/grpc/meta`
-  - `net/header`
-  - `net/server.Register`

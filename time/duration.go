@@ -97,8 +97,8 @@ func (d Duration) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON decodes a quoted Go duration string into d.
 //
-// Non-string JSON values are rejected by the underlying JSON decoder before the
-// duration parser runs.
+// Invalid input may fail either JSON string decoding or duration parsing. For example,
+// null decodes to an empty string and is then rejected by the duration parser.
 func (d *Duration) UnmarshalJSON(data []byte) error {
 	var text string
 	if err := json.Unmarshal(data, &text); err != nil {

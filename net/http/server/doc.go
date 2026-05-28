@@ -9,9 +9,10 @@
 //
 // # Listener and address semantics
 //
-// `NewServer` parses `cfg.Address` using the go-service network address convention "<network>://<address>"
-// (for example "tcp://:8080") and creates a listener using `net.Listen` with a background context.
-// The resulting listener is held by the returned Server and is used for `Serve`/`ServeTLS`.
+// `NewServer` accepts either the go-service network address convention "<network>://<address>"
+// (for example "tcp://:8080") or a raw listen address such as ":8080". Raw addresses use the
+// "tcp" network. It creates a listener using `net.Listen` with a background context; the resulting
+// listener is held by the returned Server and is used for `Serve`/`ServeTLS`.
 //
 // # TLS semantics
 //

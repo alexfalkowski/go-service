@@ -6,17 +6,20 @@ package config
 // In particular, `server.NewServer` splits Address into a network and address
 // and then creates a listener via `net.Listen`.
 //
-// Address is expected to be in the go-service "network address" format:
+// Address may be in the go-service "network address" format:
 //
 //	<network>://<address>
 //
-// Example:
+// or a raw listen address. Raw addresses default to the "tcp" network.
+//
+// Examples:
 //
 //	tcp://:9090
+//	:9090
 type Config struct {
-	// Address is the bind address for the gRPC server, expressed in the go-service
-	// network address format (for example "tcp://:9090").
+	// Address is the bind address for the gRPC server.
 	//
-	// This value is split into network/address components and passed to net.Listen.
+	// It may use the go-service network address format (for example "tcp://:9090")
+	// or a raw listen address such as ":9090", which defaults to the "tcp" network.
 	Address string
 }

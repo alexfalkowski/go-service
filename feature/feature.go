@@ -44,6 +44,9 @@ type ProviderParams struct {
 //   - Register appends lifecycle hooks that:
 //   - set the OpenFeature provider during application start, and
 //   - shut down the OpenFeature SDK during application stop.
+//
+// Register uses OpenFeature's package-level SDK APIs, so provider registration, hooks, and shutdown are
+// process-global effects.
 func Register(params ProviderParams) {
 	if params.FeatureProvider == nil {
 		return

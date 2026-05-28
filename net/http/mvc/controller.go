@@ -17,7 +17,8 @@ import "github.com/alexfalkowski/go-service/v2/context"
 // error (via net/http/status.Code) and renders the returned view using a client-safe Error model.
 // The `mvcModelError` metadata value contains the raw error string for compatibility; templates that render it
 // can expose diagnostic details.
-// Implementations should therefore ensure view is non-nil even in error cases, or accept that rendering may panic.
+// Implementations should therefore return a non-nil view when they want to render an error page. If view is nil,
+// rendering returns ErrMissingView and the route writes the status derived from that error instead.
 type Controller[Model any] func(ctx context.Context) (*View, *Model, error)
 
 // NotFoundController returns the view and model used to render an MVC not-found response.

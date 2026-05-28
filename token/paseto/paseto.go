@@ -85,8 +85,9 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //   - audience matches aud (aud)
 //   - the signed lifetime (exp - iat) does not exceed cfg.Expiration
 //
-// On failure, this method returns errors from the upstream PASETO library or from key
-// construction. It does not currently map failures onto shared sentinel errors.
+// On failure, parser, rule, signature, and key-construction errors may come from
+// the upstream PASETO library. Local config, subject, and signed-lifetime checks
+// return shared sentinel errors from token/errors.
 func (t *Token) Verify(token, aud string) (string, error) {
 	if t.verifier == nil || len(t.verifier.PublicKey) == 0 {
 		return strings.Empty, errors.ErrInvalidConfig
