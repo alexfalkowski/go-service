@@ -13,8 +13,30 @@ import (
 )
 
 func TestSecrets(t *testing.T) {
-	require.NoError(t, header.Map{"test": test.FilePath("secrets/hooks")}.Secrets(test.FS))
+	headers := header.Map{
+		"file":    test.FilePath("secrets/hooks"),
+		"literal": "literal-token",
+	}
+
+	require.NoError(t, headers.Secrets(test.FS))
+	require.Equal(t, header.Map{
+		"file":    "QW4xbEphNWtxa09TMWdUY1MydmJybHlKR04zTG5aSEU=",
+		"literal": "literal-token",
+	}, headers)
 	require.Error(t, header.Map{"test": test.FilePath("none")}.Secrets(test.ErrFS))
+}
+
+func TestMustSecrets(t *testing.T) {
+	headers := header.Map{"test": test.FilePath("secrets/hooks")}
+
+	require.NotPanics(t, func() {
+		headers.MustSecrets(test.FS)
+	})
+	require.Equal(t, header.Map{"test": "QW4xbEphNWtxa09TMWdUY1MydmJybHlKR04zTG5aSEU="}, headers)
+
+	require.Panics(t, func() {
+		header.Map{"test": test.FilePath("none")}.MustSecrets(test.ErrFS)
+	})
 }
 
 func TestSecretsDoNotPartiallyMutateOnError(t *testing.T) {

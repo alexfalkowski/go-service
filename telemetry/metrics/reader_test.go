@@ -19,6 +19,17 @@ func TestInvalidReader(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestReaderShutdownIgnoresAlreadyShutdownReader(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	reader, err := metrics.NewReader(lc, test.Name, &metrics.Config{Kind: "prometheus"})
+	require.NoError(t, err)
+
+	lc.RequireStart()
+	require.NoError(t, reader.Shutdown(t.Context()))
+
+	require.NoError(t, lc.Stop(t.Context()))
+}
+
 func TestInvalidOTLPEndpoint(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &metrics.Config{

@@ -83,7 +83,7 @@ func TestInvalidLogger(t *testing.T) {
 	}
 
 	log, err := logger.NewLogger(params)
-	require.Error(t, err)
+	require.ErrorIs(t, err, logger.ErrNotFound)
 	require.Nil(t, log)
 
 	require.NotPanics(t, func() {
@@ -94,6 +94,42 @@ func TestInvalidLogger(t *testing.T) {
 		log.Warn("hello")
 		log.Error("hello")
 	})
+}
+
+func TestDisabledLogger(t *testing.T) {
+	original := slog.Default()
+	t.Cleanup(func() {
+		slog.SetDefault(original)
+	})
+	replacement := slog.New(&test.CaptureHandler{})
+	slog.SetDefault(replacement)
+
+	log, err := logger.NewLogger(logger.LoggerParams{})
+
+	require.NoError(t, err)
+	require.Nil(t, log)
+	require.Same(t, replacement, slog.Default())
+}
+
+func TestLogAddsMetadataAndError(t *testing.T) {
+	handler := &test.CaptureHandler{}
+	log := &logger.Logger{Logger: slog.New(handler)}
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+
+	log.Log(ctx, logger.NewText("plain"), logger.String("component", "test"))
+	log.LogAttrs(ctx, logger.LevelWarn, logger.NewMessage("failed", context.Canceled), logger.String("component", "test"))
+
+	require.Len(t, handler.Records, 2)
+	require.Equal(t, slog.LevelInfo, handler.Records[0].Level)
+	require.Equal(t, "plain", handler.Records[0].Message)
+	require.Equal(t, "test", handler.Records[0].Attrs["component"].String())
+	require.Equal(t, "request-id", handler.Records[0].Attrs[meta.RequestIDKey].String())
+
+	require.Equal(t, slog.LevelWarn, handler.Records[1].Level)
+	require.Equal(t, "failed", handler.Records[1].Message)
+	require.Equal(t, "test", handler.Records[1].Attrs["component"].String())
+	require.Equal(t, "request-id", handler.Records[1].Attrs[meta.RequestIDKey].String())
+	require.Equal(t, context.Canceled, handler.Records[1].Attrs["error"].Any())
 }
 
 func TestInvalidLevel(t *testing.T) {
