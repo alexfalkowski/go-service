@@ -37,10 +37,17 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecodeRejectsTrailingDocument(t *testing.T) {
-	encoder := yaml.NewEncoder()
-	var msg map[string]string
+	for _, input := range []string{
+		"test: test\n---\ntest: other",
+		"test: test\n---\n: invalid",
+	} {
+		t.Run(input, func(t *testing.T) {
+			encoder := yaml.NewEncoder()
+			var msg map[string]string
 
-	err := encoder.Decode(bytes.NewBufferString("test: test\n---\ntest: other"), &msg)
+			err := encoder.Decode(bytes.NewBufferString(input), &msg)
 
-	require.ErrorIs(t, err, errors.ErrTrailingData)
+			require.ErrorIs(t, err, errors.ErrTrailingData)
+		})
+	}
 }

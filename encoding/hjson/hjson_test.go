@@ -43,6 +43,13 @@ func TestDecode(t *testing.T) {
 	require.Equal(t, "test", msg.Test)
 }
 
+func TestDecodeReturnsReadError(t *testing.T) {
+	encoder := hjson.NewEncoder()
+	msg := &message{}
+
+	require.ErrorIs(t, encoder.Decode(&test.ErrReaderCloser{}, msg), test.ErrFailed)
+}
+
 func TestDecodeRejectsDuplicateKeys(t *testing.T) {
 	encoder := hjson.NewEncoder()
 	msg := &message{}
