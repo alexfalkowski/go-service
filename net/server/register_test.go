@@ -35,6 +35,26 @@ func TestRegisterStopErrors(t *testing.T) {
 	require.Equal(t, 1, second.Shutdowns)
 }
 
+func TestRegisterStartsAllServices(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	first := test.NewObservableServer(nil, nil)
+	second := test.NewObservableServer(nil, nil)
+	sh := test.NewShutdowner()
+
+	server.Register(lc, []*server.Service{
+		server.NewService("first", first, nil, sh),
+		server.NewService("second", second, nil, sh),
+	})
+
+	require.NoError(t, lc.Start(t.Context()))
+	waitForRegisteredService(t, first.Done)
+	waitForRegisteredService(t, second.Done)
+
+	require.NoError(t, lc.Stop(t.Context()))
+	require.Equal(t, 1, first.Shutdowns)
+	require.Equal(t, 1, second.Shutdowns)
+}
+
 func TestRegisterSnapshotsServices(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	original := test.NewObservableServer(nil, nil)
@@ -57,4 +77,14 @@ func TestRegisterSnapshotsServices(t *testing.T) {
 	require.NoError(t, lc.Stop(t.Context()))
 	require.Equal(t, 1, original.Shutdowns)
 	require.Equal(t, 0, replacement.Shutdowns)
+}
+
+func waitForRegisteredService(t *testing.T, done <-chan struct{}) {
+	t.Helper()
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		require.Fail(t, "registered service was not started")
+	}
 }

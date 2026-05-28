@@ -58,6 +58,21 @@ func TestUnaryClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestUnaryClientInterceptorPreservesOutgoingRequestID(t *testing.T) {
+	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
+	interceptor := grpcmeta.UnaryClientInterceptor(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id"))
+
+	err := interceptor(ctx, "/greet.v1.Greeter/SayHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
+		md, ok := grpcmeta.FromOutgoingContext(ctx)
+		require.True(t, ok)
+		require.Equal(t, []string{"caller-id"}, md.Get("request-id"))
+		require.Equal(t, grpcmeta.String("caller-id"), meta.RequestID(ctx))
+
+		return nil
+	})
+	require.NoError(t, err)
+}
+
 func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 	ctx := grpcmeta.WithAttributes(t.Context(),
 		grpcmeta.WithUserAgent(grpcmeta.String("current-agent")),
@@ -110,6 +125,25 @@ func TestStreamClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
 	require.Nil(t, stream)
 }
 
+func TestStreamClientInterceptorPreservesOutgoingRequestID(t *testing.T) {
+	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
+	interceptor := grpcmeta.StreamClientInterceptor(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id"))
+	streamer := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
+		md, ok := grpcmeta.FromOutgoingContext(ctx)
+		require.True(t, ok)
+		require.Equal(t, []string{"caller-id"}, md.Get("request-id"))
+		require.Equal(t, grpcmeta.String("caller-id"), meta.RequestID(ctx))
+
+		return nil, nil
+	}
+
+	stream, err := interceptor(
+		ctx, &grpc.StreamDesc{ServerStreams: true}, nil, "/greet.v1.Greeter/SayStreamHello", streamer,
+	)
+	require.NoError(t, err)
+	require.Nil(t, stream)
+}
+
 func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {
 	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Map{})
@@ -140,6 +174,19 @@ func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
 	require.Equal(t, "ok", resp)
 }
 
+func TestUnaryServerInterceptorPreservesIncomingRequestID(t *testing.T) {
+	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
+
+	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
+		require.Equal(t, grpcmeta.String("caller-id"), meta.RequestID(ctx))
+
+		return "ok", nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, "ok", resp)
+}
+
 func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
 	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Map{})
@@ -148,6 +195,21 @@ func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
 		require.Equal(t, grpcmeta.String("peer"), grpcmeta.Attribute(ctx, grpcmeta.IPAddrKindKey))
 		require.Equal(t, grpcmeta.String("127.0.0.1"), grpcmeta.IPAddr(ctx))
+
+		return "ok", nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, "ok", resp)
+}
+
+func TestUnaryServerInterceptorPrefersForwardedIPAddr(t *testing.T) {
+	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("x-forwarded-for", "203.0.113.10, 10.0.0.1"))
+	ctx = peer.NewContext(ctx, &peer.Peer{Addr: &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: 8080}})
+
+	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
+		require.Equal(t, grpcmeta.String("x-forwarded-for"), grpcmeta.Attribute(ctx, grpcmeta.IPAddrKindKey))
+		require.Equal(t, grpcmeta.String("203.0.113.10"), grpcmeta.IPAddr(ctx))
 
 		return "ok", nil
 	})
@@ -185,6 +247,20 @@ func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []string{"1", "v2"}, stream.Header.Get("service-version"))
 	require.Equal(t, []string{"generated-id"}, stream.Header.Get("request-id"))
+}
+
+func TestStreamServerInterceptorPreservesIncomingRequestID(t *testing.T) {
+	interceptor := grpcmeta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
+	stream := &test.MetaServerStream{Ctx: ctx}
+
+	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/greet.v1.Greeter/SayStreamHello"}, func(_ any, stream grpc.ServerStream) error {
+		require.Equal(t, grpcmeta.String("caller-id"), meta.RequestID(stream.Context()))
+
+		return nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, []string{"caller-id"}, stream.Header.Get("request-id"))
 }
 
 func TestStreamServerInterceptorExtractsOperationMetadata(t *testing.T) {

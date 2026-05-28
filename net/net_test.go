@@ -16,7 +16,20 @@ func TestNetworkAddressValue(t *testing.T) {
 }
 
 func TestHost(t *testing.T) {
-	require.Equal(t, "none", net.Host("none"))
+	tests := []struct {
+		name string
+		addr string
+		want string
+	}{
+		{name: "host port", addr: "localhost:9000", want: "localhost"},
+		{name: "fallback", addr: "none", want: "none"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, net.Host(tt.addr))
+		})
+	}
 }
 
 func TestSplitAndJoinHostPort(t *testing.T) {
