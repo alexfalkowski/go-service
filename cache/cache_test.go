@@ -10,13 +10,16 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/compress/errors"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/ptr"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -39,6 +42,38 @@ func TestGenericValidCache(t *testing.T) {
 	require.Equal(t, "hello?", *value)
 
 	require.NoError(t, world.Remove(t.Context(), "test"))
+}
+
+func TestModuleRegistersGenericCache(t *testing.T) {
+	cache.Register(nil)
+	t.Cleanup(func() {
+		cache.Register(nil)
+	})
+
+	app := di.New(
+		di.NoLogger,
+		cache.Module,
+		di.Constructor(func() *logger.Logger { return nil }),
+		fx.Supply(
+			test.NewCacheConfig("sync", "none", "json", "redis"),
+			test.FS,
+			test.Encoder,
+			test.Pool,
+			test.Compressor,
+		),
+	)
+	require.NoError(t, app.Err())
+
+	require.NoError(t, app.Start(t.Context()))
+	t.Cleanup(func() {
+		require.NoError(t, app.Stop(context.Background()))
+	})
+
+	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
+
+	value, err := cache.Get[string](t.Context(), "test")
+	require.NoError(t, err)
+	require.Equal(t, "hello?", *value)
 }
 
 func TestGenericDisabledCache(t *testing.T) {
@@ -251,6 +286,21 @@ func TestMissingCache(t *testing.T) {
 	require.Equal(t, "existing", value)
 }
 
+func TestExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
+	cfg := &config.Config{Kind: "sync"}
+	kind := cache.NewCache(cache.CacheParams{
+		Config:     cfg,
+		Compressor: test.Compressor,
+		Encoder:    test.Encoder,
+		Pool:       test.Pool,
+		Driver:     expiredCacheDriver{},
+	})
+	value := "existing"
+
+	require.NoError(t, kind.Get(t.Context(), "expired", &value))
+	require.Equal(t, "existing", value)
+}
+
 func cacheRoundTripCases() []cacheRoundTripCase {
 	compressors := []string{"none", "snappy", "s2", "zstd"}
 	encoders := []string{"json", "hjson", "yaml", "yml", "toml", "gob", "msgpack"}
@@ -280,6 +330,12 @@ func cacheRoundTripCases() []cacheRoundTripCase {
 			persist: func() any { return &v1.SayHelloRequest{Name: "hello?"} },
 			get:     func() any { return &v1.SayHelloRequest{} },
 		},
+		cacheRoundTripCase{
+			name:    "sync/unknown/unknown/request",
+			config:  test.NewCacheConfig("sync", "unknown", "unknown", "redis"),
+			persist: func() any { return &test.Request{Name: "hello?"} },
+			get:     func() any { return &test.Request{} },
+		},
 	)
 
 	for _, compressor := range compressors {
@@ -301,4 +357,22 @@ type cacheRoundTripCase struct {
 	get     func() any
 	config  *config.Config
 	name    string
+}
+
+type expiredCacheDriver struct{}
+
+func (expiredCacheDriver) Delete(context.Context, string) error {
+	return nil
+}
+
+func (expiredCacheDriver) Fetch(context.Context, string) (string, error) {
+	return strings.Empty, driver.ErrExpired
+}
+
+func (expiredCacheDriver) Flush(context.Context) error {
+	return nil
+}
+
+func (expiredCacheDriver) Save(context.Context, string, string, time.Duration) error {
+	return nil
 }
