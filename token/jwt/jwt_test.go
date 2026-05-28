@@ -85,37 +85,53 @@ func TestInvalid(t *testing.T) {
 	gen := uuid.NewGenerator()
 	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
 
-	tokens := []string{
-		"invalid",
-		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+	tests := []struct {
+		name  string
+		value string
+	}{
+		{
+			name:  "malformed token",
+			value: "invalid",
+		},
+		{
+			name:  "unexpected signing method",
+			value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+		},
 	}
 
-	for _, tkn := range tokens {
-		t.Run(tkn, func(t *testing.T) {
-			_, err := token.Verify(tkn, "hello")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := token.Verify(tt.value, "hello")
 			require.Error(t, err)
 		})
 	}
 
-	tkn, err := token.Generate("hello", test.UserID.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
+	t.Run("invalid audience", func(t *testing.T) {
+		tkn, err := token.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
+		require.NotEmpty(t, tkn)
 
-	_, err = token.Verify(tkn, "test")
-	require.Error(t, err)
+		sub, err := token.Verify(tkn, "test")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidAudience)
+	})
 
-	token = jwt.NewToken(&jwt.Config{Issuer: "test", Expiration: time.Hour, KeyID: "1234567890"}, signer, verifier, gen)
+	t.Run("invalid issuer", func(t *testing.T) {
+		issuerToken := jwt.NewToken(&jwt.Config{Issuer: "test", Expiration: time.Hour, KeyID: "1234567890"}, signer, verifier, gen)
 
-	tkn, err = token.Generate("hello", test.UserID.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
+		tkn, err := issuerToken.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
+		require.NotEmpty(t, tkn)
 
-	token = jwt.NewToken(cfg.JWT, signer, verifier, gen)
-	_, err = token.Verify(tkn, "hello")
-	require.Error(t, err)
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidIssuer)
+	})
 
-	token = jwt.NewToken(nil, signer, verifier, gen)
-	require.Nil(t, token)
+	t.Run("disabled config", func(t *testing.T) {
+		token := jwt.NewToken(nil, signer, verifier, gen)
+		require.Nil(t, token)
+	})
 }
 
 func TestInvalidKeyID(t *testing.T) {
@@ -124,24 +140,30 @@ func TestInvalidKeyID(t *testing.T) {
 	signer, _ := ed25519.NewSigner(test.PEM, ec)
 	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	gen := uuid.NewGenerator()
-	wrong := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: time.Hour, KeyID: "test"}, signer, verifier, gen)
-
-	tkn, err := wrong.Generate("hello", test.UserID.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
-
 	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
 
-	_, err = token.Verify(tkn, "hello")
-	require.ErrorIs(t, err, errors.ErrInvalidKeyID)
+	t.Run("unexpected key id", func(t *testing.T) {
+		wrong := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: time.Hour, KeyID: "test"}, signer, verifier, gen)
 
-	jwtToken := v4.NewWithClaims(v4.SigningMethodEdDSA, &v4.RegisteredClaims{})
-	tkn, err = jwtToken.SignedString(signer.PrivateKey)
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
+		tkn, err := wrong.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
+		require.NotEmpty(t, tkn)
 
-	_, err = token.Verify(tkn, "hello")
-	require.ErrorIs(t, err, errors.ErrInvalidKeyID)
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidKeyID)
+	})
+
+	t.Run("missing key id", func(t *testing.T) {
+		jwtToken := v4.NewWithClaims(v4.SigningMethodEdDSA, &v4.RegisteredClaims{})
+		tkn, err := jwtToken.SignedString(signer.PrivateKey)
+		require.NoError(t, err)
+		require.NotEmpty(t, tkn)
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidKeyID)
+	})
 }
 
 func TestInvalidMissingClaims(t *testing.T) {
@@ -299,6 +321,23 @@ func TestInvalidPrivateKeyDoesNotPanic(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 
+func TestInvalidAlgorithm(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
+
+	jwtToken := v4.NewWithClaims(v4.SigningMethodHS256, &v4.RegisteredClaims{})
+	tkn, err := jwtToken.SignedString([]byte("secret"))
+	require.NoError(t, err)
+	require.NotEmpty(t, tkn)
+
+	_, err = token.Verify(tkn, "hello")
+	require.ErrorIs(t, err, errors.ErrInvalidAlgorithm)
+}
+
 func validClaims(cfg *jwt.Config, gen *uuid.Generator, now time.Time) *v4.RegisteredClaims {
 	return &v4.RegisteredClaims{
 		ExpiresAt: &v4.NumericDate{Time: now.Add(time.Hour.Duration())},
@@ -309,25 +348,4 @@ func validClaims(cfg *jwt.Config, gen *uuid.Generator, now time.Time) *v4.Regist
 		Audience:  []string{"hello"},
 		Subject:   test.UserID.String(),
 	}
-}
-
-func TestInvalidAlgorithm(t *testing.T) {
-	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-	gen := uuid.NewGenerator()
-	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
-
-	tkn, err := token.Generate("hello", test.UserID.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
-
-	jwtToken := v4.NewWithClaims(v4.SigningMethodHS256, &v4.RegisteredClaims{})
-	tkn, err = jwtToken.SignedString([]byte("secret"))
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
-
-	_, err = token.Verify(tkn, "hello")
-	require.ErrorIs(t, err, errors.ErrInvalidAlgorithm)
 }
