@@ -206,6 +206,14 @@ func TestInvalidKindConfig(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestNewConfigRejectsEmptyDecodedConfig(t *testing.T) {
+	_, err := config.NewConfig[config.Config](decoderFunc(func(any) error {
+		return nil
+	}), test.Validator)
+
+	require.ErrorIs(t, err, config.ErrInvalidConfig)
+}
+
 //nolint:funlen,gosec
 func verifyConfig(t *testing.T, config *config.Config) {
 	t.Helper()
@@ -236,6 +244,10 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, "development", config.Environment.String())
 	require.True(t, config.Feature.IsEnabled())
 	require.Equal(t, "localhost:9000", config.Feature.Address)
+	require.Equal(t, 10*time.Second, config.Feature.Timeout)
+	require.Equal(t, 100*time.Millisecond, config.Feature.Retry.Backoff)
+	require.Equal(t, time.Second, config.Feature.Retry.Timeout)
+	require.Equal(t, uint64(3), config.Feature.Retry.Attempts)
 	require.Equal(t, "uuid", config.ID.Kind)
 	require.Equal(t, "file:../test/secrets/hooks", config.Hooks.Secret)
 	require.Len(t, config.SQL.PG.Masters, 1)
@@ -261,6 +273,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, "1234567890", config.Transport.GRPC.Token.JWT.KeyID)
 	require.True(t, config.Transport.GRPC.Config.IsEnabled())
 	require.Equal(t, "tcp://localhost:12000", config.Transport.GRPC.Address)
+	require.Equal(t, 10*time.Second, config.Transport.GRPC.Timeout)
 	require.Equal(t, 3*bytes.MB, config.Transport.GRPC.MaxReceiveSize)
 	require.Equal(t, "user-agent", config.Transport.GRPC.Limiter.Kind)
 	require.Equal(t, 10, int(config.Transport.GRPC.Limiter.Tokens))
@@ -291,6 +304,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, "1234567890", config.Transport.HTTP.Token.JWT.KeyID)
 	require.True(t, config.Transport.HTTP.Config.IsEnabled())
 	require.Equal(t, "tcp://localhost:11000", config.Transport.HTTP.Address)
+	require.Equal(t, 10*time.Second, config.Transport.HTTP.Timeout)
 	require.Equal(t, 2*bytes.MB, config.Transport.HTTP.MaxReceiveSize)
 	require.Equal(t, "user-agent", config.Transport.HTTP.Limiter.Kind)
 	require.Equal(t, 10, int(config.Transport.HTTP.Limiter.Tokens))
@@ -306,4 +320,10 @@ func verifyConfig(t *testing.T, config *config.Config) {
 		config.Transport.HTTP.Options,
 	)
 	require.False(t, config.Transport.HTTP.TLS.IsEnabled())
+}
+
+type decoderFunc func(any) error
+
+func (f decoderFunc) Decode(v any) error {
+	return f(v)
 }

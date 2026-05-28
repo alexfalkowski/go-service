@@ -131,6 +131,26 @@ func TestNewConfigWithCAOnly(t *testing.T) {
 	require.Equal(t, tls.NoClientCert, tlsConfig.ClientAuth)
 }
 
+func TestNewConfigRejectsIncompleteKeyPair(t *testing.T) {
+	tests := []struct {
+		config *config.Config
+		name   string
+	}{
+		{name: "cert only", config: &config.Config{Cert: test.FilePath("certs/cert.pem")}},
+		{name: "key only", config: &config.Config{Key: test.FilePath("certs/key.pem")}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tlsConfig, err := server.NewConfig(test.FS, tt.config)
+			require.ErrorIs(t, err, server.ErrMissingKeyPair)
+			require.Empty(t, tlsConfig.Certificates)
+			require.Nil(t, tlsConfig.ClientCAs)
+			require.Equal(t, tls.NoClientCert, tlsConfig.ClientAuth)
+		})
+	}
+}
+
 func TestNewConfigInvalidKeyPair(t *testing.T) {
 	_, err := server.NewConfig(test.FS, &config.Config{
 		Cert: test.FilePath("certs/cert.pem"),

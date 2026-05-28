@@ -282,6 +282,15 @@ matching skill for the task.
 ## Testing, Style, And Docs
 
 - Tests commonly use `stretchr/testify/require`.
+- When adding test coverage, first follow the existing test shape in the
+  package. Prefer extending current fixture/table/assertion helpers over adding
+  standalone tests for behavior already exercised nearby.
+- Config tests usually use fixture-driven `config.NewConfig` coverage plus
+  `verifyConfig`; do not add separate decoder-routing or Fx projection tests
+  unless they cover a distinct repository-owned behavior not already exercised
+  by those fixture tests.
+- Do not add build-tagged or architecture-specific tests unless CI actually
+  runs that build tag or architecture.
 - Go files use tabs; YAML uses 2 spaces per `.editorconfig`.
 - Every exported identifier, including under `internal/test/**`, needs a GoDoc comment.
 - GoDoc comments should start with the identifier name or `Deprecated:`.
