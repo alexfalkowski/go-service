@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
+	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -45,6 +46,46 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestProtocols(t *testing.T) {
+	protocols := http.Protocols()
+
+	require.True(t, protocols.HTTP1())
+	require.True(t, protocols.HTTP2())
+	require.True(t, protocols.UnencryptedHTTP2())
+}
+
+func TestTransport(t *testing.T) {
+	cfg := &tls.Config{}
+
+	transport := http.Transport(cfg)
+
+	require.NotNil(t, transport.Proxy)
+	require.NotNil(t, transport.DialContext)
+	require.True(t, transport.ForceAttemptHTTP2)
+	require.Equal(t, 100, transport.MaxIdleConns)
+	require.Equal(t, 100, transport.MaxIdleConnsPerHost)
+	require.Equal(t, 100, transport.MaxConnsPerHost)
+	require.Equal(t, (90 * time.Second).Duration(), transport.IdleConnTimeout)
+	require.Equal(t, (10 * time.Second).Duration(), transport.TLSHandshakeTimeout)
+	require.Equal(t, time.Second.Duration(), transport.ExpectContinueTimeout)
+	require.Same(t, cfg, transport.TLSClientConfig)
+	require.NotNil(t, transport.Protocols)
+	require.True(t, transport.Protocols.HTTP1())
+	require.True(t, transport.Protocols.HTTP2())
+	require.True(t, transport.Protocols.UnencryptedHTTP2())
+}
+
+func TestNewServerSetsProtocols(t *testing.T) {
+	handler := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
+
+	server := http.NewServer(options.Map{}, time.Second, handler)
+
+	require.NotNil(t, server.Protocols)
+	require.True(t, server.Protocols.HTTP1())
+	require.True(t, server.Protocols.HTTP2())
+	require.True(t, server.Protocols.UnencryptedHTTP2())
 }
 
 func TestSameOriginRedirect(t *testing.T) {
