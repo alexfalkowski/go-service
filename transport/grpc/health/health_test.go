@@ -43,6 +43,28 @@ func TestCheck(t *testing.T) {
 	require.Equal(t, health.Serving, resp.GetStatus())
 }
 
+func TestCheckBypassesServerLimiter(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("200"),
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)),
+	)
+	requireGRPCReady(t, world)
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
+
+	resp, err := client.Check(t.Context(), req)
+	require.NoError(t, err)
+	require.Equal(t, health.Serving, resp.GetStatus())
+
+	resp, err = client.Check(t.Context(), req)
+	require.NoError(t, err)
+	require.Equal(t, health.Serving, resp.GetStatus())
+}
+
 func TestInvalidCheck(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)

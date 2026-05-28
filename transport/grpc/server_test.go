@@ -33,6 +33,20 @@ func TestServer(t *testing.T) {
 	lc.RequireStop()
 }
 
+func TestDisabledServer(t *testing.T) {
+	srv, err := grpc.NewServer(grpc.ServerParams{Config: nil})
+
+	require.NoError(t, err)
+	require.Nil(t, srv)
+}
+
+func TestNilServer(t *testing.T) {
+	var srv *grpc.Server
+
+	require.Nil(t, srv.ServiceRegistrar())
+	require.Nil(t, srv.GetService())
+}
+
 func TestInvalidServer(t *testing.T) {
 	cfg := &grpc.Config{
 		Config: &server.Config{
