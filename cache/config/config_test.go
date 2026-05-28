@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache/config"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,4 +24,10 @@ func TestGetMaxSize(t *testing.T) {
 		cfg := &config.Config{MaxSize: 64}
 		require.Equal(t, bytes.Size(64), cfg.GetMaxSize())
 	})
+}
+
+func TestConfigRejectsNegativeMaxSize(t *testing.T) {
+	cfg := &config.Config{MaxSize: -1}
+
+	require.Error(t, test.Validator.Struct(cfg))
 }

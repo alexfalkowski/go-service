@@ -16,6 +16,32 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+func TestNewDriver(t *testing.T) {
+	tests := []struct {
+		config *config.Config
+		err    error
+		name   string
+		nil    bool
+	}{
+		{name: "disabled", nil: true},
+		{name: "sync", config: &config.Config{Kind: "sync"}},
+		{name: "unknown", config: &config.Config{Kind: "unknown"}, err: driver.ErrNotFound, nil: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := driver.NewDriver(driver.DriverParams{Config: tt.config})
+			require.ErrorIs(t, err, tt.err)
+			if tt.nil {
+				require.Nil(t, d)
+				return
+			}
+
+			require.NotNil(t, d)
+		})
+	}
+}
+
 func TestIsMissingError(t *testing.T) {
 	cfg := &config.Config{Kind: "sync"}
 
@@ -110,6 +136,23 @@ func TestSyncDriverHonorsCanceledContext(t *testing.T) {
 	require.ErrorIs(t, err, context.Canceled)
 	require.ErrorIs(t, d.Delete(ctx, "key"), context.Canceled)
 	require.ErrorIs(t, d.Flush(ctx), context.Canceled)
+}
+
+func TestSyncDriverExpiresEntries(t *testing.T) {
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync"}})
+	require.NoError(t, err)
+
+	require.NoError(t, d.Save(t.Context(), "key", "value", time.Nanosecond))
+
+	var expired error
+	require.Eventually(t, func() bool {
+		_, expired = d.Fetch(t.Context(), "key")
+		return driver.IsExpiredError(expired)
+	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
+	require.ErrorIs(t, expired, driver.ErrExpired)
+
+	_, err = d.Fetch(t.Context(), "key")
+	require.ErrorIs(t, err, driver.ErrMissing)
 }
 
 func setupMetrics(t *testing.T) metrics.Reader {
