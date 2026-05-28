@@ -91,6 +91,23 @@ func TestInvalidLifetimeExceedsConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidTime)
 }
 
+func TestInvalidIssuer(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	generator := paseto.NewToken(&paseto.Config{Issuer: "other", Expiration: time.Hour}, signer, verifier, gen)
+	verifierToken := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
+
+	tkn, err := generator.Generate("hello", test.UserID.String())
+	require.NoError(t, err)
+
+	sub, err := verifierToken.Verify(tkn, "hello")
+	require.Empty(t, sub)
+	require.Error(t, err)
+}
+
 func TestInvalidVerifyExpirationConfig(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	ec := test.NewEd25519()
@@ -222,5 +239,33 @@ func TestInvalidConfigDoesNotPanic(t *testing.T) {
 		sub, err := token.Verify(tkn, "hello")
 		require.Empty(t, sub)
 		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
+}
+
+func TestInvalidKeyMaterialDoesNotPanic(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+
+	t.Run("generate with malformed private key", func(t *testing.T) {
+		token := paseto.NewToken(cfg.Paseto, &ed25519.Signer{PrivateKey: []byte("short")}, verifier, gen)
+
+		tkn, err := token.Generate("hello", test.UserID.String())
+		require.Empty(t, tkn)
+		require.Error(t, err)
+	})
+
+	t.Run("verify with malformed public key", func(t *testing.T) {
+		valid := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
+		tkn, err := valid.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
+
+		token := paseto.NewToken(cfg.Paseto, signer, &ed25519.Verifier{PublicKey: []byte("short")}, gen)
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.Error(t, err)
 	})
 }

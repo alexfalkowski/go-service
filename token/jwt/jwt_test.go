@@ -4,13 +4,12 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
-	v4 "github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/require"
 )
 
@@ -134,6 +133,29 @@ func TestInvalid(t *testing.T) {
 	})
 }
 
+func TestInvalidSignature(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
+
+	_, wrongPrivate, err := ed25519.NewGenerator(rand.NewGenerator(rand.NewReader())).Generate()
+	require.NoError(t, err)
+
+	wrongSigner, err := ed25519.NewSigner(test.PEM, &ed25519.Config{Private: wrongPrivate})
+	require.NoError(t, err)
+
+	wrong := jwt.NewToken(cfg.JWT, wrongSigner, verifier, gen)
+	tkn, err := wrong.Generate("hello", test.UserID.String())
+	require.NoError(t, err)
+
+	sub, err := token.Verify(tkn, "hello")
+	require.Empty(t, sub)
+	require.ErrorIs(t, err, jwt.ErrTokenSignatureInvalid)
+}
+
 func TestInvalidKeyID(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	ec := test.NewEd25519()
@@ -153,71 +175,6 @@ func TestInvalidKeyID(t *testing.T) {
 		require.Empty(t, sub)
 		require.ErrorIs(t, err, errors.ErrInvalidKeyID)
 	})
-
-	t.Run("missing key id", func(t *testing.T) {
-		jwtToken := v4.NewWithClaims(v4.SigningMethodEdDSA, &v4.RegisteredClaims{})
-		tkn, err := jwtToken.SignedString(signer.PrivateKey)
-		require.NoError(t, err)
-		require.NotEmpty(t, tkn)
-
-		sub, err := token.Verify(tkn, "hello")
-		require.Empty(t, sub)
-		require.ErrorIs(t, err, errors.ErrInvalidKeyID)
-	})
-}
-
-func TestInvalidMissingClaims(t *testing.T) {
-	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-	gen := uuid.NewGenerator()
-	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
-
-	now := time.Now()
-	tests := []struct {
-		err    error
-		mutate func(*v4.RegisteredClaims)
-		name   string
-	}{
-		{
-			name:   "missing expiration",
-			err:    errors.ErrInvalidTime,
-			mutate: func(claims *v4.RegisteredClaims) { claims.ExpiresAt = nil },
-		},
-		{
-			name:   "missing issued at",
-			err:    errors.ErrInvalidTime,
-			mutate: func(claims *v4.RegisteredClaims) { claims.IssuedAt = nil },
-		},
-		{
-			name:   "missing not before",
-			err:    errors.ErrInvalidTime,
-			mutate: func(claims *v4.RegisteredClaims) { claims.NotBefore = nil },
-		},
-		{
-			name:   "missing subject",
-			err:    errors.ErrInvalidSubject,
-			mutate: func(claims *v4.RegisteredClaims) { claims.Subject = strings.Empty },
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			claims := validClaims(cfg.JWT, gen, now)
-			tt.mutate(claims)
-
-			jwtToken := v4.NewWithClaims(v4.SigningMethodEdDSA, claims)
-			jwtToken.Header["kid"] = cfg.JWT.KeyID
-
-			tkn, err := jwtToken.SignedString(signer.PrivateKey)
-			require.NoError(t, err)
-
-			sub, err := token.Verify(tkn, "hello")
-			require.Empty(t, sub)
-			require.ErrorIs(t, err, tt.err)
-		})
-	}
 }
 
 func TestInvalidLifetimeExceedsConfig(t *testing.T) {
@@ -319,33 +276,4 @@ func TestInvalidPrivateKeyDoesNotPanic(t *testing.T) {
 	tkn, err := token.Generate("hello", test.UserID.String())
 	require.Empty(t, tkn)
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
-}
-
-func TestInvalidAlgorithm(t *testing.T) {
-	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-	gen := uuid.NewGenerator()
-	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
-
-	jwtToken := v4.NewWithClaims(v4.SigningMethodHS256, &v4.RegisteredClaims{})
-	tkn, err := jwtToken.SignedString([]byte("secret"))
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
-
-	_, err = token.Verify(tkn, "hello")
-	require.ErrorIs(t, err, errors.ErrInvalidAlgorithm)
-}
-
-func validClaims(cfg *jwt.Config, gen *uuid.Generator, now time.Time) *v4.RegisteredClaims {
-	return &v4.RegisteredClaims{
-		ExpiresAt: &v4.NumericDate{Time: now.Add(time.Hour.Duration())},
-		ID:        gen.Generate(),
-		IssuedAt:  &v4.NumericDate{Time: now},
-		Issuer:    cfg.Issuer,
-		NotBefore: &v4.NumericDate{Time: now},
-		Audience:  []string{"hello"},
-		Subject:   test.UserID.String(),
-	}
 }

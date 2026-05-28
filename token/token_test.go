@@ -3,12 +3,16 @@ package token_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
+	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	"github.com/alexfalkowski/go-service/v2/token/paseto"
+	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,21 +56,72 @@ func TestVerify(t *testing.T) {
 		})
 	}
 
-	for _, kind := range []string{"ssh"} {
-		t.Run(kind, func(t *testing.T) {
-			cfg := test.NewToken(kind)
-			tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
+	t.Run("ssh", func(t *testing.T) {
+		cfg := test.NewToken("ssh")
+		tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
 
-			gen, err := tkn.Generate("hello", strings.Empty)
-			require.NoError(t, err)
+		gen, err := tkn.Generate("hello", strings.Empty)
+		require.NoError(t, err)
 
-			_, err = tkn.Verify(gen, "hello")
-			require.NoError(t, err)
+		sshToken := ssh.NewToken(cfg.SSH, test.FS)
+		sub, err := sshToken.Verify(bytes.String(gen), "hello")
+		require.NoError(t, err)
+		require.Equal(t, test.UserID.String(), sub)
 
-			_, err = tkn.Verify(gen, "other")
-			require.ErrorIs(t, err, errors.ErrInvalidAudience)
-		})
-	}
+		sub, err = tkn.Verify(gen, "hello")
+		require.NoError(t, err)
+		require.Equal(t, test.UserID.String(), sub)
+
+		_, err = tkn.Verify(gen, "other")
+		require.ErrorIs(t, err, errors.ErrInvalidAudience)
+	})
+}
+
+func TestVerifyDispatchesJWTToConcreteImplementation(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
+
+	raw, err := tkn.Generate("hello", test.UserID.String())
+	require.NoError(t, err)
+
+	jwtToken := jwt.NewToken(cfg.JWT, nil, verifier, gen)
+	sub, err := jwtToken.Verify(bytes.String(raw), "hello")
+	require.NoError(t, err)
+	require.Equal(t, test.UserID.String(), sub)
+}
+
+func TestVerifyDispatchesPasetoToConcreteImplementation(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
+
+	raw, err := tkn.Generate("hello", test.UserID.String())
+	require.NoError(t, err)
+
+	pasetoToken := paseto.NewToken(cfg.Paseto, nil, verifier, gen)
+	sub, err := pasetoToken.Verify(bytes.String(raw), "hello")
+	require.NoError(t, err)
+	require.Equal(t, test.UserID.String(), sub)
+}
+
+func TestVerifyDispatchesSSHToConcreteImplementation(t *testing.T) {
+	cfg := test.NewToken("ssh")
+	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
+
+	raw, err := tkn.Generate("hello", strings.Empty)
+	require.NoError(t, err)
+
+	sshToken := ssh.NewToken(cfg.SSH, test.FS)
+	sub, err := sshToken.Verify(bytes.String(raw), "hello")
+	require.NoError(t, err)
+	require.Equal(t, test.UserID.String(), sub)
 }
 
 func TestVerifyRejectsPasetoEmptySubject(t *testing.T) {

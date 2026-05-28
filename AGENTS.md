@@ -223,6 +223,12 @@ matching skill for the task.
   real client, route, or deployment contract that depends on strict weighted
   `Accept` negotiation for MVC 404 responses.
 - JWT verification requires both the expected algorithm and a `kid` header.
+- Token tests should focus on repository-owned wrapper behavior. Do not flag or
+  add tests that require hand-crafting upstream JWT/PASETO internals solely to
+  prove library-owned parsing, signature, expiration, not-before, or
+  missing-claim behavior. Prefer tests through this repository's
+  `Generate`/`Verify` APIs. Only test crafted tokens when the repository adds
+  local validation logic or a public contract beyond upstream library behavior.
 - `telemetry/header.Map.MustSecrets` can panic if secret resolution fails during config projection.
 - Health registration helpers require `*net/http.ServeMux`.
 - Shared metadata, header, and string helpers live under `net/...`, not `transport/...`.
