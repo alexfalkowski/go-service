@@ -105,27 +105,130 @@ func TestInvalidLifetimeExceedsConfig(t *testing.T) {
 
 func TestInvalidMissingIssuedAt(t *testing.T) {
 	cfg := test.NewToken("ssh").SSH
-	signer, err := cryptossh.NewSigner(test.FS, cfg.Key.Config)
-	require.NoError(t, err)
-
 	claims := map[string]any{
 		"ver": "v1",
 		"kid": cfg.Key.Name,
 		"aud": "/service.Method",
 		"exp": time.Now().Add(time.Hour.Duration()).UnixNano(),
 	}
-	encoded, err := json.Marshal(claims)
-	require.NoError(t, err)
-
-	signature, err := signer.Sign(encoded)
-	require.NoError(t, err)
 
 	token := ssh.NewToken(cfg, test.FS)
-	tkn := strings.Join(".", base64.Encode(encoded), base64.Encode(signature))
+	tkn := signedSSHToken(t, cfg, claims)
 
 	sub, err := token.Verify(tkn, "/service.Method")
 	require.Empty(t, sub)
 	require.ErrorIs(t, err, errors.ErrInvalidTime)
+}
+
+func TestInvalidSignedClaims(t *testing.T) {
+	cfg := test.NewToken("ssh").SSH
+	token := ssh.NewToken(cfg, test.FS)
+	now := time.Now()
+
+	tests := []struct {
+		err    error
+		claims map[string]any
+		name   string
+	}{
+		{
+			name: "invalid version",
+			err:  crypto.ErrInvalidMatch,
+			claims: map[string]any{
+				"ver": "v2",
+				"kid": cfg.Key.Name,
+				"aud": "/service.Method",
+				"iat": now.UnixNano(),
+				"exp": now.Add(time.Hour.Duration()).UnixNano(),
+			},
+		},
+		{
+			name: "issued at in future",
+			err:  errors.ErrInvalidTime,
+			claims: map[string]any{
+				"ver": "v1",
+				"kid": cfg.Key.Name,
+				"aud": "/service.Method",
+				"iat": now.Add(time.Minute.Duration()).UnixNano(),
+				"exp": now.Add(time.Hour.Duration()).UnixNano(),
+			},
+		},
+		{
+			name: "expiration before issued at",
+			err:  errors.ErrInvalidTime,
+			claims: map[string]any{
+				"ver": "v1",
+				"kid": cfg.Key.Name,
+				"aud": "/service.Method",
+				"iat": now.UnixNano(),
+				"exp": now.UnixNano(),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tkn := signedSSHToken(t, cfg, tt.claims)
+
+			sub, err := token.Verify(tkn, "/service.Method")
+			require.Empty(t, sub)
+			require.ErrorIs(t, err, tt.err)
+		})
+	}
+}
+
+func TestInvalidMalformedTokens(t *testing.T) {
+	cfg := test.NewToken("ssh").SSH
+	token := ssh.NewToken(cfg, test.FS)
+	now := time.Now()
+
+	tests := []struct {
+		err   error
+		name  string
+		token string
+	}{
+		{
+			name:  "invalid claims base64",
+			token: "%%%." + base64.Encode([]byte("signature")),
+			err:   crypto.ErrInvalidMatch,
+		},
+		{
+			name:  "invalid claims json",
+			token: base64.Encode([]byte("{")) + "." + base64.Encode([]byte("signature")),
+			err:   crypto.ErrInvalidMatch,
+		},
+		{
+			name: "missing key id",
+			token: encodedSSHToken(t, map[string]any{
+				"ver": "v1",
+				"aud": "/service.Method",
+				"iat": now.UnixNano(),
+				"exp": now.Add(time.Hour.Duration()).UnixNano(),
+			}, base64.Encode([]byte("signature"))),
+			err: crypto.ErrInvalidMatch,
+		},
+		{
+			name: "invalid signature base64",
+			token: encodedSSHToken(t, map[string]any{
+				"ver": "v1",
+				"kid": cfg.Key.Name,
+				"aud": "/service.Method",
+				"iat": now.UnixNano(),
+				"exp": now.Add(time.Hour.Duration()).UnixNano(),
+			}, "%%%"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sub, err := token.Verify(tt.token, "/service.Method")
+			require.Empty(t, sub)
+			require.Error(t, err)
+
+			if tt.err != nil {
+				require.ErrorIs(t, err, tt.err)
+			}
+		})
+	}
 }
 
 func TestValidNameWithDash(t *testing.T) {
@@ -240,13 +343,16 @@ func TestInvalidConfigDoesNotPanic(t *testing.T) {
 		require.Empty(t, tkn)
 		require.ErrorIs(t, err, errors.ErrInvalidConfig)
 	})
+}
 
+func TestInvalidVerifyConfigDoesNotPanic(t *testing.T) {
 	t.Run("verify with matching key missing config", func(t *testing.T) {
 		valid := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 		tkn, err := valid.Generate(strings.Empty, strings.Empty)
 		require.NoError(t, err)
 
 		token := ssh.NewToken(&ssh.Config{
+			Expiration: time.Hour,
 			Keys: ssh.Keys{
 				&ssh.Key{Name: test.UserID.String()},
 			},
@@ -255,6 +361,26 @@ func TestInvalidConfigDoesNotPanic(t *testing.T) {
 		sub, err := token.Verify(tkn, strings.Empty)
 		require.Empty(t, sub)
 		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
+
+	t.Run("verify with invalid matching key config", func(t *testing.T) {
+		valid := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
+		tkn, err := valid.Generate(strings.Empty, strings.Empty)
+		require.NoError(t, err)
+
+		token := ssh.NewToken(&ssh.Config{
+			Expiration: time.Hour,
+			Keys: ssh.Keys{
+				&ssh.Key{
+					Name:   test.UserID.String(),
+					Config: test.NewSSH("secrets/none", "secrets/ssh_private"),
+				},
+			},
+		}, test.FS)
+
+		sub, err := token.Verify(tkn, strings.Empty)
+		require.Empty(t, sub)
+		require.Error(t, err)
 	})
 }
 
@@ -270,4 +396,28 @@ func TestKeysGetIgnoresNilEntries(t *testing.T) {
 	require.NotNil(t, key)
 	require.Equal(t, "test", key.Name)
 	require.Nil(t, ssh.Keys{nil, nil}.Get("missing"))
+}
+
+func signedSSHToken(t *testing.T, cfg *ssh.Config, claims map[string]any) string {
+	t.Helper()
+
+	signer, err := cryptossh.NewSigner(test.FS, cfg.Key.Config)
+	require.NoError(t, err)
+
+	encoded, err := json.Marshal(claims)
+	require.NoError(t, err)
+
+	signature, err := signer.Sign(encoded)
+	require.NoError(t, err)
+
+	return strings.Join(".", base64.Encode(encoded), base64.Encode(signature))
+}
+
+func encodedSSHToken(t *testing.T, claims map[string]any, signature string) string {
+	t.Helper()
+
+	encoded, err := json.Marshal(claims)
+	require.NoError(t, err)
+
+	return strings.Join(".", base64.Encode(encoded), signature)
 }

@@ -27,9 +27,27 @@ func TestHasAccess(t *testing.T) {
 	controller, err := access.NewController(config, test.FS)
 	require.NoError(t, err)
 
-	ok, err := controller.HasAccess("alice", "service", "read")
-	require.NoError(t, err)
-	require.True(t, ok)
+	tests := []struct {
+		name   string
+		user   string
+		system string
+		action string
+		access bool
+	}{
+		{name: "allowed read", user: "alice", system: "service", action: "read", access: true},
+		{name: "denied wrong action", user: "alice", system: "service", action: "write"},
+		{name: "denied wrong user", user: "bob", system: "service", action: "read"},
+		{name: "denied unknown user", user: "carol", system: "service", action: "read"},
+		{name: "denied unknown system", user: "alice", system: "other", action: "read"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ok, err := controller.HasAccess(tt.user, tt.system, tt.action)
+			require.NoError(t, err)
+			require.Equal(t, tt.access, ok)
+		})
+	}
 }
 
 func TestNewControllerErrors(t *testing.T) {
