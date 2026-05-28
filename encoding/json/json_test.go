@@ -38,6 +38,14 @@ func TestDecode(t *testing.T) {
 	require.Equal(t, map[string]string{"test": "test"}, msg)
 }
 
+func TestDecodeAcceptsTrailingWhitespace(t *testing.T) {
+	encoder := json.NewEncoder()
+	var msg map[string]string
+
+	require.NoError(t, encoder.Decode(bytes.NewBufferString("{\"test\":\"test\"} \n\t"), &msg))
+	require.Equal(t, map[string]string{"test": "test"}, msg)
+}
+
 func TestDecodeRejectsTrailingData(t *testing.T) {
 	for _, input := range []string{
 		`{"test":"test"} garbage`,

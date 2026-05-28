@@ -37,3 +37,15 @@ func TestDecode(t *testing.T) {
 	require.NoError(t, encoder.Decode(bytes.NewBufferString(`test = "test"`), &msg))
 	require.Equal(t, map[string]string{"test": "test"}, msg)
 }
+
+func TestDecodeIgnoresUndecodedMetadata(t *testing.T) {
+	encoder := toml.NewEncoder()
+	msg := &message{}
+
+	require.NoError(t, encoder.Decode(bytes.NewBufferString("test = \"test\"\nextra = \"ignored\""), msg))
+	require.Equal(t, "test", msg.Test)
+}
+
+type message struct {
+	Test string `toml:"test"`
+}

@@ -22,7 +22,7 @@ func TestEncoder(t *testing.T) {
 	require.Equal(t, "yes!", strings.TrimSpace(buffer.String()))
 
 	var str string
-	require.Error(t, encoder.Encode(buffer, &str))
+	require.ErrorIs(t, encoder.Encode(buffer, &str), errors.ErrInvalidType)
 
 	decode := test.Pool.Get()
 	defer test.Pool.Put(decode)
@@ -30,7 +30,7 @@ func TestEncoder(t *testing.T) {
 	require.NoError(t, encoder.Decode(bytes.NewBufferString("test"), decode))
 	require.Equal(t, "test", decode.String())
 
-	require.Error(t, encoder.Decode(bytes.NewBufferString("test"), &str))
+	require.ErrorIs(t, encoder.Decode(bytes.NewBufferString("test"), &str), errors.ErrInvalidType)
 }
 
 func TestDecodeResetsDestination(t *testing.T) {
@@ -58,9 +58,21 @@ func TestEncodeReturnsWriteToError(t *testing.T) {
 	require.ErrorIs(t, encoder.Encode(io.Discard, test.ErrWriterTo{}), test.ErrFailed)
 }
 
+func TestDecodeReturnsReadFromError(t *testing.T) {
+	encoder := encoding.NewEncoder()
+
+	require.ErrorIs(t, encoder.Decode(bytes.NewBufferString("test"), errReaderFrom{}), test.ErrFailed)
+}
+
 func TestInvalidTypedNilDecode(t *testing.T) {
 	encoder := encoding.NewEncoder()
 
 	err := encoder.Decode(bytes.NewBufferString("test"), (*bytes.Buffer)(nil))
 	require.ErrorIs(t, err, errors.ErrInvalidType)
+}
+
+type errReaderFrom struct{}
+
+func (errReaderFrom) ReadFrom(io.Reader) (int64, error) {
+	return 0, test.ErrFailed
 }
