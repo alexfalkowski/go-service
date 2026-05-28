@@ -9,8 +9,10 @@ type Config struct {
 	// The interpretation of this map depends on the cache backend implementation.
 	Options map[string]any `yaml:"options,omitempty" json:"options,omitempty" toml:"options,omitempty"`
 
-	// Kind selects the cache backend implementation (for example "redis", "valkey", or "noop"),
-	// depending on which implementations are compiled/registered by the service.
+	// Kind selects the cache backend implementation.
+	//
+	// The built-in driver kinds are "redis" and "sync". Unknown kinds cause
+	// cache/driver.NewDriver to return ErrNotFound.
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 
 	// Compressor selects the compression algorithm used for cached values (if supported by the implementation).

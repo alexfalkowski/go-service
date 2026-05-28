@@ -51,9 +51,9 @@
 //
 // The signature is verified using the configured Ed25519 public key.
 //
-// On failure, this package returns errors from the upstream PASETO library or
-// from key construction. It does not currently map failures onto the shared
-// sentinel errors in token/errors.
+// On failure, parser, rule, signature, and key-construction errors may come
+// from the upstream PASETO library. Local config, subject, and signed-lifetime
+// checks return shared sentinel errors from token/errors.
 //
 // # Configuration and enablement
 //

@@ -34,8 +34,8 @@ type Config struct {
 	// HMAC configures HMAC key material used for message authentication.
 	HMAC *hmac.Config `yaml:"hmac,omitempty" json:"hmac,omitempty" toml:"hmac,omitempty"`
 
-	// RSA configures RSA public/private key material used for signing/verification and encryption/decryption
-	// (depending on which helpers are wired by the service).
+	// RSA configures RSA public/private key material used by RSA key generation and OAEP
+	// encryption/decryption helpers.
 	RSA *rsa.Config `yaml:"rsa,omitempty" json:"rsa,omitempty" toml:"rsa,omitempty"`
 
 	// SSH configures SSH public/private key material used for SSH signing and verification.

@@ -20,6 +20,10 @@
 // Debug configuration is optional. By convention across go-service config types, a nil `*debug.Config`
 // (or nil embedded config) is treated as "disabled", and `NewServer` returns (nil, nil) when disabled.
 //
+// When debug is enabled and no address is configured, the server binds to `tcp://:6060`. Production
+// deployments should set an explicit address, TLS/mTLS, and network or policy controls appropriate
+// for the environment.
+//
 // # TLS
 //
 // When TLS is enabled for the debug server, the package uses

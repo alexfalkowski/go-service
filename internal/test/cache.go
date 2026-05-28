@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Cache is a cache.Cache test double that reports hits and returns a fixed value from Fetch.
+// Cache is a cache.Cache test double that returns a fixed value from Fetch.
 type Cache struct {
 	Value string
 }
@@ -46,7 +46,7 @@ func (c *Cache) Save(context.Context, string, string, time.Duration) error {
 // Flush succeeds so tests can use ErrCache in started worlds without turning cleanup into the failure under test.
 type ErrCache struct{}
 
-// Delete removes the given key from the cache.
+// Delete returns ErrFailed.
 func (*ErrCache) Delete(context.Context, string) error {
 	return ErrFailed
 }
@@ -61,7 +61,7 @@ func (*ErrCache) Flush(context.Context) error {
 	return nil
 }
 
-// Save stores the value in the cache for the given TTL.
+// Save returns ErrFailed.
 func (*ErrCache) Save(context.Context, string, string, time.Duration) error {
 	return ErrFailed
 }

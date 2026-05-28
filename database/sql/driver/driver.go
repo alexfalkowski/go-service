@@ -107,6 +107,11 @@ func Connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Optio
 // Open delegates the connection work to Connect and then appends an OnStop hook
 // to the provided lifecycle that closes all returned pools by calling Destroy.
 //
+// Preconditions:
+//   - cfg must be non-nil and already treated as enabled/validated by the caller.
+//   - driver-specific wrappers, such as database/sql/pg.Open, own nil/disabled
+//     config semantics before delegating here.
+//
 // The returned type is the same go-service DBs wrapper returned by Connect.
 func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Option) (*DBs, error) {
 	db, err := Connect(name, fs, cfg, opts...)

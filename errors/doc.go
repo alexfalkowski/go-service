@@ -24,5 +24,11 @@
 // Prefix returns nil when the input error is nil, which makes it convenient to use in return
 // statements without additional nil checks.
 //
-// Start with `As`, `AsType`, `Is`, `Join`, `New`, and `Prefix`.
+// # Safe messages
+//
+// SafeMessenger lets error implementations expose a non-sensitive message for clients while retaining
+// diagnostic Error text for logs and wrapping. SafeMessage walks an error chain, returns the first
+// non-empty safe message it finds, and falls back to the caller-provided message when none is available.
+//
+// Start with `As`, `AsType`, `Is`, `Join`, `New`, `Prefix`, and `SafeMessage`.
 package errors

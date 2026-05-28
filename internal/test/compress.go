@@ -17,7 +17,7 @@ var Compressor = compress.NewMap(compress.MapParams{
 	None:   none.NewCompressor(),
 })
 
-// NewCompressor returns a compressor test double whose Decompress method fails with the supplied error.
+// NewCompressor returns a compressor test double whose Compress and Decompress methods fail with err.
 func NewCompressor(err error) compress.Compressor {
 	return &compressor{err: err}
 }
