@@ -31,10 +31,15 @@ func BenchmarkSQLTelemetry(b *testing.B) {
 			b.ResetTimer()
 
 			for b.Loop() {
-				rows, err := db.QueryContext(b.Context(), "SELECT 1")
-				require.NoError(b, err)
-				require.NoError(b, rows.Err())
-				require.NoError(b, rows.Close())
+				func() {
+					rows, err := db.QueryContext(b.Context(), "SELECT 1")
+					require.NoError(b, err)
+					defer func() {
+						require.NoError(b, rows.Close())
+					}()
+
+					require.NoError(b, rows.Err())
+				}()
 			}
 		})
 	}

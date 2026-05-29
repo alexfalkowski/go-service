@@ -1,10 +1,97 @@
 package test
 
 import (
+	"testing"
+
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	hm "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/metric/embedded"
+	"go.uber.org/fx/fxtest"
 )
+
+var errInvalid = errors.New("invalid")
+
+// InvalidMeter is an OpenTelemetry meter test double whose constructors always fail.
+type InvalidMeter struct{ embedded.Meter }
+
+// Int64Counter implements metric.Meter and always returns an error.
+func (InvalidMeter) Int64Counter(string, ...metric.Int64CounterOption) (metric.Int64Counter, error) {
+	return nil, errInvalid
+}
+
+// Int64UpDownCounter implements metric.Meter and always returns an error.
+func (InvalidMeter) Int64UpDownCounter(string, ...metric.Int64UpDownCounterOption) (metric.Int64UpDownCounter, error) {
+	return nil, errInvalid
+}
+
+// Int64Histogram implements metric.Meter and always returns an error.
+func (InvalidMeter) Int64Histogram(string, ...metric.Int64HistogramOption) (metric.Int64Histogram, error) {
+	return nil, errInvalid
+}
+
+// Int64ObservableCounter implements metric.Meter and always returns an error.
+func (InvalidMeter) Int64ObservableCounter(string, ...metric.Int64ObservableCounterOption) (metric.Int64ObservableCounter, error) {
+	return nil, errInvalid
+}
+
+// Int64ObservableUpDownCounter implements metric.Meter and always returns an error.
+func (InvalidMeter) Int64ObservableUpDownCounter(string, ...metric.Int64ObservableUpDownCounterOption) (metric.Int64ObservableUpDownCounter, error) {
+	return nil, errInvalid
+}
+
+// Int64ObservableGauge implements metric.Meter and always returns an error.
+func (InvalidMeter) Int64ObservableGauge(string, ...metric.Int64ObservableGaugeOption) (metric.Int64ObservableGauge, error) {
+	return nil, errInvalid
+}
+
+// Int64Gauge implements metric.Meter and always returns an error.
+func (InvalidMeter) Int64Gauge(string, ...metric.Int64GaugeOption) (metric.Int64Gauge, error) {
+	return nil, errInvalid
+}
+
+// Float64Counter implements metric.Meter and always returns an error.
+func (InvalidMeter) Float64Counter(string, ...metric.Float64CounterOption) (metric.Float64Counter, error) {
+	return nil, errInvalid
+}
+
+// Float64UpDownCounter implements metric.Meter and always returns an error.
+func (InvalidMeter) Float64UpDownCounter(string, ...metric.Float64UpDownCounterOption) (metric.Float64UpDownCounter, error) {
+	return nil, errInvalid
+}
+
+// Float64Histogram implements metric.Meter and always returns an error.
+func (InvalidMeter) Float64Histogram(string, ...metric.Float64HistogramOption) (metric.Float64Histogram, error) {
+	return nil, errInvalid
+}
+
+// Float64ObservableCounter implements metric.Meter and always returns an error.
+func (InvalidMeter) Float64ObservableCounter(string, ...metric.Float64ObservableCounterOption) (metric.Float64ObservableCounter, error) {
+	return nil, errInvalid
+}
+
+// Float64ObservableUpDownCounter implements metric.Meter and always returns an error.
+func (InvalidMeter) Float64ObservableUpDownCounter(string, ...metric.Float64ObservableUpDownCounterOption) (metric.Float64ObservableUpDownCounter, error) {
+	return nil, errInvalid
+}
+
+// Float64ObservableGauge implements metric.Meter and always returns an error.
+func (InvalidMeter) Float64ObservableGauge(string, ...metric.Float64ObservableGaugeOption) (metric.Float64ObservableGauge, error) {
+	return nil, errInvalid
+}
+
+// Float64Gauge implements metric.Meter and always returns an error.
+func (InvalidMeter) Float64Gauge(string, ...metric.Float64GaugeOption) (metric.Float64Gauge, error) {
+	return nil, errInvalid
+}
+
+// RegisterCallback implements metric.Meter and always returns an error.
+func (InvalidMeter) RegisterCallback(metric.Callback, ...metric.Observable) (metric.Registration, error) {
+	return nil, errInvalid
+}
 
 // NewOTLPMeter returns a meter backed by the shared OTLP metrics config.
 func NewOTLPMeter(lc di.Lifecycle) (metrics.Meter, error) {
@@ -53,4 +140,38 @@ func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) (metric.MeterProv
 	}
 
 	return metrics.NewMeterProvider(params), nil
+}
+
+// EnableMetricsReader installs the shared test meter provider and returns its manual reader.
+func EnableMetricsReader(tb testing.TB) metrics.Reader {
+	tb.Helper()
+
+	ResetTelemetry(tb)
+	tb.Cleanup(func() {
+		ResetTelemetry(tb)
+	})
+
+	reader := metrics.NewManualReader()
+	metrics.NewMeterProvider(metrics.MeterProviderParams{
+		Lifecycle:   fxtest.NewLifecycle(tb),
+		Config:      &metrics.Config{},
+		Reader:      reader,
+		ID:          ID,
+		Name:        Name,
+		Version:     Version,
+		Environment: Environment,
+	})
+
+	return reader
+}
+
+func meter(lc di.Lifecycle, mux *http.ServeMux, os *worldOpts) (metrics.Meter, error) {
+	if os.telemetry == "otlp" {
+		return NewMeter(lc, NewOTLPMetricsConfig())
+	}
+
+	config := NewPrometheusMetricsConfig()
+	hm.Register(Name, config, mux)
+
+	return NewMeter(lc, config)
 }

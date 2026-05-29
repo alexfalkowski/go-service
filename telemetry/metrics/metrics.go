@@ -19,8 +19,20 @@ type Registration = metric.Registration
 // Reader is an alias for sdkmetric.Reader.
 type Reader = sdk.Reader
 
+// Metrics is an alias for metricdata.Metrics.
+type Metrics = metricdata.Metrics
+
 // ResourceMetrics is an alias for metricdata.ResourceMetrics.
 type ResourceMetrics = metricdata.ResourceMetrics
+
+// DataPoint is an alias for metricdata.DataPoint.
+type DataPoint[T int64 | float64] = metricdata.DataPoint[T]
+
+// Gauge is an alias for metricdata.Gauge.
+type Gauge[T int64 | float64] = metricdata.Gauge[T]
+
+// Sum is an alias for metricdata.Sum.
+type Sum[T int64 | float64] = metricdata.Sum[T]
 
 // NewMeter returns a Meter from provider using the service name and version.
 //

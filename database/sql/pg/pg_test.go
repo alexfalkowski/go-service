@@ -12,6 +12,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
@@ -22,6 +24,48 @@ func TestConnect(t *testing.T) {
 
 	_, err := driver.Connect("missing", test.FS, cfg.Config)
 	require.Error(t, err)
+}
+
+func TestConfigIsEnabled(t *testing.T) {
+	tests := []struct {
+		config  *pg.Config
+		name    string
+		enabled bool
+	}{
+		{name: "nil"},
+		{name: "empty", config: &pg.Config{}},
+		{name: "configured", config: &pg.Config{Config: &config.Config{}}, enabled: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.enabled, tt.config.IsEnabled())
+		})
+	}
+}
+
+func TestDisabledConfig(t *testing.T) {
+	tests := []struct {
+		config *pg.Config
+		name   string
+	}{
+		{name: "nil"},
+		{name: "empty", config: &pg.Config{}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lc := fxtest.NewLifecycle(t)
+
+			db, err := pg.Connect(test.FS, tt.config)
+			require.NoError(t, err)
+			require.Nil(t, db)
+
+			db, err = pg.Open(lc, test.FS, tt.config)
+			require.NoError(t, err)
+			require.Nil(t, db)
+		})
+	}
 }
 
 func TestInvalidOpen(t *testing.T) {
@@ -85,6 +129,39 @@ func TestSQL(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil), test.WithWorldLoggerConfig("otlp"))
 
 	require.NoError(t, errors.Join(world.DB.Ping()...))
+}
+
+func TestConnectUsesPostgreSQLTelemetryOptions(t *testing.T) {
+	reader := test.EnableMetricsReader(t)
+	cfg := test.NewPGConfig()
+
+	pg.Register()
+
+	db, err := pg.Connect(test.FS, cfg)
+	require.NoError(t, err)
+	require.NotNil(t, db)
+	defer func() {
+		require.NoError(t, db.Destroy())
+	}()
+
+	requireDBSystemName(t, reader, "postgresql")
+}
+
+func TestOpenClosesDBsOnStop(t *testing.T) {
+	cfg := test.NewPGConfig()
+	lc := fxtest.NewLifecycle(t)
+
+	pg.Register()
+
+	db, err := pg.Open(lc, test.FS, cfg)
+	require.NoError(t, err)
+	require.NotNil(t, db)
+
+	lc.RequireStart()
+	require.NoError(t, errors.Join(db.Ping()...))
+
+	lc.RequireStop()
+	require.Error(t, errors.Join(db.Ping()...))
 }
 
 func TestDBQuery(t *testing.T) {
@@ -366,4 +443,43 @@ func pgConfig(masters, slaves []config.DSN) *pg.Config {
 			ConnMaxLifetime: time.Hour,
 		},
 	}
+}
+
+func requireDBSystemName(t *testing.T, reader metrics.Reader, name string) {
+	t.Helper()
+
+	got := &metrics.ResourceMetrics{}
+	require.NoError(t, reader.Collect(t.Context(), got))
+
+	for _, scope := range got.ScopeMetrics {
+		for _, metric := range scope.Metrics {
+			if hasDBSystemName(metric, name) {
+				return
+			}
+		}
+	}
+
+	require.Failf(t, "missing db system name", "expected %q in DB stats metrics", name)
+}
+
+func hasDBSystemName(metric metrics.Metrics, name string) bool {
+	switch data := metric.Data.(type) {
+	case metrics.Gauge[int64]:
+		return hasDBSystemNameDataPoint(data.DataPoints, name)
+	case metrics.Sum[int64]:
+		return hasDBSystemNameDataPoint(data.DataPoints, name)
+	default:
+		return false
+	}
+}
+
+func hasDBSystemNameDataPoint(points []metrics.DataPoint[int64], name string) bool {
+	for _, point := range points {
+		value, ok := point.Attributes.Value(attributes.DBSystemNameKey)
+		if ok && value.AsString() == name {
+			return true
+		}
+	}
+
+	return false
 }

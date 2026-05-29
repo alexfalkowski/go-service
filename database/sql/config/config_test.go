@@ -14,6 +14,16 @@ func TestConfigRejectsNegativeConnMaxLifetime(t *testing.T) {
 	require.Error(t, test.Validator.Struct(cfg))
 }
 
+func TestConfigAllowsZeroValues(t *testing.T) {
+	cfg := &config.Config{}
+	require.NoError(t, test.Validator.Struct(cfg))
+}
+
+func TestConfigIsEnabled(t *testing.T) {
+	require.False(t, (*config.Config)(nil).IsEnabled())
+	require.True(t, (&config.Config{}).IsEnabled())
+}
+
 func TestConfigRejectsNegativeMaxOpenConns(t *testing.T) {
 	cfg := &config.Config{MaxOpenConns: -1}
 	require.Error(t, test.Validator.Struct(cfg))
