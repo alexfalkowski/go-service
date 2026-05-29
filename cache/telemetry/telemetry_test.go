@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-sync"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel"
@@ -21,7 +20,7 @@ func TestInstrumentTracingDisablesRawCommandStatements(t *testing.T) {
 		test.ResetTelemetry(t)
 	})
 
-	exporter := &spanExporter{}
+	exporter := &test.SpanExporter{}
 	provider := trace.NewTracerProvider(trace.WithSyncer(exporter))
 	otel.SetTracerProvider(provider)
 	t.Cleanup(func() {
@@ -54,29 +53,4 @@ func TestInstrumentTracingDisablesRawCommandStatements(t *testing.T) {
 			require.False(t, strings.Contains(attr.Value.AsString(), secretKey), "redis trace attribute leaked command key")
 		}
 	}
-}
-
-type spanExporter struct {
-	spans []trace.ReadOnlySpan
-	mu    sync.Mutex
-}
-
-func (e *spanExporter) ExportSpans(_ context.Context, spans []trace.ReadOnlySpan) error {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
-	e.spans = append(e.spans, spans...)
-
-	return nil
-}
-
-func (e *spanExporter) Shutdown(context.Context) error {
-	return nil
-}
-
-func (e *spanExporter) Spans() []trace.ReadOnlySpan {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
-	return append([]trace.ReadOnlySpan(nil), e.spans...)
 }

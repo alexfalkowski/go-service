@@ -13,3 +13,8 @@ func TestOpenUnknownDriver(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, db)
 }
+
+func TestConfigIsEnabled(t *testing.T) {
+	require.False(t, (*sql.Config)(nil).IsEnabled())
+	require.True(t, (&sql.Config{}).IsEnabled())
+}

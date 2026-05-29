@@ -10,7 +10,6 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric/noop"
-	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -85,7 +84,7 @@ func TestMeterProviderResourceAttributes(t *testing.T) {
 	require.NoError(t, err)
 	counter.Add(t.Context(), 1)
 
-	rm := metricdata.ResourceMetrics{}
+	rm := metrics.ResourceMetrics{}
 	require.NoError(t, reader.Collect(t.Context(), &rm))
 	attrs := resourceAttributes(rm)
 
@@ -95,7 +94,7 @@ func TestMeterProviderResourceAttributes(t *testing.T) {
 	require.Equal(t, "development", attrs[attributes.DeploymentEnvironmentName("").Key])
 }
 
-func resourceAttributes(rm metricdata.ResourceMetrics) map[attribute.Key]string {
+func resourceAttributes(rm metrics.ResourceMetrics) map[attribute.Key]string {
 	attrs := make(map[attribute.Key]string)
 	for _, attr := range rm.Resource.Attributes() {
 		attrs[attr.Key] = attr.Value.AsString()

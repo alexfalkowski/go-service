@@ -100,7 +100,7 @@ func TestRedisParseURLDoesNotLeakCredentials(t *testing.T) {
 }
 
 func TestRedisMetricsUnregisterOnStop(t *testing.T) {
-	reader := setupMetrics(t)
+	reader := test.EnableMetricsReader(t)
 	lc := fxtest.NewLifecycle(t)
 	cfg := &config.Config{
 		Kind: "redis",
@@ -153,28 +153,6 @@ func TestSyncDriverExpiresEntries(t *testing.T) {
 
 	_, err = d.Fetch(t.Context(), "key")
 	require.ErrorIs(t, err, driver.ErrMissing)
-}
-
-func setupMetrics(t *testing.T) metrics.Reader {
-	t.Helper()
-
-	test.ResetTelemetry(t)
-	t.Cleanup(func() {
-		test.ResetTelemetry(t)
-	})
-
-	reader := metrics.NewManualReader()
-	metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   fxtest.NewLifecycle(t),
-		Config:      &metrics.Config{},
-		Reader:      reader,
-		ID:          test.ID,
-		Name:        test.Name,
-		Version:     test.Version,
-		Environment: test.Environment,
-	})
-
-	return reader
 }
 
 func redisMetricCount(t *testing.T, reader metrics.Reader) int {
