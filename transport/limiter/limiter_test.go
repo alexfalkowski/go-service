@@ -3,6 +3,7 @@ package limiter_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -31,7 +32,7 @@ func TestValidLimiter(t *testing.T) {
 func TestTake(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
-	config := &limiter.Config{Kind: "user-agent", Tokens: 2, Interval: time.Second}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
 
 	limiter, err := limiter.NewLimiter(lc, m, config)
 	require.NoError(t, err)
@@ -40,20 +41,77 @@ func TestTake(t *testing.T) {
 		require.NoError(t, limiter.Close(t.Context()))
 	}()
 
-	ctx := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("test-agent")))
+	first := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("first-agent")))
+	second := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("second-agent")))
 
-	ok, header, err := limiter.Take(ctx)
+	ok, header, err := limiter.Take(first)
 
 	require.NoError(t, err)
 	require.True(t, ok)
-	require.Equal(t, "limit=2, remaining=1", header)
+	require.Equal(t, "limit=1, remaining=0", header)
+
+	ok, header, err = limiter.Take(first)
+	require.NoError(t, err)
+	require.False(t, ok)
+	require.Equal(t, "limit=1, remaining=0", header)
+
+	ok, header, err = limiter.Take(second)
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, "limit=1, remaining=0", header)
 }
 
-func TestNewKeyMapIncludesServiceMethod(t *testing.T) {
-	key := limiter.NewKeyMap()["service-method"]
-	ctx := meta.WithAttributes(t.Context(), meta.WithServiceMethod(meta.String("GET /users/{id}")))
+func TestNewKeyMap(t *testing.T) {
+	tests := []struct {
+		name string
+		ctx  context.Context
+		want meta.Value
+	}{
+		{
+			name: "user-agent",
+			ctx:  meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("test-agent"))),
+			want: meta.String("test-agent"),
+		},
+		{
+			name: "ip",
+			ctx:  meta.WithAttributes(t.Context(), meta.WithIPAddr(meta.String("192.0.2.1"))),
+			want: meta.String("192.0.2.1"),
+		},
+		{
+			name: "user-id",
+			ctx:  meta.WithAttributes(t.Context(), meta.WithUserID(meta.String("test-user"))),
+			want: meta.String("test-user"),
+		},
+		{
+			name: "service-method",
+			ctx:  meta.WithAttributes(t.Context(), meta.WithServiceMethod(meta.String("GET /users/{id}"))),
+			want: meta.String("GET /users/{id}"),
+		},
+	}
 
-	require.Equal(t, meta.String("GET /users/{id}"), key(ctx))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			key := limiter.NewKeyMap()[tt.name]
+			require.NotNil(t, key)
+			require.Equal(t, tt.want, key(tt.ctx))
+		})
+	}
+}
+
+func TestLifecycleStopsLimiter(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
+
+	limiter, err := limiter.NewLimiter(lc, m, config)
+	require.NoError(t, err)
+	require.NotNil(t, limiter)
+
+	lc.RequireStart()
+	lc.RequireStop()
+
+	_, _, err = limiter.Take(t.Context())
+	require.Error(t, err)
 }
 
 func TestMissingLimiter(t *testing.T) {
