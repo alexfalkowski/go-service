@@ -129,17 +129,34 @@ func TestWithAttributesKeepsParentContextIsolated(t *testing.T) {
 	require.Equal(t, meta.String("user"), meta.Attribute(child, "userId"))
 }
 
-func TestUserID(t *testing.T) {
-	ctx := meta.WithAttributes(t.Context(), meta.WithUserID(meta.String("user-id")))
-	require.Equal(t, meta.String("user-id"), meta.UserID(ctx))
-}
+func TestAccessors(t *testing.T) {
+	ctx := meta.WithAttributes(t.Context(),
+		meta.WithRequestID(meta.String("request-id")),
+		meta.WithServiceMethod(meta.String("service-method")),
+		meta.WithUserAgent(meta.String("user-agent")),
+		meta.WithUserID(meta.String("user-id")),
+		meta.WithIPAddr(meta.String("ip-addr")),
+		meta.WithAuthorization(meta.Ignored("authorization")),
+		meta.WithGeolocation(meta.String("geo:47,11")),
+	)
 
-func TestServiceMethod(t *testing.T) {
-	ctx := meta.WithAttributes(t.Context(), meta.WithServiceMethod(meta.String("service-method")))
-	require.Equal(t, meta.String("service-method"), meta.ServiceMethod(ctx))
-}
+	tests := []struct {
+		name string
+		got  meta.Value
+		want meta.Value
+	}{
+		{name: "request id", got: meta.RequestID(ctx), want: meta.String("request-id")},
+		{name: "service method", got: meta.ServiceMethod(ctx), want: meta.String("service-method")},
+		{name: "user agent", got: meta.UserAgent(ctx), want: meta.String("user-agent")},
+		{name: "user id", got: meta.UserID(ctx), want: meta.String("user-id")},
+		{name: "ip addr", got: meta.IPAddr(ctx), want: meta.String("ip-addr")},
+		{name: "authorization", got: meta.Authorization(ctx), want: meta.Ignored("authorization")},
+		{name: "geolocation", got: meta.Geolocation(ctx), want: meta.String("geo:47,11")},
+	}
 
-func TestGeolocation(t *testing.T) {
-	ctx := meta.WithAttributes(t.Context(), meta.WithGeolocation(meta.String("geo:47,11")))
-	require.Equal(t, meta.String("geo:47,11"), meta.Geolocation(ctx))
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.want, test.got)
+		})
+	}
 }
