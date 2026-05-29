@@ -15,7 +15,7 @@ func TestPrometheusHTTP(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("prometheus"),
 		test.WithWorldPGConfig(nil),
-		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)),
 		test.WithWorldHTTP(),
 	)
 
@@ -47,7 +47,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("prometheus"),
 		test.WithWorldPGConfig(nil),
-		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)),
 		test.WithWorldToken(tkn, tkn),
 		test.WithWorldHTTP(),
 	)

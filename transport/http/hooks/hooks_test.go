@@ -151,6 +151,26 @@ func TestRoundTripperDoesNotSignCrossOriginRedirect(t *testing.T) {
 	require.True(t, body.Closed)
 }
 
+func TestRoundTripperClosesBodyOnSignError(t *testing.T) {
+	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	require.NoError(t, err)
+
+	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	called := false
+	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		called = true
+		return nil, nil
+	}))
+	body := &errTrackedBody{TrackedBody: &test.TrackedBody{Reader: strings.NewReader("body")}}
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", body)
+
+	res, err := rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, test.ErrFailed)
+	require.False(t, called)
+	require.True(t, body.Closed)
+}
+
 func TestHandler(t *testing.T) {
 	handler := hooks.NewHandler(nil)
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
@@ -163,4 +183,12 @@ func TestHandler(t *testing.T) {
 
 	require.True(t, called)
 	require.Equal(t, http.StatusOK, res.Code)
+}
+
+type errTrackedBody struct {
+	*test.TrackedBody
+}
+
+func (*errTrackedBody) Read([]byte) (int, error) {
+	return 0, test.ErrFailed
 }

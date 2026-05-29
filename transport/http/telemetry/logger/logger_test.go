@@ -81,3 +81,36 @@ func TestRoundTripperLogsTransportError(t *testing.T) {
 	require.Contains(t, logs.String(), `"level":"ERROR"`)
 	require.Contains(t, logs.String(), `"error":"dial failed"`)
 }
+
+func TestRoundTripperLogsResponse(t *testing.T) {
+	tests := []struct {
+		name  string
+		level string
+		code  int
+	}{
+		{name: "success", code: http.StatusOK, level: "INFO"},
+		{name: "client error", code: http.StatusBadRequest, level: "WARN"},
+		{name: "server error", code: http.StatusInternalServerError, level: "ERROR"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var logs bytes.Buffer
+			base := &test.StatusRoundTripper{Status: tt.code}
+			slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+			rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, base)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/users", http.NoBody)
+			require.NoError(t, err)
+
+			res, err := rt.RoundTrip(req)
+			require.NoError(t, err)
+			require.Equal(t, tt.code, res.StatusCode)
+			require.Contains(t, logs.String(), `"level":"`+tt.level+`"`)
+			require.Contains(t, logs.String(), `"msg":"http: get users"`)
+			require.Contains(t, logs.String(), `"system":"http"`)
+			require.Contains(t, logs.String(), `"service":"users"`)
+			require.Contains(t, logs.String(), `"method":"get"`)
+			require.Contains(t, logs.String(), `"code":`+strconv.Itoa(tt.code))
+		})
+	}
+}

@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/stretchr/testify/require"
@@ -66,6 +67,26 @@ func TestRoundTripperClosesBodyOnGenerateError(t *testing.T) {
 	res, err := roundTripper.RoundTrip(req)
 	require.Nil(t, res)
 	require.Error(t, err)
+	require.True(t, body.Closed)
+}
+
+func TestRoundTripperClosesBodyOnEmptyToken(t *testing.T) {
+	roundTripper := token.NewRoundTripper(
+		env.UserID("service-user"),
+		test.NewGenerator("", nil),
+		test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+			t.Fatal("unexpected round trip")
+			return nil, nil
+		}),
+	)
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com/hello", body)
+	require.NoError(t, err)
+
+	res, err := roundTripper.RoundTrip(req)
+	require.Nil(t, res)
+	require.Error(t, err)
+	require.Equal(t, http.StatusUnauthorized, status.Code(err))
 	require.True(t, body.Closed)
 }
 

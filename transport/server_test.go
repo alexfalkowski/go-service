@@ -13,19 +13,61 @@ import (
 )
 
 func TestNewServers(t *testing.T) {
-	require.Empty(t, transport.NewServers(transport.ServersParams{}))
-
 	httpService := newService("http")
 	grpcService := newService("grpc")
 	debugService := newService("debug")
 
-	services := transport.NewServers(transport.ServersParams{
-		HTTP:  &transporthttp.Server{Service: httpService},
-		GRPC:  &transportgrpc.Server{Service: grpcService},
-		Debug: &debug.Server{Service: debugService},
-	})
+	tests := []struct {
+		name   string
+		params transport.ServersParams
+		want   []*server.Service
+	}{
+		{name: "none", want: []*server.Service{}},
+		{
+			name: "http only",
+			params: transport.ServersParams{
+				HTTP: &transporthttp.Server{Service: httpService},
+			},
+			want: []*server.Service{httpService},
+		},
+		{
+			name: "grpc only",
+			params: transport.ServersParams{
+				GRPC: &transportgrpc.Server{Service: grpcService},
+			},
+			want: []*server.Service{grpcService},
+		},
+		{
+			name: "debug only",
+			params: transport.ServersParams{
+				Debug: &debug.Server{Service: debugService},
+			},
+			want: []*server.Service{debugService},
+		},
+		{
+			name: "http and debug",
+			params: transport.ServersParams{
+				HTTP:  &transporthttp.Server{Service: httpService},
+				Debug: &debug.Server{Service: debugService},
+			},
+			want: []*server.Service{httpService, debugService},
+		},
+		{
+			name: "all",
+			params: transport.ServersParams{
+				HTTP:  &transporthttp.Server{Service: httpService},
+				GRPC:  &transportgrpc.Server{Service: grpcService},
+				Debug: &debug.Server{Service: debugService},
+			},
+			want: []*server.Service{httpService, grpcService, debugService},
+		},
+	}
 
-	require.Equal(t, []*server.Service{httpService, grpcService, debugService}, services)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, transport.NewServers(tt.params))
+		})
+	}
 }
 
 func newService(name string) *server.Service {

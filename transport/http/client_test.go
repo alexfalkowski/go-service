@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
 	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -70,4 +71,26 @@ func TestRoundTripperWithTokenDoesNotSendAuthorizationToCrossOriginRedirect(t *t
 	require.Nil(t, res)
 	require.Equal(t, "Bearer secret", trustedAuthorization)
 	require.Empty(t, attackerAuthorization)
+}
+
+func TestRoundTripperGeneratesTokenPerRetryAttempt(t *testing.T) {
+	base := &test.AuthRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
+	rt, err := transporthttp.NewRoundTripper(
+		transporthttp.WithClientRoundTripper(base),
+		transporthttp.WithClientRetry(&retry.Config{
+			Attempts: 2,
+			Timeout:  time.Second,
+			Backoff:  time.Millisecond,
+		}),
+		transporthttp.WithClientTokenGenerator(env.UserID("service-user"), &test.SequenceGenerator{}),
+	)
+	require.NoError(t, err)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com/hello", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, []string{"Bearer token-1", "Bearer token-2"}, base.AuthValues)
+	require.Equal(t, []int{1, 1}, base.AuthCounts)
 }
