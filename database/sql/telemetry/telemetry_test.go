@@ -9,11 +9,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/telemetry"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 )
 
 var driverID sync.Uint64
@@ -109,16 +107,16 @@ func setupSpans(t *testing.T) (*test.SpanExporter, func()) {
 	})
 
 	exporter := &test.SpanExporter{}
-	provider := trace.NewTracerProvider(trace.WithSyncer(exporter))
-	otel.SetTracerProvider(provider)
+	provider := tracer.NewProvider(tracer.WithSyncer(exporter))
+	tracer.SetProvider(provider)
 
 	return exporter, func() {
 		require.NoError(t, provider.Shutdown(t.Context()))
-		otel.SetTracerProvider(noop.NewTracerProvider())
+		tracer.SetProvider(tracer.NewNoopProvider())
 	}
 }
 
-func requireNoRawQueryText(t *testing.T, spans []trace.ReadOnlySpan, query string) {
+func requireNoRawQueryText(t *testing.T, spans []tracer.ReadOnlySpan, query string) {
 	t.Helper()
 
 	for _, span := range spans {
@@ -130,7 +128,7 @@ func requireNoRawQueryText(t *testing.T, spans []trace.ReadOnlySpan, query strin
 	}
 }
 
-func requireRawQueryText(t *testing.T, spans []trace.ReadOnlySpan, query string) {
+func requireRawQueryText(t *testing.T, spans []tracer.ReadOnlySpan, query string) {
 	t.Helper()
 
 	for _, span := range spans {

@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-sync"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -21,6 +20,36 @@ var (
 	enabled      sync.Bool
 	noopProvider trace.TracerProvider = noop.NewTracerProvider()
 )
+
+// ReadOnlySpan is an alias for sdktrace.ReadOnlySpan.
+type ReadOnlySpan = sdk.ReadOnlySpan
+
+// SpanExporter is an alias for sdktrace.SpanExporter.
+type SpanExporter = sdk.SpanExporter
+
+// Provider is an alias for trace.TracerProvider.
+type Provider = trace.TracerProvider
+
+// SDKProvider is an alias for sdktrace.TracerProvider.
+type SDKProvider = sdk.TracerProvider
+
+// ProviderOption is an alias for sdktrace.TracerProviderOption.
+type ProviderOption = sdk.TracerProviderOption
+
+// NewProvider constructs an OpenTelemetry SDK tracer provider.
+func NewProvider(opts ...ProviderOption) *SDKProvider {
+	return sdk.NewTracerProvider(opts...)
+}
+
+// WithSyncer configures a tracer provider to export spans synchronously.
+func WithSyncer(exporter SpanExporter) ProviderOption {
+	return sdk.WithSyncer(exporter)
+}
+
+// NewNoopProvider constructs a no-op tracer provider.
+func NewNoopProvider() Provider {
+	return noop.NewTracerProvider()
+}
 
 // TracerParams declares the dependencies required by Register.
 //
@@ -49,13 +78,13 @@ type TracerParams struct {
 	Environment env.Environment
 }
 
-// Register configures and installs a global OpenTelemetry TracerProvider.
+// Register configures and installs a global OpenTelemetry tracer provider.
 //
 // When tracing is configured with kind "otlp", Register:
 //
 //  1. Creates an OTLP/HTTP trace exporter using `Config.URL` and `Config.Headers`.
 //  2. Creates an OpenTelemetry resource describing the running service.
-//  3. Installs a `sdk.TracerProvider` via `otel.SetTracerProvider`.
+//  3. Installs a `sdk.TracerProvider` globally.
 //  4. Appends lifecycle hooks to start the exporter on application start and to
 //     shut down the provider/exporter on application stop.
 //
@@ -66,7 +95,7 @@ type TracerParams struct {
 func Register(params TracerParams) error {
 	if !params.Config.IsEnabled() {
 		enabled.Store(false)
-		otel.SetTracerProvider(noopProvider)
+		SetProvider(noopProvider)
 		return nil
 	}
 
@@ -92,7 +121,7 @@ func Register(params TracerParams) error {
 		)
 
 		provider := sdk.NewTracerProvider(sdk.WithResource(attrs), sdk.WithBatcher(exporter))
-		otel.SetTracerProvider(provider)
+		SetProvider(provider)
 		enabled.Store(true)
 
 		params.Lifecycle.Append(di.Hook{
@@ -103,7 +132,7 @@ func Register(params TracerParams) error {
 				// Do not return error as this will stop all others.
 				_ = provider.Shutdown(ctx)
 				_ = exporter.Shutdown(ctx)
-				otel.SetTracerProvider(noopProvider)
+				SetProvider(noopProvider)
 				enabled.Store(false)
 
 				return nil

@@ -2,7 +2,6 @@ package errors
 
 import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"go.opentelemetry.io/otel"
 )
 
 // Register installs handler as the global OpenTelemetry error handler.
@@ -21,7 +20,7 @@ func Register(handler *Handler) {
 		return
 	}
 
-	otel.SetErrorHandler(handler)
+	SetHandler(handler)
 }
 
 // NewHandler constructs a Handler that logs OpenTelemetry internal errors.

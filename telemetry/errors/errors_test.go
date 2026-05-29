@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel"
 )
 
 func TestNewHandlerNilLogger(t *testing.T) {
@@ -17,12 +16,12 @@ func TestNewHandlerNilLogger(t *testing.T) {
 }
 
 func TestRegisterNilHandler(t *testing.T) {
-	original := otel.GetErrorHandler()
-	defer otel.SetErrorHandler(original)
+	original := errors.GetHandler()
+	defer errors.SetHandler(original)
 
 	errors.Register(nil)
 
-	require.Same(t, original, otel.GetErrorHandler())
+	require.Same(t, original, errors.GetHandler())
 }
 
 func TestHandleNilHandler(t *testing.T) {

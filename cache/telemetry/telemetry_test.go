@@ -7,11 +7,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 func TestInstrumentTracingDisablesRawCommandStatements(t *testing.T) {
@@ -21,8 +20,8 @@ func TestInstrumentTracingDisablesRawCommandStatements(t *testing.T) {
 	})
 
 	exporter := &test.SpanExporter{}
-	provider := trace.NewTracerProvider(trace.WithSyncer(exporter))
-	otel.SetTracerProvider(provider)
+	provider := tracer.NewProvider(tracer.WithSyncer(exporter))
+	tracer.SetProvider(provider)
 	t.Cleanup(func() {
 		require.NoError(t, provider.Shutdown(context.Background()))
 	})

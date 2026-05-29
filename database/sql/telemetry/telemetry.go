@@ -5,8 +5,8 @@ import (
 	"database/sql/driver"
 
 	"github.com/XSAM/otelsql"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 )
 
 // Option is an alias of otelsql.Option.
@@ -40,7 +40,7 @@ func WrapDriver(driver driver.Driver, opts ...Option) driver.Driver {
 // WithAttributes adds static attributes to SQL telemetry spans and metrics.
 //
 // This is a thin wrapper around otelsql.WithAttributes.
-func WithAttributes(attrs ...attribute.KeyValue) Option {
+func WithAttributes(attrs ...attributes.KeyValue) Option {
 	return otelsql.WithAttributes(attrs...)
 }
 
@@ -54,7 +54,7 @@ func WithSpanOptions(opts SpanOptions) Option {
 // RegisterDBStatsMetrics registers OpenTelemetry DB stats metrics for db.
 //
 // This is a thin wrapper around otelsql.RegisterDBStatsMetrics.
-func RegisterDBStatsMetrics(db *sql.DB, opts ...Option) (metric.Registration, error) {
+func RegisterDBStatsMetrics(db *sql.DB, opts ...Option) (metrics.Registration, error) {
 	return otelsql.RegisterDBStatsMetrics(db, opts...)
 }
 

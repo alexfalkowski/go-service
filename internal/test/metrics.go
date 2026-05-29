@@ -8,88 +8,86 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	hm "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/metric/embedded"
 	"go.uber.org/fx/fxtest"
 )
 
 var errInvalid = errors.New("invalid")
 
 // InvalidMeter is an OpenTelemetry meter test double whose constructors always fail.
-type InvalidMeter struct{ embedded.Meter }
+type InvalidMeter struct{ metrics.EmbeddedMeter }
 
-// Int64Counter implements metric.Meter and always returns an error.
-func (InvalidMeter) Int64Counter(string, ...metric.Int64CounterOption) (metric.Int64Counter, error) {
+// Int64Counter implements metrics.Meter and always returns an error.
+func (InvalidMeter) Int64Counter(string, ...metrics.Int64CounterOption) (metrics.Int64Counter, error) {
 	return nil, errInvalid
 }
 
-// Int64UpDownCounter implements metric.Meter and always returns an error.
-func (InvalidMeter) Int64UpDownCounter(string, ...metric.Int64UpDownCounterOption) (metric.Int64UpDownCounter, error) {
+// Int64UpDownCounter implements metrics.Meter and always returns an error.
+func (InvalidMeter) Int64UpDownCounter(string, ...metrics.Int64UpDownCounterOption) (metrics.Int64UpDownCounter, error) {
 	return nil, errInvalid
 }
 
-// Int64Histogram implements metric.Meter and always returns an error.
-func (InvalidMeter) Int64Histogram(string, ...metric.Int64HistogramOption) (metric.Int64Histogram, error) {
+// Int64Histogram implements metrics.Meter and always returns an error.
+func (InvalidMeter) Int64Histogram(string, ...metrics.Int64HistogramOption) (metrics.Int64Histogram, error) {
 	return nil, errInvalid
 }
 
-// Int64ObservableCounter implements metric.Meter and always returns an error.
-func (InvalidMeter) Int64ObservableCounter(string, ...metric.Int64ObservableCounterOption) (metric.Int64ObservableCounter, error) {
+// Int64ObservableCounter implements metrics.Meter and always returns an error.
+func (InvalidMeter) Int64ObservableCounter(string, ...metrics.Int64ObservableCounterOption) (metrics.Int64ObservableCounter, error) {
 	return nil, errInvalid
 }
 
-// Int64ObservableUpDownCounter implements metric.Meter and always returns an error.
-func (InvalidMeter) Int64ObservableUpDownCounter(string, ...metric.Int64ObservableUpDownCounterOption) (metric.Int64ObservableUpDownCounter, error) {
+// Int64ObservableUpDownCounter implements metrics.Meter and always returns an error.
+func (InvalidMeter) Int64ObservableUpDownCounter(string, ...metrics.Int64ObservableUpDownCounterOption) (metrics.Int64ObservableUpDownCounter, error) {
 	return nil, errInvalid
 }
 
-// Int64ObservableGauge implements metric.Meter and always returns an error.
-func (InvalidMeter) Int64ObservableGauge(string, ...metric.Int64ObservableGaugeOption) (metric.Int64ObservableGauge, error) {
+// Int64ObservableGauge implements metrics.Meter and always returns an error.
+func (InvalidMeter) Int64ObservableGauge(string, ...metrics.Int64ObservableGaugeOption) (metrics.Int64ObservableGauge, error) {
 	return nil, errInvalid
 }
 
-// Int64Gauge implements metric.Meter and always returns an error.
-func (InvalidMeter) Int64Gauge(string, ...metric.Int64GaugeOption) (metric.Int64Gauge, error) {
+// Int64Gauge implements metrics.Meter and always returns an error.
+func (InvalidMeter) Int64Gauge(string, ...metrics.Int64GaugeOption) (metrics.Int64Gauge, error) {
 	return nil, errInvalid
 }
 
-// Float64Counter implements metric.Meter and always returns an error.
-func (InvalidMeter) Float64Counter(string, ...metric.Float64CounterOption) (metric.Float64Counter, error) {
+// Float64Counter implements metrics.Meter and always returns an error.
+func (InvalidMeter) Float64Counter(string, ...metrics.Float64CounterOption) (metrics.Float64Counter, error) {
 	return nil, errInvalid
 }
 
-// Float64UpDownCounter implements metric.Meter and always returns an error.
-func (InvalidMeter) Float64UpDownCounter(string, ...metric.Float64UpDownCounterOption) (metric.Float64UpDownCounter, error) {
+// Float64UpDownCounter implements metrics.Meter and always returns an error.
+func (InvalidMeter) Float64UpDownCounter(string, ...metrics.Float64UpDownCounterOption) (metrics.Float64UpDownCounter, error) {
 	return nil, errInvalid
 }
 
-// Float64Histogram implements metric.Meter and always returns an error.
-func (InvalidMeter) Float64Histogram(string, ...metric.Float64HistogramOption) (metric.Float64Histogram, error) {
+// Float64Histogram implements metrics.Meter and always returns an error.
+func (InvalidMeter) Float64Histogram(string, ...metrics.Float64HistogramOption) (metrics.Float64Histogram, error) {
 	return nil, errInvalid
 }
 
-// Float64ObservableCounter implements metric.Meter and always returns an error.
-func (InvalidMeter) Float64ObservableCounter(string, ...metric.Float64ObservableCounterOption) (metric.Float64ObservableCounter, error) {
+// Float64ObservableCounter implements metrics.Meter and always returns an error.
+func (InvalidMeter) Float64ObservableCounter(string, ...metrics.Float64ObservableCounterOption) (metrics.Float64ObservableCounter, error) {
 	return nil, errInvalid
 }
 
-// Float64ObservableUpDownCounter implements metric.Meter and always returns an error.
-func (InvalidMeter) Float64ObservableUpDownCounter(string, ...metric.Float64ObservableUpDownCounterOption) (metric.Float64ObservableUpDownCounter, error) {
+// Float64ObservableUpDownCounter implements metrics.Meter and always returns an error.
+func (InvalidMeter) Float64ObservableUpDownCounter(string, ...metrics.Float64ObservableUpDownCounterOption) (metrics.Float64ObservableUpDownCounter, error) {
 	return nil, errInvalid
 }
 
-// Float64ObservableGauge implements metric.Meter and always returns an error.
-func (InvalidMeter) Float64ObservableGauge(string, ...metric.Float64ObservableGaugeOption) (metric.Float64ObservableGauge, error) {
+// Float64ObservableGauge implements metrics.Meter and always returns an error.
+func (InvalidMeter) Float64ObservableGauge(string, ...metrics.Float64ObservableGaugeOption) (metrics.Float64ObservableGauge, error) {
 	return nil, errInvalid
 }
 
-// Float64Gauge implements metric.Meter and always returns an error.
-func (InvalidMeter) Float64Gauge(string, ...metric.Float64GaugeOption) (metric.Float64Gauge, error) {
+// Float64Gauge implements metrics.Meter and always returns an error.
+func (InvalidMeter) Float64Gauge(string, ...metrics.Float64GaugeOption) (metrics.Float64Gauge, error) {
 	return nil, errInvalid
 }
 
-// RegisterCallback implements metric.Meter and always returns an error.
-func (InvalidMeter) RegisterCallback(metric.Callback, ...metric.Observable) (metric.Registration, error) {
+// RegisterCallback implements metrics.Meter and always returns an error.
+func (InvalidMeter) RegisterCallback(metrics.Callback, ...metrics.Observable) (metrics.Registration, error) {
 	return nil, errInvalid
 }
 
@@ -114,17 +112,17 @@ func NewMeter(lc di.Lifecycle, c *metrics.Config) (metrics.Meter, error) {
 }
 
 // NewOTLPMeterProvider returns a meter provider backed by the shared OTLP metrics config.
-func NewOTLPMeterProvider(lc di.Lifecycle) (metric.MeterProvider, error) {
+func NewOTLPMeterProvider(lc di.Lifecycle) (metrics.MeterProvider, error) {
 	return NewMeterProvider(lc, NewOTLPMetricsConfig())
 }
 
 // NewPrometheusMeterProvider returns a meter provider backed by the shared Prometheus metrics config.
-func NewPrometheusMeterProvider(lc di.Lifecycle) (metric.MeterProvider, error) {
+func NewPrometheusMeterProvider(lc di.Lifecycle) (metrics.MeterProvider, error) {
 	return NewMeterProvider(lc, NewPrometheusMetricsConfig())
 }
 
 // NewMeterProvider creates a meter provider with a reader registered on the supplied lifecycle.
-func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) (metric.MeterProvider, error) {
+func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) (metrics.MeterProvider, error) {
 	r, err := metrics.NewReader(lc, Name, config)
 	if err != nil {
 		return nil, err
