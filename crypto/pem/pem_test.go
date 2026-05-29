@@ -10,7 +10,19 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	_, err := test.PEM.Decode(test.FilePath("none"), "n/a")
+	decoded, err := test.PEM.Decode("-----BEGIN TEST KEY-----\nZmlyc3Q=\n-----END TEST KEY-----\n", "TEST KEY")
+	require.NoError(t, err)
+	require.Equal(t, []byte("first"), decoded)
+
+	decoded, err = test.PEM.Decode(
+		"-----BEGIN TEST KEY-----\nZmlyc3Q=\n-----END TEST KEY-----\n"+
+			"-----BEGIN OTHER KEY-----\nc2Vjb25k\n-----END OTHER KEY-----\n",
+		"TEST KEY",
+	)
+	require.NoError(t, err)
+	require.Equal(t, []byte("first"), decoded)
+
+	_, err = test.PEM.Decode(test.FilePath("none"), "n/a")
 	require.Error(t, err)
 
 	_, err = test.PEM.Decode("", "n/a")

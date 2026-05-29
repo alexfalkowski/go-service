@@ -2,7 +2,6 @@ package rsa
 
 import (
 	"crypto/rsa"
-	"crypto/sha512"
 
 	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
@@ -48,5 +47,5 @@ type Encryptor struct {
 //
 // The randomness source is the injected generator's reader.
 func (e *Encryptor) Encrypt(msg []byte) ([]byte, error) {
-	return rsa.EncryptOAEP(sha512.New(), e.generator.Reader(), e.publicKey, msg, nil)
+	return EncryptOAEP(e.generator, e.publicKey, msg)
 }

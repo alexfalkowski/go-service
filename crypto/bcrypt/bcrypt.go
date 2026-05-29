@@ -2,12 +2,20 @@ package bcrypt
 
 import "golang.org/x/crypto/bcrypt"
 
+// DefaultCost is the cost used by Sign.
+const DefaultCost = bcrypt.DefaultCost
+
 // NewSigner constructs a bcrypt-based Signer intended for password hashing.
 //
 // The returned Signer uses bcrypt.DefaultCost when hashing. If you need a different cost or more
 // control over parameters, use golang.org/x/crypto/bcrypt directly.
 func NewSigner() *Signer {
 	return &Signer{}
+}
+
+// Cost returns the hashing cost used to create the provided bcrypt hash.
+func Cost(hash []byte) (int, error) {
+	return bcrypt.Cost(hash)
 }
 
 // Signer hashes and verifies secrets using bcrypt.
@@ -26,7 +34,7 @@ type Signer struct{}
 //
 // This is a thin wrapper around bcrypt.GenerateFromPassword.
 func (s *Signer) Sign(msg []byte) ([]byte, error) {
-	return bcrypt.GenerateFromPassword(msg, bcrypt.DefaultCost)
+	return bcrypt.GenerateFromPassword(msg, DefaultCost)
 }
 
 // Verify checks that sig is a valid bcrypt hash for msg.

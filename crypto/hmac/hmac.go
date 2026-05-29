@@ -9,6 +9,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
+// Size is the HMAC-SHA-512 signature size in bytes.
+const Size = sha512.Size
+
 // NewSigner constructs an HMAC-SHA-512 Signer when configuration is enabled.
 //
 // Disabled behavior: if cfg is nil (disabled), NewSigner returns (nil, nil).
