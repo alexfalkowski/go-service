@@ -9,16 +9,13 @@ import (
 	"github.com/alexfalkowski/go-sync"
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/metric/noop"
 	sdk "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
 var (
 	enabled      sync.Bool
-	noopProvider metric.MeterProvider = noop.NewMeterProvider()
+	noopProvider MeterProvider = NewNoopMeterProvider()
 )
 
 // MeterProviderParams declares the dependencies required by NewMeterProvider.
@@ -71,7 +68,7 @@ type MeterProviderParams struct {
 func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	if !params.Config.IsEnabled() || params.Reader == nil {
 		enabled.Store(false)
-		otel.SetMeterProvider(noopProvider)
+		SetMeterProvider(noopProvider)
 		return noopProvider
 	}
 
@@ -84,7 +81,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		attributes.DeploymentEnvironmentName(params.Environment.String()),
 	)
 	provider := sdk.NewMeterProvider(sdk.WithReader(reader), sdk.WithResource(attrs))
-	otel.SetMeterProvider(provider)
+	SetMeterProvider(provider)
 	enabled.Store(true)
 
 	params.Lifecycle.Append(di.Hook{
@@ -96,7 +93,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		OnStop: func(ctx context.Context) error {
 			// Do not return error as this will stop all others.
 			_ = provider.Shutdown(ctx)
-			otel.SetMeterProvider(noopProvider)
+			SetMeterProvider(noopProvider)
 			enabled.Store(false)
 
 			return nil

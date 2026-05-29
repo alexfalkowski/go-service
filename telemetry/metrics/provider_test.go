@@ -7,9 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -18,7 +15,7 @@ func TestIsEnabled(t *testing.T) {
 		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
 	})
 
-	otel.SetMeterProvider(noop.NewMeterProvider())
+	metrics.SetMeterProvider(metrics.NewNoopMeterProvider())
 	require.False(t, metrics.IsEnabled())
 
 	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
@@ -56,13 +53,13 @@ func TestMeterProviderStopResetsGlobalState(t *testing.T) {
 		Environment: test.Environment,
 	})
 	require.True(t, metrics.IsEnabled())
-	require.Equal(t, provider, otel.GetMeterProvider())
+	require.Equal(t, provider, metrics.GetMeterProvider())
 
 	lc.RequireStart()
 	require.NoError(t, lc.Stop(t.Context()))
 
 	require.False(t, metrics.IsEnabled())
-	require.NotEqual(t, provider, otel.GetMeterProvider())
+	require.NotEqual(t, provider, metrics.GetMeterProvider())
 }
 
 func TestMeterProviderResourceAttributes(t *testing.T) {
@@ -94,8 +91,8 @@ func TestMeterProviderResourceAttributes(t *testing.T) {
 	require.Equal(t, "development", attrs[attributes.DeploymentEnvironmentName("").Key])
 }
 
-func resourceAttributes(rm metrics.ResourceMetrics) map[attribute.Key]string {
-	attrs := make(map[attribute.Key]string)
+func resourceAttributes(rm metrics.ResourceMetrics) map[attributes.Key]string {
+	attrs := make(map[attributes.Key]string)
 	for _, attr := range rm.Resource.Attributes() {
 		attrs[attr.Key] = attr.Value.AsString()
 	}

@@ -12,10 +12,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -205,12 +203,12 @@ func setupSpans(t *testing.T) (*test.SpanExporter, func()) {
 	t.Helper()
 
 	exporter := &test.SpanExporter{}
-	provider := trace.NewTracerProvider(trace.WithSyncer(exporter))
-	otel.SetTracerProvider(provider)
+	provider := tracer.NewProvider(tracer.WithSyncer(exporter))
+	tracer.SetProvider(provider)
 
 	return exporter, func() {
 		require.NoError(t, provider.Shutdown(t.Context()))
-		otel.SetTracerProvider(noop.NewTracerProvider())
+		tracer.SetProvider(tracer.NewNoopProvider())
 	}
 }
 
