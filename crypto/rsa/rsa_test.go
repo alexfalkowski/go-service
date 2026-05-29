@@ -56,6 +56,23 @@ func TestValid(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "test", bytes.String(d))
 
+	privateKey, err := cfg.PrivateKey(test.PEM)
+	require.NoError(t, err)
+
+	d, err = rsa.DecryptOAEP(rand, privateKey, e)
+	require.NoError(t, err)
+	require.Equal(t, "test", bytes.String(d))
+
+	publicKey, err := cfg.PublicKey(test.PEM)
+	require.NoError(t, err)
+
+	e, err = rsa.EncryptOAEP(rand, publicKey, strings.Bytes("test"))
+	require.NoError(t, err)
+
+	d, err = dec.Decrypt(e)
+	require.NoError(t, err)
+	require.Equal(t, "test", bytes.String(d))
+
 	enc, err = rsa.NewEncryptor(rand, test.PEM, nil)
 	require.NoError(t, err)
 	require.Nil(t, enc)

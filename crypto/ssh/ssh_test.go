@@ -23,6 +23,18 @@ func TestGenerator(t *testing.T) {
 	require.NotEmpty(t, pub)
 	require.NotEmpty(t, pri)
 
+	cfg := &ssh.Config{Public: pub, Private: pri}
+
+	signer, err := ssh.NewSigner(test.FS, cfg)
+	require.NoError(t, err)
+
+	verifier, err := ssh.NewVerifier(test.FS, cfg)
+	require.NoError(t, err)
+
+	sig, err := signer.Sign(strings.Bytes("test"))
+	require.NoError(t, err)
+	require.NoError(t, verifier.Verify(sig, strings.Bytes("test")))
+
 	gen = ssh.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
 	pub, pri, err = gen.Generate()
 	require.Error(t, err)
@@ -71,6 +83,9 @@ func TestInvalidConfig(t *testing.T) {
 	require.Error(t, err)
 
 	public := sshPublic(t)
+
+	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: public + " generated@example"})
+	require.NoError(t, err)
 
 	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: `from="10.0.0.0/8" ` + public})
 	require.ErrorIs(t, err, errors.ErrInvalidKeyFormat)

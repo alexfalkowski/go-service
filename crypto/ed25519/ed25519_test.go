@@ -21,6 +21,18 @@ func TestGenerator(t *testing.T) {
 	require.NotEmpty(t, pub)
 	require.NotEmpty(t, pri)
 
+	cfg := &ed25519.Config{Public: pub, Private: pri}
+
+	signer, err := ed25519.NewSigner(test.PEM, cfg)
+	require.NoError(t, err)
+
+	verifier, err := ed25519.NewVerifier(test.PEM, cfg)
+	require.NoError(t, err)
+
+	sig, err := signer.Sign(strings.Bytes("test"))
+	require.NoError(t, err)
+	require.NoError(t, verifier.Verify(sig, strings.Bytes("test")))
+
 	gen = ed25519.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
 	pub, pri, err = gen.Generate()
 	require.Error(t, err)

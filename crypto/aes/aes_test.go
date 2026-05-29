@@ -17,6 +17,7 @@ func TestGenerator(t *testing.T) {
 	key, err := gen.Generate()
 	require.NoError(t, err)
 	require.NotEmpty(t, key)
+	require.Len(t, key, 32)
 
 	gen = aes.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
 	key, err = gen.Generate()
@@ -56,6 +57,11 @@ func TestInvalidCipher(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrMissingKey)
 	require.Nil(t, cipher)
 
+	cipher, err = aes.NewCipher(gen, test.FS, &aes.Config{Key: "env:AES_MISSING"})
+	require.Error(t, err)
+	require.ErrorContains(t, err, "env:AES_MISSING")
+	require.Nil(t, cipher)
+
 	cipher, err = aes.NewCipher(gen, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
 	require.NoError(t, err)
 
@@ -89,7 +95,7 @@ func TestInvalidCipher(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = cipher.Decrypt(strings.Bytes("test"))
-	require.Error(t, err)
+	require.ErrorIs(t, err, aes.ErrInvalidLength)
 }
 
 func TestEncryptUsesRawNonceBytes(t *testing.T) {

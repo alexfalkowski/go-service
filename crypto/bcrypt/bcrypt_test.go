@@ -14,6 +14,11 @@ func TestSigner(t *testing.T) {
 	s, err := signer.Sign(strings.Bytes("test"))
 	require.NoError(t, err)
 	require.NotEmpty(t, s)
+
+	cost, err := bcrypt.Cost(s)
+	require.NoError(t, err)
+	require.Equal(t, bcrypt.DefaultCost, cost)
+
 	require.NoError(t, signer.Verify(s, strings.Bytes("test")))
 
 	s, err = signer.Sign(strings.Bytes("steve"))

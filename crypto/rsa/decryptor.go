@@ -2,7 +2,6 @@ package rsa
 
 import (
 	"crypto/rsa"
-	"crypto/sha512"
 
 	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
@@ -48,5 +47,5 @@ type Decryptor struct {
 //
 // The randomness source is the injected crypto/rand generator.
 func (d *Decryptor) Decrypt(msg []byte) ([]byte, error) {
-	return rsa.DecryptOAEP(sha512.New(), d.generator, d.privateKey, msg, nil)
+	return DecryptOAEP(d.generator, d.privateKey, msg)
 }

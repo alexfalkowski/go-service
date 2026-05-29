@@ -16,10 +16,12 @@ func TestGenerator(t *testing.T) {
 	key, err := gen.Generate()
 	require.NoError(t, err)
 	require.NotEmpty(t, key)
+	require.Len(t, key, 32)
 
 	gen = hmac.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
 	key, err = gen.Generate()
 	require.Error(t, err)
+	require.ErrorContains(t, err, "hmac")
 	require.Empty(t, key)
 }
 
@@ -39,6 +41,7 @@ func TestValidSigner(t *testing.T) {
 
 	e, err := signer.Sign(strings.Bytes("test"))
 	require.NoError(t, err)
+	require.Len(t, e, hmac.Size)
 	require.NoError(t, signer.Verify(e, strings.Bytes("test")))
 
 	signer, err = hmac.NewSigner(nil, nil)
@@ -55,6 +58,11 @@ func TestSignerMissingKey(t *testing.T) {
 
 	signer, err = hmac.NewSigner(test.FS, &hmac.Config{Key: "env:HMAC_EMPTY"})
 	require.ErrorIs(t, err, errors.ErrMissingKey)
+	require.Nil(t, signer)
+
+	signer, err = hmac.NewSigner(test.FS, &hmac.Config{Key: "env:HMAC_MISSING"})
+	require.Error(t, err)
+	require.ErrorContains(t, err, "env:HMAC_MISSING")
 	require.Nil(t, signer)
 }
 
