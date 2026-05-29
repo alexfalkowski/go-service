@@ -5,7 +5,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/alexfalkowski/go-service/v2.svg)](https://pkg.go.dev/github.com/alexfalkowski/go-service/v2)
 [![Stability: Active](https://masterminds.github.io/stability/active.svg)](https://masterminds.github.io/stability/active.html)
 
-# Go Service
+# 🧰 Go Service
 
 `github.com/alexfalkowski/go-service/v2` is an opinionated framework/library for building Go services with consistent wiring for configuration, DI, transports, telemetry, crypto, etc.
 
@@ -15,7 +15,7 @@ Most services are expected to be bootstrapped from [`go-service-template`](https
 
 ---
 
-## Dependency Injection (Fx)
+## 🧩 Dependency Injection (Fx)
 
 The framework is designed around dependency injection and uses [Uber Fx](https://github.com/uber-go/fx) (and Dig under the hood). Most subsystems expose Fx modules that you compose into your service.
 
@@ -63,7 +63,7 @@ that needs to inspect the returned error.
 
 ---
 
-## CLI
+## 🖥️ CLI
 
 Services commonly expose two command shapes:
 
@@ -76,7 +76,7 @@ The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `
 
 ---
 
-## Repository layout
+## 🗂️ Repository layout
 
 The repo is intentionally split between high-level service composition and lower-level reusable helpers:
 
@@ -93,7 +93,7 @@ For most service authors, the right starting point is still the high-level modul
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 ### Supported config formats
 
@@ -180,7 +180,7 @@ Most sub-configs are optional pointers. Conventionally, `nil` means **disabled**
 
 ---
 
-## Source strings (secrets, DSNs, paths)
+## 🔐 Source strings (secrets, DSNs, paths)
 
 Many fields accept a *source string* rather than only a literal:
 
@@ -199,7 +199,7 @@ hooks:
 
 ---
 
-## Environment
+## 🌍 Environment
 
 Top-level environment is:
 
@@ -211,7 +211,7 @@ This is an `env.Environment` value used to drive environment-specific behavior i
 
 ---
 
-## Compression
+## 🗜️ Compression
 
 Compression kinds used by subsystems that support compression:
 
@@ -222,30 +222,20 @@ Compression kinds used by subsystems that support compression:
 
 ---
 
-## Encoders
+## 🧾 Encoders
 
 Encoding kinds used by subsystems that support encoding:
 
 - `json`
 - `hjson`
 - `toml`
-- `yaml`
-- `yml`
+- `yaml`, `yml`
 - `msgpack`
-- `proto`
-- `pb`
-- `protobuf`
-- `protobin`
-- `pbbin`
-- `protojson`
-- `pbjson`
-- `prototext`
-- `prototxt`
-- `pbtxt`
+- `proto`, `protobuf`, `pb`, `protobin`, `pbbin`
+- `protojson`, `pbjson`
+- `prototext`, `prototxt`, `pbtxt`
 - `gob`
-- `plain`
-- `octet-stream`
-- `markdown`
+- `plain`, `octet-stream`, `markdown`
 
 > [!NOTE]
 > - `plain`, `octet-stream`, and `markdown` all map to the bytes passthrough encoder.
@@ -253,7 +243,7 @@ Encoding kinds used by subsystems that support encoding:
 
 ---
 
-## Cache
+## 💾 Cache
 
 Cache configuration is defined in `cache/config.Config`:
 
@@ -278,7 +268,7 @@ cache:
 
 ---
 
-## Feature flags (OpenFeature)
+## 🚩 Feature flags (OpenFeature)
 
 The `feature.Config` embeds client-side config (`config/client.Config`), so it supports:
 
@@ -313,7 +303,7 @@ feature:
 
 ---
 
-## Webhooks (Standard Webhooks)
+## 🪝 Webhooks (Standard Webhooks)
 
 Configured via `hooks.Config`:
 
@@ -336,7 +326,7 @@ than one receiver instance.
 
 ---
 
-## ID generation
+## 🆔 ID generation
 
 Supported ID kinds:
 
@@ -355,7 +345,7 @@ id:
 
 ---
 
-## Runtime enhancements
+## 🚀 Runtime enhancements
 
 Server commands created through `cli.Application.AddServer` include `runtime.Module`, which currently enables:
 
@@ -366,7 +356,7 @@ Server commands created through `cli.Application.AddServer` include `runtime.Mod
 
 ---
 
-## SQL (Postgres)
+## 🐘 SQL (Postgres)
 
 SQL root config is `database/sql.Config`, with Postgres under `sql.pg`.
 
@@ -406,7 +396,7 @@ sql:
 
 ---
 
-## Health
+## 🩺 Health
 
 Health checks are based on [go-health](https://github.com/alexfalkowski/go-health).
 
@@ -423,7 +413,7 @@ These are modeled after [Kubernetes API health endpoints](https://kubernetes.io/
 
 ---
 
-## Telemetry
+## 📡 Telemetry
 
 Telemetry config root is `telemetry.Config`:
 
@@ -541,7 +531,7 @@ telemetry:
 
 ---
 
-## Tokens
+## 🎫 Tokens
 
 Token configuration is rooted at `token.Config`, usually nested under transport config as `transport.http.token` and/or `transport.grpc.token` (via the shared server-side transport config).
 
@@ -655,16 +645,16 @@ transport:
 
 ---
 
-## Limiter
+## 🚦 Limiter
 
 Limiter config is `transport/limiter.Config` and is typically applied at transport level.
 
 Supported key kinds (built-in):
 
-- `user-agent`
-- `ip`
 - `user-id`
 - `service-method`
+- `ip`
+- `user-agent`
 
 Example:
 
@@ -686,7 +676,7 @@ transport:
 
 ---
 
-## Time (network time)
+## 🕒 Time (network time)
 
 Time config:
 
@@ -703,7 +693,7 @@ Supported kinds:
 
 ---
 
-## Transport
+## 🌐 Transport
 
 The transport layer provides higher-level wiring and middleware policy for communication in/out of the service.
 
@@ -728,12 +718,9 @@ Built-in text/object payload media types include:
 
 - `application/json`
 - `application/hjson`
-- `application/yaml`
-- `application/yml`
+- `application/yaml`, `application/yml`
 - `application/toml`
-- `application/octet-stream`
-- `text/plain`
-- `text/markdown`
+- `application/octet-stream`, `text/plain`, `text/markdown`
 
 Internal binary payload media types include:
 
@@ -742,16 +729,9 @@ Internal binary payload media types include:
 
 Built-in protobuf-oriented media type aliases include:
 
-- `application/proto`
-- `application/pb`
-- `application/protobuf`
-- `application/protobin`
-- `application/pbbin`
-- `application/protojson`
-- `application/pbjson`
-- `application/prototext`
-- `application/prototxt`
-- `application/pbtxt`
+- `application/proto`, `application/pb`, `application/protobuf`, `application/protobin`, `application/pbbin`
+- `application/protojson`, `application/pbjson`
+- `application/prototext`, `application/prototxt`, `application/pbtxt`
 
 > [!NOTE]
 > - `application/hjson` maps to the built-in `hjson` encoder kind.
@@ -893,7 +873,7 @@ The transport client wrappers include optional circuit breakers:
 
 ---
 
-## Cryptography
+## 🔑 Cryptography
 
 The crypto root config is `crypto.Config` and supports multiple key types. Most fields are source strings.
 
@@ -927,7 +907,7 @@ crypto:
 
 ---
 
-## Debug endpoints
+## 🛠️ Debug endpoints
 
 Debug server config:
 
@@ -990,7 +970,7 @@ GET http://localhost:6060/<name>/debug/psutil
 
 ---
 
-## Development
+## 🧑‍💻 Development
 
 ### Style
 
