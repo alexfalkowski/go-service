@@ -11,7 +11,7 @@ jobs:
           POSTGRES_PASSWORD: test
       - image: valkey/valkey:9
       - image: alexfalkowski/status:latest
-        command: server -i env:CONFIG
+        command: server -config env:CONFIG
         environment:
           CONFIG: yml:ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50CmhlYWx0aDoKICBkdXJhdGlvbjogMXMKICB0aW1lb3V0OiAxcwppZDoKICBraW5kOiB1dWlkCnRlbGVtZXRyeToKICBsb2dnZXI6CiAgICBraW5kOiB0ZXh0CiAgICBsZXZlbDogaW5mbwp0cmFuc3BvcnQ6CiAgaHR0cDoKICAgIGFkZHJlc3M6IHRjcDovLzo2MDAwCiAgICByZXRyeToKICAgICAgYmFja29mZjogMTAwbXMKICAgICAgdGltZW91dDogMXMKICAgICAgYXR0ZW1wdHM6IDMKICAgIHRpbWVvdXQ6IDEwcwogICAgdXNlcl9hZ2VudDogIlN0YXR1cy1zZXJ2ZXIvMS4wIGh0dHAvMS4wIgo=
       - image: grafana/mimir:latest
