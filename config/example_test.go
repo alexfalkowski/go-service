@@ -34,7 +34,7 @@ func ExampleNewConfig() {
 	}
 
 	flags := flag.NewFlagSet("serve")
-	flags.AddInput("file:" + path)
+	flags.AddConfig("file:" + path)
 
 	decoder := config.NewDecoder(config.DecoderParams{
 		Flags:   flags,

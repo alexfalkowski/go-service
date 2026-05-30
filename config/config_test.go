@@ -25,7 +25,7 @@ func TestValidFileConfig(t *testing.T) {
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
 			set := flag.NewFlagSet("test")
-			set.AddInput(file)
+			set.AddConfig(file)
 
 			decoder := test.NewDecoder(set)
 
@@ -45,7 +45,7 @@ func TestValidHomeFileConfig(t *testing.T) {
 	require.NoError(t, test.FS.WriteFile(test.FS.Join(home, "config.yml"), data, 0o600))
 
 	set := flag.NewFlagSet("test")
-	set.AddInput("file:~/config.yml")
+	set.AddConfig("file:~/config.yml")
 
 	decoder := test.NewDecoder(set)
 
@@ -68,7 +68,7 @@ func TestInvalidFileConfig(t *testing.T) {
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
 			set := flag.NewFlagSet("test")
-			set.AddInput(file)
+			set.AddConfig(file)
 
 			decoder := test.NewDecoder(set)
 
@@ -97,7 +97,7 @@ func TestValidEnvConfig(t *testing.T) {
 			t.Setenv("CONFIG", tt.kind+":"+base64.Encode(d))
 
 			set := flag.NewFlagSet("test")
-			set.AddInput("env:CONFIG")
+			set.AddConfig("env:CONFIG")
 
 			decoder := test.NewDecoder(set)
 
@@ -110,7 +110,7 @@ func TestValidEnvConfig(t *testing.T) {
 
 func TestInvalidEnvMissingConfig(t *testing.T) {
 	set := flag.NewFlagSet("test")
-	set.AddInput("env:CONFIG")
+	set.AddConfig("env:CONFIG")
 
 	decoder := test.NewDecoder(set)
 
@@ -125,7 +125,7 @@ func TestInvalidEnvKindConfig(t *testing.T) {
 	t.Setenv("CONFIG", "what:"+base64.Encode(d))
 
 	set := flag.NewFlagSet("test")
-	set.AddInput("env:CONFIG")
+	set.AddConfig("env:CONFIG")
 
 	decoder := test.NewDecoder(set)
 
@@ -137,7 +137,7 @@ func TestInvalidEnvDataConfig(t *testing.T) {
 	t.Setenv("CONFIG", "yaml:not_good")
 
 	set := flag.NewFlagSet("test")
-	set.AddInput("env:CONFIG")
+	set.AddConfig("env:CONFIG")
 
 	decoder := test.NewDecoder(set)
 
@@ -173,7 +173,7 @@ func TestValidCommonConfig(t *testing.T) {
 			require.NoError(t, test.FS.WriteFile(test.FS.Join(path, test.Name.String()+tt.ext), data, 0o600))
 
 			set := flag.NewFlagSet("test")
-			set.AddInput(strings.Empty)
+			set.AddConfig(strings.Empty)
 
 			decoder := test.NewDecoder(set)
 
@@ -188,7 +188,7 @@ func TestValidCommonConfig(t *testing.T) {
 
 func TestInvalidCommonConfig(t *testing.T) {
 	set := flag.NewFlagSet("test")
-	set.AddInput(strings.Empty)
+	set.AddConfig(strings.Empty)
 
 	decoder := test.NewDecoder(set)
 
@@ -198,7 +198,7 @@ func TestInvalidCommonConfig(t *testing.T) {
 
 func TestInvalidKindConfig(t *testing.T) {
 	set := flag.NewFlagSet("test")
-	set.AddInput("test:test")
+	set.AddConfig("test:test")
 
 	decoder := test.NewDecoder(set)
 
