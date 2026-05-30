@@ -48,7 +48,7 @@ import (
 func main() {
     app := cli.NewApplication(func(commander cli.Commander) {
         serve := commander.AddServer("serve", "Run the service", module.Server)
-        serve.AddInput("file:./config.yml") // adds the `-i` config input flag with this default
+        serve.AddConfig("file:./config.yml") // adds the `-config` / `-c` config flag with this default
     })
 
     os.Exit(app.RunCode(context.Background()))
@@ -104,9 +104,9 @@ The config decoder supports:
 - TOML (`github.com/BurntSushi/toml`)
 - YAML (`go.yaml.in/yaml/v3`)
 
-### Selecting the config source (`-i` flag)
+### Selecting the config source (`-config` / `-c` flags)
 
-Config input is routed by a flag called `-i`:
+Config input is routed by flags called `-config` and `-c`:
 
 - `file:<path>`
   Read config from a file at `<path>`; parser is selected from the file extension (`.json`, `.hjson`, `.yaml`, `.yml`, `.toml`).
@@ -123,13 +123,13 @@ Config input is routed by a flag called `-i`:
   ```sh
   # Linux (GNU base64)
   export SERVICE_CONFIG="yaml:$(base64 -w 0 < ./config.yml)"
-  ./your-service serve -i env:SERVICE_CONFIG
+  ./your-service serve -config env:SERVICE_CONFIG
   ```
 
   ```sh
   # macOS/BSD base64
   export SERVICE_CONFIG="yaml:$(base64 < ./config.yml | tr -d '\n')"
-  ./your-service serve -i env:SERVICE_CONFIG
+  ./your-service serve -c env:SERVICE_CONFIG
   ```
 
   HJSON works the same way, for example `hjson:<base64-content>`.
@@ -146,7 +146,7 @@ Config input is routed by a flag called `-i`:
   - `/etc/<serviceName>/`
 
 > [!IMPORTANT]
-> Because the user config directory is part of that search, runtimes using default lookup are expected to provide `HOME` or `XDG_CONFIG_HOME`. Services that cannot rely on those environment variables should pass an explicit `-i file:<path>` or `-i env:<ENV_VAR>` source.
+> Because the user config directory is part of that search, runtimes using default lookup are expected to provide `HOME` or `XDG_CONFIG_HOME`. Services that cannot rely on those environment variables should pass an explicit `-config file:<path>` or `-config env:<ENV_VAR>` source.
 
 ### Typed decoding and validation
 

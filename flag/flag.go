@@ -17,17 +17,17 @@ func NewFlagSet(name string) *FlagSet {
 
 // FlagSet represents a set of defined flags.
 //
-// It wraps flag.FlagSet and provides optional support for the conventional go-service configuration input
-// flag ("-i") used by the config subsystem to route decoding.
+// It wraps flag.FlagSet and provides optional support for the conventional go-service configuration
+// flag ("-config" / "-c") used by the config subsystem to route decoding.
 //
 // This type is intentionally minimal: you can still use the embedded *flag.FlagSet to define and parse
 // arbitrary flags.
 type FlagSet struct {
-	input *string
+	config *string
 	*flag.FlagSet
 }
 
-// AddInput adds the conventional configuration input flag ("-i") to the flag set.
+// AddConfig adds the conventional configuration flag ("-config" / "-c") to the flag set.
 //
 // The value is treated as an opaque "kind:location" string that the config package interprets.
 // Common examples include:
@@ -35,17 +35,19 @@ type FlagSet struct {
 //   - "env:MY_CONFIG" (read config payload from environment variable MY_CONFIG)
 //
 // The provided value is used as the default.
-func (f *FlagSet) AddInput(value string) {
-	f.input = f.String("i", value, "input config location (format kind:location)")
+func (f *FlagSet) AddConfig(value string) {
+	f.config = &value
+	f.StringVar(f.config, "config", value, "config location (format kind:location)")
+	f.StringVar(f.config, "c", value, "config location (format kind:location)")
 }
 
-// GetInput returns the configured input flag ("-i") value.
+// GetConfig returns the configured config flag ("-config" / "-c") value.
 //
-// This method is nil-safe with respect to AddInput: if AddInput was not called, GetInput returns an empty
-// string. This allows callers to depend on GetInput unconditionally.
-func (f *FlagSet) GetInput() string {
-	if f.input != nil {
-		return *f.input
+// This method is nil-safe with respect to AddConfig: if AddConfig was not called, GetConfig returns an empty
+// string. This allows callers to depend on GetConfig unconditionally.
+func (f *FlagSet) GetConfig() string {
+	if f.config != nil {
+		return *f.config
 	}
 	return strings.Empty
 }

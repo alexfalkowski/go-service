@@ -6,7 +6,7 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //
 // It provides the core configuration components:
 //   - Validator (NewValidator) used to validate decoded config structs.
-//   - Decoder (NewDecoder) that dispatches config loading based on the "-i" flag.
+//   - Decoder (NewDecoder) that dispatches config loading based on the "-config" / "-c" flag.
 //   - *config.Config (NewConfig[Config]) as the standard top-level configuration.
 //
 // It also provides a set of small "projection" constructors that extract commonly-used sub-configs from

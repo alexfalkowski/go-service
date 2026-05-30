@@ -18,14 +18,14 @@ import (
 func TestApplicationRun(t *testing.T) {
 	config := test.FilePath("configs/config.yml")
 
-	os.Args = []string{test.Name.String(), "server", "-i", config}
+	os.Args = []string{test.Name.String(), "server", "-config", config}
 	cli.Name = test.Name
 	cli.Version = test.Version
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
 			cmd := c.AddServer("server", "Start the server.", test.Options()...)
-			cmd.AddInput(strings.Empty)
+			cmd.AddConfig(strings.Empty)
 		},
 	)
 	require.NoError(t, app.Run(t.Context()))
@@ -34,12 +34,12 @@ func TestApplicationRun(t *testing.T) {
 func TestApplicationRunCodeWithError(t *testing.T) {
 	config := test.FilePath("configs/invalid_http.config.yml")
 
-	os.Args = []string{test.Name.String(), "server", "-i", config}
+	os.Args = []string{test.Name.String(), "server", "-config", config}
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
 			cmd := c.AddServer("server", "Start the server.", test.Options()...)
-			cmd.AddInput(strings.Empty)
+			cmd.AddConfig(strings.Empty)
 		},
 	)
 
@@ -68,7 +68,7 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 	app := cli.NewApplication(
 		func(c cli.Commander) {
 			cmd := c.AddServer("server", "Start the server.", test.Options()...)
-			cmd.AddInput(strings.Empty)
+			cmd.AddConfig(strings.Empty)
 		},
 	)
 	require.Error(t, app.Run(t.Context()))
@@ -80,7 +80,7 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 	app = cli.NewApplication(
 		func(c cli.Commander) {
 			cmd := c.AddClient("client", "Start the client.", test.Options()...)
-			cmd.AddInput(strings.Empty)
+			cmd.AddConfig(strings.Empty)
 		},
 	)
 	require.Error(t, app.Run(t.Context()))
@@ -109,14 +109,14 @@ func TestApplicationDuplicateCommand(t *testing.T) {
 func TestApplicationRunWithInvalidParams(t *testing.T) {
 	config := test.FilePath("configs/config.yml")
 
-	os.Args = []string{test.Name.String(), "server", "-i", config}
+	os.Args = []string{test.Name.String(), "server", "-config", config}
 	cli.Name = test.Name
 	cli.Version = test.Version
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
 			cmd := c.AddServer("server", "Start the server.", test.Options()...)
-			cmd.AddInput(strings.Empty)
+			cmd.AddConfig(strings.Empty)
 		},
 	)
 	require.NoError(t, app.Run(t.Context()))
@@ -131,14 +131,14 @@ func TestApplicationInvalid(t *testing.T) {
 
 	for _, config := range configs {
 		t.Run(config, func(t *testing.T) {
-			os.Args = []string{test.Name.String(), "server", "-i", config}
+			os.Args = []string{test.Name.String(), "server", "-config", config}
 			cli.Name = test.Name
 			cli.Version = test.Version
 
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput(strings.Empty)
+					cmd.AddConfig(strings.Empty)
 				},
 			)
 
@@ -150,14 +150,14 @@ func TestApplicationInvalid(t *testing.T) {
 }
 
 func TestApplicationDisabled(t *testing.T) {
-	os.Args = []string{test.Name.String(), "server", "-i", test.FilePath("configs/disabled.config.yml")}
+	os.Args = []string{test.Name.String(), "server", "-config", test.FilePath("configs/disabled.config.yml")}
 	cli.Name = test.Name
 	cli.Version = test.Version
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
 			cmd := c.AddServer("server", "Start the server.", test.Options()...)
-			cmd.AddInput(strings.Empty)
+			cmd.AddConfig(strings.Empty)
 		},
 	)
 	require.NoError(t, app.Run(t.Context()))
@@ -172,7 +172,7 @@ func TestApplicationClient(t *testing.T) {
 	app := cli.NewApplication(
 		func(c cli.Commander) {
 			cmd := c.AddClient("client", "Start the client.", opts...)
-			cmd.AddInput(strings.Empty)
+			cmd.AddConfig(strings.Empty)
 		},
 	)
 	require.NoError(t, app.Run(t.Context()))
@@ -352,14 +352,14 @@ func TestApplicationInvalidClient(t *testing.T) {
 
 	for _, config := range configs {
 		t.Run(config, func(t *testing.T) {
-			os.Args = []string{test.Name.String(), "client", "-i", config}
+			os.Args = []string{test.Name.String(), "client", "-config", config}
 			cli.Name = test.Name
 			cli.Version = test.Version
 
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddClient("client", "Start the client.", test.Options()...)
-					cmd.AddInput(strings.Empty)
+					cmd.AddConfig(strings.Empty)
 				},
 			)
 

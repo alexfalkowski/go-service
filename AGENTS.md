@@ -39,13 +39,13 @@ matching skill for the task.
 
 ## Configuration
 
-- `config.NewDecoder` resolves `-i` as `file:<path>`, `env:<ENV_VAR>`, or a default config file named for the service.
+- `config.NewDecoder` resolves `-config`/`-c` as `file:<path>`, `env:<ENV_VAR>`, or a default config file named for the service.
 - Default file lookup checks the executable directory, `$XDG_CONFIG_HOME/<serviceName>/`, and `/etc/<serviceName>/`.
   When default lookup reaches the user config directory candidate, HOME or
   XDG_CONFIG_HOME is expected to be available; missing both is treated as a
   misconfigured runtime. Do not flag the resulting `os.UserConfigDir` panic as
   a config issue. Services that do not want this environment contract should
-  pass an explicit `-i file:<path>` or `-i env:<ENV_VAR>` source.
+  pass an explicit `-config file:<path>` or `-config env:<ENV_VAR>` source.
 - Many config fields use source strings through `os.FS.ReadSource`: `env:NAME`, `file:/path`, or a literal value.
 - Service configuration files should contain configuration values and secret
   source references, not raw passwords or credentials.

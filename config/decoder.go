@@ -15,8 +15,8 @@ import (
 type DecoderParams struct {
 	di.In
 
-	// Flags is the parsed flag set used to select the configuration input source.
-	// NewDecoder reads the "-i" flag via Flags.GetInput.
+	// Flags is the parsed flag set used to select the configuration source.
+	// NewDecoder reads the "-config" / "-c" flag via Flags.GetConfig.
 	Flags *flag.FlagSet
 
 	// Encoder is the registry of decoders keyed by kind/extension (e.g. "yaml", "json", "hjson", "toml").
@@ -32,7 +32,7 @@ type DecoderParams struct {
 
 // NewDecoder constructs a Decoder based on the configured input source.
 //
-// Routing is controlled by the "-i" flag (see flag.FlagSet.GetInput). The value supports a
+// Routing is controlled by the "-config" / "-c" flag (see flag.FlagSet.GetConfig). The value supports a
 // "kind:location" format:
 //
 //   - "file:<path>": uses the file decoder to read from <path>. The file extension determines which
@@ -45,7 +45,7 @@ type DecoderParams struct {
 // The returned Decoder is safe for repeated calls to Decode; underlying behavior depends on the
 // selected implementation.
 func NewDecoder(params DecoderParams) Decoder {
-	kind, location := strings.CutColon(params.Flags.GetInput())
+	kind, location := strings.CutColon(params.Flags.GetConfig())
 	switch kind {
 	case "file":
 		return NewFile(location, params.Encoder, params.FS)
