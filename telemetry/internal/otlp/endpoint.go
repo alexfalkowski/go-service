@@ -11,22 +11,16 @@ import (
 // ErrMissingEndpoint is returned when an OTLP exporter is enabled without an explicit endpoint.
 var ErrMissingEndpoint = errors.New("otlp: missing endpoint")
 
+// ErrInvalidEndpoint is returned when an OTLP exporter endpoint is not an HTTP URL.
+var ErrInvalidEndpoint = errors.New("otlp: invalid endpoint")
+
 // ErrInsecureEndpoint is returned when secret headers would be sent over a non-local HTTP endpoint.
 var ErrInsecureEndpoint = errors.New("otlp: insecure endpoint")
 
-// ValidateRequiredEndpoint validates an explicitly configured OTLP endpoint.
-func ValidateRequiredEndpoint(rawURL string, headers map[string]string) error {
+// ValidateEndpoint validates an explicitly configured OTLP endpoint.
+func ValidateEndpoint(rawURL string, headers map[string]string) error {
 	if strings.IsEmpty(rawURL) {
 		return ErrMissingEndpoint
-	}
-
-	return ValidateEndpoint(rawURL, headers)
-}
-
-// ValidateEndpoint rejects accidental cleartext OTLP endpoints when exporter headers are configured.
-func ValidateEndpoint(rawURL string, headers map[string]string) error {
-	if strings.IsEmpty(rawURL) || len(headers) == 0 {
-		return nil
 	}
 
 	u, err := url.Parse(rawURL)
@@ -34,7 +28,11 @@ func ValidateEndpoint(rawURL string, headers map[string]string) error {
 		return err
 	}
 
-	if u.Scheme != "http" || isLoopback(u.Hostname()) {
+	if (u.Scheme != "http" && u.Scheme != "https") || strings.IsEmpty(u.Host) {
+		return ErrInvalidEndpoint
+	}
+
+	if u.Scheme != "http" || len(headers) == 0 || isLoopback(u.Hostname()) {
 		return nil
 	}
 

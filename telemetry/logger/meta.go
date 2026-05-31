@@ -8,6 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 )
 
+// maxMetaValueLength keeps context metadata useful in logs without allowing one
+// value to dominate every record.
 const maxMetaValueLength = 1024
 
 // Meta extracts context metadata and returns it as slog attributes.
@@ -33,12 +35,11 @@ func truncateMetaValue(value string) string {
 		return value
 	}
 
-	for index := range value {
-		if index > maxMetaValueLength {
-			_, size := utf8.DecodeLastRuneInString(value[:index])
-			return value[:index-size]
-		}
+	truncated := value[:maxMetaValueLength]
+	for !utf8.ValidString(truncated) {
+		_, size := utf8.DecodeLastRuneInString(truncated)
+		truncated = truncated[:len(truncated)-size]
 	}
 
-	return value[:maxMetaValueLength]
+	return truncated
 }

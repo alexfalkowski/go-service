@@ -56,18 +56,30 @@ func TestMetaTruncatesLongValues(t *testing.T) {
 }
 
 func TestMetaTruncatesLongValuesAtUTF8Boundary(t *testing.T) {
-	value := strings.Repeat("a", 1023) + "é" + "z"
-	ctx := meta.WithAttributes(
-		t.Context(),
-		meta.WithRequestID(meta.String(value)),
-	)
+	maxLength := metaValueLength(t, strings.Repeat("a", 2048))
+	prefix := strings.Repeat("a", maxLength-1)
 
-	attrs := logger.Meta(ctx)
-	truncated := attrs[0].Value.String()
+	for _, tt := range []struct {
+		name  string
+		value string
+	}{
+		{name: "followed by another rune", value: prefix + "é" + "z"},
+		{name: "terminal rune", value: prefix + "é"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := meta.WithAttributes(
+				t.Context(),
+				meta.WithRequestID(meta.String(tt.value)),
+			)
 
-	require.Len(t, attrs, 1)
-	require.True(t, utf8.ValidString(truncated))
-	require.Equal(t, strings.Repeat("a", 1023), truncated)
+			attrs := logger.Meta(ctx)
+			truncated := attrs[0].Value.String()
+
+			require.Len(t, attrs, 1)
+			require.True(t, utf8.ValidString(truncated))
+			require.Equal(t, prefix, truncated)
+		})
+	}
 }
 
 func TestInvalidLogger(t *testing.T) {
@@ -224,4 +236,17 @@ func TestOTLPLoggerUsesConfiguredLevel(t *testing.T) {
 	require.NotPanics(t, func() {
 		child.ErrorContext(ctx, "exported")
 	})
+}
+
+func metaValueLength(t *testing.T, value string) int {
+	t.Helper()
+
+	ctx := meta.WithAttributes(
+		t.Context(),
+		meta.WithRequestID(meta.String(value)),
+	)
+	attrs := logger.Meta(ctx)
+
+	require.Len(t, attrs, 1)
+	return len(attrs[0].Value.String())
 }
