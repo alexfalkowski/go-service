@@ -20,8 +20,8 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 //   - the selected encoder.
 //
 // Content negotiation:
-// The encoder is selected based on the request Content-Type, falling back to Accept when Content-Type is absent.
-// The response Content-Type header is set to the negotiated media type.
+// Request-body decoding uses the request Content-Type, falling back to JSON when Content-Type is absent or
+// unknown. The response Content-Type header is set to the negotiated media type.
 //
 // Errors:
 // If request decoding fails, NewRequestHandler converts the decode error into a 400 Bad Request using
