@@ -1,19 +1,15 @@
 package ssh_test
 
 import (
-	"crypto/x509"
-	"encoding/pem"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
-	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
-	xssh "golang.org/x/crypto/ssh"
 )
 
 func TestGenerator(t *testing.T) {
@@ -65,45 +61,76 @@ func TestValid(t *testing.T) {
 }
 
 func TestInvalidConfig(t *testing.T) {
-	_, err := ssh.NewSigner(test.FS, &ssh.Config{})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-
-	_, err = ssh.NewVerifier(test.FS, &ssh.Config{})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-
 	t.Setenv("SSH_EMPTY", "")
 
-	_, err = ssh.NewSigner(test.FS, &ssh.Config{Private: "env:SSH_EMPTY"})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
+	t.Run("missing signer private key", func(t *testing.T) {
+		_, err := ssh.NewSigner(test.FS, &ssh.Config{})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+	})
 
-	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: "env:SSH_EMPTY"})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
+	t.Run("missing verifier public key", func(t *testing.T) {
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+	})
 
-	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: test.FilePath("secrets/redis")})
-	require.Error(t, err)
+	t.Run("empty signer private key source", func(t *testing.T) {
+		_, err := ssh.NewSigner(test.FS, &ssh.Config{Private: "env:SSH_EMPTY"})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+	})
 
+	t.Run("empty verifier public key source", func(t *testing.T) {
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: "env:SSH_EMPTY"})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+	})
+}
+
+func TestInvalidPublicKeyConfig(t *testing.T) {
 	public := sshPublic(t)
 
-	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: public + " generated@example"})
-	require.NoError(t, err)
+	t.Run("invalid verifier public key", func(t *testing.T) {
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: test.FilePath("secrets/redis")})
+		require.Error(t, err)
+	})
 
-	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: `from="10.0.0.0/8" ` + public})
-	require.ErrorIs(t, err, errors.ErrInvalidKeyFormat)
+	t.Run("verifier public key with comment", func(t *testing.T) {
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: public + " generated@example"})
+		require.NoError(t, err)
+	})
 
-	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: public + "\n" + public})
-	require.ErrorIs(t, err, errors.ErrInvalidKeyFormat)
+	t.Run("verifier public key with options", func(t *testing.T) {
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: `from="10.0.0.0/8" ` + public})
+		require.ErrorIs(t, err, errors.ErrInvalidKeyFormat)
+	})
 
-	_, err = ssh.NewSigner(test.FS, &ssh.Config{Private: test.FilePath("secrets/redis")})
-	require.Error(t, err)
+	t.Run("verifier public key with trailing entry", func(t *testing.T) {
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: public + "\n" + public})
+		require.ErrorIs(t, err, errors.ErrInvalidKeyFormat)
+	})
 
-	_, err = ssh.NewSigner(
-		test.FS,
-		&ssh.Config{
-			Public:  test.FilePath("secrets/ssh_public"),
-			Private: test.FilePath("secrets/none"),
-		},
-	)
-	require.Error(t, err)
+	t.Run("verifier security key public key", func(t *testing.T) {
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{
+			Public: "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIJjzc2a20RjCvN/0ibH6UpGuN9F9hDvD7x182bOesNhHAAAABHNzaDo= user@host",
+		})
+		require.ErrorIs(t, err, errors.ErrInvalidKeyType)
+	})
+}
+
+func TestInvalidPrivateKeyConfig(t *testing.T) {
+	t.Run("invalid signer private key", func(t *testing.T) {
+		_, err := ssh.NewSigner(test.FS, &ssh.Config{Private: test.FilePath("secrets/redis")})
+		require.Error(t, err)
+	})
+
+	t.Run("missing signer private key file", func(t *testing.T) {
+		_, err := ssh.NewSigner(
+			test.FS,
+			&ssh.Config{
+				Public:  test.FilePath("secrets/ssh_public"),
+				Private: test.FilePath("secrets/none"),
+			},
+		)
+		require.Error(t, err)
+	})
 }
 
 func TestInvalidSignature(t *testing.T) {
@@ -173,27 +200,17 @@ func TestInvalidVerifierPublicKey(t *testing.T) {
 }
 
 func TestInvalidKeyType(t *testing.T) {
-	public, private, err := rsa.NewGenerator(rand.NewGenerator(rand.NewReader())).Generate()
-	require.NoError(t, err)
-
-	block, _ := pem.Decode([]byte(public))
-	require.NotNil(t, block)
-
-	publicKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
-	require.NoError(t, err)
-
-	sshPublicKey, err := xssh.NewPublicKey(publicKey)
-	require.NoError(t, err)
-
 	var verifierErr error
 	require.NotPanics(t, func() {
-		_, verifierErr = ssh.NewVerifier(test.FS, &ssh.Config{Public: string(xssh.MarshalAuthorizedKey(sshPublicKey))})
+		_, verifierErr = ssh.NewVerifier(test.FS, &ssh.Config{
+			Public: test.FilePath("secrets/rsa_ssh_public"),
+		})
 	})
 	require.ErrorIs(t, verifierErr, errors.ErrInvalidKeyType)
 
 	var signerErr error
 	require.NotPanics(t, func() {
-		_, signerErr = ssh.NewSigner(test.FS, &ssh.Config{Private: private})
+		_, signerErr = ssh.NewSigner(test.FS, &ssh.Config{Private: test.FilePath("secrets/rsa_private")})
 	})
 	require.ErrorIs(t, signerErr, errors.ErrInvalidKeyType)
 }

@@ -82,73 +82,124 @@ func TestValid(t *testing.T) {
 	require.Nil(t, dec)
 }
 
-func TestInvalid(t *testing.T) {
-	rand := rand.NewGenerator(rand.NewReader())
-
-	enc, err := rsa.NewEncryptor(rand, test.PEM, &rsa.Config{})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-	require.Nil(t, enc)
-
-	dec, err := rsa.NewDecryptor(rand, test.PEM, &rsa.Config{})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-	require.Nil(t, dec)
-
+func TestInvalidConfig(t *testing.T) {
 	t.Setenv("RSA_EMPTY", "")
 
-	enc, err = rsa.NewEncryptor(rand, test.PEM, &rsa.Config{Public: "env:RSA_EMPTY"})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-	require.Nil(t, enc)
+	t.Run("missing public key", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
 
-	dec, err = rsa.NewDecryptor(rand, test.PEM, &rsa.Config{Private: "env:RSA_EMPTY"})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-	require.Nil(t, dec)
-
-	cfg := test.NewRSA()
-
-	enc, err = rsa.NewEncryptor(rand, test.PEM, cfg)
-	require.NoError(t, err)
-
-	dec, err = rsa.NewDecryptor(rand, test.PEM, cfg)
-	require.NoError(t, err)
-
-	e, err := enc.Encrypt(strings.Bytes("test"))
-	require.NoError(t, err)
-
-	e = append(e, byte('w'))
-	_, err = dec.Decrypt(e)
-	require.Error(t, err)
-
-	_, err = dec.Decrypt(strings.Bytes("test"))
-	require.Error(t, err)
-
-	_, err = rsa.NewEncryptor(rand, test.PEM, &rsa.Config{
-		Public:  test.FilePath("secrets/ed25519_public"),
-		Private: test.FilePath("secrets/rsa_private"),
+		enc, err := rsa.NewEncryptor(gen, test.PEM, &rsa.Config{})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+		require.Nil(t, enc)
 	})
-	require.Error(t, err)
 
-	_, err = rsa.NewDecryptor(rand, test.PEM, &rsa.Config{
-		Public:  test.FilePath("secrets/rsa_public"),
-		Private: test.FilePath("secrets/ed25519_private"),
+	t.Run("missing private key", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+
+		dec, err := rsa.NewDecryptor(gen, test.PEM, &rsa.Config{})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+		require.Nil(t, dec)
 	})
-	require.Error(t, err)
 
-	cfg = &rsa.Config{
-		Public:  test.FilePath("secrets/rsa_2048_public"),
-		Private: test.FilePath("secrets/rsa_2048_private"),
-	}
+	t.Run("empty public key source", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
 
-	_, err = rsa.NewEncryptor(rand, test.PEM, cfg)
-	require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+		enc, err := rsa.NewEncryptor(gen, test.PEM, &rsa.Config{Public: "env:RSA_EMPTY"})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+		require.Nil(t, enc)
+	})
 
-	_, err = rsa.NewDecryptor(rand, test.PEM, cfg)
-	require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+	t.Run("empty private key source", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+
+		dec, err := rsa.NewDecryptor(gen, test.PEM, &rsa.Config{Private: "env:RSA_EMPTY"})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+		require.Nil(t, dec)
+	})
+}
+
+func TestInvalid(t *testing.T) {
+	t.Run("tampered ciphertext", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+		cfg := test.NewRSA()
+
+		enc, err := rsa.NewEncryptor(gen, test.PEM, cfg)
+		require.NoError(t, err)
+
+		dec, err := rsa.NewDecryptor(gen, test.PEM, cfg)
+		require.NoError(t, err)
+
+		e, err := enc.Encrypt(strings.Bytes("test"))
+		require.NoError(t, err)
+
+		e = append(e, byte('w'))
+		_, err = dec.Decrypt(e)
+		require.Error(t, err)
+	})
+
+	t.Run("short ciphertext", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+
+		dec, err := rsa.NewDecryptor(gen, test.PEM, test.NewRSA())
+		require.NoError(t, err)
+
+		_, err = dec.Decrypt(strings.Bytes("test"))
+		require.Error(t, err)
+	})
+}
+
+func TestInvalidKey(t *testing.T) {
+	t.Run("invalid public key", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+
+		_, err := rsa.NewEncryptor(gen, test.PEM, &rsa.Config{
+			Public:  test.FilePath("secrets/ed25519_public"),
+			Private: test.FilePath("secrets/rsa_private"),
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("invalid private key", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+
+		_, err := rsa.NewDecryptor(gen, test.PEM, &rsa.Config{
+			Public:  test.FilePath("secrets/rsa_public"),
+			Private: test.FilePath("secrets/ed25519_private"),
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("small public key", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+		cfg := &rsa.Config{
+			Public:  test.FilePath("secrets/rsa_2048_public"),
+			Private: test.FilePath("secrets/rsa_2048_private"),
+		}
+
+		_, err := rsa.NewEncryptor(gen, test.PEM, cfg)
+		require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+	})
+
+	t.Run("small private key", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+		cfg := &rsa.Config{
+			Public:  test.FilePath("secrets/rsa_2048_public"),
+			Private: test.FilePath("secrets/rsa_2048_private"),
+		}
+
+		_, err := rsa.NewDecryptor(gen, test.PEM, cfg)
+		require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+	})
 }
 
 func TestInvalidConfigParse(t *testing.T) {
-	_, err := (&rsa.Config{Public: test.FilePath("secrets/rsa_public_invalid")}).PublicKey(test.PEM)
-	require.Error(t, err)
+	t.Run("public key", func(t *testing.T) {
+		_, err := (&rsa.Config{Public: test.FilePath("secrets/rsa_public_invalid")}).PublicKey(test.PEM)
+		require.Error(t, err)
+	})
 
-	_, err = (&rsa.Config{Private: test.FilePath("secrets/rsa_private_invalid")}).PrivateKey(test.PEM)
-	require.Error(t, err)
+	t.Run("private key", func(t *testing.T) {
+		_, err := (&rsa.Config{Private: test.FilePath("secrets/rsa_private_invalid")}).PrivateKey(test.PEM)
+		require.Error(t, err)
+	})
 }

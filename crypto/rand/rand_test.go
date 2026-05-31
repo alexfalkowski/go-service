@@ -49,33 +49,45 @@ func TestGenerateBytesReadsShortChunksFully(t *testing.T) {
 }
 
 func TestInvalidRand(t *testing.T) {
-	gen := rand.NewGenerator(&test.ErrReaderCloser{})
+	t.Run("bytes", func(t *testing.T) {
+		gen := rand.NewGenerator(&test.ErrReaderCloser{})
 
-	_, err := gen.GenerateBytes(5)
-	require.Error(t, err)
+		_, err := gen.GenerateBytes(5)
+		require.Error(t, err)
+	})
 
-	gen = rand.NewGenerator(&test.ErrReaderCloser{})
-	_, err = gen.GenerateText(5)
-	require.Error(t, err)
+	t.Run("text", func(t *testing.T) {
+		gen := rand.NewGenerator(&test.ErrReaderCloser{})
+
+		_, err := gen.GenerateText(5)
+		require.Error(t, err)
+	})
 }
 
 func TestInvalidSize(t *testing.T) {
-	gen := rand.NewGenerator(rand.NewReader())
+	t.Run("bytes", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
 
-	var data []byte
-	var err error
-	require.NotPanics(t, func() {
-		data, err = gen.GenerateBytes(-1)
+		var data []byte
+		var err error
+		require.NotPanics(t, func() {
+			data, err = gen.GenerateBytes(-1)
+		})
+		require.Nil(t, data)
+		require.ErrorIs(t, err, rand.ErrInvalidSize)
 	})
-	require.Nil(t, data)
-	require.ErrorIs(t, err, rand.ErrInvalidSize)
 
-	var text string
-	require.NotPanics(t, func() {
-		text, err = gen.GenerateText(-1)
+	t.Run("text", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+
+		var text string
+		var err error
+		require.NotPanics(t, func() {
+			text, err = gen.GenerateText(-1)
+		})
+		require.Empty(t, text)
+		require.ErrorIs(t, err, rand.ErrInvalidSize)
 	})
-	require.Empty(t, text)
-	require.ErrorIs(t, err, rand.ErrInvalidSize)
 }
 
 type shortReader struct {
