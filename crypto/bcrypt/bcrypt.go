@@ -1,6 +1,10 @@
 package bcrypt
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v2/errors"
+	"golang.org/x/crypto/bcrypt"
+)
 
 // DefaultCost is the cost used by Sign.
 const DefaultCost = bcrypt.DefaultCost
@@ -40,7 +44,13 @@ func (s *Signer) Sign(msg []byte) ([]byte, error) {
 // Verify checks that sig is a valid bcrypt hash for msg.
 //
 // This is a thin wrapper around bcrypt.CompareHashAndPassword.
-// It returns nil if the hash matches, otherwise it returns an error from the bcrypt package.
+// It returns nil if the hash matches, otherwise it returns crypto/errors.ErrInvalidMatch
+// joined with the bcrypt package error.
 func (s *Signer) Verify(sig, msg []byte) error {
-	return bcrypt.CompareHashAndPassword(sig, msg)
+	err := bcrypt.CompareHashAndPassword(sig, msg)
+	if err != nil {
+		return errors.Join(crypto.ErrInvalidMatch, err)
+	}
+
+	return nil
 }

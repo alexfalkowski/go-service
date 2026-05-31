@@ -50,36 +50,46 @@ func TestValidSigner(t *testing.T) {
 }
 
 func TestSignerMissingKey(t *testing.T) {
-	signer, err := hmac.NewSigner(test.FS, &hmac.Config{})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-	require.Nil(t, signer)
-
 	t.Setenv("HMAC_EMPTY", "")
 
-	signer, err = hmac.NewSigner(test.FS, &hmac.Config{Key: "env:HMAC_EMPTY"})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-	require.Nil(t, signer)
+	t.Run("missing key", func(t *testing.T) {
+		signer, err := hmac.NewSigner(test.FS, &hmac.Config{})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+		require.Nil(t, signer)
+	})
 
-	signer, err = hmac.NewSigner(test.FS, &hmac.Config{Key: "env:HMAC_MISSING"})
-	require.Error(t, err)
-	require.ErrorContains(t, err, "env:HMAC_MISSING")
-	require.Nil(t, signer)
+	t.Run("empty key source", func(t *testing.T) {
+		signer, err := hmac.NewSigner(test.FS, &hmac.Config{Key: "env:HMAC_EMPTY"})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+		require.Nil(t, signer)
+	})
+
+	t.Run("missing key source", func(t *testing.T) {
+		signer, err := hmac.NewSigner(test.FS, &hmac.Config{Key: "env:HMAC_MISSING"})
+		require.Error(t, err)
+		require.ErrorContains(t, err, "env:HMAC_MISSING")
+		require.Nil(t, signer)
+	})
 }
 
 func TestInvalidSigner(t *testing.T) {
-	signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
-	require.NoError(t, err)
+	t.Run("tampered signature", func(t *testing.T) {
+		signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
+		require.NoError(t, err)
 
-	sign, err := signer.Sign(strings.Bytes("test"))
-	require.NoError(t, err)
+		sign, err := signer.Sign(strings.Bytes("test"))
+		require.NoError(t, err)
 
-	sign = append(sign, byte('w'))
-	require.Error(t, signer.Verify(sign, strings.Bytes("test")))
+		sign = append(sign, byte('w'))
+		require.Error(t, signer.Verify(sign, strings.Bytes("test")))
+	})
 
-	signer, err = hmac.NewSigner(test.FS, test.NewHMAC())
-	require.NoError(t, err)
+	t.Run("wrong message", func(t *testing.T) {
+		signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
+		require.NoError(t, err)
 
-	e, err := signer.Sign(strings.Bytes("test"))
-	require.NoError(t, err)
-	require.ErrorIs(t, signer.Verify(e, strings.Bytes("bob")), errors.ErrInvalidMatch)
+		e, err := signer.Sign(strings.Bytes("test"))
+		require.NoError(t, err)
+		require.ErrorIs(t, signer.Verify(e, strings.Bytes("bob")), errors.ErrInvalidMatch)
+	})
 }

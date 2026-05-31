@@ -1,9 +1,9 @@
 package ssh
 
 import (
-	"crypto/ed25519"
 	"fmt"
 
+	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"golang.org/x/crypto/ssh"
@@ -15,21 +15,21 @@ import (
 // or a literal key value).
 //
 // Expected key formats:
-//   - Public: SSH authorized_keys format (parsed via ssh.ParseAuthorizedKey).
+//   - Public: SSH authorized_keys format (parsed via x/crypto/ssh.ParseAuthorizedKey).
 //     Comments are allowed, but authorized_keys options and trailing entries are rejected.
-//   - Private: SSH private key format (parsed via ssh.ParseRawPrivateKey).
+//   - Private: SSH private key format (parsed via x/crypto/ssh.ParseRawPrivateKey).
 //
 // If the provided key material is a valid SSH key but not an Ed25519 key,
 // PublicKey and PrivateKey return crypto/errors.ErrInvalidKeyType.
 type Config struct {
 	// Public is a "source string" for the SSH public key in authorized_keys format.
 	//
-	// The value is resolved via os.FS.ReadSource and parsed via ssh.ParseAuthorizedKey.
+	// The value is resolved via os.FS.ReadSource and parsed via x/crypto/ssh.ParseAuthorizedKey.
 	Public string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
 
 	// Private is a "source string" for the SSH private key.
 	//
-	// The value is resolved via os.FS.ReadSource and parsed via ssh.ParseRawPrivateKey.
+	// The value is resolved via os.FS.ReadSource and parsed via x/crypto/ssh.ParseRawPrivateKey.
 	Private string `yaml:"private,omitempty" json:"private,omitempty" toml:"private,omitempty"`
 }
 
@@ -68,6 +68,9 @@ func (c *Config) PublicKey(fs *os.FS) (ed25519.PublicKey, error) {
 	}
 	if len(rest) > 0 {
 		return nil, fmt.Errorf("ssh: unsupported authorized key trailing data: %w", errors.ErrInvalidKeyFormat)
+	}
+	if parsed.Type() != ssh.KeyAlgoED25519 {
+		return nil, fmt.Errorf("ssh: invalid public key type %s: %w", parsed.Type(), errors.ErrInvalidKeyType)
 	}
 
 	key, ok := parsed.(ssh.CryptoPublicKey)

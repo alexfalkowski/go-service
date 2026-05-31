@@ -44,58 +44,82 @@ func TestValidCipher(t *testing.T) {
 	require.Nil(t, cipher)
 }
 
-func TestInvalidCipher(t *testing.T) {
-	gen := rand.NewGenerator(rand.NewReader())
-
-	cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-	require.Nil(t, cipher)
-
+func TestInvalidCipherConfig(t *testing.T) {
 	t.Setenv("AES_EMPTY", "")
 
-	cipher, err = aes.NewCipher(gen, test.FS, &aes.Config{Key: "env:AES_EMPTY"})
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-	require.Nil(t, cipher)
+	t.Run("missing key", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
 
-	cipher, err = aes.NewCipher(gen, test.FS, &aes.Config{Key: "env:AES_MISSING"})
-	require.Error(t, err)
-	require.ErrorContains(t, err, "env:AES_MISSING")
-	require.Nil(t, cipher)
+		cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+		require.Nil(t, cipher)
+	})
 
-	cipher, err = aes.NewCipher(gen, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
-	require.NoError(t, err)
+	t.Run("empty key source", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
 
-	_, err = cipher.Encrypt(strings.Bytes("test"))
-	require.Error(t, err)
+		cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{Key: "env:AES_EMPTY"})
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+		require.Nil(t, cipher)
+	})
 
-	_, err = cipher.Decrypt(strings.Bytes("test"))
-	require.Error(t, err)
+	t.Run("missing key source", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
 
-	gen = rand.NewGenerator(&test.ErrReaderCloser{})
+		cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{Key: "env:AES_MISSING"})
+		require.Error(t, err)
+		require.ErrorContains(t, err, "env:AES_MISSING")
+		require.Nil(t, cipher)
+	})
+}
 
-	cipher, err = aes.NewCipher(gen, test.FS, test.NewAES())
-	require.NoError(t, err)
+func TestInvalidCipher(t *testing.T) {
+	t.Run("invalid key", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
 
-	_, err = cipher.Encrypt(strings.Bytes("test"))
-	require.Error(t, err)
+		cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
+		require.NoError(t, err)
 
-	rand := rand.NewGenerator(rand.NewReader())
+		_, err = cipher.Encrypt(strings.Bytes("test"))
+		require.Error(t, err)
 
-	cipher, err = aes.NewCipher(rand, test.FS, test.NewAES())
-	require.NoError(t, err)
+		_, err = cipher.Decrypt(strings.Bytes("test"))
+		require.Error(t, err)
+	})
 
-	enc, err := cipher.Encrypt(strings.Bytes("test"))
-	require.NoError(t, err)
-	enc = append(enc, byte('w'))
+	t.Run("nonce generation error", func(t *testing.T) {
+		gen := rand.NewGenerator(&test.ErrReaderCloser{})
 
-	_, err = cipher.Decrypt(enc)
-	require.Error(t, err)
+		cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
+		require.NoError(t, err)
 
-	cipher, err = aes.NewCipher(rand, test.FS, test.NewAES())
-	require.NoError(t, err)
+		_, err = cipher.Encrypt(strings.Bytes("test"))
+		require.Error(t, err)
+	})
 
-	_, err = cipher.Decrypt(strings.Bytes("test"))
-	require.ErrorIs(t, err, aes.ErrInvalidLength)
+	t.Run("tampered ciphertext", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+
+		cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
+		require.NoError(t, err)
+
+		enc, err := cipher.Encrypt(strings.Bytes("test"))
+		require.NoError(t, err)
+		enc = append(enc, byte('w'))
+
+		_, err = cipher.Decrypt(enc)
+		require.Error(t, err)
+	})
+
+	t.Run("short ciphertext", func(t *testing.T) {
+		gen := rand.NewGenerator(rand.NewReader())
+
+		cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
+		require.NoError(t, err)
+
+		_, err = cipher.Decrypt(strings.Bytes("test"))
+		require.ErrorIs(t, err, aes.ErrInvalidLength)
+	})
 }
 
 func TestEncryptUsesRawNonceBytes(t *testing.T) {

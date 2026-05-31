@@ -10,32 +10,46 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	decoded, err := test.PEM.Decode("-----BEGIN TEST KEY-----\nZmlyc3Q=\n-----END TEST KEY-----\n", "TEST KEY")
-	require.NoError(t, err)
-	require.Equal(t, []byte("first"), decoded)
-
-	decoded, err = test.PEM.Decode(
-		"-----BEGIN TEST KEY-----\nZmlyc3Q=\n-----END TEST KEY-----\n"+
-			"-----BEGIN OTHER KEY-----\nc2Vjb25k\n-----END OTHER KEY-----\n",
-		"TEST KEY",
-	)
-	require.NoError(t, err)
-	require.Equal(t, []byte("first"), decoded)
-
-	_, err = test.PEM.Decode(test.FilePath("none"), "n/a")
-	require.Error(t, err)
-
-	_, err = test.PEM.Decode("", "n/a")
-	require.ErrorIs(t, err, errors.ErrMissingKey)
-
 	t.Setenv("PEM_EMPTY", "")
 
-	_, err = test.PEM.Decode("env:PEM_EMPTY", "n/a")
-	require.ErrorIs(t, err, errors.ErrMissingKey)
+	t.Run("valid block", func(t *testing.T) {
+		decoded, err := test.PEM.Decode("-----BEGIN TEST KEY-----\nZmlyc3Q=\n-----END TEST KEY-----\n", "TEST KEY")
+		require.NoError(t, err)
+		require.Equal(t, []byte("first"), decoded)
+	})
 
-	_, err = test.PEM.Decode(test.FilePath("secrets/redis"), "n/a")
-	require.ErrorIs(t, err, pem.ErrInvalidBlock)
+	t.Run("uses first matching block", func(t *testing.T) {
+		decoded, err := test.PEM.Decode(
+			"-----BEGIN TEST KEY-----\nZmlyc3Q=\n-----END TEST KEY-----\n"+
+				"-----BEGIN OTHER KEY-----\nc2Vjb25k\n-----END OTHER KEY-----\n",
+			"TEST KEY",
+		)
+		require.NoError(t, err)
+		require.Equal(t, []byte("first"), decoded)
+	})
 
-	_, err = test.PEM.Decode(test.FilePath("secrets/rsa_public"), "what")
-	require.ErrorIs(t, err, pem.ErrInvalidKind)
+	t.Run("missing source", func(t *testing.T) {
+		_, err := test.PEM.Decode(test.FilePath("none"), "n/a")
+		require.Error(t, err)
+	})
+
+	t.Run("empty path", func(t *testing.T) {
+		_, err := test.PEM.Decode("", "n/a")
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+	})
+
+	t.Run("empty source", func(t *testing.T) {
+		_, err := test.PEM.Decode("env:PEM_EMPTY", "n/a")
+		require.ErrorIs(t, err, errors.ErrMissingKey)
+	})
+
+	t.Run("invalid block", func(t *testing.T) {
+		_, err := test.PEM.Decode(test.FilePath("secrets/redis"), "n/a")
+		require.ErrorIs(t, err, pem.ErrInvalidBlock)
+	})
+
+	t.Run("invalid kind", func(t *testing.T) {
+		_, err := test.PEM.Decode(test.FilePath("secrets/rsa_public"), "what")
+		require.ErrorIs(t, err, pem.ErrInvalidKind)
+	})
 }
