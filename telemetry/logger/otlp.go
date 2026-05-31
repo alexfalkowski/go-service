@@ -16,7 +16,7 @@ import (
 )
 
 func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
-	if err := otlp.ValidateRequiredEndpoint(params.Config.URL, params.Config.Headers); err != nil {
+	if err := otlp.ValidateEndpoint(params.Config.URL, params.Config.Headers); err != nil {
 		return nil, err
 	}
 

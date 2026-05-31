@@ -49,7 +49,7 @@ func NewReader(lc di.Lifecycle, name env.Name, cfg *Config) (metric.Reader, erro
 func newReader(name env.Name, cfg *Config) (metric.Reader, error) {
 	switch cfg.Kind {
 	case "otlp":
-		if err := otlp.ValidateRequiredEndpoint(cfg.URL, cfg.Headers); err != nil {
+		if err := otlp.ValidateEndpoint(cfg.URL, cfg.Headers); err != nil {
 			return nil, prefix(err)
 		}
 
