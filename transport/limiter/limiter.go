@@ -1,6 +1,8 @@
 package limiter
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -12,6 +14,10 @@ import (
 	"github.com/sethvargo/go-limiter"
 	"github.com/sethvargo/go-limiter/memorystore"
 )
+
+// maxKeySize keeps normal limiter keys readable while preventing oversized
+// request metadata from being retained verbatim as in-memory bucket names.
+const maxKeySize = 256
 
 // KeyFunc derives the metadata value used to key rate limits for ctx.
 //
@@ -118,7 +124,7 @@ type Limiter struct {
 //
 // Note: callers are responsible for deciding how to surface the header value (e.g. in HTTP response headers).
 func (l *Limiter) Take(ctx context.Context) (bool, string, error) {
-	tokens, remaining, _, ok, err := l.store.Take(ctx, l.key(ctx).Value())
+	tokens, remaining, _, ok, err := l.store.Take(ctx, key(l.key(ctx)))
 	if err != nil {
 		return false, strings.Empty, err
 	}
@@ -137,4 +143,17 @@ func (l *Limiter) Take(ctx context.Context) (bool, string, error) {
 // This is typically invoked automatically via the lifecycle hook installed by NewLimiter.
 func (l *Limiter) Close(ctx context.Context) error {
 	return l.store.Close(ctx)
+}
+
+func key(value meta.Value) string {
+	key := value.Value()
+	if strings.IsEmpty(key) {
+		return "<empty>"
+	}
+	if len(key) <= maxKeySize {
+		return key
+	}
+
+	sum := sha256.Sum256([]byte(key))
+	return strings.Concat("sha256:", hex.EncodeToString(sum[:]))
 }

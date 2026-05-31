@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/stretchr/testify/require"
@@ -46,6 +47,60 @@ func TestTake(t *testing.T) {
 
 	ok, header, err := limiter.Take(first)
 
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, "limit=1, remaining=0", header)
+
+	ok, header, err = limiter.Take(first)
+	require.NoError(t, err)
+	require.False(t, ok)
+	require.Equal(t, "limit=1, remaining=0", header)
+
+	ok, header, err = limiter.Take(second)
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, "limit=1, remaining=0", header)
+}
+
+func TestTakeUsesSingleBucketForEmptyKeys(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
+
+	limiter, err := limiter.NewLimiter(lc, m, config)
+	require.NoError(t, err)
+	require.NotNil(t, limiter)
+	defer func() {
+		require.NoError(t, limiter.Close(t.Context()))
+	}()
+
+	ok, header, err := limiter.Take(t.Context())
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, "limit=1, remaining=0", header)
+
+	ok, header, err = limiter.Take(meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.Blank())))
+	require.NoError(t, err)
+	require.False(t, ok)
+	require.Equal(t, "limit=1, remaining=0", header)
+}
+
+func TestTakeSupportsOversizedKeys(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
+
+	limiter, err := limiter.NewLimiter(lc, m, config)
+	require.NoError(t, err)
+	require.NotNil(t, limiter)
+	defer func() {
+		require.NoError(t, limiter.Close(t.Context()))
+	}()
+
+	first := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String(strings.Repeat("a", 1024))))
+	second := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String(strings.Repeat("b", 1024))))
+
+	ok, header, err := limiter.Take(first)
 	require.NoError(t, err)
 	require.True(t, ok)
 	require.Equal(t, "limit=1, remaining=0", header)
