@@ -56,8 +56,7 @@ func Patch[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 // RouteRequest registers a handler under pattern that decodes a request and encodes a response.
 //
 // The handler is built using net/http/content.NewRequestHandler, which:
-//   - selects an encoder based on the request Content-Type, falling back to the first Accept media type when
-//     Content-Type is absent,
+//   - decodes the request body using Content-Type, falling back to JSON when Content-Type is absent or unknown,
 //   - decodes the request body into a newly allocated request model, and
 //   - encodes the returned response model using the negotiated media type.
 //
