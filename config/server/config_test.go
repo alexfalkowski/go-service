@@ -57,6 +57,16 @@ func TestConfigRejectsNegativeMaxReceiveSize(t *testing.T) {
 	require.Error(t, test.Validator.Struct(cfg))
 }
 
+func TestConfigAcceptsMaxReceiveSize(t *testing.T) {
+	cfg := &server.Config{MaxReceiveSize: bytes.MaxConfigSize}
+	require.NoError(t, test.Validator.Struct(cfg))
+}
+
+func TestConfigRejectsOversizedMaxReceiveSize(t *testing.T) {
+	cfg := &server.Config{MaxReceiveSize: bytes.MaxConfigSize + 1}
+	require.Error(t, test.Validator.Struct(cfg))
+}
+
 func TestConfigRejectsNegativeTimeout(t *testing.T) {
 	cfg := &server.Config{Timeout: -time.Second}
 	require.Error(t, test.Validator.Struct(cfg))

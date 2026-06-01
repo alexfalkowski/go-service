@@ -19,6 +19,13 @@ const MB Size = Size(units.MB)
 // Its value is 4 megabytes.
 const DefaultSize Size = 4 * MB
 
+// MaxConfigSize is the largest byte size accepted by configuration surfaces.
+//
+// Configured sizes protect in-memory buffering paths such as cache values, HTTP request bodies,
+// HTTP client response bodies, and gRPC messages. Keep this comfortably below integer and allocator
+// edge cases while still allowing unusually large service payloads.
+const MaxConfigSize Size = 256 * MB
+
 // GB is the decimal gigabyte size constant: 1,000,000,000 bytes.
 const GB Size = Size(units.GB)
 

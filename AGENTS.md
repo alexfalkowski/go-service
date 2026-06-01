@@ -111,6 +111,13 @@ matching skill for the task.
   passing absurd configured `bytes.Size` values directly to it; callers that
   compare configuration-sized limits, such as cache decode size guards, must
   guard those limits before calling it.
+- Configured byte-size limits that drive buffering paths are capped by
+  `bytes.MaxConfigSize` at the supported config validation boundary, including
+  cache value sizes and server receive sizes used by HTTP and gRPC transports.
+  Do not flag `MaxInt`, allocator, or `limit+1` overflow speculation from
+  absurd configured sizes unless a supported config/DI path bypasses that
+  validation or the public API starts promising safe arbitrary direct
+  constructor limits.
 - `bytes.ParseSize` intentionally delegates human-readable size parsing to
   `github.com/docker/go-units` for compatibility with existing configuration
   values. Do not flag upstream float-to-int range behavior from absurdly large
