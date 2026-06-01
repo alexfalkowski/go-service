@@ -2,15 +2,18 @@ package toml
 
 import (
 	"github.com/BurntSushi/toml"
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
+
+var defaultEncoder = &Encoder{}
 
 // NewEncoder constructs a TOML encoder.
 //
 // This encoder is a thin adapter around github.com/BurntSushi/toml that satisfies
 // `github.com/alexfalkowski/go-service/v2/encoding.Encoder`.
 func NewEncoder() *Encoder {
-	return &Encoder{}
+	return defaultEncoder
 }
 
 // Encoder implements TOML encoding and decoding.
@@ -34,4 +37,19 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	_, err := toml.NewDecoder(r).Decode(v)
 	return err
+}
+
+// Marshal encodes v as TOML.
+func Marshal(v any) ([]byte, error) {
+	var buffer bytes.Buffer
+	if err := defaultEncoder.Encode(&buffer, v); err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
+}
+
+// Unmarshal decodes TOML data into v.
+func Unmarshal(data []byte, v any) error {
+	return defaultEncoder.Decode(bytes.NewReader(data), v)
 }

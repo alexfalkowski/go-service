@@ -22,6 +22,24 @@ func TestEncode(t *testing.T) {
 	require.Equal(t, "test: test", strings.TrimSpace(bytes.String()))
 }
 
+func TestMarshalUnmarshal(t *testing.T) {
+	msg := map[string]string{"test": "test"}
+
+	data, err := yaml.Marshal(msg)
+	require.NoError(t, err)
+	require.Equal(t, "test: test", strings.TrimSpace(string(data)))
+
+	var actual map[string]string
+	require.NoError(t, yaml.Unmarshal(data, &actual))
+	require.Equal(t, msg, actual)
+}
+
+func TestMarshalReturnsError(t *testing.T) {
+	_, err := yaml.Marshal(marshalError{})
+
+	require.ErrorIs(t, err, test.ErrFailed)
+}
+
 func TestEncodeReturnsError(t *testing.T) {
 	encoder := yaml.NewEncoder()
 
@@ -50,4 +68,18 @@ func TestDecodeRejectsTrailingDocument(t *testing.T) {
 			require.ErrorIs(t, err, errors.ErrTrailingData)
 		})
 	}
+}
+
+func TestUnmarshalRejectsTrailingDocument(t *testing.T) {
+	var msg map[string]string
+
+	err := yaml.Unmarshal([]byte("test: test\n---\ntest: other"), &msg)
+
+	require.ErrorIs(t, err, errors.ErrTrailingData)
+}
+
+type marshalError struct{}
+
+func (m marshalError) MarshalYAML() (any, error) {
+	return nil, test.ErrFailed
 }

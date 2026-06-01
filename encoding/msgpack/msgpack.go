@@ -7,9 +7,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/io"
 )
 
+var defaultEncoder = &Encoder{}
+
 // NewEncoder constructs a MessagePack encoder.
 func NewEncoder() *Encoder {
-	return &Encoder{}
+	return defaultEncoder
 }
 
 // Encoder implements MessagePack encoding and decoding.
@@ -35,12 +37,17 @@ func (e *Encoder) Decode(r io.Reader, v any) error {
 
 // Marshal encodes v as MessagePack.
 func Marshal(v any) ([]byte, error) {
-	return msgpack.Marshal(v)
+	var buffer bytes.Buffer
+	if err := defaultEncoder.Encode(&buffer, v); err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
 }
 
 // Unmarshal decodes one MessagePack value from data into v.
 //
 // It uses Decode, so it rejects trailing encoded values or malformed trailing data.
 func Unmarshal(data []byte, v any) error {
-	return NewEncoder().Decode(bytes.NewReader(data), v)
+	return defaultEncoder.Decode(bytes.NewReader(data), v)
 }

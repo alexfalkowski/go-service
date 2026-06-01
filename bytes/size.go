@@ -1,9 +1,9 @@
 package bytes
 
 import (
+	"encoding/json"
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	units "github.com/docker/go-units"
 )
