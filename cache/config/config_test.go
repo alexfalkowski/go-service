@@ -31,3 +31,15 @@ func TestConfigRejectsNegativeMaxSize(t *testing.T) {
 
 	require.Error(t, test.Validator.Struct(cfg))
 }
+
+func TestConfigAcceptsMaxSize(t *testing.T) {
+	cfg := &config.Config{MaxSize: bytes.MaxConfigSize}
+
+	require.NoError(t, test.Validator.Struct(cfg))
+}
+
+func TestConfigRejectsOversizedMaxSize(t *testing.T) {
+	cfg := &config.Config{MaxSize: bytes.MaxConfigSize + 1}
+
+	require.Error(t, test.Validator.Struct(cfg))
+}

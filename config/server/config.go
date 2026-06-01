@@ -43,8 +43,8 @@ type Config struct {
 	//
 	// In config files it is encoded as a human-readable SI size string (for example "64B", "2MB", "4GB").
 	//
-	// A zero value applies bytes.DefaultSize. Negative values are invalid.
-	MaxReceiveSize bytes.Size `yaml:"max_receive_size,omitempty" json:"max_receive_size,omitempty" toml:"max_receive_size,omitempty" validate:"gte=0"`
+	// A zero value applies bytes.DefaultSize. Values must be between 0 and bytes.MaxConfigSize.
+	MaxReceiveSize bytes.Size `yaml:"max_receive_size,omitempty" json:"max_receive_size,omitempty" toml:"max_receive_size,omitempty" validate:"config_size"`
 }
 
 // IsEnabled reports whether server configuration is present.
