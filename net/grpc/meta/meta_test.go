@@ -30,7 +30,8 @@ func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 		require.True(t, ok)
 		require.Equal(t, []string{"current-agent"}, md.Get("user-agent"))
 		require.Equal(t, []string{"current-id"}, md.Get("request-id"))
-		require.Equal(t, meta.String("/greet.v1.Greeter/SayHello"), meta.ServiceMethod(ctx))
+		require.Equal(t, meta.Ignored("/greet.v1.Greeter/SayHello"), meta.ServiceMethod(ctx))
+		require.NotContains(t, meta.CamelStrings(ctx, meta.NoPrefix), meta.ServiceMethodKey)
 
 		return nil
 	})
@@ -51,7 +52,8 @@ func TestUnaryClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
 		require.Equal(t, []string{"generated-id"}, md.Get("request-id"))
 		require.Equal(t, grpcmeta.String("fallback-agent"), grpcmeta.UserAgent(ctx))
 		require.Equal(t, grpcmeta.String("generated-id"), meta.RequestID(ctx))
-		require.Equal(t, meta.String("/greet.v1.Greeter/SayHello"), meta.ServiceMethod(ctx))
+		require.Equal(t, meta.Ignored("/greet.v1.Greeter/SayHello"), meta.ServiceMethod(ctx))
+		require.NotContains(t, meta.CamelStrings(ctx, meta.NoPrefix), meta.ServiceMethodKey)
 
 		return nil
 	})
@@ -88,7 +90,8 @@ func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 		require.True(t, ok)
 		require.Equal(t, []string{"current-agent"}, md.Get("user-agent"))
 		require.Equal(t, []string{"current-id"}, md.Get("request-id"))
-		require.Equal(t, meta.String("/greet.v1.Greeter/SayStreamHello"), meta.ServiceMethod(ctx))
+		require.Equal(t, meta.Ignored("/greet.v1.Greeter/SayStreamHello"), meta.ServiceMethod(ctx))
+		require.NotContains(t, meta.CamelStrings(ctx, meta.NoPrefix), meta.ServiceMethodKey)
 
 		return nil, nil
 	}
@@ -113,7 +116,8 @@ func TestStreamClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
 		require.Equal(t, []string{"generated-id"}, md.Get("request-id"))
 		require.Equal(t, grpcmeta.String("fallback-agent"), grpcmeta.UserAgent(ctx))
 		require.Equal(t, grpcmeta.String("generated-id"), meta.RequestID(ctx))
-		require.Equal(t, meta.String("/greet.v1.Greeter/SayStreamHello"), meta.ServiceMethod(ctx))
+		require.Equal(t, meta.Ignored("/greet.v1.Greeter/SayStreamHello"), meta.ServiceMethod(ctx))
+		require.NotContains(t, meta.CamelStrings(ctx, meta.NoPrefix), meta.ServiceMethodKey)
 
 		return nil, nil
 	}
@@ -151,7 +155,8 @@ func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
 		require.Equal(t, grpcmeta.String("peer"), grpcmeta.Attribute(ctx, grpcmeta.IPAddrKindKey))
 		require.True(t, grpcmeta.IPAddr(ctx).IsEmpty())
-		require.Equal(t, meta.String("/greet.v1.Greeter/SayHello"), meta.ServiceMethod(ctx))
+		require.Equal(t, meta.Ignored("/greet.v1.Greeter/SayHello"), meta.ServiceMethod(ctx))
+		require.NotContains(t, meta.CamelStrings(ctx, meta.NoPrefix), meta.ServiceMethodKey)
 
 		return "ok", nil
 	})
@@ -240,7 +245,8 @@ func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
 	stream := &test.MetaServerStream{Ctx: ctx}
 
 	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/greet.v1.Greeter/SayStreamHello"}, func(_ any, stream grpc.ServerStream) error {
-		require.Equal(t, meta.String("/greet.v1.Greeter/SayStreamHello"), meta.ServiceMethod(stream.Context()))
+		require.Equal(t, meta.Ignored("/greet.v1.Greeter/SayStreamHello"), meta.ServiceMethod(stream.Context()))
+		require.NotContains(t, meta.CamelStrings(stream.Context(), meta.NoPrefix), meta.ServiceMethodKey)
 
 		return nil
 	})
