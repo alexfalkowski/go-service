@@ -9,6 +9,24 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+// Claims aliases the upstream JWT claims interface.
+type Claims = jwt.Claims
+
+// NumericDate aliases the upstream JWT numeric date type.
+type NumericDate = jwt.NumericDate
+
+// RegisteredClaims aliases the upstream JWT registered claims type.
+type RegisteredClaims = jwt.RegisteredClaims
+
+// SigningMethod aliases the upstream JWT signing method interface.
+type SigningMethod = jwt.SigningMethod
+
+// NewWithClaims aliases the upstream JWT token constructor.
+var NewWithClaims = jwt.NewWithClaims
+
+// SigningMethodEdDSA aliases the upstream JWT EdDSA signing method.
+var SigningMethodEdDSA = jwt.SigningMethodEdDSA
+
 // NewToken constructs a Token that issues and validates JWTs according to cfg.
 //
 // The resulting Token uses Ed25519 keys for signing and verification and an id.Generator
@@ -58,16 +76,16 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 
 	key := t.signer.PrivateKey
 	now := time.Now()
-	claims := &jwt.RegisteredClaims{
-		ExpiresAt: &jwt.NumericDate{Time: now.Add(t.cfg.Expiration.Duration())},
+	claims := &RegisteredClaims{
+		ExpiresAt: &NumericDate{Time: now.Add(t.cfg.Expiration.Duration())},
 		ID:        t.generator.Generate(),
-		IssuedAt:  &jwt.NumericDate{Time: now},
+		IssuedAt:  &NumericDate{Time: now},
 		Issuer:    t.cfg.Issuer,
-		NotBefore: &jwt.NumericDate{Time: now},
+		NotBefore: &NumericDate{Time: now},
 		Audience:  []string{aud},
 		Subject:   sub,
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
+	token := NewWithClaims(SigningMethodEdDSA, claims)
 	token.Header["kid"] = t.cfg.KeyID
 
 	return token.SignedString(key)
@@ -95,7 +113,7 @@ func (t *Token) Verify(token, aud string) (string, error) {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
 
-	claims := &jwt.RegisteredClaims{}
+	claims := &RegisteredClaims{}
 
 	_, err := jwt.ParseWithClaims(token, claims, t.validate)
 	if err != nil {
@@ -125,7 +143,7 @@ func (t *Token) Verify(token, aud string) (string, error) {
 }
 
 func (j *Token) validate(token *jwt.Token) (any, error) {
-	if token.Method.Alg() != jwt.SigningMethodEdDSA.Alg() {
+	if token.Method.Alg() != SigningMethodEdDSA.Alg() {
 		return nil, errors.ErrInvalidAlgorithm
 	}
 
@@ -141,7 +159,7 @@ func (j *Token) validate(token *jwt.Token) (any, error) {
 	return j.verifier.PublicKey, nil
 }
 
-func validateRequiredClaims(claims *jwt.RegisteredClaims) error {
+func validateRequiredClaims(claims *RegisteredClaims) error {
 	if claims.ExpiresAt == nil || claims.IssuedAt == nil || claims.NotBefore == nil {
 		return errors.ErrInvalidTime
 	}
@@ -153,7 +171,7 @@ func validateRequiredClaims(claims *jwt.RegisteredClaims) error {
 	return nil
 }
 
-func validateLifetime(claims *jwt.RegisteredClaims, maxLifetime time.Duration) error {
+func validateLifetime(claims *RegisteredClaims, maxLifetime time.Duration) error {
 	if !claims.ExpiresAt.After(claims.IssuedAt.Time) || claims.ExpiresAt.Sub(claims.IssuedAt.Time) > maxLifetime.Duration() {
 		return errors.ErrInvalidTime
 	}
