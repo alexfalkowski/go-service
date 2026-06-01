@@ -177,3 +177,42 @@ func TestCount(t *testing.T) {
 		})
 	}
 }
+
+func TestReplaceAll(t *testing.T) {
+	tests := []struct {
+		name string
+		s    string
+		old  string
+		new  string
+		want string
+	}{
+		{name: "replaces all matches", s: "service/admin/service", old: "service", new: "api", want: "api/admin/api"},
+		{name: "missing match", s: "service", old: "admin", new: "api", want: "service"},
+		{name: "empty old string", s: "api", old: "", new: "/", want: "/a/p/i/"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.want, strings.ReplaceAll(test.s, test.old, test.new))
+		})
+	}
+}
+
+func TestTrim(t *testing.T) {
+	tests := []struct {
+		name   string
+		s      string
+		cutset string
+		want   string
+	}{
+		{name: "trims cutset", s: "/service/admin/", cutset: "/", want: "service/admin"},
+		{name: "trims repeated cutset", s: "::service::", cutset: ":", want: "service"},
+		{name: "missing cutset", s: "service", cutset: "/", want: "service"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.want, strings.Trim(test.s, test.cutset))
+		})
+	}
+}
