@@ -30,6 +30,13 @@ func AppendNotZero[T any](slice []T, elems ...T) []T {
 	return slice
 }
 
+// Backward returns an iterator over index-value pairs in slice, traversing it backward.
+//
+// It is a thin wrapper around the standard library slices.Backward.
+func Backward[S ~[]E, E any](slice S) iter.Seq2[int, E] {
+	return slices.Backward(slice)
+}
+
 // ElemFunc returns the first element in slice that matches f, along with a boolean
 // indicating whether a match was found.
 //

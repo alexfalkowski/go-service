@@ -67,6 +67,15 @@ func TestAppendNotZero(t *testing.T) {
 	})
 }
 
+func TestBackward(t *testing.T) {
+	values := []string{}
+	for _, value := range slices.Backward([]string{"first", "second"}) {
+		values = append(values, value)
+	}
+
+	require.Equal(t, []string{"second", "first"}, values)
+}
+
 func TestElemFunc(t *testing.T) {
 	elems := []*string{ptr.Value("test")}
 
