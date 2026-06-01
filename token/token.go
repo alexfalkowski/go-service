@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	tokenerrors "github.com/alexfalkowski/go-service/v2/token/errors"
+	token "github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
@@ -71,24 +71,24 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 	switch t.cfg.Kind {
 	case "jwt":
 		if t.jwt == nil {
-			return nil, tokenerrors.ErrInvalidConfig
+			return nil, token.ErrInvalidConfig
 		}
-		token, err := t.jwt.Generate(aud, sub)
-		return strings.Bytes(token), err
+		tkn, err := t.jwt.Generate(aud, sub)
+		return strings.Bytes(tkn), err
 	case "paseto":
 		if t.paseto == nil {
-			return nil, tokenerrors.ErrInvalidConfig
+			return nil, token.ErrInvalidConfig
 		}
-		token, err := t.paseto.Generate(aud, sub)
-		return strings.Bytes(token), err
+		tkn, err := t.paseto.Generate(aud, sub)
+		return strings.Bytes(tkn), err
 	case "ssh":
 		if t.ssh == nil {
-			return nil, tokenerrors.ErrInvalidConfig
+			return nil, token.ErrInvalidConfig
 		}
-		token, err := t.ssh.Generate(aud, sub)
-		return strings.Bytes(token), err
+		tkn, err := t.ssh.Generate(aud, sub)
+		return strings.Bytes(tkn), err
 	default:
-		return nil, tokenerrors.ErrInvalidConfig
+		return nil, token.ErrInvalidConfig
 	}
 }
 
@@ -103,28 +103,28 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 //     returned string is the selected key name (not a JWT/PASETO "sub" claim).
 //
 // If the configured kind is unknown, Verify returns token/errors.ErrInvalidConfig.
-func (t *Token) Verify(token []byte, aud string) (string, error) {
+func (t *Token) Verify(tkn []byte, aud string) (string, error) {
 	switch t.cfg.Kind {
 	case "jwt":
 		if t.jwt == nil {
-			return strings.Empty, tokenerrors.ErrInvalidConfig
+			return strings.Empty, token.ErrInvalidConfig
 		}
-		sub, err := t.jwt.Verify(bytes.String(token), aud)
+		sub, err := t.jwt.Verify(bytes.String(tkn), aud)
 		return sub, invalidMatch(err)
 	case "paseto":
 		if t.paseto == nil {
-			return strings.Empty, tokenerrors.ErrInvalidConfig
+			return strings.Empty, token.ErrInvalidConfig
 		}
-		sub, err := t.paseto.Verify(bytes.String(token), aud)
+		sub, err := t.paseto.Verify(bytes.String(tkn), aud)
 		return sub, invalidMatch(err)
 	case "ssh":
 		if t.ssh == nil {
-			return strings.Empty, tokenerrors.ErrInvalidConfig
+			return strings.Empty, token.ErrInvalidConfig
 		}
-		sub, err := t.ssh.Verify(bytes.String(token), aud)
+		sub, err := t.ssh.Verify(bytes.String(tkn), aud)
 		return sub, invalidMatch(err)
 	default:
-		return strings.Empty, tokenerrors.ErrInvalidConfig
+		return strings.Empty, token.ErrInvalidConfig
 	}
 }
 
@@ -138,24 +138,24 @@ func invalidMatch(err error) error {
 	}
 
 	if isInvalidMatch(err) {
-		return errors.Join(tokenerrors.ErrInvalidMatch, err)
+		return errors.Join(token.ErrInvalidMatch, err)
 	}
 
 	if isPasetoRuleError(err) || isJWTValidationError(err) {
 		return err
 	}
 
-	return errors.Join(tokenerrors.ErrInvalidMatch, err)
+	return errors.Join(token.ErrInvalidMatch, err)
 }
 
 func isTokenSentinel(err error) bool {
-	return errors.Is(err, tokenerrors.ErrInvalidConfig) ||
-		errors.Is(err, tokenerrors.ErrInvalidIssuer) ||
-		errors.Is(err, tokenerrors.ErrInvalidAudience) ||
-		errors.Is(err, tokenerrors.ErrInvalidSubject) ||
-		errors.Is(err, tokenerrors.ErrInvalidAlgorithm) ||
-		errors.Is(err, tokenerrors.ErrInvalidKeyID) ||
-		errors.Is(err, tokenerrors.ErrInvalidTime)
+	return errors.Is(err, token.ErrInvalidConfig) ||
+		errors.Is(err, token.ErrInvalidIssuer) ||
+		errors.Is(err, token.ErrInvalidAudience) ||
+		errors.Is(err, token.ErrInvalidSubject) ||
+		errors.Is(err, token.ErrInvalidAlgorithm) ||
+		errors.Is(err, token.ErrInvalidKeyID) ||
+		errors.Is(err, token.ErrInvalidTime)
 }
 
 func isInvalidMatch(err error) bool {
