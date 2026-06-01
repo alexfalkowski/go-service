@@ -1,7 +1,6 @@
 package bytes
 
 import (
-	"encoding/json"
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -85,16 +84,20 @@ func (s Size) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	return json.Marshal(string(text))
+	return []byte(strconv.Quote(string(text))), nil
 }
 
 // UnmarshalJSON decodes a quoted decimal size string into s.
 //
-// Non-string JSON values are rejected by the underlying JSON decoder before the
-// size parser runs.
+// Non-string JSON values are rejected before the size parser runs.
 func (s *Size) UnmarshalJSON(data []byte) error {
-	var text string
-	if err := json.Unmarshal(data, &text); err != nil {
+	data = TrimSpace(data)
+	if len(data) == 0 || data[0] != '"' {
+		return strconv.ErrSyntax
+	}
+
+	text, err := strconv.Unquote(string(data))
+	if err != nil {
 		return err
 	}
 
