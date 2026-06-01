@@ -24,8 +24,8 @@ func NewHandler(name env.Name, userAgent env.UserAgent, version env.Version, gen
 
 // Handler extracts request metadata and stores it in the request context.
 //
-// Extracted metadata includes user agent, request id, service-method, client IP address (and its source kind),
-// ignored geolocation, and ignored Authorization token value (when present and parseable).
+// Extracted metadata includes user agent, request id, ignored service-method, client IP address (and its source
+// kind), ignored geolocation, and ignored Authorization token value (when present and parseable).
 type Handler struct {
 	generator      id.Generator
 	name           env.Name
@@ -46,7 +46,7 @@ type Handler struct {
 // The handler populates the request context with:
 //   - user agent (from context, request header, or default userAgent parameter)
 //   - request id (from context, request header, or generated via generator)
-//   - service-method (from the matched request pattern, or URL path before routing)
+//   - service-method (from the matched request pattern, or URL path before routing; stored as ignored)
 //   - client IP address and IP address kind (derived from forwarded headers or RemoteAddr)
 //   - geolocation (from "Geolocation" header, stored as ignored)
 //   - authorization value (derived from the "Authorization" header, when present)
@@ -122,10 +122,10 @@ func serverRequestID(ctx context.Context, generator id.Generator, req *http.Requ
 
 func serverServiceMethod(req *http.Request) meta.Value {
 	if !strings.IsEmpty(req.Pattern) {
-		return meta.String(req.Pattern)
+		return meta.Ignored(req.Pattern)
 	}
 
-	return meta.String(req.URL.Path)
+	return meta.Ignored(req.URL.Path)
 }
 
 func serverIP(req *http.Request) (meta.Value, meta.Value) {
