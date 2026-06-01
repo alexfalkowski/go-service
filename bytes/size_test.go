@@ -83,6 +83,7 @@ func TestSizeUnmarshalJSONInvalid(t *testing.T) {
 		{name: "object", input: "{}"},
 		{name: "invalid string value", input: `"bad"`},
 		{name: "malformed string", input: `"`},
+		{name: "go raw string", input: "`64B`"},
 	}
 
 	for _, tt := range tests {
@@ -93,6 +94,14 @@ func TestSizeUnmarshalJSONInvalid(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func TestSizeUnmarshalJSONWithWhitespace(t *testing.T) {
+	var size bytes.Size
+
+	err := json.Unmarshal([]byte(" \n\t\"64B\" \n\t"), &size)
+	require.NoError(t, err)
+	require.Equal(t, bytes.Size(64), size)
 }
 
 func TestSizeZeroValueEncoding(t *testing.T) {
