@@ -39,24 +39,28 @@ var defaultEncoder = &Encoder{}
 //
 // NewEncoder returns an [Encoder] that satisfies
 // `github.com/alexfalkowski/go-service/v2/encoding.Encoder` while delegating to
-// the standard library's `encoding/json` implementation with its default
-// settings.
+// the standard library's `encoding/json` implementation with readable indented
+// encoding and default decoding.
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
 
 // Encoder implements JSON encoding and decoding.
 //
-// It preserves the default behavior of the standard library `encoding/json`
-// encoder and decoder and does not add repository-specific options.
+// It writes readable indented JSON and uses the standard library
+// `encoding/json` decoder.
 type Encoder struct{}
 
 // Encode writes v to w as JSON.
 //
-// Encode is equivalent to calling `json.NewEncoder(w).Encode(v)`. As with the
-// standard library, the encoded output is terminated with a trailing newline.
+// Encode is equivalent to calling `json.NewEncoder(w).SetIndent("", "  ")`
+// before encoding v. As with the standard library, the encoded output is
+// terminated with a trailing newline.
 func (e *Encoder) Encode(w io.Writer, v any) error {
-	return json.NewEncoder(w).Encode(v)
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent(strings.Empty, "  ")
+
+	return encoder.Encode(v)
 }
 
 // Decode reads JSON from r and decodes it into v.
