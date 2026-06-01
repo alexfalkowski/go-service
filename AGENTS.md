@@ -58,8 +58,11 @@ matching skill for the task.
 - Manual server lifecycle wiring should use `net/server.Register(...)`.
 - `transport.Module` is normally consumed through `module.Server`, which also
   wires `debug.Module`; do not flag `transport.NewServers` requiring
-  `*debug.Server` unless a public API starts promising standalone
-  `transport.Module` composition without the standard `module.Server` bundle.
+  `*debug.Server`. Mentions that `transport.Module` handles transport
+  registration, TLS filesystem registration, or lifecycle registration do not
+  promise a complete standalone server bundle without `module.Server`. Report
+  this only if a public API explicitly promises standalone `transport.Module`
+  composition without the standard `module.Server` bundle.
 - Server defaults that use `net.DefaultAddress`, including the debug server's
   `tcp://:6060` fallback, intentionally bind all interfaces so containerized
   workloads remain reachable through Kubernetes Services, probes, ingress
