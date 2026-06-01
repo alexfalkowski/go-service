@@ -175,6 +175,78 @@ func TestInvalidKeyID(t *testing.T) {
 		require.Empty(t, sub)
 		require.ErrorIs(t, err, errors.ErrInvalidKeyID)
 	})
+
+	t.Run("missing key id", func(t *testing.T) {
+		tkn := signedJWT(t, cfg.JWT, signer, func(header map[string]any) {
+			delete(header, "kid")
+		}, nil)
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidKeyID)
+	})
+
+	t.Run("empty key id", func(t *testing.T) {
+		tkn := signedJWT(t, cfg.JWT, signer, func(header map[string]any) {
+			header["kid"] = ""
+		}, nil)
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidKeyID)
+	})
+
+	t.Run("non string key id", func(t *testing.T) {
+		tkn := signedJWT(t, cfg.JWT, signer, func(header map[string]any) {
+			header["kid"] = 123
+		}, nil)
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidKeyID)
+	})
+}
+
+func TestInvalidRequiredClaims(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	token := jwt.NewToken(cfg.JWT, signer, verifier, uuid.NewGenerator())
+
+	tests := []struct {
+		claims func(*jwt.RegisteredClaims)
+		name   string
+	}{
+		{
+			name: "missing expiration",
+			claims: func(claims *jwt.RegisteredClaims) {
+				claims.ExpiresAt = nil
+			},
+		},
+		{
+			name: "missing issued at",
+			claims: func(claims *jwt.RegisteredClaims) {
+				claims.IssuedAt = nil
+			},
+		},
+		{
+			name: "missing not before",
+			claims: func(claims *jwt.RegisteredClaims) {
+				claims.NotBefore = nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tkn := signedJWT(t, cfg.JWT, signer, nil, tt.claims)
+
+			sub, err := token.Verify(tkn, "hello")
+			require.Empty(t, sub)
+			require.ErrorIs(t, err, errors.ErrInvalidTime)
+		})
+	}
 }
 
 func TestInvalidLifetimeExceedsConfig(t *testing.T) {
@@ -276,4 +348,39 @@ func TestInvalidPrivateKeyDoesNotPanic(t *testing.T) {
 	tkn, err := token.Generate("hello", test.UserID.String())
 	require.Empty(t, tkn)
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
+}
+
+func signedJWT(
+	t *testing.T,
+	cfg *jwt.Config,
+	signer *ed25519.Signer,
+	header func(map[string]any),
+	claimsFunc func(*jwt.RegisteredClaims),
+) string {
+	t.Helper()
+
+	now := time.Now()
+	claims := &jwt.RegisteredClaims{
+		ExpiresAt: &jwt.NumericDate{Time: now.Add(cfg.Expiration.Duration())},
+		ID:        "test-id",
+		IssuedAt:  &jwt.NumericDate{Time: now},
+		Issuer:    cfg.Issuer,
+		NotBefore: &jwt.NumericDate{Time: now},
+		Audience:  []string{"hello"},
+		Subject:   test.UserID.String(),
+	}
+	if claimsFunc != nil {
+		claimsFunc(claims)
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
+	token.Header["kid"] = cfg.KeyID
+	if header != nil {
+		header(token.Header)
+	}
+
+	tkn, err := token.SignedString(signer.PrivateKey)
+	require.NoError(t, err)
+
+	return tkn
 }

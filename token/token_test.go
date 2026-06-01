@@ -140,6 +140,34 @@ func TestVerifyRejectsPasetoEmptySubject(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidSubject)
 }
 
+func TestVerifyRejectsJWTEmptySubject(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
+
+	raw, err := tkn.Generate("hello", strings.Empty)
+	require.NoError(t, err)
+
+	sub, err := tkn.Verify(raw, "hello")
+	require.Equal(t, strings.Empty, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidSubject)
+}
+
+func TestSSHSubjectIsIgnored(t *testing.T) {
+	cfg := test.NewToken("ssh")
+	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
+
+	raw, err := tkn.Generate("hello", "ignored-subject")
+	require.NoError(t, err)
+
+	sub, err := tkn.Verify(raw, "hello")
+	require.NoError(t, err)
+	require.Equal(t, test.UserID.String(), sub)
+}
+
 func TestUnknownKindConfig(t *testing.T) {
 	cfg := test.NewToken("none")
 	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
