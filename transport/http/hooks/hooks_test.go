@@ -151,6 +151,25 @@ func TestRoundTripperDoesNotSignCrossOriginRedirect(t *testing.T) {
 	require.True(t, body.Closed)
 }
 
+func TestRoundTripperWithNilHookDelegatesCrossOriginRedirect(t *testing.T) {
+	called := false
+	rt := hooks.NewRoundTripper(nil, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		called = true
+		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
+	}))
+
+	prev := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "https://example.com/events", http.NoBody)
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "https://attacker.example.com/events", body)
+	req.Response = &http.Response{Request: prev}
+
+	res, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.True(t, called)
+	require.False(t, body.Closed)
+}
+
 func TestRoundTripperClosesBodyOnSignError(t *testing.T) {
 	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
 	require.NoError(t, err)

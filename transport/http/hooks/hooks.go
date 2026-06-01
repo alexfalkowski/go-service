@@ -200,13 +200,13 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool) {
-	if http.IsCrossOriginRedirect(req) {
-		return nil, http.ErrUseLastResponse, true
-	}
-
 	if r.hook == nil {
 		res, err := r.RoundTripper.RoundTrip(req)
 		return res, err, false
+	}
+
+	if http.IsCrossOriginRedirect(req) {
+		return nil, http.ErrUseLastResponse, true
 	}
 
 	cloned := req.Clone(req.Context())
