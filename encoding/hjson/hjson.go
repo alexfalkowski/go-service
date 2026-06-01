@@ -1,16 +1,19 @@
 package hjson
 
 import (
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/io"
 	hjson "github.com/hjson/hjson-go/v4"
 )
+
+var defaultEncoder = &Encoder{}
 
 // NewEncoder constructs an HJSON encoder.
 //
 // This encoder is a thin adapter around `github.com/hjson/hjson-go` that satisfies
 // `github.com/alexfalkowski/go-service/v2/encoding.Encoder`.
 func NewEncoder() *Encoder {
-	return &Encoder{}
+	return defaultEncoder
 }
 
 // Encoder implements HJSON encoding and decoding.
@@ -41,4 +44,21 @@ func (e *Encoder) Decode(r io.Reader, v any) error {
 	options.DisallowDuplicateKeys = true
 
 	return hjson.UnmarshalWithOptions(data, v, options)
+}
+
+// Marshal encodes v as HJSON.
+func Marshal(v any) ([]byte, error) {
+	var buffer bytes.Buffer
+	if err := defaultEncoder.Encode(&buffer, v); err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
+}
+
+// Unmarshal decodes HJSON data into v.
+//
+// It uses Decode, so it rejects duplicate object keys.
+func Unmarshal(data []byte, v any) error {
+	return defaultEncoder.Decode(bytes.NewReader(data), v)
 }

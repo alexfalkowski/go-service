@@ -3,19 +3,11 @@ package json
 import (
 	"encoding/json"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
-
-// NewEncoder constructs a JSON encoder.
-//
-// NewEncoder returns an [Encoder] that satisfies
-// `github.com/alexfalkowski/go-service/v2/encoding.Encoder` while delegating to
-// the standard library's `encoding/json` implementation with its default
-// settings.
-func NewEncoder() *Encoder {
-	return &Encoder{}
-}
 
 // Marshaler aliases the standard library JSON marshaler interface.
 //
@@ -40,6 +32,18 @@ type RawMessage = json.RawMessage
 // It is primarily useful with decoders configured to preserve numeric values as
 // strings until the caller decides how to interpret them.
 type Number = json.Number
+
+var defaultEncoder = &Encoder{}
+
+// NewEncoder constructs a JSON encoder.
+//
+// NewEncoder returns an [Encoder] that satisfies
+// `github.com/alexfalkowski/go-service/v2/encoding.Encoder` while delegating to
+// the standard library's `encoding/json` implementation with its default
+// settings.
+func NewEncoder() *Encoder {
+	return defaultEncoder
+}
 
 // Encoder implements JSON encoding and decoding.
 //
@@ -73,28 +77,18 @@ func (e *Encoder) Decode(r io.Reader, v any) error {
 	return errors.TrailingData(decoder.Decode(&extra))
 }
 
-// Marshal encodes v as JSON using the standard library implementation.
+// Marshal encodes v as readable indented JSON.
 //
-// It exists so repository packages can use a single go-service JSON import path
-// without changing standard library marshaling behavior.
+// It exists so repository packages can use a single go-service JSON import path.
 func Marshal(v any) ([]byte, error) {
-	return json.Marshal(v)
+	return json.MarshalIndent(v, strings.Empty, "  ")
 }
 
-// MarshalIndent encodes v as indented JSON using the standard library
-// implementation.
+// Unmarshal decodes one JSON value from data into v.
 //
-// It behaves exactly like `encoding/json.MarshalIndent`.
-func MarshalIndent(v any, prefix, indent string) ([]byte, error) {
-	return json.MarshalIndent(v, prefix, indent)
-}
-
-// Unmarshal decodes JSON data into v using the standard library implementation.
-//
-// In most cases v should be a pointer to the destination value. The decoding
-// rules and error behavior are identical to `encoding/json.Unmarshal`.
+// It uses Decode, so it rejects additional JSON values after the first payload.
 func Unmarshal(data []byte, v any) error {
-	return json.Unmarshal(data, v)
+	return defaultEncoder.Decode(bytes.NewReader(data), v)
 }
 
 // Valid reports whether data is syntactically valid JSON.

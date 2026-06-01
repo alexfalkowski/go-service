@@ -22,6 +22,23 @@ func TestEncoder(t *testing.T) {
 	require.Equal(t, map[string]string{"test": "test"}, msg)
 }
 
+func TestMarshalUnmarshal(t *testing.T) {
+	msg := map[string]string{"test": "test"}
+
+	data, err := gob.Marshal(msg)
+	require.NoError(t, err)
+
+	var actual map[string]string
+	require.NoError(t, gob.Unmarshal(data, &actual))
+	require.Equal(t, msg, actual)
+}
+
+func TestMarshalReturnsError(t *testing.T) {
+	_, err := gob.Marshal(func() {})
+
+	require.Error(t, err)
+}
+
 func TestEncodeReturnsError(t *testing.T) {
 	encoder := gob.NewEncoder()
 
@@ -49,6 +66,19 @@ func TestDecodeRejectsTrailingValue(t *testing.T) {
 
 	var msg map[string]string
 	err := encoder.Decode(bytes, &msg)
+
+	require.ErrorIs(t, err, errors.ErrTrailingData)
+}
+
+func TestUnmarshalRejectsTrailingValue(t *testing.T) {
+	bytes := test.Pool.Get()
+	defer test.Pool.Put(bytes)
+
+	require.NoError(t, gob.NewEncoder().Encode(bytes, map[string]string{"test": "test"}))
+	require.NoError(t, gob.NewEncoder().Encode(bytes, map[string]string{"extra": "value"}))
+
+	var msg map[string]string
+	err := gob.Unmarshal(test.Pool.Copy(bytes), &msg)
 
 	require.ErrorIs(t, err, errors.ErrTrailingData)
 }

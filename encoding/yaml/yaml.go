@@ -1,17 +1,20 @@
 package yaml
 
 import (
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	yaml "go.yaml.in/yaml/v3"
 )
+
+var defaultEncoder = &Encoder{}
 
 // NewEncoder constructs a YAML encoder.
 //
 // This encoder is a thin adapter around go-yaml v3 (imported as go.yaml.in/yaml/v3) that satisfies
 // `github.com/alexfalkowski/go-service/v2/encoding.Encoder`.
 func NewEncoder() *Encoder {
-	return &Encoder{}
+	return defaultEncoder
 }
 
 // Encoder implements YAML encoding and decoding.
@@ -44,4 +47,21 @@ func (e *Encoder) Decode(r io.Reader, v any) error {
 
 	var extra any
 	return errors.TrailingData(decoder.Decode(&extra))
+}
+
+// Marshal encodes v as YAML.
+func Marshal(v any) ([]byte, error) {
+	var buffer bytes.Buffer
+	if err := defaultEncoder.Encode(&buffer, v); err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
+}
+
+// Unmarshal decodes one YAML document from data into v.
+//
+// It uses Decode, so it rejects additional YAML documents after the first payload.
+func Unmarshal(data []byte, v any) error {
+	return defaultEncoder.Decode(bytes.NewReader(data), v)
 }

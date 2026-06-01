@@ -50,6 +50,12 @@ func TestMarshalUnmarshal(t *testing.T) {
 	require.Equal(t, msg, actual)
 }
 
+func TestMarshalReturnsError(t *testing.T) {
+	_, err := msgpack.Marshal(func() {})
+
+	require.Error(t, err)
+}
+
 func TestDecodeRejectsTrailingValue(t *testing.T) {
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)

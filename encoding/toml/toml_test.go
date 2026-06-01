@@ -21,6 +21,24 @@ func TestEncode(t *testing.T) {
 	require.Equal(t, `test = "test"`, strings.TrimSpace(bytes.String()))
 }
 
+func TestMarshalUnmarshal(t *testing.T) {
+	msg := map[string]string{"test": "test"}
+
+	data, err := toml.Marshal(msg)
+	require.NoError(t, err)
+	require.Equal(t, `test = "test"`, strings.TrimSpace(string(data)))
+
+	var actual map[string]string
+	require.NoError(t, toml.Unmarshal(data, &actual))
+	require.Equal(t, msg, actual)
+}
+
+func TestMarshalReturnsError(t *testing.T) {
+	_, err := toml.Marshal(func() {})
+
+	require.Error(t, err)
+}
+
 func TestEncodeReturnsError(t *testing.T) {
 	bytes := test.Pool.Get()
 	defer test.Pool.Put(bytes)

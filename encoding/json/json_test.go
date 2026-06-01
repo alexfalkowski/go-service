@@ -68,6 +68,13 @@ func TestMarshal(t *testing.T) {
 	data, err := json.Marshal(msg)
 	require.NoError(t, err)
 	require.JSONEq(t, "{\"test\":\"test\"}", string(data))
+	require.Contains(t, string(data), "\n  \"test\": \"test\"\n")
+}
+
+func TestMarshalReturnsError(t *testing.T) {
+	_, err := json.Marshal(func() {})
+
+	require.Error(t, err)
 }
 
 func TestUnmarshal(t *testing.T) {
@@ -75,4 +82,12 @@ func TestUnmarshal(t *testing.T) {
 
 	require.NoError(t, json.Unmarshal([]byte("{\"test\":\"test\"}"), &msg))
 	require.Equal(t, map[string]string{"test": "test"}, msg)
+}
+
+func TestUnmarshalRejectsTrailingData(t *testing.T) {
+	var msg map[string]string
+
+	err := json.Unmarshal([]byte("{\"test\":\"test\"}{\"extra\":\"value\"}"), &msg)
+
+	require.ErrorIs(t, err, errors.ErrTrailingData)
 }
