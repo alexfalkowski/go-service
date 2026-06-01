@@ -37,3 +37,26 @@ func TestNewCircuitBreaker(t *testing.T) {
 	})
 	require.ErrorIs(t, err, breaker.ErrOpenState)
 }
+
+func TestStateChangeUsesStableTypes(t *testing.T) {
+	errFailed := errors.New("failed")
+	var from, to breaker.State
+	cb := breaker.NewCircuitBreaker(breaker.Settings{
+		ReadyToTrip: func(counts breaker.Counts) bool {
+			return counts.ConsecutiveFailures >= 1
+		},
+		OnStateChange: func(_ string, f breaker.State, t breaker.State) {
+			from = f
+			to = t
+		},
+	})
+
+	_, err := cb.Execute(func() (any, error) {
+		return nil, errFailed
+	})
+
+	require.ErrorIs(t, err, errFailed)
+	require.Equal(t, breaker.StateClosed, from, "state change should start from closed")
+	require.Equal(t, breaker.StateOpen, to, "state change should transition to open")
+	require.Equal(t, "open", breaker.StateOpen.String(), "state alias should preserve upstream methods")
+}

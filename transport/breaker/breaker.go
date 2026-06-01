@@ -5,34 +5,14 @@ import (
 	breaker "github.com/sony/gobreaker"
 )
 
-// NewCircuitBreaker constructs a new circuit breaker using the provided Settings.
-//
-// This is a thin wrapper around github.com/sony/gobreaker.NewCircuitBreaker that exists so
-// go-service can:
-//   - re-export gobreaker types behind a stable package path, and
-//   - centralize shared defaults via DefaultSettings.
-//
-// Callers typically customize Settings (e.g. Name, ReadyToTrip, IsSuccessful) and then pass it here.
-func NewCircuitBreaker(st Settings) *CircuitBreaker {
-	return breaker.NewCircuitBreaker(st)
-}
+// StateClosed is an alias for github.com/sony/gobreaker.StateClosed.
+const StateClosed = breaker.StateClosed
 
-// CircuitBreaker is an alias for github.com/sony/gobreaker.CircuitBreaker.
-//
-// It is a generic circuit breaker implementation used by go-service transports. Prefer importing
-// this package's alias when interacting with breakers created by NewCircuitBreaker.
-type CircuitBreaker = breaker.CircuitBreaker
+// StateHalfOpen is an alias for github.com/sony/gobreaker.StateHalfOpen.
+const StateHalfOpen = breaker.StateHalfOpen
 
-// Counts is an alias for github.com/sony/gobreaker.Counts.
-//
-// Counts is used by Settings.ReadyToTrip to decide whether the breaker should open.
-type Counts = breaker.Counts
-
-// Settings is an alias for github.com/sony/gobreaker.Settings.
-//
-// Settings controls breaker behavior (half-open behavior, rolling interval, open timeout, and
-// success/failure classification via IsSuccessful).
-type Settings = breaker.Settings
+// StateOpen is an alias for github.com/sony/gobreaker.StateOpen.
+const StateOpen = breaker.StateOpen
 
 // DefaultSettings provides a conservative default circuit breaker configuration.
 //
@@ -64,3 +44,37 @@ var ErrOpenState = breaker.ErrOpenState
 // It is returned by CircuitBreaker.Execute when the breaker is half-open and MaxRequests
 // would be exceeded.
 var ErrTooManyRequests = breaker.ErrTooManyRequests
+
+// NewCircuitBreaker constructs a new circuit breaker using the provided Settings.
+//
+// This is a thin wrapper around github.com/sony/gobreaker.NewCircuitBreaker that exists so
+// go-service can:
+//   - re-export gobreaker types behind a stable package path, and
+//   - centralize shared defaults via DefaultSettings.
+//
+// Callers typically customize Settings (e.g. Name, ReadyToTrip, IsSuccessful) and then pass it here.
+func NewCircuitBreaker(st Settings) *CircuitBreaker {
+	return breaker.NewCircuitBreaker(st)
+}
+
+// CircuitBreaker is an alias for github.com/sony/gobreaker.CircuitBreaker.
+//
+// It is a generic circuit breaker implementation used by go-service transports. Prefer importing
+// this package's alias when interacting with breakers created by NewCircuitBreaker.
+type CircuitBreaker = breaker.CircuitBreaker
+
+// Counts is an alias for github.com/sony/gobreaker.Counts.
+//
+// Counts is used by Settings.ReadyToTrip to decide whether the breaker should open.
+type Counts = breaker.Counts
+
+// State is an alias for github.com/sony/gobreaker.State.
+//
+// State represents the current state of a CircuitBreaker and is used by Settings.OnStateChange.
+type State = breaker.State
+
+// Settings is an alias for github.com/sony/gobreaker.Settings.
+//
+// Settings controls breaker behavior (half-open behavior, rolling interval, open timeout, and
+// success/failure classification via IsSuccessful).
+type Settings = breaker.Settings
