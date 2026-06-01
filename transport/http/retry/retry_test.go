@@ -21,12 +21,17 @@ import (
 
 func TestRoundTripperRetriesRetryableResponses(t *testing.T) {
 	tests := []struct {
-		name  string
-		codes []int
-		calls int
+		name   string
+		method string
+		codes  []int
+		calls  int
 	}{
-		{name: "too many requests", codes: []int{http.StatusTooManyRequests, http.StatusOK}, calls: 2},
-		{name: "service unavailable", codes: []int{http.StatusServiceUnavailable, http.StatusOK}, calls: 2},
+		{name: "get too many requests", method: http.MethodGet, codes: []int{http.StatusTooManyRequests, http.StatusOK}, calls: 2},
+		{name: "get service unavailable", method: http.MethodGet, codes: []int{http.StatusServiceUnavailable, http.StatusOK}, calls: 2},
+		{name: "head too many requests", method: http.MethodHead, codes: []int{http.StatusTooManyRequests, http.StatusOK}, calls: 2},
+		{name: "head service unavailable", method: http.MethodHead, codes: []int{http.StatusServiceUnavailable, http.StatusOK}, calls: 2},
+		{name: "options too many requests", method: http.MethodOptions, codes: []int{http.StatusTooManyRequests, http.StatusOK}, calls: 2},
+		{name: "options service unavailable", method: http.MethodOptions, codes: []int{http.StatusServiceUnavailable, http.StatusOK}, calls: 2},
 	}
 
 	for _, tt := range tests {
@@ -38,7 +43,7 @@ func TestRoundTripperRetriesRetryableResponses(t *testing.T) {
 				Backoff:  time.Millisecond,
 			}, rt)
 
-			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+			req := httptest.NewRequestWithContext(t.Context(), tt.method, "http://example.com", http.NoBody)
 
 			res, err := retrying.RoundTrip(req)
 			require.NoError(t, err)

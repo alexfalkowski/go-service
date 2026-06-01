@@ -15,8 +15,38 @@ func TestDefaultSettings(t *testing.T) {
 	require.Equal(t, uint32(3), settings.MaxRequests)
 	require.Equal(t, (30 * time.Second).Duration(), settings.Interval)
 	require.Equal(t, (10 * time.Second).Duration(), settings.Timeout)
-	require.False(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 4}))
-	require.True(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 5}))
+
+	tests := []struct {
+		name   string
+		counts breaker.Counts
+		want   bool
+	}{
+		{
+			name:   "below consecutive threshold",
+			counts: breaker.Counts{ConsecutiveFailures: 4},
+			want:   false,
+		},
+		{
+			name: "total failures below consecutive threshold",
+			counts: breaker.Counts{
+				Requests:            6,
+				TotalFailures:       5,
+				ConsecutiveFailures: 4,
+			},
+			want: false,
+		},
+		{
+			name:   "consecutive threshold",
+			counts: breaker.Counts{ConsecutiveFailures: 5},
+			want:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, settings.ReadyToTrip(tt.counts))
+		})
+	}
 }
 
 func TestNewCircuitBreaker(t *testing.T) {

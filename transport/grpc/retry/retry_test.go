@@ -193,24 +193,36 @@ func TestUnaryClientInterceptorDoesNotRetryWhenPolicyDeniesMethod(t *testing.T) 
 }
 
 func TestUnaryClientInterceptorRetriesWhenPolicyAllowsReadMethod(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	}, retry.StandardReadMethods)
+	tests := []struct {
+		name       string
+		fullMethod string
+	}{
+		{name: "get", fullMethod: "/test.Service/GetBook"},
+		{name: "list", fullMethod: "/test.Service/ListBooks"},
+	}
 
-	calls := 0
-	err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
-		calls++
-		if calls == 1 {
-			return status.Error(codes.Unavailable, "unavailable")
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			interceptor := retry.UnaryClientInterceptor(&config.Config{
+				Attempts: 2,
+				Timeout:  time.Second,
+				Backoff:  time.Millisecond,
+			}, retry.StandardReadMethods)
 
-		return nil
-	})
+			calls := 0
+			err := interceptor(t.Context(), tt.fullMethod, nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+				calls++
+				if calls == 1 {
+					return status.Error(codes.Unavailable, "unavailable")
+				}
 
-	require.NoError(t, err)
-	require.Equal(t, 2, calls)
+				return nil
+			})
+
+			require.NoError(t, err)
+			require.Equal(t, 2, calls)
+		})
+	}
 }
 
 func TestUnaryClientInterceptorComposesMultiplePolicies(t *testing.T) {

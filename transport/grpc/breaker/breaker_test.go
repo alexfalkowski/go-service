@@ -78,6 +78,42 @@ func TestUnaryClientInterceptorOpensOnClassifiedFailures(t *testing.T) {
 	}
 }
 
+func TestUnaryClientInterceptorIsolatesBreakersByFullMethod(t *testing.T) {
+	interceptor := breaker.UnaryClientInterceptor(
+		breaker.WithSettings(settings()),
+		breaker.WithFailureCodes(codes.Unavailable),
+	)
+
+	calls := make(map[string]int)
+	invoker := func(_ context.Context, fullMethod string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
+		calls[fullMethod]++
+		if fullMethod == "/test.Service/GetBook" {
+			return status.Error(codes.Unavailable, "unavailable")
+		}
+
+		return nil
+	}
+
+	t.Run("opens breaker for failing method", func(t *testing.T) {
+		err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
+		require.Error(t, err)
+		require.Equal(t, codes.Unavailable, status.Code(err))
+	})
+
+	t.Run("allows different method", func(t *testing.T) {
+		err := interceptor(t.Context(), "/test.Service/ListBooks", nil, nil, nil, invoker)
+		require.NoError(t, err)
+	})
+
+	t.Run("rejects failing method without invoker call", func(t *testing.T) {
+		err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
+		require.Error(t, err)
+		require.Equal(t, codes.ResourceExhausted, status.Code(err))
+		require.Equal(t, 1, calls["/test.Service/GetBook"])
+		require.Equal(t, 1, calls["/test.Service/ListBooks"])
+	})
+}
+
 func settings(isSuccessful ...func(error) bool) breaker.Settings {
 	settings := breaker.Settings{
 		ReadyToTrip: func(counts basebreaker.Counts) bool {

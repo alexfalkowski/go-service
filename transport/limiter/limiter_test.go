@@ -62,6 +62,83 @@ func TestTake(t *testing.T) {
 	require.Equal(t, "limit=1, remaining=0", header)
 }
 
+func TestTakeSupportsCustomKeyKind(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{
+		"tenant": meta.UserID,
+	}
+	config := &limiter.Config{Kind: "tenant", Tokens: 1, Interval: time.Second}
+
+	limiter, err := limiter.NewLimiter(lc, m, config)
+	require.NoError(t, err)
+	require.NotNil(t, limiter)
+	defer func() {
+		require.NoError(t, limiter.Close(t.Context()))
+	}()
+
+	first := meta.WithAttributes(t.Context(), meta.WithUserID(meta.String("first-tenant")))
+	second := meta.WithAttributes(t.Context(), meta.WithUserID(meta.String("second-tenant")))
+
+	t.Run("takes first tenant token", func(t *testing.T) {
+		ok, header, err := limiter.Take(first)
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.Equal(t, "limit=1, remaining=0", header)
+	})
+
+	t.Run("denies exhausted tenant", func(t *testing.T) {
+		ok, header, err := limiter.Take(first)
+		require.NoError(t, err)
+		require.False(t, ok)
+		require.Equal(t, "limit=1, remaining=0", header)
+	})
+
+	t.Run("uses independent bucket for second tenant", func(t *testing.T) {
+		ok, header, err := limiter.Take(second)
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.Equal(t, "limit=1, remaining=0", header)
+	})
+}
+
+func TestTakeRefillsAfterConfiguredInterval(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: 25 * time.Millisecond}
+
+	limiter, err := limiter.NewLimiter(lc, m, config)
+	require.NoError(t, err)
+	require.NotNil(t, limiter)
+	defer func() {
+		require.NoError(t, limiter.Close(t.Context()))
+	}()
+
+	ctx := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("test-agent")))
+
+	t.Run("takes initial token", func(t *testing.T) {
+		ok, header, err := limiter.Take(ctx)
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.Equal(t, "limit=1, remaining=0", header)
+	})
+
+	t.Run("denies exhausted bucket", func(t *testing.T) {
+		ok, header, err := limiter.Take(ctx)
+		require.NoError(t, err)
+		require.False(t, ok)
+		require.Equal(t, "limit=1, remaining=0", header)
+	})
+
+	t.Run("refills after interval", func(t *testing.T) {
+		require.Eventually(t, func() bool {
+			ok, _, err := limiter.Take(ctx)
+			require.NoError(t, err)
+
+			return ok
+		}, time.Second.Duration(), (10 * time.Millisecond).Duration())
+	})
+}
+
 func TestTakeUsesSingleBucketForEmptyKeys(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}

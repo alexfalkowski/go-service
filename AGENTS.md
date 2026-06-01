@@ -63,6 +63,12 @@ matching skill for the task.
   promise a complete standalone server bundle without `module.Server`. Report
   this only if a public API explicitly promises standalone `transport.Module`
   composition without the standard `module.Server` bundle.
+- Module-related behavior is tested through CLI/server application wiring. Do
+  not flag missing direct package tests for Fx module provider inventory,
+  module composition, or `transport.Module` lifecycle registration solely
+  because they are not asserted in the package that declares the module. Report
+  only concrete broken behavior through the CLI or supported `module.Server`
+  path, or an explicit public promise of lower-level standalone module use.
 - Server defaults that use `net.DefaultAddress`, including the debug server's
   `tcp://:6060` fallback, intentionally bind all interfaces so containerized
   workloads remain reachable through Kubernetes Services, probes, ingress
