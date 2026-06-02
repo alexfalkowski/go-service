@@ -32,8 +32,8 @@ func TestValidCache(t *testing.T) {
 }
 
 func TestGenericValidCache(t *testing.T) {
-	config := test.NewCacheConfig("sync", "snappy", "json", "redis")
-	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
+	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
 	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
 
@@ -155,8 +155,8 @@ func TestMaxSizeOnGetAllowsHugeConfiguredLimit(t *testing.T) {
 }
 
 func TestExpiredCache(t *testing.T) {
-	config := test.NewCacheConfig("sync", "snappy", "json", "redis")
-	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
+	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Nanosecond))
 
 	// Simulate expiry.
@@ -208,14 +208,14 @@ func TestDisabledCache(t *testing.T) {
 
 func TestErroneousSave(t *testing.T) {
 	t.Run("invalid encoder", func(t *testing.T) {
-		config := test.NewCacheConfig("sync", "snappy", "error", "redis")
-		test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
+		cfg := test.NewCacheConfig("sync", "snappy", "error", "redis")
+		test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 		require.Error(t, cache.Persist(t.Context(), "test", new("test"), time.Minute))
 	})
 
 	t.Run("read from only falls back to configured encoder", func(t *testing.T) {
-		config := test.NewCacheConfig("sync", "none", "json", "redis")
-		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config))
+		cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
 		require.NoError(t, world.Persist(t.Context(), "test", &test.ReadFromOnly{Name: "hello?"}, time.Minute))
 
 		var get test.Request
@@ -249,8 +249,8 @@ func TestErroneousGet(t *testing.T) {
 }
 
 func TestWriteToOnlyUsesConfiguredEncoderOnGet(t *testing.T) {
-	config := test.NewCacheConfig("sync", "none", "json", "redis")
-	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config))
+	cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
 	require.NoError(t, world.Persist(t.Context(), "test", &test.Request{Name: "hello?"}, time.Minute))
 
 	get := &test.WriteToOnly{}
@@ -276,19 +276,19 @@ func TestMissingCache(t *testing.T) {
 		Driver:     d,
 	}
 
-	kind := cache.NewCache(params)
+	c := cache.NewCache(params)
 	t.Cleanup(func() {
-		require.NoError(t, kind.Flush(context.Background()))
+		require.NoError(t, c.Flush(context.Background()))
 	})
 	value := "existing"
 
-	require.NoError(t, kind.Get(t.Context(), "missing", &value))
+	require.NoError(t, c.Get(t.Context(), "missing", &value))
 	require.Equal(t, "existing", value)
 }
 
 func TestExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
 	cfg := &config.Config{Kind: "sync"}
-	kind := cache.NewCache(cache.CacheParams{
+	c := cache.NewCache(cache.CacheParams{
 		Config:     cfg,
 		Compressor: test.Compressor,
 		Encoder:    test.Encoder,
@@ -297,7 +297,7 @@ func TestExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
 	})
 	value := "existing"
 
-	require.NoError(t, kind.Get(t.Context(), "expired", &value))
+	require.NoError(t, c.Get(t.Context(), "expired", &value))
 	require.Equal(t, "existing", value)
 }
 

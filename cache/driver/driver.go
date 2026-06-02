@@ -13,18 +13,18 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
-	redis "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 	notifications "github.com/redis/go-redis/v9/maintnotifications"
 )
 
 // ErrExpired is returned when a cache entry exists but is expired.
 //
-// Drivers may wrap this error; use IsExpiredError to classify this condition.
+// Drivers may wrap this error; use [IsExpiredError] to classify this condition.
 var ErrExpired = errors.New("cache: expired")
 
 // ErrMissing is returned when a cache entry does not exist.
 //
-// Drivers may wrap this error; use IsMissingError to classify this condition.
+// Drivers may wrap this error; use [IsMissingError] to classify this condition.
 var ErrMissing = errors.New("cache: missing")
 
 // ErrNotFound is returned when the configured cache driver kind is unknown.
@@ -33,7 +33,7 @@ var ErrNotFound = errors.New("cache: driver not found")
 // ErrInvalidURL is returned when a cache backend URL cannot be parsed.
 var ErrInvalidURL = errors.New("cache: invalid driver url")
 
-// DriverParams defines dependencies for constructing a Driver.
+// DriverParams defines dependencies for constructing a [Driver].
 type DriverParams struct {
 	di.In
 	Lifecycle di.Lifecycle
@@ -44,27 +44,27 @@ type DriverParams struct {
 	Logger *logger.Logger
 }
 
-// NewDriver constructs a cache Driver for the configured backend.
+// NewDriver constructs a cache [Driver] for the configured backend.
 //
 // # Disabled behavior
 //
-// If cfg is nil (caching disabled), NewDriver returns (nil, nil). Callers are expected to tolerate a nil Driver.
+// If cfg is nil (caching disabled), [NewDriver] returns (nil, nil). Callers are expected to tolerate a nil [Driver].
 //
 // # Configuration expectations
 //
-// NewDriver dispatches on cfg.Kind. Some backends expect specific keys to be present in cfg.Options.
+// NewDriver dispatches on [config.Config.Kind]. Some backends expect specific keys to be present in [config.Config.Options].
 // For example, the "redis" backend expects:
 //
 //   - options["url"] to be a string "source string" (e.g. "env:REDIS_URL" or "file:/path/to/url" or a literal URL)
 //
-// The URL is read via fs.ReadSource, parsed using redis/go-redis ParseURL, and
-// then the client is instrumented for tracing and metrics via `cache/telemetry`
+// The URL is read via [os.FS.ReadSource], parsed using [redis.ParseURL], and
+// then the client is instrumented for tracing and metrics via [telemetry]
 // when those telemetry providers are enabled.
 //
 // The Redis client is closed from the supplied lifecycle's OnStop hook.
 //
 // Instrumentation errors are treated as fatal configuration/runtime errors and
-// are converted into panics via runtime.Must, matching the existing repository
+// are converted into panics via [runtime.Must], matching the existing repository
 // convention for mandatory telemetry wiring in internal constructors.
 //
 // # Backends
@@ -73,9 +73,9 @@ type DriverParams struct {
 //   - "redis": Redis backend using github.com/redis/go-redis
 //   - "sync": in-memory backend using github.com/alexfalkowski/go-sync Map
 //
-// The built-in `sync` backend stores values in process memory and expires entries lazily on access.
+// The built-in "sync" backend stores values in process memory and expires entries lazily on access.
 //
-// If cfg.Kind is unknown, NewDriver returns ErrNotFound.
+// If [config.Config.Kind] is unknown, [NewDriver] returns [ErrNotFound].
 func NewDriver(params DriverParams) (Driver, error) {
 	cfg := params.Config
 	if !cfg.IsEnabled() {
@@ -162,7 +162,7 @@ func IsExpiredError(err error) bool {
 // IsMissingError reports whether err represents a missing cache entry.
 //
 // This helper normalizes the miss semantics of the backends currently supported by this package,
-// including Redis nil replies.
+// including Redis nil replies ([redis.Nil]).
 func IsMissingError(err error) bool {
 	if errors.Is(err, redis.Nil) {
 		return true

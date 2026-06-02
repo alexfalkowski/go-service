@@ -22,9 +22,9 @@ import (
 // maxBase64EncodedLenInput is the largest decoded-size limit whose padded base64 length fits in int.
 const maxBase64EncodedLenInput = math.MaxInt / 4 * 3
 
-// CacheParams defines dependencies for constructing a Cache.
+// CacheParams defines dependencies for constructing a [Cache].
 //
-// It is intended for dependency injection (Fx/Dig). The constructor will typically be wired via `Module`.
+// It is intended for dependency injection (Fx/Dig). The constructor will typically be wired via [Module].
 type CacheParams struct {
 	di.In
 	Config     *config.Config
@@ -34,9 +34,9 @@ type CacheParams struct {
 	Driver     driver.Driver
 }
 
-// NewCache constructs a Cache from configuration.
+// NewCache constructs a [Cache] from configuration.
 //
-// If caching is disabled (i.e. params.Config is nil), NewCache returns nil. Callers are expected to
+// If caching is disabled (i.e. params.Config is nil), [NewCache] returns nil. Callers are expected to
 // tolerate a nil cache instance.
 func NewCache(params CacheParams) *Cache {
 	if !params.Config.IsEnabled() {
@@ -58,9 +58,9 @@ func NewCache(params CacheParams) *Cache {
 // final bytes, and stores the resulting string via the configured driver.
 //
 // Encoding selection is operation-dependent:
-//   - Persist uses "plain" only for io.WriterTo values
-//   - Get uses "plain" only for io.ReaderFrom destinations
-//   - proto.Message uses "proto"
+//   - [Cache.Persist] uses "plain" only for [io.WriterTo] values
+//   - [Cache.Get] uses "plain" only for [io.ReaderFrom] destinations
+//   - [proto.Message] uses "proto"
 //   - otherwise the configured encoder is used, falling back to "json"
 //
 // Compression is selected from configuration, falling back to "none" when unknown/unavailable.
@@ -179,11 +179,7 @@ func (c *Cache) readEncoder(value any) encoding.Encoder {
 	case proto.Message:
 		return c.em.Get("proto")
 	default:
-		if enc := c.em.Get(c.cfg.Encoder); enc != nil {
-			return enc
-		}
-
-		return c.em.Get("json")
+		return c.configuredEncoder()
 	}
 }
 
@@ -194,10 +190,14 @@ func (c *Cache) writeEncoder(value any) encoding.Encoder {
 	case proto.Message:
 		return c.em.Get("proto")
 	default:
-		if enc := c.em.Get(c.cfg.Encoder); enc != nil {
-			return enc
-		}
-
-		return c.em.Get("json")
+		return c.configuredEncoder()
 	}
+}
+
+func (c *Cache) configuredEncoder() encoding.Encoder {
+	if enc := c.em.Get(c.cfg.Encoder); enc != nil {
+		return enc
+	}
+
+	return c.em.Get("json")
 }
