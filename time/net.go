@@ -2,24 +2,27 @@ package time
 
 import "github.com/alexfalkowski/go-service/v2/errors"
 
-// ErrNotFound is returned when Config.Kind does not match a supported network time provider.
+// ErrNotFound is returned when [Config.Kind] does not match a supported network
+// time provider.
 //
-// This error is returned by NewNetwork when cfg is enabled (non-nil) but Kind is not
-// recognized by this package.
+// This error is returned by [NewNetwork] when cfg is enabled (non-nil) but Kind
+// is not recognized by this package.
 var ErrNotFound = errors.New("time: network not found")
 
 // NewNetwork constructs a network time provider based on cfg.
 //
-// Enablement is modeled by presence: if cfg is nil (disabled), NewNetwork returns (nil, nil).
+// Enablement is modeled by presence: if cfg is nil (disabled), NewNetwork
+// returns (nil, nil).
 //
 // Supported kinds:
-//   - "ntp": constructs an NTP-backed provider (see NewNTPNetwork)
-//   - "nts": constructs an NTS-backed provider (see NewNTSNetwork)
+//   - "ntp": constructs an NTP-backed provider (see [NewNTPNetwork])
+//   - "nts": constructs an NTS-backed provider (see [NewNTSNetwork])
 //
 // If cfg.Kind is not recognized, NewNetwork returns (nil, ErrNotFound).
 //
-// Note: Address validation is provider-specific. NewNetwork does not validate cfg.Address;
-// providers typically return an error from Network.Now when the address is empty or invalid.
+// Note: Address validation is provider-specific. NewNetwork does not validate
+// cfg.Address; providers typically return an error from Network.Now when the
+// address is empty or invalid.
 func NewNetwork(cfg *Config) (Network, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil

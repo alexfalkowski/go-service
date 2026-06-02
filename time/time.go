@@ -33,14 +33,16 @@ func After(d Duration) <-chan Time {
 	return time.After(d.Duration())
 }
 
-// NewTimer returns a new [Timer] that will send the current time on its channel after at least duration d.
+// NewTimer returns a new [Timer] that will send the current time on its channel
+// after at least duration d.
 //
 // This is a thin wrapper around time.NewTimer and does not change semantics.
 func NewTimer(d Duration) *Timer {
 	return time.NewTimer(d.Duration())
 }
 
-// NewTicker returns a new [Ticker] containing a channel that will send the current time on the channel after each tick.
+// NewTicker returns a new [Ticker] containing a channel that will send the
+// current time on the channel after each tick.
 //
 // This is a thin wrapper around time.NewTicker and does not change semantics.
 func NewTicker(d Duration) *Ticker {
