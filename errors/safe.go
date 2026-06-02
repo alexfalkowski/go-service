@@ -36,8 +36,8 @@ func safeMessage(err error) string {
 	}
 
 	if unwrapper, ok := err.(interface{ Unwrap() []error }); ok {
-		for _, err := range unwrapper.Unwrap() {
-			if msg := safeMessage(err); msg != "" {
+		for _, wrapped := range unwrapper.Unwrap() {
+			if msg := safeMessage(wrapped); msg != "" {
 				return msg
 			}
 		}
