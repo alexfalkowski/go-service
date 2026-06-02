@@ -95,6 +95,18 @@ func TestToIgnoredWithTypedNil(t *testing.T) {
 }
 
 func TestRedactedWithMultiByteValue(t *testing.T) {
-	require.Equal(t, "*", meta.Redacted("é").String())
-	require.Equal(t, "**", meta.Redacted("éa").String())
+	tests := []struct {
+		name  string
+		value string
+		want  string
+	}{
+		{name: "single rune", value: "é", want: "*"},
+		{name: "multiple runes", value: "éa", want: "**"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.want, meta.Redacted(test.value).String())
+		})
+	}
 }

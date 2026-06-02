@@ -60,7 +60,7 @@ const (
 
 	// AuthorizationKey is the attribute key used for authorization values.
 	//
-	// Security note: authorization values often contain secrets. Prefer storing them as Redacted or Ignored
+	// Security note: authorization values often contain secrets. Prefer storing them as [Redacted] or [Ignored]
 	// values if there is any chance they will be exported to logs or headers.
 	AuthorizationKey = "authorization"
 
@@ -68,143 +68,143 @@ const (
 	GeolocationKey = "geoLocation"
 )
 
-// WithRequestID creates a request ID pair for WithAttributes.
+// WithRequestID creates a request ID pair for [WithAttributes].
 //
-// The pair stores value under RequestIDKey.
+// The pair stores value under [RequestIDKey].
 func WithRequestID(value Value) Pair {
 	return NewPair(RequestIDKey, value)
 }
 
 // RequestID returns the stored request ID attribute from ctx.
 //
-// If no value is present, this returns the zero-value Value.
+// If no value is present, this returns the zero-value [Value].
 func RequestID(ctx context.Context) Value {
 	return Attribute(ctx, RequestIDKey)
 }
 
-// WithSystem creates a system pair for WithAttributes.
+// WithSystem creates a system pair for [WithAttributes].
 //
-// The pair stores value under SystemKey.
+// The pair stores value under [SystemKey].
 func WithSystem(value Value) Pair {
 	return NewPair(SystemKey, value)
 }
 
-// WithService creates a service pair for WithAttributes.
+// WithService creates a service pair for [WithAttributes].
 //
-// The pair stores value under ServiceKey.
+// The pair stores value under [ServiceKey].
 func WithService(value Value) Pair {
 	return NewPair(ServiceKey, value)
 }
 
-// WithMethod creates a method pair for WithAttributes.
+// WithMethod creates a method pair for [WithAttributes].
 //
-// The pair stores value under MethodKey.
+// The pair stores value under [MethodKey].
 func WithMethod(value Value) Pair {
 	return NewPair(MethodKey, value)
 }
 
-// WithServiceMethod creates a service-method pair for WithAttributes.
+// WithServiceMethod creates a service-method pair for [WithAttributes].
 //
-// The pair stores value under ServiceMethodKey.
+// The pair stores value under [ServiceMethodKey].
 func WithServiceMethod(value Value) Pair {
 	return NewPair(ServiceMethodKey, value)
 }
 
 // ServiceMethod returns the stored service-method attribute from ctx.
 //
-// If no value is present, this returns the zero-value Value.
+// If no value is present, this returns the zero-value [Value].
 func ServiceMethod(ctx context.Context) Value {
 	return Attribute(ctx, ServiceMethodKey)
 }
 
-// WithCode creates a status code pair for WithAttributes.
+// WithCode creates a status code pair for [WithAttributes].
 //
-// The pair stores value under CodeKey.
+// The pair stores value under [CodeKey].
 func WithCode(value Value) Pair {
 	return NewPair(CodeKey, value)
 }
 
-// WithDuration creates a duration pair for WithAttributes.
+// WithDuration creates a duration pair for [WithAttributes].
 //
-// The pair stores value under DurationKey.
+// The pair stores value under [DurationKey].
 func WithDuration(value Value) Pair {
 	return NewPair(DurationKey, value)
 }
 
-// WithUserAgent creates a user agent pair for WithAttributes.
+// WithUserAgent creates a user agent pair for [WithAttributes].
 //
-// The pair stores value under UserAgentKey.
+// The pair stores value under [UserAgentKey].
 func WithUserAgent(value Value) Pair {
 	return NewPair(UserAgentKey, value)
 }
 
 // UserAgent returns the stored user agent attribute from ctx.
 //
-// If no value is present, this returns the zero-value Value.
+// If no value is present, this returns the zero-value [Value].
 func UserAgent(ctx context.Context) Value {
 	return Attribute(ctx, UserAgentKey)
 }
 
-// WithUserID creates a user ID pair for WithAttributes.
+// WithUserID creates a user ID pair for [WithAttributes].
 //
-// The pair stores value under UserIDKey.
+// The pair stores value under [UserIDKey].
 func WithUserID(value Value) Pair {
 	return NewPair(UserIDKey, value)
 }
 
 // UserID returns the stored user ID attribute from ctx.
 //
-// If no value is present, this returns the zero-value Value.
+// If no value is present, this returns the zero-value [Value].
 func UserID(ctx context.Context) Value {
 	return Attribute(ctx, UserIDKey)
 }
 
-// WithIPAddr creates an IP address pair for WithAttributes.
+// WithIPAddr creates an IP address pair for [WithAttributes].
 //
-// The pair stores value under IPAddrKey.
+// The pair stores value under [IPAddrKey].
 func WithIPAddr(value Value) Pair {
 	return NewPair(IPAddrKey, value)
 }
 
 // IPAddr returns the stored IP address attribute from ctx.
 //
-// If no value is present, this returns the zero-value Value.
+// If no value is present, this returns the zero-value [Value].
 func IPAddr(ctx context.Context) Value {
 	return Attribute(ctx, IPAddrKey)
 }
 
-// WithIPAddrKind creates an IP address kind pair for WithAttributes.
+// WithIPAddrKind creates an IP address kind pair for [WithAttributes].
 //
-// The pair stores value under IPAddrKindKey.
+// The pair stores value under [IPAddrKindKey].
 func WithIPAddrKind(value Value) Pair {
 	return NewPair(IPAddrKindKey, value)
 }
 
-// WithAuthorization creates an authorization pair for WithAttributes.
+// WithAuthorization creates an authorization pair for [WithAttributes].
 //
-// The pair stores value under AuthorizationKey. Authorization values often
-// contain secrets; prefer Ignored or Redacted values if they might be exported.
+// The pair stores value under [AuthorizationKey]. Authorization values often
+// contain secrets; prefer [Ignored] or [Redacted] values if they might be exported.
 func WithAuthorization(value Value) Pair {
 	return NewPair(AuthorizationKey, value)
 }
 
 // Authorization returns the stored authorization attribute from ctx.
 //
-// If no value is present, this returns the zero-value Value.
+// If no value is present, this returns the zero-value [Value].
 func Authorization(ctx context.Context) Value {
 	return Attribute(ctx, AuthorizationKey)
 }
 
-// WithGeolocation creates a geolocation pair for WithAttributes.
+// WithGeolocation creates a geolocation pair for [WithAttributes].
 //
-// The pair stores value under GeolocationKey.
+// The pair stores value under [GeolocationKey].
 func WithGeolocation(value Value) Pair {
 	return NewPair(GeolocationKey, value)
 }
 
 // Geolocation returns the stored geolocation attribute from ctx.
 //
-// If no value is present, this returns the zero-value Value.
+// If no value is present, this returns the zero-value [Value].
 func Geolocation(ctx context.Context) Value {
 	return Attribute(ctx, GeolocationKey)
 }
