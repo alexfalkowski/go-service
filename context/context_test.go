@@ -16,7 +16,7 @@ func TestBackground(t *testing.T) {
 
 	deadline, ok := ctx.Deadline()
 	require.False(t, ok)
-	require.True(t, deadline.IsZero())
+	require.Zero(t, deadline)
 	require.Nil(t, ctx.Done())
 	require.NoError(t, ctx.Err())
 	require.NoError(t, context.Cause(ctx))
@@ -186,25 +186,28 @@ func TestCausePropagatesFromParent(t *testing.T) {
 func TestWithoutCancel(t *testing.T) {
 	t.Parallel()
 
-	parent, cancel := context.WithCancelCause(context.WithValue(context.Background(), context.Key("key"), "value"))
+	key := context.Key("key")
+	parent := context.WithValue(context.Background(), key, "value")
+	parent, cancel := context.WithCancelCause(parent)
 	child := context.WithoutCancel(parent)
 
 	cancel(errors.New("parent cause"))
 
 	deadline, ok := child.Deadline()
 	require.False(t, ok)
-	require.True(t, deadline.IsZero())
+	require.Zero(t, deadline)
 	require.Nil(t, child.Done())
 	require.NoError(t, child.Err())
 	require.NoError(t, context.Cause(child))
-	require.Equal(t, "value", child.Value(context.Key("key")))
+	require.Equal(t, "value", child.Value(key))
 }
 
 func TestWithValue(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.WithValue(context.Background(), context.Key("key"), "value")
+	key := context.Key("key")
+	ctx := context.WithValue(context.Background(), key, "value")
 
-	require.Equal(t, "value", ctx.Value(context.Key("key")))
+	require.Equal(t, "value", ctx.Value(key))
 	require.Nil(t, ctx.Value(context.Key("missing")))
 }
