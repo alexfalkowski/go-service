@@ -73,9 +73,7 @@ func TestStream(t *testing.T) {
 	stream, err := client.SayStreamHello(ctx)
 	require.NoError(t, err)
 
-	require.NoError(t, stream.Send(&v1.SayStreamHelloRequest{Name: "test"}))
-
-	resp, err := stream.Recv()
+	resp, err := sendStreamHello(t, stream, "test")
 	require.NoError(t, err)
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
@@ -101,11 +99,7 @@ func TestStreamMaxReceiveSize(t *testing.T) {
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	err = stream.Send(&v1.SayStreamHelloRequest{Name: strings.Repeat("a", 256)})
-	if err == nil {
-		_, err = stream.Recv()
-	}
-
+	_, err = sendStreamHello(t, stream, strings.Repeat("a", 256))
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
@@ -131,9 +125,7 @@ func TestStreamMaxSendSize(t *testing.T) {
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	require.NoError(t, stream.Send(&v1.SayStreamHelloRequest{Name: strings.Repeat("a", 256)}))
-
-	_, err = stream.Recv()
+	_, err = sendStreamHello(t, stream, strings.Repeat("a", 256))
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }

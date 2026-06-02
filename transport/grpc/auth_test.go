@@ -116,10 +116,7 @@ func TestAuthStreamWithAppend(t *testing.T) {
 	stream, err := client.SayStreamHello(ctx)
 	require.NoError(t, err)
 
-	err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
-	require.NoError(t, err)
-
-	_, err = stream.Recv()
+	_, err = sendStreamHello(t, stream, "test")
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
 }
 
@@ -224,10 +221,7 @@ func TestValidAuthStream(t *testing.T) {
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
-	require.NoError(t, err)
-
-	resp, err := stream.Recv()
+	resp, err := sendStreamHello(t, stream, "test")
 	require.NoError(t, err)
 
 	require.Equal(t, "Hello test", resp.GetMessage())
@@ -248,10 +242,7 @@ func TestInvalidAuthStream(t *testing.T) {
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
-	require.NoError(t, err)
-
-	_, err = stream.Recv()
+	_, err = sendStreamHello(t, stream, "test")
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 }
 
@@ -286,10 +277,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
-	require.NoError(t, err)
-
-	_, err = stream.Recv()
+	_, err = sendStreamHello(t, stream, "test")
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 }
 
