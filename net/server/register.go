@@ -11,8 +11,8 @@ import (
 // Register wires server services into the application lifecycle.
 //
 // It appends an Fx lifecycle hook that:
-//   - OnStart: starts each provided `*Service` by calling `Start()`.
-//   - OnStop: stops each provided `*Service` by calling `Stop(ctx)` and returns the joined shutdown errors.
+//   - OnStart: starts each provided *[Service] by calling `Start()`.
+//   - OnStop: stops each provided *[Service] by calling `Stop(ctx)` and returns the joined shutdown errors.
 //
 // Callers should ensure the slice does not contain nil entries.
 func Register(lc di.Lifecycle, services []*Service) {

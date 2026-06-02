@@ -8,7 +8,7 @@
 // the wrapped handler.
 //
 // Replay protection:
-// This adapter uses `transport/http/hooks` verification, which validates the signature and timestamp but does
+// This adapter uses [github.com/alexfalkowski/go-service/v2/transport/http/hooks] verification, which validates the signature and timestamp but does
 // not keep replay state. CloudEvents handlers that perform non-idempotent work must deduplicate or process
 // idempotently using the Webhook-Id or CloudEvent id.
 package hooks

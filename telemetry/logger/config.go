@@ -8,9 +8,9 @@ import "github.com/alexfalkowski/go-service/v2/telemetry/header"
 // However, note that this type intentionally does not resolve header secrets by
 // itself. If Headers contains go-service "source strings" (for example "env:NAME"
 // or "file:/path"), callers are expected to resolve them before constructing
-// exporters/handlers (for example via header.Map.Secrets or header.Map.MustSecrets).
+// exporters/handlers (for example via [header.Map.Secrets] or [header.Map.MustSecrets]).
 //
-// Enablement is modeled by presence: a nil *Config means logging is disabled.
+// Enablement is modeled by presence: a nil *[Config] means logging is disabled.
 type Config struct {
 	// Headers contains exporter/request headers.
 	//
@@ -32,7 +32,7 @@ type Config struct {
 	//   - "text": write text logs to stdout.
 	//   - "tint": write colorized text logs to stdout.
 	//
-	// If Kind is unknown, logger construction returns ErrNotFound.
+	// If Kind is unknown, logger construction returns [ErrNotFound].
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 
 	// URL is the destination endpoint for the selected Kind, when applicable.

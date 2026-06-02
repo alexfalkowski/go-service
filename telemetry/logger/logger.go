@@ -41,22 +41,22 @@ type Attr = slog.Attr
 // when that keeps imports or public APIs simpler.
 type Level = slog.Level
 
-// ErrNotFound is returned when Config.Kind is unknown.
+// ErrNotFound is returned when [Config.Kind] is unknown.
 var ErrNotFound = errors.New("logger: not found")
 
-// ErrInvalidLevel is returned when Config.Level is unknown.
+// ErrInvalidLevel is returned when [Config.Level] is unknown.
 var ErrInvalidLevel = errors.New("logger: invalid level")
 
 // Bool returns an Attr representing a boolean key/value pair.
 //
-// This is a thin wrapper around slog.Bool and does not change semantics.
+// This is a thin wrapper around [slog.Bool] and does not change semantics.
 func Bool(key string, v bool) Attr {
 	return slog.Bool(key, v)
 }
 
 // Int returns an Attr representing an integer key/value pair.
 //
-// This is a thin wrapper around slog.Int and does not change semantics.
+// This is a thin wrapper around [slog.Int] and does not change semantics.
 func Int(key string, value int) Attr {
 	return slog.Int(key, value)
 }
@@ -73,7 +73,7 @@ func LogError(ctx context.Context, msg string, args ...any) {
 
 // String returns an Attr representing a string key/value pair.
 //
-// This is a thin wrapper around slog.String and does not change semantics.
+// This is a thin wrapper around [slog.String] and does not change semantics.
 func String(key, value string) Attr {
 	return slog.String(key, value)
 }
@@ -125,11 +125,11 @@ type LoggerParams struct {
 // NewLogger constructs the configured slog logger, installs it as the
 // process-wide default, and returns a wrapper with go-service logging helpers.
 //
-// When params.Config is nil, logging is disabled and NewLogger returns (nil,
+// When [CacheParams.Config] is nil, logging is disabled and NewLogger returns (nil,
 // nil).
 //
-// When logging is enabled, NewLogger validates Config.Level, builds the
-// implementation selected by Config.Kind, installs it via [slog.SetDefault],
+// When logging is enabled, NewLogger validates [Config.Level], builds the
+// implementation selected by [Config.Kind], installs it via [slog.SetDefault],
 // and returns a [Logger].
 //
 // Stdout-oriented logger kinds attach ID, Name, Version, and Environment as
@@ -138,8 +138,8 @@ type LoggerParams struct {
 // OpenTelemetry logger provider, and registers shutdown hooks on
 // params.Lifecycle.
 //
-// NewLogger returns [ErrNotFound] when Config.Kind is unknown and
-// [ErrInvalidLevel] when Config.Level is unsupported.
+// NewLogger returns [ErrNotFound] when [Config.Kind] is unknown and
+// [ErrInvalidLevel] when [Config.Level] is unsupported.
 func NewLogger(params LoggerParams) (*Logger, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -159,14 +159,14 @@ func NewLogger(params LoggerParams) (*Logger, error) {
 
 // Logger wraps [slog.Logger] and adds go-service logging helpers.
 //
-// The embedded slog.Logger remains available for native slog APIs. The helper
+// The embedded [slog.Logger] remains available for native slog APIs. The helper
 // methods on Logger are nil-safe so callers can treat logging as optional when
 // Config is nil and dependency injection provides no logger.
 //
 // When logging via [Logger.Log] or [Logger.LogAttrs], the logger appends:
 //
-//   - metadata attributes extracted from the provided context (via Meta), and
-//   - an "error" attribute when the Message contains a non-nil error (via Error).
+//   - metadata attributes extracted from the provided context (via [Meta]), and
+//   - an "error" attribute when the Message contains a non-nil error (via [Error]).
 //
 // The pass-through severity helpers [Logger.Info], [Logger.Warn], and
 // [Logger.Error] keep slog semantics unchanged and do not add those extra
@@ -247,7 +247,7 @@ func (l *Logger) LogAttrs(ctx context.Context, level slog.Level, msg Message, at
 // GetLogger returns the embedded [slog.Logger].
 //
 // It returns nil when l is nil, making it safe for adapters that accept an
-// optional [Logger] but need to work with a raw `*slog.Logger`.
+// optional [Logger] but need to work with a raw *[slog.Logger].
 func (l *Logger) GetLogger() *slog.Logger {
 	if l == nil {
 		return nil

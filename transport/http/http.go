@@ -7,103 +7,103 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 )
 
-// MethodDelete is an alias of http.MethodDelete.
+// MethodDelete is an alias of [http.MethodDelete].
 const MethodDelete = http.MethodDelete
 
-// MethodGet is an alias of http.MethodGet.
+// MethodGet is an alias of [http.MethodGet].
 const MethodGet = http.MethodGet
 
-// MethodPatch is an alias of http.MethodPatch.
+// MethodPatch is an alias of [http.MethodPatch].
 const MethodPatch = http.MethodPatch
 
-// MethodPost is an alias of http.MethodPost.
+// MethodPost is an alias of [http.MethodPost].
 const MethodPost = http.MethodPost
 
-// MethodPut is an alias of http.MethodPut.
+// MethodPut is an alias of [http.MethodPut].
 const MethodPut = http.MethodPut
 
-// StatusBadRequest is an alias of http.StatusBadRequest.
+// StatusBadRequest is an alias of [http.StatusBadRequest].
 const StatusBadRequest = http.StatusBadRequest
 
-// StatusConflict is an alias of http.StatusConflict.
+// StatusConflict is an alias of [http.StatusConflict].
 const StatusConflict = http.StatusConflict
 
-// StatusForbidden is an alias of http.StatusForbidden.
+// StatusForbidden is an alias of [http.StatusForbidden].
 const StatusForbidden = http.StatusForbidden
 
-// StatusGatewayTimeout is an alias of http.StatusGatewayTimeout.
+// StatusGatewayTimeout is an alias of [http.StatusGatewayTimeout].
 const StatusGatewayTimeout = http.StatusGatewayTimeout
 
-// StatusOK is an alias of http.StatusOK.
+// StatusOK is an alias of [http.StatusOK].
 const StatusOK = http.StatusOK
 
-// StatusRequestEntityTooLarge is an alias of http.StatusRequestEntityTooLarge.
+// StatusRequestEntityTooLarge is an alias of [http.StatusRequestEntityTooLarge].
 const StatusRequestEntityTooLarge = http.StatusRequestEntityTooLarge
 
-// StatusInternalServerError is an alias of http.StatusInternalServerError.
+// StatusInternalServerError is an alias of [http.StatusInternalServerError].
 const StatusInternalServerError = http.StatusInternalServerError
 
-// StatusNotFound is an alias of http.StatusNotFound.
+// StatusNotFound is an alias of [http.StatusNotFound].
 const StatusNotFound = http.StatusNotFound
 
-// StatusNotImplemented is an alias of http.StatusNotImplemented.
+// StatusNotImplemented is an alias of [http.StatusNotImplemented].
 const StatusNotImplemented = http.StatusNotImplemented
 
-// StatusServiceUnavailable is an alias of http.StatusServiceUnavailable.
+// StatusServiceUnavailable is an alias of [http.StatusServiceUnavailable].
 const StatusServiceUnavailable = http.StatusServiceUnavailable
 
-// StatusTooManyRequests is an alias of http.StatusTooManyRequests.
+// StatusTooManyRequests is an alias of [http.StatusTooManyRequests].
 const StatusTooManyRequests = http.StatusTooManyRequests
 
-// StatusUnauthorized is an alias of http.StatusUnauthorized.
+// StatusUnauthorized is an alias of [http.StatusUnauthorized].
 const StatusUnauthorized = http.StatusUnauthorized
 
-// Client is an alias for net/http.Client.
+// Client is an alias for [net/http.Client].
 type Client = http.Client
 
-// MaxBytesError is an alias for net/http.MaxBytesError.
+// MaxBytesError is an alias for [net/http.MaxBytesError].
 type MaxBytesError = http.MaxBytesError
 
-// Handler is an alias for net/http.Handler.
+// Handler is an alias for [net/http.Handler].
 type Handler = http.Handler
 
-// ChainedHandler is an alias for net/http.ChainedHandler.
+// ChainedHandler is an alias for [github.com/alexfalkowski/go-service/v2/net/http.ChainedHandler].
 type ChainedHandler = http.ChainedHandler
 
-// ChainedHandlers is an alias for net/http.ChainedHandlers.
+// ChainedHandlers is an alias for [github.com/alexfalkowski/go-service/v2/net/http.ChainedHandlers].
 type ChainedHandlers = http.ChainedHandlers
 
-// HandlerFunc is an alias for net/http.HandlerFunc.
+// HandlerFunc is an alias for [net/http.HandlerFunc].
 type HandlerFunc = http.HandlerFunc
 
-// Header is an alias for net/http.Header.
+// Header is an alias for [net/http.Header].
 type Header = http.Header
 
-// Request is an alias for net/http.Request.
+// Request is an alias for [net/http.Request].
 type Request = http.Request
 
-// Response is an alias for net/http.Response.
+// Response is an alias for [net/http.Response].
 type Response = http.Response
 
-// ResponseWriter is an alias for net/http.ResponseWriter.
+// ResponseWriter is an alias for [net/http.ResponseWriter].
 type ResponseWriter = http.ResponseWriter
 
-// RoundTripper is an alias for net/http.RoundTripper.
+// RoundTripper is an alias for [net/http.RoundTripper].
 type RoundTripper = http.RoundTripper
 
-// ServeMux is an alias for net/http.ServeMux.
+// ServeMux is an alias for [net/http.ServeMux].
 type ServeMux = http.ServeMux
 
-// DefaultTransport is an alias for http.DefaultTransport.
+// DefaultTransport is an alias for [http.DefaultTransport].
 var DefaultTransport = http.DefaultTransport
 
-// ErrUseLastResponse is an alias for http.ErrUseLastResponse.
+// ErrUseLastResponse is an alias for [http.ErrUseLastResponse].
 var ErrUseLastResponse = http.ErrUseLastResponse
 
-// ErrServerClosed is an alias for http.ErrServerClosed.
+// ErrServerClosed is an alias for [http.ErrServerClosed].
 var ErrServerClosed = http.ErrServerClosed
 
-// NoBody is an alias for http.NoBody.
+// NoBody is an alias for [http.NoBody].
 var NoBody = http.NoBody
 
 // NewRequestWithContext constructs a new outgoing HTTP request with ctx.

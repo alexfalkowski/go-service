@@ -12,12 +12,12 @@
 //
 // The interceptor classifies whether an invocation is successful based on the gRPC status code
 // of the returned error. The set of status codes treated as failures is configurable via options
-// (see `WithFailureCodes` and the package defaults).
+// (see [WithFailureCodes] and the package defaults).
 //
 // # Rejections
 //
 // When the breaker rejects a call (open state or too many concurrent half-open probes), the
 // interceptor returns a gRPC ResourceExhausted status error.
 //
-// Start with `UnaryClientInterceptor`.
+// Start with [UnaryClientInterceptor].
 package breaker

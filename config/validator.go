@@ -8,10 +8,10 @@ import (
 
 // NewValidator constructs a Validator backed by go-playground/validator.
 //
-// It enables required-struct validation (validator.WithRequiredStructEnabled), which causes validation
+// It enables required-struct validation ([validator.WithRequiredStructEnabled]), which causes validation
 // tags like `required` to be applied to nested struct fields in a more strict/consistent way.
 //
-// This constructor is typically wired via `config.Module` and consumed by `NewConfig[T]` to validate
+// This constructor is typically wired via [Module] and consumed by `NewConfig[T]` to validate
 // decoded configuration before returning it to the caller.
 func NewValidator() *Validator {
 	validate := validator.New(validator.WithRequiredStructEnabled())

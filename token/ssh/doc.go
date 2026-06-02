@@ -25,26 +25,26 @@
 //
 // Configuration is provided via Config:
 //
-//   - Config.Key is the single signing key used for Generate.
-//   - Config.Keys is a set of named public keys used for Verify.
-//   - Config.Expiration controls how long generated tokens remain valid.
+//   - [Config.Key] is the single signing key used for Generate.
+//   - [Config.Keys] is a set of named public keys used for Verify.
+//   - [Config.Expiration] controls how long generated tokens remain valid.
 //
 // Verification is "name-based": Verify extracts kid from the signed claims and
-// then looks up a matching public key configuration in Config.Keys (via
-// Keys.Get(kid)). If no key with that name exists, verification fails.
+// then looks up a matching public key configuration in [Config.Keys] (via
+// [Keys.Get](kid)). If no key with that name exists, verification fails.
 //
 // This design supports key rotation and multi-key verification: you can mint tokens
 // with the active signing key name while allowing verification against multiple
-// historical/active public keys by including them in Config.Keys.
+// historical/active public keys by including them in [Config.Keys].
 //
 // # Key material loading and "source strings"
 //
-// The Token constructor accepts an *os.FS and uses go-service crypto/ssh helpers to
+// The Token constructor accepts an *[os.FS] and uses go-service crypto/ssh helpers to
 // load key material based on the embedded crypto/ssh.Config in Key.
 //
 // Those configs commonly support go-service "source strings" for key sources
 // (for example "env:SSH_KEY", "file:/path/to/key", or a literal value).
-// Resolution and filesystem behavior depend on the go-service os.FS and
+// Resolution and filesystem behavior depend on the go-service [os.FS] and
 // crypto/ssh packages used by your wiring.
 //
 // # Error handling expectations
@@ -75,6 +75,6 @@
 //
 // # Relationship to the top-level token facade
 //
-// Services often use the top-level token.Token facade (package token), which delegates
-// to this implementation when Config.Kind == "ssh".
+// Services often use the top-level [github.com/alexfalkowski/go-service/v2/token.Token] facade (package token), which delegates
+// to this implementation when [Config.Kind] == "ssh".
 package ssh

@@ -2,7 +2,7 @@ package http
 
 import "net/http"
 
-// Protocols constructs an http.Protocols value enabling the HTTP protocols supported by go-service.
+// Protocols constructs an [http.Protocols] value enabling the HTTP protocols supported by go-service.
 //
 // The returned configuration enables:
 //   - HTTP/1.1

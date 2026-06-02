@@ -16,7 +16,7 @@ import (
 	"github.com/go-sprout/sprout/registry/time"
 )
 
-// FunctionMapParams defines dependencies used to build a sprout.FunctionMap.
+// FunctionMapParams defines dependencies used to build a [sprout.FunctionMap].
 type FunctionMapParams struct {
 	di.In
 	Logger     *slog.Logger

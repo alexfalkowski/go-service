@@ -5,13 +5,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// Module wires SQL database support into Fx/Dig.
+// Module wires SQL database support into [go.uber.org/fx]/[go.uber.org/dig].
 //
 // This module is the aggregate SQL bundle used by higher-level application bundles such as
-// `module.Server` and `module.Client`. It keeps SQL support opt-in via a single DI option while
+// [github.com/alexfalkowski/go-service/v2/module.Server] and [github.com/alexfalkowski/go-service/v2/module.Client]. It keeps SQL support opt-in via a single DI option while
 // delegating backend-specific behavior to subpackages.
 //
-// At present it includes only PostgreSQL support via `database/sql/pg.Module`, but the module shape
+// At present it includes only PostgreSQL support via [github.com/alexfalkowski/go-service/v2/database/sql/pg.Module], but the module shape
 // is intentionally extensible for additional SQL drivers in the future.
 //
 // Driver-specific constructors read DSNs/pool settings from config, open master/slave pools, register

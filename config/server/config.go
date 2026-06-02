@@ -54,7 +54,7 @@ func (c *Config) IsEnabled() bool {
 
 // GetMaxReceiveSize returns the configured inbound payload limit.
 //
-// A nil receiver or a zero value falls back to bytes.DefaultSize.
+// A nil receiver or a zero value falls back to [bytes.DefaultSize].
 func (c *Config) GetMaxReceiveSize() bytes.Size {
 	if c == nil || c.MaxReceiveSize == 0 {
 		return bytes.DefaultSize
@@ -65,7 +65,7 @@ func (c *Config) GetMaxReceiveSize() bytes.Size {
 
 // GetTimeout returns the configured server timeout.
 //
-// A nil receiver or a non-positive value falls back to time.DefaultTimeout.
+// A nil receiver or a non-positive value falls back to [time.DefaultTimeout].
 func (c *Config) GetTimeout() time.Duration {
 	if c == nil || c.Timeout <= 0 {
 		return time.DefaultTimeout
@@ -77,7 +77,7 @@ func (c *Config) GetTimeout() time.Duration {
 // NewConfig constructs a server-side runtime TLS config from cfg.
 //
 // If cfg has a CA configured, NewConfig uses it as ClientCAs and sets
-// ClientAuth to tls.RequireAndVerifyClientCert. Without CA, the server config
+// ClientAuth to [tls.RequireAndVerifyClientCert]. Without CA, the server config
 // does not request client certificates.
 //
 // Any configured TLS material requires a complete server certificate/key pair.

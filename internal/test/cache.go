@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Cache is a cache.Cache test double that returns a fixed value from Fetch.
+// Cache is a [cache.Cache] test double that returns a fixed value from Fetch.
 type Cache struct {
 	Value string
 }
@@ -41,7 +41,7 @@ func (c *Cache) Save(context.Context, string, string, time.Duration) error {
 	return nil
 }
 
-// ErrCache is a cache.Cache test double that fails fetch, delete, and save operations with ErrFailed.
+// ErrCache is a [cache.Cache] test double that fails fetch, delete, and save operations with ErrFailed.
 //
 // Flush succeeds so tests can use ErrCache in started worlds without turning cleanup into the failure under test.
 type ErrCache struct{}
@@ -96,22 +96,22 @@ func RequireCacheValue(tb testing.TB, get any) {
 	}
 }
 
-// ReadFromOnly is a cache payload that implements io.ReaderFrom but relies on normal encoding.
+// ReadFromOnly is a cache payload that implements [io.ReaderFrom] but relies on normal encoding.
 type ReadFromOnly struct {
 	Name string `json:"name"`
 }
 
-// ReadFrom implements io.ReaderFrom without consuming input.
+// ReadFrom implements [io.ReaderFrom] without consuming input.
 func (*ReadFromOnly) ReadFrom(io.Reader) (int64, error) {
 	return 0, nil
 }
 
-// WriteToOnly is a cache payload that implements io.WriterTo but relies on normal decoding.
+// WriteToOnly is a cache payload that implements [io.WriterTo] but relies on normal decoding.
 type WriteToOnly struct {
 	Name string `json:"name"`
 }
 
-// WriteTo implements io.WriterTo without writing output.
+// WriteTo implements [io.WriterTo] without writing output.
 func (*WriteToOnly) WriteTo(io.Writer) (int64, error) {
 	return 0, nil
 }

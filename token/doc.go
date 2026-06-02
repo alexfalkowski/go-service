@@ -41,8 +41,8 @@
 // The [Token] facade is intentionally conservative when [Config.Kind] is
 // unknown:
 //
-//   - [Token.Generate] returns (nil, token/errors.ErrInvalidConfig).
-//   - [Token.Verify] returns (strings.Empty, token/errors.ErrInvalidConfig).
+//   - [Token.Generate] returns (nil, [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig]).
+//   - [Token.Verify] returns ([strings.Empty], [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig]).
 //
 // This makes "unknown token kind" fail closed instead of behaving like "feature
 // disabled" in wiring scenarios. Callers should treat ErrInvalidConfig as a
@@ -52,6 +52,6 @@
 //
 // This package does not enforce that nested config blocks (JWT/Paseto/SSH) are
 // present when the corresponding kind is selected. The concrete token constructors
-// typically treat a nil *Config as disabled and may return nil implementations.
+// typically treat a nil *[Config] as disabled and may return nil implementations.
 // Ensure your configuration is consistent with the selected kind.
 package token

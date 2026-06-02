@@ -19,8 +19,8 @@ type Map map[string]string
 
 // Secrets resolves configured header values using the go-service "source string" convention.
 //
-// It traverses m and resolves each value by reading it through fs.ReadSource.
-// fs.ReadSource supports these forms:
+// It traverses m and resolves each value by reading it through [os.FS.ReadSource].
+// [os.FS.ReadSource] supports these forms:
 //
 //   - "env:NAME"    reads the value of environment variable NAME.
 //   - "file:/path"  reads bytes from the file at /path (including path cleaning and trimming).
@@ -51,7 +51,7 @@ func (m Map) Secrets(fs *os.FS) error {
 
 // MustSecrets resolves configured header values like Secrets, but panics on error.
 //
-// It calls Secrets and panics if any value cannot be resolved (via runtime.Must).
+// It calls Secrets and panics if any value cannot be resolved (via [runtime.Must]).
 // This is intended for strict startup/config projection paths where missing or
 // unreadable secret material should fail fast.
 func (m Map) MustSecrets(fs *os.FS) {

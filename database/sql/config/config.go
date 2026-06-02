@@ -5,17 +5,17 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// Config contains shared `database/sql` connection pool configuration.
+// Config contains shared [github.com/alexfalkowski/go-service/v2/database/sql] connection pool configuration.
 //
 // It is intended to be embedded by driver-specific configuration types (for example PostgreSQL)
 // and consumed by the SQL wiring in this repository.
 //
-// Masters and Slaves contain DSNs (connection strings) expressed as go-service "source strings"
-// (literal values, `file:` paths, or `env:` references) that are resolved by `os.FS.ReadSource`.
+// [Config.Masters] and [Config.Slaves] contain DSNs (connection strings) expressed as go-service "source strings"
+// (literal values, `file:` paths, or `env:` references) that are resolved by [os.FS.ReadSource].
 type Config struct {
 	// Masters is the set of primary (read-write) datasource DSNs.
 	//
-	// Each DSN URL is a "source string" resolved via `os.FS.ReadSource`, so it can be:
+	// Each DSN URL is a "source string" resolved via [os.FS.ReadSource], so it can be:
 	//   - "env:NAME" to read the DSN from an environment variable,
 	//   - "file:/path/to/dsn" to read the DSN from a file, or
 	//   - any other value treated as a literal DSN string.
@@ -23,7 +23,7 @@ type Config struct {
 
 	// Slaves is the set of replica (read-only) datasource DSNs.
 	//
-	// Each DSN URL is a "source string" resolved via `os.FS.ReadSource` (see Masters for the supported formats).
+	// Each DSN URL is a "source string" resolved via [os.FS.ReadSource] (see [Config.Masters] for the supported formats).
 	Slaves []DSN `yaml:"slaves,omitempty" json:"slaves,omitempty" toml:"slaves,omitempty"`
 
 	// ConnMaxLifetime is the maximum amount of time a connection may be reused.
@@ -40,7 +40,7 @@ type Config struct {
 
 // IsEnabled reports whether SQL configuration is present.
 //
-// By convention, a nil *Config is treated as "SQL disabled".
+// By convention, a nil *[Config] is treated as "SQL disabled".
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }
@@ -49,7 +49,7 @@ func (c *Config) IsEnabled() bool {
 type DSN struct {
 	// URL is a go-service "source string" for the datasource name/connection string.
 	//
-	// It is resolved via `os.FS.ReadSource`, so it can be:
+	// It is resolved via [os.FS.ReadSource], so it can be:
 	//   - "env:NAME" to read from an environment variable,
 	//   - "file:/path/to/dsn" to read from a file, or
 	//   - any other value treated as a literal connection string.
@@ -58,7 +58,7 @@ type DSN struct {
 
 // GetURL resolves and returns the configured DSN URL bytes from its source string.
 //
-// It delegates to `fs.ReadSource(d.URL)` and returns any read/resolve error from that operation.
+// It delegates to [os.FS.ReadSource] with [DSN.URL] and returns any read/resolve error from that operation.
 func (d *DSN) GetURL(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(d.URL)
 }

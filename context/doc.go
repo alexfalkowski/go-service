@@ -6,9 +6,9 @@
 // Most identifiers are thin aliases/wrappers around context (for example [Context], [CancelFunc],
 // [CancelCauseFunc], [Background], [WithDeadline], [WithTimeout], [Cause], and [WithValue]). They exist so
 // packages within go-service and downstream services can consistently import
-// github.com/alexfalkowski/go-service/v2/context without mixing direct stdlib imports across the codebase.
+// [github.com/alexfalkowski/go-service/v2/context] without mixing direct stdlib imports across the codebase.
 //
-// Cause-aware APIs mirror the standard library behavior: Context.Err continues to report the standard
+// Cause-aware APIs mirror the standard library behavior: [Context.Err] continues to report the standard
 // sentinels ([Canceled] or [DeadlineExceeded]), while [Cause] can expose a richer diagnostic error when
 // a cause-aware constructor was used.
 //

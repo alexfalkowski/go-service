@@ -46,7 +46,7 @@ type Decoder struct {
 // Errors:
 //   - returns ErrInvalidBlock if no PEM block can be decoded.
 //   - returns ErrInvalidKind if a PEM block is decoded but its Type does not equal kind.
-//   - returns any error from fs.ReadSource if the input cannot be resolved/read.
+//   - returns any error from [os.FS.ReadSource] if the input cannot be resolved/read.
 func (d *Decoder) Decode(source, kind string) ([]byte, error) {
 	if strings.IsEmpty(source) {
 		return nil, crypto.ErrMissingKey

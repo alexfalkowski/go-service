@@ -42,11 +42,11 @@ func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 // NewSender constructs a CloudEvents HTTP client that can sign outbound requests with the webhook hook.
 //
 // The constructed client uses the CloudEvents SDK HTTP transport. Outbound requests are wrapped with the
-// webhook signing RoundTripper (see `transport/http/hooks`) so each request is signed before being sent
+// webhook signing RoundTripper (see [github.com/alexfalkowski/go-service/v2/transport/http/hooks]) so each request is signed before being sent
 // when hook is non-nil. When hook is nil, the signing RoundTripper behaves as a pass-through wrapper and
 // requests are sent unsigned.
 //
-// If no round tripper is configured via `WithSenderRoundTripper`, it uses the default HTTP transport.
+// If no round tripper is configured via [WithSenderRoundTripper], it uses the default HTTP transport.
 //
 // Note: the provided hook must be configured appropriately (for example with the expected secret) for
 // signing to succeed.

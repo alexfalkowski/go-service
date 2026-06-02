@@ -12,7 +12,7 @@ import "github.com/alexfalkowski/go-service/v2/config/server"
 //   - Low-level server options
 //
 // This config is typically nested under the top-level `transport.Config` and is used by constructors
-// such as `NewServer` to decide whether the gRPC transport should be wired.
+// such as [NewServer] to decide whether the gRPC transport should be wired.
 //
 // The struct tags are compatible with the repository's config decoder (YAML/JSON/TOML).
 type Config struct {

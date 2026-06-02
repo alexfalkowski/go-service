@@ -65,7 +65,7 @@ func ServerFailureOption() di.Option {
 	)
 }
 
-// DelayedFailingServer is a server.Server test double whose Serve method fails after a short delay.
+// DelayedFailingServer is a [server.Server] test double whose Serve method fails after a short delay.
 type DelayedFailingServer struct{}
 
 // Serve returns ErrFailed after a short delay.
@@ -75,7 +75,7 @@ func (DelayedFailingServer) Serve() error {
 	return ErrFailed
 }
 
-// Shutdown implements server.Server and always succeeds.
+// Shutdown implements [server.Server] and always succeeds.
 func (DelayedFailingServer) Shutdown(context.Context) error {
 	return nil
 }

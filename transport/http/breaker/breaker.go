@@ -10,17 +10,17 @@ import (
 	"github.com/alexfalkowski/go-sync"
 )
 
-// Counts is an alias for `github.com/alexfalkowski/go-service/v2/transport/breaker.Counts`.
+// Counts is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.Counts].
 //
-// Counts is used by Settings.ReadyToTrip to decide whether the breaker should open.
+// Counts is used by [github.com/sony/gobreaker.Settings.ReadyToTrip] to decide whether the breaker should open.
 type Counts = breaker.Counts
 
-// ErrOpenState is an alias for `github.com/alexfalkowski/go-service/v2/transport/breaker.ErrOpenState`.
+// ErrOpenState is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.ErrOpenState].
 //
-// It is returned by CircuitBreaker.Execute when the breaker is open.
+// It is returned by [github.com/sony/gobreaker.CircuitBreaker.Execute] when the breaker is open.
 var ErrOpenState = breaker.ErrOpenState
 
-// Settings is an alias for `github.com/alexfalkowski/go-service/v2/transport/breaker.Settings`.
+// Settings is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.Settings].
 //
 // It is re-exported from this package so callers can configure circuit breaker behavior (trip thresholds,
 // timeouts, half-open probing, etc.) without importing the lower-level breaker package directly.
@@ -28,7 +28,7 @@ type Settings = breaker.Settings
 
 // NewRoundTripper constructs an HTTP RoundTripper guarded by circuit breakers.
 //
-// The returned `*RoundTripper` wraps the provided base transport (`hrt`) and executes each request through a
+// The returned *[RoundTripper] wraps the provided base transport (`hrt`) and executes each request through a
 // circuit breaker keyed by the request destination.
 //
 // # Breaker scope
@@ -51,7 +51,7 @@ type Settings = breaker.Settings
 //   - Your application logic continues to be driven by the HTTP response status/body, and
 //   - The breaker still "learns" that the upstream is unhealthy and may open accordingly.
 //
-// Defaults: HTTP status codes >= 500 or 429 are treated as failures (see `defaultOpts` and `WithFailureStatusFunc`).
+// Defaults: HTTP status codes >= 500 or 429 are treated as failures (see `defaultOpts` and [WithFailureStatusFunc]).
 func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
 	o := defaultOpts()
 	for _, option := range options {
@@ -61,13 +61,13 @@ func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
 	return &RoundTripper{opts: o, RoundTripper: hrt, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
 }
 
-// RoundTripper wraps an underlying `http.RoundTripper` and applies circuit breaking.
+// RoundTripper wraps an underlying [http.RoundTripper] and applies circuit breaking.
 //
 // Breakers are cached per request key (method + host) so each upstream is isolated. Breakers are created lazily
 // on first use and then reused for subsequent requests to the same key.
 // The cache does not evict entries; callers should use this wrapper with bounded upstream host sets.
 //
-// Use `NewRoundTripper` to construct instances with the desired settings and failure classification behavior.
+// Use [NewRoundTripper] to construct instances with the desired settings and failure classification behavior.
 type RoundTripper struct {
 	http.RoundTripper
 	opts     *opts
@@ -77,7 +77,7 @@ type RoundTripper struct {
 // RoundTrip executes the request guarded by a circuit breaker.
 //
 // If the breaker is open (or half-open and MaxRequests would be exceeded), the underlying breaker may reject
-// the call and return an error (for example `breaker.ErrOpenState` or `breaker.ErrTooManyRequests`).
+// the call and return an error (for example [breaker.ErrOpenState] or [breaker.ErrTooManyRequests]).
 //
 // Failure accounting:
 //   - Transport errors are counted as failures.

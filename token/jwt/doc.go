@@ -7,7 +7,7 @@
 // # Algorithms and keys
 //
 // Tokens are signed using Ed25519 with the JWT "EdDSA" signing method
-// (jwt.SigningMethodEdDSA). The implementation expects:
+// ([github.com/golang-jwt/jwt/v4.SigningMethodEdDSA]). The implementation expects:
 //
 //   - an Ed25519 signing key for issuance, and
 //   - an Ed25519 verification key for validation.
@@ -17,26 +17,26 @@
 //
 // # Claims and headers
 //
-// Tokens use standard registered claims (jwt.RegisteredClaims). Issued tokens set:
+// Tokens use standard registered claims ([github.com/golang-jwt/jwt/v4.RegisteredClaims]). Issued tokens set:
 //
-//   - iss (issuer): from Config.Issuer
+//   - iss (issuer): from [Config.Issuer]
 //   - aud (audience): from the Generate aud argument
 //   - sub (subject): from the Generate sub argument
 //   - iat (issued at): set to the current time
 //   - nbf (not before): set to the current time
-//   - exp (expiration): current time + Config.Expiration
+//   - exp (expiration): current time + [Config.Expiration]
 //   - jti (JWT ID): generated via the provided id.Generator
 //
 // In addition, issued tokens set the JWT header:
 //
-//   - kid (key id): from Config.KeyID
+//   - kid (key id): from [Config.KeyID]
 //
 // # Key ID (kid) enforcement
 //
 // Verification is intentionally strict about the "kid" header:
 //
 //   - The header must be present and non-empty.
-//   - The value must exactly match Config.KeyID.
+//   - The value must exactly match [Config.KeyID].
 //
 // This repository uses "kid" as part of the verification contract to prevent
 // accepting tokens minted for a different key identity. If you mint test tokens
@@ -52,12 +52,12 @@
 //   - The "kid" header exists and matches the configured KeyID.
 //   - The issuer claim matches the configured Issuer.
 //   - The audience claim contains the expected audience.
-//   - Registered claim validity (exp/nbf/iat) using jwt.RegisteredClaims.Valid.
+//   - Registered claim validity (exp/nbf/iat) using [github.com/golang-jwt/jwt/v4.RegisteredClaims.Valid].
 //
 // On failures, this package may return sentinel errors from token/errors for common
 // classes of validation issues (for example ErrInvalidAlgorithm, ErrInvalidKeyID,
 // ErrInvalidIssuer, ErrInvalidAudience). Other failures may be returned as-is from
-// the upstream github.com/golang-jwt/jwt/v4 parser/validator.
+// the upstream [github.com/golang-jwt/jwt/v4] parser/validator.
 //
 // Note: Error wrapping and exact error values for parse/validation failures that are
 // not explicitly mapped to token/errors are governed by the upstream JWT library.
@@ -65,7 +65,7 @@
 // # Configuration and enablement
 //
 // Config provides the issuer, expiration, and key id settings used for issuance and
-// verification. A nil *Config is treated as disabled: NewToken returns nil.
+// verification. A nil *[Config] is treated as disabled: NewToken returns nil.
 //
 // Expiration is a typed duration. In config files it is encoded using the standard
 // Go duration string format (such as "15m" or "24h"), so invalid values fail during
@@ -73,7 +73,7 @@
 //
 // # Relationship to the top-level token facade
 //
-// Services often use the top-level token.Token facade (package token) which delegates
-// to this implementation when Config.Kind == "jwt". This package focuses only on the
+// Services often use the top-level [github.com/alexfalkowski/go-service/v2/token.Token] facade (package token) which delegates
+// to this implementation when [Config.Kind] == "jwt". This package focuses only on the
 // JWT-specific format and validation rules.
 package jwt

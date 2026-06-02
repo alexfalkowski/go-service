@@ -18,36 +18,36 @@ import (
 // variable is allowed and resolves to empty bytes.
 var ErrEnvSourceMissing = errors.New("os: env source missing")
 
-// ModeAppend is an alias of fs.ModeAppend.
+// ModeAppend is an alias of [fs.ModeAppend].
 //
 // It is provided so callers can depend on go-service types while using standard
 // file mode constants.
 const ModeAppend = fs.ModeAppend
 
-// DirEntry is an alias of fs.DirEntry.
+// DirEntry is an alias of [fs.DirEntry].
 //
 // It represents a directory entry read from a directory.
 type DirEntry = fs.DirEntry
 
-// FileInfo is an alias of fs.FileInfo.
+// FileInfo is an alias of [fs.FileInfo].
 //
 // It describes a file and is typically returned by Stat.
 type FileInfo = fs.FileInfo
 
-// FileMode is an alias of fs.FileMode.
+// FileMode is an alias of [fs.FileMode].
 //
 // It represents a file's mode and permission bits.
 type FileMode = fs.FileMode
 
 // NewFS constructs an FS backed by the host OS filesystem.
 //
-// Internally this uses osfs.New() from github.com/avfs/avfs to provide an avfs.VFS
+// Internally this uses [osfs.New]() from [github.com/avfs/avfs] to provide an [avfs.VFS]
 // implementation that delegates to the real operating system.
 func NewFS() *FS {
 	return &FS{VFS: osfs.New()}
 }
 
-// FS wraps an avfs.VFS and provides go-service-specific filesystem helpers.
+// FS wraps an [avfs.VFS] and provides go-service-specific filesystem helpers.
 //
 // FS is intended to be used anywhere go-service needs filesystem access, while
 // also providing:
@@ -56,7 +56,7 @@ func NewFS() *FS {
 //     ([FS.ExecutableName] / [FS.ExecutableDir] / [FS.PathExtension]),
 //   - and "source string" loading ([FS.ReadSource]).
 //
-// The embedded avfs.VFS exposes a rich filesystem API; FS adds small, opinionated
+// The embedded [avfs.VFS] exposes a rich filesystem API; FS adds small, opinionated
 // behavior on top (notably whitespace trimming for ReadFile/WriteFile).
 type FS struct {
 	avfs.VFS
@@ -67,7 +67,7 @@ type FS struct {
 // The path is normalized using CleanPath, which expands a leading "~" (when
 // present) and then cleans the path.
 //
-// The returned bytes are trimmed with bytes.TrimSpace, which is useful when
+// The returned bytes are trimmed with [bytes.TrimSpace], which is useful when
 // reading configuration fragments or secrets where trailing newlines/whitespace
 // are common.
 func (fs *FS) ReadFile(name string) ([]byte, error) {
@@ -81,7 +81,7 @@ func (fs *FS) ReadFile(name string) ([]byte, error) {
 // The path is normalized using CleanPath, which expands a leading "~" (when
 // present) and then cleans the path.
 //
-// The bytes written are trimmed with bytes.TrimSpace before being persisted. This
+// The bytes written are trimmed with [bytes.TrimSpace] before being persisted. This
 // mirrors ReadFile behavior and helps keep file-backed secrets/config fragments
 // stable when inputs include trailing whitespace.
 func (fs *FS) WriteFile(name string, data []byte, perm FileMode) error {
@@ -107,7 +107,7 @@ func (fs *FS) PathExists(name string) bool {
 
 // IsNotExist reports whether err indicates a missing path.
 //
-// This helper uses errors.Is to match os.ErrNotExist.
+// This helper uses [errors.Is] to match [os.ErrNotExist].
 func (*FS) IsNotExist(err error) bool {
 	return errors.Is(err, fs.ErrNotExist)
 }

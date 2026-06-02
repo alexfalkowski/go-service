@@ -16,7 +16,7 @@ import (
 // # Enablement model
 //
 // Enablement is modeled by presence:
-//   - A nil *Config means "token support disabled" at the top level.
+//   - A nil *[Config] means "token support disabled" at the top level.
 //   - When enabled, individual token implementations may still be disabled if their
 //     nested configuration is nil (for example JWT == nil while Kind == "jwt").
 //
@@ -32,7 +32,7 @@ import (
 // in the corresponding field (JWT/Paseto/SSH).
 //
 // If Kind is unknown, the token facade treats the configuration as invalid and
-// [Token.Generate]/[Token.Verify] return token/errors.ErrInvalidConfig.
+// [Token.Generate]/[Token.Verify] return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 //
 // # Access control (Access)
 //

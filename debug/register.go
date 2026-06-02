@@ -13,7 +13,7 @@ import (
 
 // RegisterParams defines dependencies for registering built-in debug endpoints.
 //
-// It is an Fx parameter struct (`di.In`) used to install the built-in debug handlers
+// It is an Fx parameter struct ([di.In]) used to install the built-in debug handlers
 // on the debug mux when debug is enabled.
 type RegisterParams struct {
 	di.In

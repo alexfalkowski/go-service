@@ -15,6 +15,6 @@
 // gateway, ingress, load balancer, or service-mesh limiter when those attempts
 // need quota enforcement.
 //
-// Start with `UnaryServerInterceptor` or `StreamServerInterceptor` for server-side limiting and
-// `UnaryClientInterceptor` or `StreamClientInterceptor` for client-side limiting.
+// Start with [UnaryServerInterceptor] or [StreamServerInterceptor] for server-side limiting and
+// [UnaryClientInterceptor] or [StreamClientInterceptor] for client-side limiting.
 package limiter

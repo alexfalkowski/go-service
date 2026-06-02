@@ -12,7 +12,7 @@ import (
 
 // ProviderParams defines dependencies used to register an OpenFeature provider.
 //
-// It is intended for dependency injection (Fx/Dig). The FeatureProvider dependency is marked as optional
+// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The FeatureProvider dependency is marked as optional
 // so services may include feature wiring without necessarily providing a concrete provider.
 type ProviderParams struct {
 	di.In
@@ -68,7 +68,7 @@ func Register(params ProviderParams) {
 
 // NewClient returns an OpenFeature client named after the service.
 //
-// The returned client is created via openfeature.NewClient using the service name string. Callers use the
+// The returned client is created via [openfeature.NewClient] using the service name string. Callers use the
 // client to evaluate feature flags/values against the currently configured provider.
 func NewClient(name env.Name) *openfeature.Client {
 	return openfeature.NewClient(name.String())

@@ -16,9 +16,9 @@
 // [ConvertRecover] is intended to be used with `recover()` in deferred functions.
 // It converts an arbitrary recovered value into an error, wrapping it with
 // [ErrRecovered] to provide a consistent sentinel that can be detected via
-// errors.Is. The original panic value is preserved in the returned error string
+// [errors.Is]. The original panic value is preserved in the returned error string
 // and, when it is already an error, is wrapped so it remains available via
-// errors.As.
+// [errors.As].
 //
 // Example:
 //
@@ -35,7 +35,7 @@
 // # Version reporting
 //
 // [Version] returns the build version of the running binary by reading build info
-// via runtime/debug.ReadBuildInfo. When build info is unavailable, [Version]
+// via [runtime/debug.ReadBuildInfo]. When build info is unavailable, [Version]
 // returns "development".
 //
 // Note: the exact value depends on how the binary is built. For example, builds

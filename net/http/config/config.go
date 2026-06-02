@@ -4,7 +4,7 @@ import "github.com/alexfalkowski/go-service/v2/crypto/tls"
 
 // Config configures the internal HTTP server wiring.
 //
-// This config is used by go-service HTTP server adapters (for example `net/http/server.NewServer`) to
+// This config is used by go-service HTTP server adapters (for example [github.com/alexfalkowski/go-service/v2/net/http/server.NewServer]) to
 // create a listener and serve HTTP with optional TLS.
 //
 // It is intentionally minimal: it models the bind address and optional TLS configuration. Higher-level
@@ -13,7 +13,7 @@ import "github.com/alexfalkowski/go-service/v2/crypto/tls"
 type Config struct {
 	// TLS configures the TLS settings used by the HTTP server.
 	//
-	// When TLS is non-nil, server wiring typically assigns it to the underlying `net/http.Server.TLSConfig`
+	// When TLS is non-nil, server wiring typically assigns it to the underlying [github.com/alexfalkowski/go-service/v2/net/http.Server.TLSConfig]
 	// and serves TLS using `ServeTLS` with empty certificate/key paths (because the certificate material
 	// is expected to be provided by the TLSConfig).
 	//

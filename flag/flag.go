@@ -8,7 +8,7 @@ import (
 
 // NewFlagSet creates a new FlagSet with the given name.
 //
-// The returned FlagSet wraps the standard library flag.FlagSet and uses flag.ContinueOnError so callers
+// The returned FlagSet wraps the standard library [flag.FlagSet] and uses [flag.ContinueOnError] so callers
 // can handle parse errors explicitly (instead of terminating the process).
 func NewFlagSet(name string) *FlagSet {
 	set := flag.NewFlagSet(name, flag.ContinueOnError)
@@ -17,10 +17,10 @@ func NewFlagSet(name string) *FlagSet {
 
 // FlagSet represents a set of defined flags.
 //
-// It wraps flag.FlagSet and provides optional support for the conventional go-service configuration
+// It wraps [flag.FlagSet] and provides optional support for the conventional go-service configuration
 // flag ("-config" / "-c") used by the config subsystem to route decoding.
 //
-// This type is intentionally minimal: you can still use the embedded *flag.FlagSet to define and parse
+// This type is intentionally minimal: you can still use the embedded *[flag.FlagSet] to define and parse
 // arbitrary flags.
 type FlagSet struct {
 	config *string

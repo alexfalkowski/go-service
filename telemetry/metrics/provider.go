@@ -56,8 +56,8 @@ type MeterProviderParams struct {
 // NewMeterProvider:
 //
 //  1. Creates an OpenTelemetry resource describing the running service.
-//  2. Constructs an SDK `*metric.MeterProvider` with the provided reader.
-//  3. Installs it globally via `otel.SetMeterProvider`.
+//  2. Constructs an SDK *[go.opentelemetry.io/otel/sdk/metric.MeterProvider] with the provided reader.
+//  3. Installs it globally via [go.opentelemetry.io/otel.SetMeterProvider].
 //  4. Registers lifecycle hooks:
 //     - OnStart: starts runtime and host instrumentation using this provider
 //     - OnStop: shuts down the provider

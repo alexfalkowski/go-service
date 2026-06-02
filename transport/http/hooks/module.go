@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/hooks"
 )
 
-// Module wires HTTP webhook handler helpers into Fx.
+// Module wires HTTP webhook handler helpers into [go.uber.org/fx].
 var Module = di.Module(
 	hooks.Module,
 	di.Constructor(NewWebhook),

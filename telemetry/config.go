@@ -16,7 +16,7 @@ import (
 //   - Metrics configures metrics collection/readers/exporters.
 //   - Tracer configures distributed tracing (spans) and exporters.
 //
-// Enablement is intentionally modeled as presence: a nil *Config indicates that
+// Enablement is intentionally modeled as presence: a nil *[Config] indicates that
 // telemetry is disabled at the top level. Subpackages may also implement their
 // own enable/disable semantics based on their specific config (for example nil
 // config or an empty kind).

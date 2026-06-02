@@ -15,7 +15,7 @@ import (
 	retryable "github.com/hashicorp/go-retryablehttp"
 )
 
-// Config is an alias for `github.com/alexfalkowski/go-service/v2/transport/retry.Config`.
+// Config is an alias for [github.com/alexfalkowski/go-service/v2/transport/retry.Config].
 //
 // It describes the retry policy used by NewRoundTripper:
 //   - `Attempts`: maximum number of attempts including the initial attempt.
@@ -97,10 +97,10 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 	}
 }
 
-// RoundTripper wraps an underlying `http.RoundTripper` and retries requests according to its configuration.
+// RoundTripper wraps an underlying [http.RoundTripper] and retries requests according to its configuration.
 //
 // Each attempt:
-//   - runs the underlying `RoundTrip` with a derived per-attempt timeout,
+//   - runs the underlying [http.RoundTripper.RoundTrip] with a derived per-attempt timeout,
 //   - re-creates the request body for subsequent attempts when `req.GetBody` is available, and
 //   - retries only selected HTTP status codes for responses and status errors.
 //   - retries recoverable transport errors using `retryablehttp.DefaultRetryPolicy`.

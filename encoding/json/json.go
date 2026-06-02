@@ -38,8 +38,8 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs a JSON encoder.
 //
 // NewEncoder returns an [Encoder] that satisfies
-// `github.com/alexfalkowski/go-service/v2/encoding.Encoder` while delegating to
-// the standard library's `encoding/json` implementation with readable indented
+// [github.com/alexfalkowski/go-service/v2/encoding.Encoder] while delegating to
+// the standard library's [encoding/json] implementation with readable indented
 // encoding and default decoding.
 func NewEncoder() *Encoder {
 	return defaultEncoder
@@ -48,7 +48,7 @@ func NewEncoder() *Encoder {
 // Encoder implements JSON encoding and decoding.
 //
 // It writes readable indented JSON and uses the standard library
-// `encoding/json` decoder.
+// [encoding/json] decoder.
 type Encoder struct{}
 
 // Encode writes v to w as JSON.
@@ -97,7 +97,7 @@ func Unmarshal(data []byte, v any) error {
 
 // Valid reports whether data is syntactically valid JSON.
 //
-// It behaves exactly like `encoding/json.Valid`.
+// It behaves exactly like [encoding/json.Valid].
 func Valid(data []byte) bool {
 	return json.Valid(data)
 }

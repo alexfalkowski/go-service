@@ -4,7 +4,7 @@ import "github.com/alexfalkowski/go-service/v2/time"
 
 // Config configures JWT issuance and verification for the go-service JWT token kind.
 //
-// This configuration is consumed by Token.Generate and Token.Verify.
+// This configuration is consumed by [Token.Generate] and [Token.Verify].
 //
 // # Claims and headers
 //
@@ -32,7 +32,7 @@ import "github.com/alexfalkowski/go-service/v2/time"
 //
 // # Enablement
 //
-// Enablement is modeled by presence: a nil *Config disables the JWT implementation and
+// Enablement is modeled by presence: a nil *[Config] disables the JWT implementation and
 // NewToken returns nil.
 type Config struct {
 	// Issuer is written to and verified against the `iss` claim.

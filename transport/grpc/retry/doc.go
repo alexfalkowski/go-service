@@ -9,5 +9,5 @@
 // request-id identifies the logical request and is stable across retry attempts, so services that retry writes
 // should deduplicate by request-id. Callers that need different retry eligibility can pass an explicit policy.
 //
-// Start with `Config` and `UnaryClientInterceptor`.
+// Start with [Config] and [UnaryClientInterceptor].
 package retry

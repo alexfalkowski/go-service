@@ -17,14 +17,14 @@ type Config struct {
 
 // IsEnabled reports whether AES configuration is enabled.
 //
-// By convention, a nil *Config is treated as "AES disabled" by wiring that depends on this configuration.
+// By convention, a nil *[Config] is treated as "AES disabled" by wiring that depends on this configuration.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }
 
 // GetKey resolves and returns the AES key bytes using the configured Key source.
 //
-// It delegates to fs.ReadSource(c.Key) and returns any read/resolve error from that operation.
+// It delegates to [os.FS.ReadSource] with [Config.Key] and returns any read/resolve error from that operation.
 func (c *Config) GetKey(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.Key)
 }

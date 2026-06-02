@@ -12,7 +12,7 @@
 //
 // # Enablement model
 //
-// Tracing is enabled by kind: a nil *Config or an empty Config.Kind indicates tracing
+// Tracing is enabled by kind: a nil *[Config] or an empty [Config.Kind] indicates tracing
 // is not configured. When disabled, Register installs this package's noop provider.
 // IsEnabled reports whether the current global provider is not that noop provider.
 //
@@ -23,7 +23,7 @@
 // spans using this provider.
 //
 // This package does not configure propagation. Propagation is configured at the top-level
-// telemetry package (telemetry.Register), which sets the global TextMapPropagator used for
+// telemetry package ([Register]), which sets the global TextMapPropagator used for
 // context extraction/injection on supported transports (HTTP/gRPC) when instrumentation
 // uses the global propagator.
 //
@@ -40,13 +40,13 @@
 // The supported kind is "otlp". Unknown non-empty kinds cause Register to return
 // ErrNotFound.
 //
-// The exporter request headers are provided by Config.Headers. Header values may be
+// The exporter request headers are provided by [Config.Headers]. Header values may be
 // configured as go-service "source strings" (for example "env:NAME", "file:/path", or a
-// literal value) and are resolved by telemetry/header.Map.Secrets or
-// telemetry/header.Map.MustSecrets by the consumer that projects configuration before
+// literal value) and are resolved by [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.Secrets] or
+// [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.MustSecrets] by the consumer that projects configuration before
 // constructing exporters.
 //
-// When Config.Headers is non-empty, non-loopback "http://" OTLP endpoints are
+// When [Config.Headers] is non-empty, non-loopback "http://" OTLP endpoints are
 // rejected to avoid sending credential-bearing headers over cleartext transport.
 // Use "https://" for external collectors. Local development collectors on
 // "localhost" or loopback IP addresses may use "http://".

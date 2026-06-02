@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
-// KeyMap is an alias for `limiter.KeyMap`.
+// KeyMap is an alias for [limiter.KeyMap].
 //
 // It maps limiter key kinds (for example, "user-agent" or "ip") to functions that derive a rate-limit key
 // from the request context.
@@ -21,7 +21,7 @@ type KeyMap = limiter.KeyMap
 //
 // If cfg is disabled, it returns (nil, nil) so callers can treat the limiter as not configured.
 //
-// The returned limiter is backed by `limiter.NewLimiter` and is registered with the provided lifecycle.
+// The returned limiter is backed by [limiter.NewLimiter] and is registered with the provided lifecycle.
 // The `keys` map controls how request contexts are turned into limiter keys (for example, per user-agent).
 func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
 	if !cfg.IsEnabled() {
@@ -36,22 +36,22 @@ func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Serve
 	return &Server{rateLimiter}, nil
 }
 
-// Server wraps `*limiter.Limiter` for gRPC server integration.
+// Server wraps *[limiter.Limiter] for gRPC server integration.
 type Server struct {
 	*limiter.Limiter
 }
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
 //
-// Operation unary RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsOperationMethod`).
+// Operation unary RPC methods (health/metrics/etc.) bypass limiting (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
 // Stream RPCs do not bypass limiting because long-lived streams, such as health Watch, can hold server resources
 // until the client disconnects.
 //
 // On every request, the interceptor calls `limiter.Take(ctx)` to determine whether the request is allowed:
 //
-//   - If `Take` returns an error, the interceptor returns `codes.Internal`.
+//   - If `Take` returns an error, the interceptor returns [codes.Internal].
 //   - If `Take` returns a header string, it is attached to response metadata as the "ratelimit" header.
-//   - If the request is not allowed, the interceptor returns `codes.ResourceExhausted`.
+//   - If the request is not allowed, the interceptor returns [codes.ResourceExhausted].
 //   - Otherwise, it invokes the handler.
 //
 // Callers should only install this interceptor when limiter is non-nil.
@@ -87,9 +87,9 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 //
 // On every stream, the interceptor calls `limiter.Take(ctx)` to determine whether the stream is allowed:
 //
-//   - If `Take` returns an error, the interceptor returns `codes.Internal`.
+//   - If `Take` returns an error, the interceptor returns [codes.Internal].
 //   - If `Take` returns a header string, it is attached to response metadata as the "ratelimit" header.
-//   - If the stream is not allowed, the interceptor returns `codes.ResourceExhausted`.
+//   - If the stream is not allowed, the interceptor returns [codes.ResourceExhausted].
 //   - Otherwise, it invokes the handler.
 //
 // Callers should only install this interceptor when limiter is non-nil.
@@ -114,7 +114,7 @@ func StreamServerInterceptor(limiter *Server) grpc.StreamServerInterceptor {
 //
 // If cfg is disabled, it returns (nil, nil) so callers can treat the limiter as not configured.
 //
-// The returned limiter is backed by `limiter.NewLimiter` and is registered with the provided lifecycle.
+// The returned limiter is backed by [limiter.NewLimiter] and is registered with the provided lifecycle.
 // The `keys` map controls how request contexts are turned into limiter keys.
 func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
 	if !cfg.IsEnabled() {
@@ -129,7 +129,7 @@ func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Clien
 	return &Client{rateLimiter}, nil
 }
 
-// Client wraps `*limiter.Limiter` for gRPC client integration.
+// Client wraps *[limiter.Limiter] for gRPC client integration.
 type Client struct {
 	*limiter.Limiter
 }
@@ -138,8 +138,8 @@ type Client struct {
 //
 // The interceptor calls `limiter.Take(ctx)` before invoking the RPC:
 //
-//   - If `Take` returns an error, it returns `codes.Internal`.
-//   - If the request is not allowed, it returns `codes.ResourceExhausted`.
+//   - If `Take` returns an error, it returns [codes.Internal].
+//   - If the request is not allowed, it returns [codes.ResourceExhausted].
 //   - Otherwise, it invokes the underlying `invoker`.
 //
 // Callers should only install this interceptor when limiter is non-nil.
@@ -162,8 +162,8 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 //
 // The interceptor calls `limiter.Take(ctx)` before opening the stream:
 //
-//   - If `Take` returns an error, it returns `codes.Internal`.
-//   - If the stream is not allowed, it returns `codes.ResourceExhausted`.
+//   - If `Take` returns an error, it returns [codes.Internal].
+//   - If the stream is not allowed, it returns [codes.ResourceExhausted].
 //   - Otherwise, it invokes the underlying `streamer`.
 //
 // Callers should only install this interceptor when limiter is non-nil.

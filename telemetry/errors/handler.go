@@ -2,7 +2,7 @@ package errors
 
 import "go.opentelemetry.io/otel"
 
-// ErrorHandler is an alias for otel.ErrorHandler.
+// ErrorHandler is an alias for [otel.ErrorHandler].
 type ErrorHandler = otel.ErrorHandler
 
 // GetHandler returns the global OpenTelemetry error handler.

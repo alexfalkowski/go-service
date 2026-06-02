@@ -11,7 +11,7 @@ import (
 // ErrBinaryEncoding is returned when a webhook-protected event uses binary HTTP encoding.
 var ErrBinaryEncoding = errors.New("events: binary encoding is not supported for webhooks")
 
-// Webhook is an alias for `transport/http/hooks.Webhook`.
+// Webhook is an alias for [github.com/alexfalkowski/go-service/v2/transport/http/hooks.Webhook].
 //
 // It is re-exported from this package to provide a CloudEvents-focused import path while still using the
 // shared webhook implementation.
@@ -34,7 +34,7 @@ func NewHandler(hook *Webhook, handler http.Handler) *Handler {
 	return &Handler{handler: hooks.NewHandler(hook), Handler: handler}
 }
 
-// Handler wraps an http.Handler and applies webhook verification middleware.
+// Handler wraps an [http.Handler] and applies webhook verification middleware.
 //
 // When webhook support is disabled, Handler becomes a pass-through wrapper.
 type Handler struct {

@@ -19,7 +19,7 @@ func NewNTPNetwork(address string) *NTPNetwork {
 
 // NTPNetwork implements Network by querying an NTP server for the current time.
 //
-// This type is a small adapter around github.com/beevik/ntp. It prefixes returned errors
+// This type is a small adapter around [github.com/beevik/ntp]. It prefixes returned errors
 // with "ntp" to make failures easier to attribute when multiple time sources are possible.
 type NTPNetwork struct {
 	address string

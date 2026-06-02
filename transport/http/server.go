@@ -24,9 +24,9 @@ import (
 	"github.com/klauspost/compress/gzhttp"
 )
 
-// ServerParams defines dependencies for constructing an HTTP transport `Server`.
+// ServerParams defines dependencies for constructing an HTTP transport [Server].
 //
-// It is an Fx parameter struct (`di.In`) that collects the configuration and optional dependencies used
+// It is an Fx parameter struct ([di.In]) that collects the configuration and optional dependencies used
 // to build and run the HTTP server.
 //
 // Optional fields:
@@ -37,7 +37,7 @@ import (
 type ServerParams struct {
 	di.In
 
-	// Shutdowner is used by the underlying `*server.Service` to coordinate shutdown.
+	// Shutdowner is used by the underlying *[server.Service] to coordinate shutdown.
 	Shutdowner di.Shutdowner
 
 	// Mux is the HTTP request multiplexer that holds registered routes/handlers.
@@ -79,7 +79,7 @@ type ServerParams struct {
 	Handlers []ChainedHandler `optional:"true"`
 }
 
-// NewServer constructs an HTTP transport `Server` when the transport is enabled.
+// NewServer constructs an HTTP transport [Server] when the transport is enabled.
 //
 // If `params.Config` is disabled, it returns (nil, nil) so that downstream wiring can treat the server
 // as not configured.
@@ -87,13 +87,13 @@ type ServerParams struct {
 // Middleware composition:
 //
 // The server is built using Negroni and composes middleware in this order (first listed runs first):
-//   - metadata extraction/injection and response headers (`net/http/meta`)
-//   - optional logging (`transport/http/telemetry/logger`) when `params.Logger` is non-nil
-//   - optional token verification (`transport/http/token`) when `params.Verifier` is non-nil
-//   - optional rate limiting (`transport/http/limiter`) when `params.Limiter` is non-nil
-//   - inbound request body size limiting (`transport/http/body`)
+//   - metadata extraction/injection and response headers ([github.com/alexfalkowski/go-service/v2/net/http/meta])
+//   - optional logging ([github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger]) when `params.Logger` is non-nil
+//   - optional token verification ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Verifier` is non-nil
+//   - optional rate limiting ([github.com/alexfalkowski/go-service/v2/transport/http/limiter]) when `params.Limiter` is non-nil
+//   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v2/transport/http/body])
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
-//   - gzip compression wrapping the mux not-found handler (`gzhttp.GzipHandler(http.NewNotFoundHandler(...))`)
+//   - gzip compression wrapping the mux not-found handler ([github.com/klauspost/compress/gzhttp.GzipHandler] with [http.NewNotFoundHandler])
 //
 // Token verification and rate limiting middleware typically treat "ignorable" paths (health/metrics/etc.)
 // as bypassable, so those endpoints do not require auth and do not consume limiter capacity by default.
@@ -101,7 +101,7 @@ type ServerParams struct {
 // TLS:
 //
 // If TLS is enabled, TLS configuration is constructed using the package-registered filesystem dependency
-// (see `Register` in this package) to resolve TLS "source strings" (for example `file:` or `env:`).
+// (see [Register] in this package) to resolve TLS "source strings" (for example `file:` or `env:`).
 //
 // Inbound size limits:
 //
@@ -157,7 +157,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Server wraps an HTTP server service wrapper.
 //
-// The embedded `*httpserver.Service` provides start/stop orchestration and integrates with the application's
+// The embedded *[httpserver.Service] provides start/stop orchestration and integrates with the application's
 // lifecycle.
 type Server struct {
 	*httpserver.Service
@@ -167,7 +167,7 @@ type Server struct {
 //
 // It returns nil if s is nil (for example, when the transport is disabled).
 // This method is commonly used by higher-level wiring to collect enabled server services for lifecycle
-// registration (see `transport.NewServers` and `net/server.Register`).
+// registration (see [github.com/alexfalkowski/go-service/v2/transport.NewServers] and [github.com/alexfalkowski/go-service/v2/net/server.Register]).
 func (s *Server) GetService() *httpserver.Service {
 	if s == nil {
 		return nil

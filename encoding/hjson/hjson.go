@@ -10,8 +10,8 @@ var defaultEncoder = &Encoder{}
 
 // NewEncoder constructs an HJSON encoder.
 //
-// This encoder is a thin adapter around `github.com/hjson/hjson-go` that satisfies
-// `github.com/alexfalkowski/go-service/v2/encoding.Encoder`.
+// This encoder is a thin adapter around [github.com/hjson/hjson-go] that satisfies
+// [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }

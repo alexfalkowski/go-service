@@ -19,122 +19,122 @@ import (
 	"google.golang.org/grpc/stats"
 )
 
-// CallOption is an alias of grpc.CallOption.
+// CallOption is an alias of [grpc.CallOption].
 //
 // It represents a per-RPC option (for example compression, per-call
 // credentials, etc.) passed to a client call.
 type CallOption = grpc.CallOption
 
-// ClientConn is an alias of grpc.ClientConn.
+// ClientConn is an alias of [grpc.ClientConn].
 //
 // It represents a virtual connection to a gRPC endpoint and is used to create
 // generated service clients.
 type ClientConn = grpc.ClientConn
 
-// ClientConnInterface is an alias of grpc.ClientConnInterface.
+// ClientConnInterface is an alias of [grpc.ClientConnInterface].
 //
 // It represents the subset of client connection behavior required by generated
 // service clients.
 type ClientConnInterface = grpc.ClientConnInterface
 
-// ClientStream is an alias of grpc.ClientStream.
+// ClientStream is an alias of [grpc.ClientStream].
 //
 // It is the client-side stream interface used by streaming RPCs.
 type ClientStream = grpc.ClientStream
 
-// DialOption is an alias of grpc.DialOption.
+// DialOption is an alias of [grpc.DialOption].
 //
 // It configures client connection creation (dialing, credentials, interceptors,
 // stats handlers, etc.).
 type DialOption = grpc.DialOption
 
-// EmptyServerOption is an alias of grpc.EmptyServerOption.
+// EmptyServerOption is an alias of [grpc.EmptyServerOption].
 //
 // It is used when building server options that conditionally return "no option".
 type EmptyServerOption = grpc.EmptyServerOption
 
-// UnaryInvoker is an alias of grpc.UnaryInvoker.
+// UnaryInvoker is an alias of [grpc.UnaryInvoker].
 //
 // It is the function signature used by unary client interceptors to invoke the
 // next interceptor/transport.
 type UnaryInvoker = grpc.UnaryInvoker
 
-// ServerOption is an alias of grpc.ServerOption.
+// ServerOption is an alias of [grpc.ServerOption].
 //
 // It configures server construction (credentials, interceptors, keepalive,
 // stats handlers, etc.).
 type ServerOption = grpc.ServerOption
 
-// Server is an alias of grpc.Server.
+// Server is an alias of [grpc.Server].
 //
 // It is the gRPC server implementation that hosts registered services.
 type Server = grpc.Server
 
-// ServerStream is an alias of grpc.ServerStream.
+// ServerStream is an alias of [grpc.ServerStream].
 //
 // It is the server-side stream interface used by streaming RPCs.
 type ServerStream = grpc.ServerStream
 
-// ServiceRegistrar is an alias of grpc.ServiceRegistrar.
+// ServiceRegistrar is an alias of [grpc.ServiceRegistrar].
 //
-// It is implemented by *grpc.Server and is accepted by generated Register*
+// It is implemented by *[grpc.Server] and is accepted by generated Register*
 // functions.
 type ServiceRegistrar = grpc.ServiceRegistrar
 
-// StreamClientInterceptor is an alias of grpc.StreamClientInterceptor.
+// StreamClientInterceptor is an alias of [grpc.StreamClientInterceptor].
 //
 // It intercepts client-side streaming RPCs.
 type StreamClientInterceptor = grpc.StreamClientInterceptor
 
-// StreamDesc is an alias of grpc.StreamDesc.
+// StreamDesc is an alias of [grpc.StreamDesc].
 //
 // It describes streaming RPC characteristics.
 type StreamDesc = grpc.StreamDesc
 
-// Streamer is an alias of grpc.Streamer.
+// Streamer is an alias of [grpc.Streamer].
 //
 // It is the function signature used by stream client interceptors to create a
 // client stream.
 type Streamer = grpc.Streamer
 
-// StreamHandler is an alias of grpc.StreamHandler.
+// StreamHandler is an alias of [grpc.StreamHandler].
 //
 // It is the function signature used by stream server interceptors to handle a
 // server stream.
 type StreamHandler = grpc.StreamHandler
 
-// StreamServerInfo is an alias of grpc.StreamServerInfo.
+// StreamServerInfo is an alias of [grpc.StreamServerInfo].
 //
 // It provides information about a streaming RPC to a server interceptor.
 type StreamServerInfo = grpc.StreamServerInfo
 
-// StreamServerInterceptor is an alias of grpc.StreamServerInterceptor.
+// StreamServerInterceptor is an alias of [grpc.StreamServerInterceptor].
 //
 // It intercepts server-side streaming RPCs.
 type StreamServerInterceptor = grpc.StreamServerInterceptor
 
-// UnaryClientInterceptor is an alias of grpc.UnaryClientInterceptor.
+// UnaryClientInterceptor is an alias of [grpc.UnaryClientInterceptor].
 //
 // It intercepts client-side unary RPCs.
 type UnaryClientInterceptor = grpc.UnaryClientInterceptor
 
-// UnaryHandler is an alias of grpc.UnaryHandler.
+// UnaryHandler is an alias of [grpc.UnaryHandler].
 //
 // It is the function signature used by unary server interceptors to invoke the
 // handler.
 type UnaryHandler = grpc.UnaryHandler
 
-// UnaryServerInfo is an alias of grpc.UnaryServerInfo.
+// UnaryServerInfo is an alias of [grpc.UnaryServerInfo].
 //
 // It provides information about a unary RPC to a server interceptor.
 type UnaryServerInfo = grpc.UnaryServerInfo
 
-// UnaryServerInterceptor is an alias of grpc.UnaryServerInterceptor.
+// UnaryServerInterceptor is an alias of [grpc.UnaryServerInterceptor].
 //
 // It intercepts server-side unary RPCs.
 type UnaryServerInterceptor = grpc.UnaryServerInterceptor
 
-// TransportCredentials is an alias of credentials.TransportCredentials.
+// TransportCredentials is an alias of [credentials.TransportCredentials].
 type TransportCredentials = credentials.TransportCredentials
 
 // StatusText returns the standard gRPC status text for the code.
@@ -156,7 +156,7 @@ func ParseServiceMethod(name string) (string, string) {
 
 // StatsHandler returns a ServerOption that installs h as the server stats handler.
 //
-// This is a thin wrapper around grpc.StatsHandler. A stats handler observes RPC
+// This is a thin wrapper around [grpc.StatsHandler]. A stats handler observes RPC
 // lifecycle events (for example for telemetry) and is invoked by the gRPC
 // server runtime.
 func StatsHandler(h stats.Handler) ServerOption {
@@ -165,7 +165,7 @@ func StatsHandler(h stats.Handler) ServerOption {
 
 // WithStatsHandler returns a DialOption that installs h as the client stats handler.
 //
-// This is a thin wrapper around grpc.WithStatsHandler. A stats handler observes
+// This is a thin wrapper around [grpc.WithStatsHandler]. A stats handler observes
 // outbound RPC lifecycle events (for example for telemetry) and is invoked by
 // the gRPC client runtime.
 func WithStatsHandler(h stats.Handler) DialOption {
@@ -174,7 +174,7 @@ func WithStatsHandler(h stats.Handler) DialOption {
 
 // ChainUnaryInterceptor returns a ServerOption that chains unary server interceptors.
 //
-// It forwards to grpc.ChainUnaryInterceptor. Interceptors are executed in the
+// It forwards to [grpc.ChainUnaryInterceptor]. Interceptors are executed in the
 // order provided.
 func ChainUnaryInterceptor(interceptors ...UnaryServerInterceptor) ServerOption {
 	return grpc.ChainUnaryInterceptor(interceptors...)
@@ -182,7 +182,7 @@ func ChainUnaryInterceptor(interceptors ...UnaryServerInterceptor) ServerOption 
 
 // ChainStreamInterceptor returns a ServerOption that chains stream server interceptors.
 //
-// It forwards to grpc.ChainStreamInterceptor. Interceptors are executed in the
+// It forwards to [grpc.ChainStreamInterceptor]. Interceptors are executed in the
 // order provided.
 func ChainStreamInterceptor(interceptors ...StreamServerInterceptor) ServerOption {
 	return grpc.ChainStreamInterceptor(interceptors...)
@@ -190,22 +190,22 @@ func ChainStreamInterceptor(interceptors ...StreamServerInterceptor) ServerOptio
 
 // Creds returns a ServerOption that configures server-side transport credentials.
 //
-// It forwards to grpc.Creds. For TLS, use NewTLS to create
-// credentials.TransportCredentials from a go-service `crypto/tls.Config`.
+// It forwards to [grpc.Creds]. For TLS, use NewTLS to create
+// [credentials.TransportCredentials] from a go-service [github.com/alexfalkowski/go-service/v2/crypto/tls.Config].
 func Creds(c credentials.TransportCredentials) ServerOption {
 	return grpc.Creds(c)
 }
 
 // MaxRecvMsgSize returns a ServerOption that caps inbound message size in bytes.
 //
-// This is a thin wrapper around grpc.MaxRecvMsgSize.
+// This is a thin wrapper around [grpc.MaxRecvMsgSize].
 func MaxRecvMsgSize(m int) ServerOption {
 	return grpc.MaxRecvMsgSize(m)
 }
 
 // NewClient creates a new gRPC client channel for target using opts.
 //
-// This forwards to grpc.NewClient. No I/O is performed during construction; the
+// This forwards to [grpc.NewClient]. No I/O is performed during construction; the
 // returned ClientConn connects automatically when it is used for RPCs (or when
 // Connect is called explicitly).
 //
@@ -217,7 +217,7 @@ func NewClient(target string, opts ...DialOption) (*ClientConn, error) {
 
 // NewInsecureCredentials returns transport credentials that disable transport security.
 //
-// This is a thin wrapper around insecure.NewCredentials. Use this only for local
+// This is a thin wrapper around [insecure.NewCredentials]. Use this only for local
 // development/testing or when transport security is provided out-of-band.
 func NewInsecureCredentials() credentials.TransportCredentials {
 	return insecure.NewCredentials()
@@ -225,8 +225,8 @@ func NewInsecureCredentials() credentials.TransportCredentials {
 
 // NewTLS constructs TLS transport credentials from c.
 //
-// This is a thin wrapper around credentials.NewTLS. The provided
-// `crypto/tls.Config` is used by the gRPC transport for handshake and peer
+// This is a thin wrapper around [credentials.NewTLS]. The provided
+// [github.com/alexfalkowski/go-service/v2/crypto/tls.Config] is used by the gRPC transport for handshake and peer
 // verification.
 func NewTLS(c *tls.Config) credentials.TransportCredentials {
 	return credentials.NewTLS(c)
@@ -234,7 +234,7 @@ func NewTLS(c *tls.Config) credentials.TransportCredentials {
 
 // SetHeader sets the header metadata that will be sent back to the client.
 //
-// This forwards to grpc.SetHeader. It is typically called by a handler to add
+// This forwards to [grpc.SetHeader]. It is typically called by a handler to add
 // response headers.
 func SetHeader(ctx context.Context, md meta.Map) error {
 	return grpc.SetHeader(ctx, md)
@@ -242,7 +242,7 @@ func SetHeader(ctx context.Context, md meta.Map) error {
 
 // Header returns a call option that captures response header metadata.
 //
-// This forwards to grpc.Header. The provided map is populated by the client
+// This forwards to [grpc.Header]. The provided map is populated by the client
 // call with any header metadata returned by the server.
 func Header(md *meta.Map) CallOption {
 	return grpc.Header(md)
@@ -250,7 +250,7 @@ func Header(md *meta.Map) CallOption {
 
 // TimeoutUnaryClientInterceptor returns a unary client interceptor that applies a per-RPC timeout.
 //
-// This forwards to timeout.UnaryClientInterceptor from go-grpc-middleware.
+// This forwards to [timeout.UnaryClientInterceptor] from go-grpc-middleware.
 // The interceptor typically wraps the outgoing context with a deadline of d.
 func TimeoutUnaryClientInterceptor(d time.Duration) grpc.UnaryClientInterceptor {
 	return timeout.UnaryClientInterceptor(d.Duration())
@@ -258,7 +258,7 @@ func TimeoutUnaryClientInterceptor(d time.Duration) grpc.UnaryClientInterceptor 
 
 // UseCompressor returns a CallOption that requests message compression by name.
 //
-// This forwards to grpc.UseCompressor. The compressor must be registered with
+// This forwards to [grpc.UseCompressor]. The compressor must be registered with
 // gRPC (for example gzip is installed by importing
 // google.golang.org/grpc/encoding/gzip).
 func UseCompressor(name string) CallOption {
@@ -267,7 +267,7 @@ func UseCompressor(name string) CallOption {
 
 // WithChainUnaryInterceptor returns a DialOption that chains unary client interceptors.
 //
-// This forwards to grpc.WithChainUnaryInterceptor. Interceptors are executed in
+// This forwards to [grpc.WithChainUnaryInterceptor]. Interceptors are executed in
 // the order provided.
 func WithChainUnaryInterceptor(interceptors ...UnaryClientInterceptor) DialOption {
 	return grpc.WithChainUnaryInterceptor(interceptors...)
@@ -275,7 +275,7 @@ func WithChainUnaryInterceptor(interceptors ...UnaryClientInterceptor) DialOptio
 
 // WithChainStreamInterceptor returns a DialOption that chains stream client interceptors.
 //
-// This forwards to grpc.WithChainStreamInterceptor. Interceptors are executed in
+// This forwards to [grpc.WithChainStreamInterceptor]. Interceptors are executed in
 // the order provided.
 func WithChainStreamInterceptor(interceptors ...StreamClientInterceptor) DialOption {
 	return grpc.WithChainStreamInterceptor(interceptors...)
@@ -283,7 +283,7 @@ func WithChainStreamInterceptor(interceptors ...StreamClientInterceptor) DialOpt
 
 // WithContextDialer returns a DialOption that sets the dial function used to create connections.
 //
-// This forwards to grpc.WithContextDialer. The dialer is invoked with the
+// This forwards to [grpc.WithContextDialer]. The dialer is invoked with the
 // outgoing context and the resolved address.
 func WithContextDialer(f func(context.Context, string) (net.Conn, error)) DialOption {
 	return grpc.WithContextDialer(f)
@@ -291,7 +291,7 @@ func WithContextDialer(f func(context.Context, string) (net.Conn, error)) DialOp
 
 // WithDefaultCallOptions returns a DialOption that configures default CallOptions.
 //
-// This forwards to grpc.WithDefaultCallOptions. The provided options are applied
+// This forwards to [grpc.WithDefaultCallOptions]. The provided options are applied
 // to all RPCs created from the resulting connection unless overridden per-call.
 func WithDefaultCallOptions(cos ...CallOption) DialOption {
 	return grpc.WithDefaultCallOptions(cos...)
@@ -299,23 +299,23 @@ func WithDefaultCallOptions(cos ...CallOption) DialOption {
 
 // WithUserAgent returns a DialOption that sets the user-agent string for the connection.
 //
-// This forwards to grpc.WithUserAgent.
+// This forwards to [grpc.WithUserAgent].
 func WithUserAgent(s string) DialOption {
 	return grpc.WithUserAgent(s)
 }
 
 // WithTransportCredentials returns a DialOption that configures client-side transport credentials.
 //
-// This forwards to grpc.WithTransportCredentials. For TLS, use NewTLS to
-// create credentials.TransportCredentials from a go-service
-// `crypto/tls.Config`.
+// This forwards to [grpc.WithTransportCredentials]. For TLS, use NewTLS to
+// create [credentials.TransportCredentials] from a go-service
+// [github.com/alexfalkowski/go-service/v2/crypto/tls.Config].
 func WithTransportCredentials(creds credentials.TransportCredentials) DialOption {
 	return grpc.WithTransportCredentials(creds)
 }
 
 // WithKeepaliveParams configures client keepalive ping interval and timeout.
 //
-// This forwards to grpc.WithKeepaliveParams, setting PermitWithoutStream to true
+// This forwards to [grpc.WithKeepaliveParams], setting PermitWithoutStream to true
 // so that the client may send pings even when there are no active RPC streams.
 func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 	return grpc.WithKeepaliveParams(keepalive.ClientParameters{
@@ -325,7 +325,7 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 	})
 }
 
-// NewServer constructs a *grpc.Server with standard keepalive configuration and reflection enabled.
+// NewServer constructs a *[grpc.Server] with standard keepalive configuration and reflection enabled.
 //
 // Keepalive enforcement, connection establishment timeout, and server parameters are
 // populated from options using the following duration keys (falling back to timeout
@@ -348,7 +348,7 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 //   - initial_conn_window_size
 //   - max_send_msg_size
 //
-// This function always registers server reflection via reflection.Register so
+// This function always registers server reflection via [reflection.Register] so
 // tools such as grpcurl can discover services. Deployments that should not expose
 // reflection publicly should restrict access with bind addresses, TLS/client
 // authentication, ingress policy, firewall rules, or service-mesh authorization.

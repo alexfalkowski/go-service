@@ -2,9 +2,9 @@ package health
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module wires the health server into Fx/Dig.
+// Module wires the health server into [go.uber.org/fx]/[go.uber.org/dig].
 //
-// It provides a constructor for `*server.Server` (from github.com/alexfalkowski/go-health/v2/server)
+// It provides a constructor for `*server.Server` (from [github.com/alexfalkowski/go-health/v2/server])
 // via [NewServer], which is started/stopped automatically using Fx lifecycle hooks.
 //
 // Additional health check registrations are typically provided by other packages (including

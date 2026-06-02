@@ -18,7 +18,7 @@ var ErrInvalidSize = errors.New("rand: invalid size")
 
 // NewReader returns a cryptographically secure random Reader.
 //
-// This is a thin wrapper around crypto/rand.Reader.
+// This is a thin wrapper around [crypto/rand.Reader].
 func NewReader() Reader {
 	if fips140.Enforced() {
 		return rand.Reader
@@ -29,7 +29,7 @@ func NewReader() Reader {
 
 // Reader is a cryptographically secure random source.
 //
-// It is intentionally the same shape as io.Reader while remaining part of this package's crypto API.
+// It is intentionally the same shape as [io.Reader] while remaining part of this package's crypto API.
 type Reader io.Reader
 
 // NewGenerator constructs a Generator that draws randomness from reader.

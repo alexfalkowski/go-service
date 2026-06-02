@@ -9,17 +9,17 @@ import "github.com/alexfalkowski/go-service/v2/os"
 //
 // # Model and policy sources
 //
-// Model and Policy are resolved with os.FS.ReadSource and loaded into Casbin
+// Model and Policy are resolved with [os.FS.ReadSource] and loaded into Casbin
 // from the resolved content.
 //
 // # Enablement
 //
-// Enablement is modeled by presence: a nil *Config disables access control wiring,
+// Enablement is modeled by presence: a nil *[Config] disables access control wiring,
 // and NewController returns (nil, nil).
 type Config struct {
 	// Model is the access control model source string.
 	//
-	// It supports the go-service source string pattern implemented by `os.FS.ReadSource`:
+	// It supports the go-service source string pattern implemented by [os.FS.ReadSource]:
 	//   - "env:NAME" to read model content from an environment variable,
 	//   - "file:/path/to/model.conf" to read model content from a file, or
 	//   - any other value treated as literal model content.
@@ -27,7 +27,7 @@ type Config struct {
 
 	// Policy is the access control policy source string.
 	//
-	// It supports the go-service source string pattern implemented by `os.FS.ReadSource`:
+	// It supports the go-service source string pattern implemented by [os.FS.ReadSource]:
 	//   - "env:NAME" to read policy content from an environment variable,
 	//   - "file:/path/to/policy.csv" to read policy content from a file, or
 	//   - any other value treated as literal policy content.
@@ -43,7 +43,7 @@ func (c *Config) IsEnabled() bool {
 
 // GetModel resolves and returns the configured model content.
 //
-// It delegates to `fs.ReadSource(c.Model)` and returns any read/resolve error
+// It delegates to [os.FS.ReadSource] with [Config.Model] and returns any read/resolve error
 // from that operation.
 func (c *Config) GetModel(fs *os.FS) (string, error) {
 	model, err := fs.ReadSource(c.Model)
@@ -52,7 +52,7 @@ func (c *Config) GetModel(fs *os.FS) (string, error) {
 
 // GetPolicy resolves and returns the configured policy content.
 //
-// It delegates to `fs.ReadSource(c.Policy)` and returns any read/resolve error
+// It delegates to [os.FS.ReadSource] with [Config.Policy] and returns any read/resolve error
 // from that operation.
 func (c *Config) GetPolicy(fs *os.FS) (string, error) {
 	policy, err := fs.ReadSource(c.Policy)

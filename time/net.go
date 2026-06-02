@@ -21,7 +21,7 @@ var ErrNotFound = errors.New("time: network not found")
 // If cfg.Kind is not recognized, NewNetwork returns (nil, ErrNotFound).
 //
 // Note: Address validation is provider-specific. NewNetwork does not validate
-// cfg.Address; providers typically return an error from Network.Now when the
+// cfg.Address; providers typically return an error from [Network.Now] when the
 // address is empty or invalid.
 func NewNetwork(cfg *Config) (Network, error) {
 	if !cfg.IsEnabled() {

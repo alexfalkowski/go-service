@@ -32,7 +32,7 @@ func AppendNotZero[T any](slice []T, elems ...T) []T {
 
 // Backward returns an iterator over index-value pairs in slice, traversing it backward.
 //
-// It is a thin wrapper around the standard library slices.Backward.
+// It is a thin wrapper around the standard library [slices.Backward].
 func Backward[S ~[]E, E any](slice S) iter.Seq2[int, E] {
 	return slices.Backward(slice)
 }
@@ -41,7 +41,7 @@ func Backward[S ~[]E, E any](slice S) iter.Seq2[int, E] {
 // indicating whether a match was found.
 //
 // This helper is equivalent to:
-//   - computing slices.IndexFunc(slice, f), and
+//   - computing [slices.IndexFunc](slice, f), and
 //   - returning slice[index] when index != -1,
 //
 // but returns the element directly instead of an index.
@@ -58,7 +58,7 @@ func ElemFunc[T any](slice []*T, f func(*T) bool) (*T, bool) {
 
 // Clip removes unused capacity from slice.
 //
-// It is a thin wrapper around the standard library slices.Clip. Use it when a
+// It is a thin wrapper around the standard library [slices.Clip]. Use it when a
 // returned slice may share a backing array with neighboring values and future
 // appends should allocate instead of modifying that shared backing array.
 func Clip[T any](slice []T) []T {
@@ -67,35 +67,35 @@ func Clip[T any](slice []T) []T {
 
 // Clone returns a copy of slice.
 //
-// It is a thin wrapper around the standard library slices.Clone.
+// It is a thin wrapper around the standard library [slices.Clone].
 func Clone[S ~[]E, E any](slice S) S {
 	return slices.Clone(slice)
 }
 
 // Collect collects values from seq into a new slice.
 //
-// It is a thin wrapper around the standard library slices.Collect.
+// It is a thin wrapper around the standard library [slices.Collect].
 func Collect[E any](seq iter.Seq[E]) []E {
 	return slices.Collect(seq)
 }
 
 // Contains reports whether v is present in slice.
 //
-// It is a thin wrapper around the standard library slices.Contains.
+// It is a thin wrapper around the standard library [slices.Contains].
 func Contains[S ~[]E, E comparable](slice S, v E) bool {
 	return slices.Contains(slice, v)
 }
 
 // ContainsFunc reports whether at least one element of slice satisfies f.
 //
-// It is a thin wrapper around the standard library slices.ContainsFunc.
+// It is a thin wrapper around the standard library [slices.ContainsFunc].
 func ContainsFunc[S ~[]E, E any](slice S, f func(E) bool) bool {
 	return slices.ContainsFunc(slice, f)
 }
 
 // DeleteFunc removes any elements from slice for which del returns true.
 //
-// It is a thin wrapper around the standard library slices.DeleteFunc.
+// It is a thin wrapper around the standard library [slices.DeleteFunc].
 func DeleteFunc[S ~[]E, E any](slice S, del func(E) bool) S {
 	return slices.DeleteFunc(slice, del)
 }

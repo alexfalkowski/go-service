@@ -55,35 +55,35 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 // This is typically used to inject a transport that includes additional middleware such as:
 // retries, circuit breakers, auth/token injection, custom TLS, etc.
 //
-// If not provided, NewClient uses http.Transport(nil) (go-service's tuned default transport).
+// If not provided, NewClient uses [http.Transport](nil) (go-service's tuned default transport).
 func WithRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.roundTripper = rt
 	})
 }
 
-// WithTimeout sets the overall request timeout on the underlying http.Client.
+// WithTimeout sets the overall request timeout on the underlying [http.Client].
 //
-// The timeout value is assigned to http.Client.Timeout (total time limit for a request, including
+// The timeout value is assigned to [http.Client.Timeout] (total time limit for a request, including
 // connection time, redirects, and reading the response body).
 //
-// If not provided, NewClient defaults to time.DefaultTimeout.
+// If not provided, NewClient defaults to [time.DefaultTimeout].
 func WithTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = timeout
 	})
 }
 
-// WithMaxResponseSize sets the maximum response body size buffered by Client.Do.
+// WithMaxResponseSize sets the maximum response body size buffered by [Client.Do].
 //
-// If not provided, NewClient defaults to bytes.DefaultSize.
+// If not provided, NewClient defaults to [bytes.DefaultSize].
 func WithMaxResponseSize(size bytes.Size) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.maxResponseSize = size
 	})
 }
 
-// WithRedirect sets the redirect policy used by the underlying http.Client.
+// WithRedirect sets the redirect policy used by the underlying [http.Client].
 //
 // If not provided, NewClient uses RedirectSameOrigin so credential/signature
 // middleware supplied through WithRoundTripper cannot be replayed to a different
@@ -99,7 +99,7 @@ func WithRedirect(redirect Redirect) ClientOption {
 //
 // It reuses buffers from pool and applies the configured transport, timeout, and redirect policy.
 //
-// The underlying *http.Client is constructed via http.NewClient, which sets http.Client.Timeout and
+// The underlying *[http.Client] is constructed via [http.NewClient], which sets [http.Client.Timeout] and
 // instruments requests with OpenTelemetry when tracing or metrics are enabled.
 //
 // Callers should treat the returned Client as safe for concurrent use.
@@ -149,7 +149,7 @@ func (o Options) HasResponse() bool {
 	return o.Response != nil
 }
 
-// Client wraps *http.Client with content-aware encoding and decoding helpers.
+// Client wraps *[http.Client] with content-aware encoding and decoding helpers.
 //
 // It is intended for service-to-service calls where payload formats are selected by Content-Type.
 // The Client uses a shared buffer pool to reduce allocations when encoding/decoding bodies.

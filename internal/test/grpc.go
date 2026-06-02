@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 )
 
-// MetaServerStream is a grpc.ServerStream test double that records response headers.
+// MetaServerStream is a [grpc.ServerStream] test double that records response headers.
 type MetaServerStream struct {
 	grpc.ServerStream
 	Header meta.Map
@@ -32,7 +32,7 @@ func NewWatchStream(ctx context.Context) *WatchStream {
 	return &WatchStream{Ctx: ctx, Responses: make(chan *health.Response, 4)}
 }
 
-// WatchStream is a grpc.ServerStream test double for health watch tests.
+// WatchStream is a [grpc.ServerStream] test double for health watch tests.
 type WatchStream struct {
 	grpc.ServerStream
 	Ctx       context.Context
@@ -54,25 +54,25 @@ func (w *WatchStream) Send(resp *health.Response) error {
 	}
 }
 
-// SetHeader implements grpc.ServerStream.
+// SetHeader implements [grpc.ServerStream].
 func (*WatchStream) SetHeader(meta.Map) error {
 	return nil
 }
 
-// SendHeader implements grpc.ServerStream.
+// SendHeader implements [grpc.ServerStream].
 func (*WatchStream) SendHeader(meta.Map) error {
 	return nil
 }
 
-// SetTrailer implements grpc.ServerStream.
+// SetTrailer implements [grpc.ServerStream].
 func (*WatchStream) SetTrailer(meta.Map) {}
 
-// SendMsg implements grpc.ServerStream.
+// SendMsg implements [grpc.ServerStream].
 func (*WatchStream) SendMsg(any) error {
 	return nil
 }
 
-// RecvMsg implements grpc.ServerStream.
+// RecvMsg implements [grpc.ServerStream].
 func (*WatchStream) RecvMsg(any) error {
 	return nil
 }

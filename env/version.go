@@ -11,10 +11,10 @@ import (
 // NewVersion returns the service version.
 //
 // It prefers the SERVICE_VERSION environment variable when set; otherwise it falls back to
-// runtime.Version().
+// [runtime.Version]().
 //
 // The returned Version is not normalized at construction time; normalization (currently stripping a
-// leading "v") is applied when calling Version.String.
+// leading "v") is applied when calling [Version.String].
 func NewVersion() Version {
 	return Version(cmp.Or(os.Getenv("SERVICE_VERSION"), runtime.Version()))
 }

@@ -17,7 +17,7 @@
 // files. go-service supports a "source string" convention that allows a configured
 // value to be read from an alternate source at runtime.
 //
-// Map.Secrets traverses the map and resolves each value using os.FS.ReadSource,
+// [Map.Secrets] traverses the map and resolves each value using [os.FS.ReadSource],
 // which supports these forms:
 //
 //   - "env:NAME"    reads the value of environment variable NAME.
@@ -27,13 +27,13 @@
 // After resolving, the map is updated in place so each header value becomes the
 // final literal value that exporters should send.
 //
-// Map.MustSecrets behaves like Map.Secrets but panics on any resolution error via
-// runtime.Must. This is intended for strict startup paths where missing secrets
+// [Map.MustSecrets] behaves like [Map.Secrets] but panics on any resolution error via
+// [runtime.Must]. This is intended for strict startup paths where missing secrets
 // should abort service startup.
 //
 // # Mutability and usage notes
 //
-// Map.Secrets and Map.MustSecrets mutate the map in place. If you need to preserve
+// [Map.Secrets] and [Map.MustSecrets] mutate the map in place. If you need to preserve
 // the original configured source strings, copy the map before resolving.
 //
 // This package does not itself attach headers to exporters; it provides a consistent

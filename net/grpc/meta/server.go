@@ -35,7 +35,7 @@ import (
 //     "request-id"
 //
 // If the Authorization header is present but invalid, the interceptor returns a
-// `codes.InvalidArgument` gRPC status error.
+// [codes.InvalidArgument] gRPC status error.
 func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.UnaryServerInterceptor {
 	serviceVersion := version.String()
 

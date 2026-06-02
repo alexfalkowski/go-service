@@ -19,14 +19,14 @@ var ErrDecoderSizeExceeded = zstd.ErrDecoderSizeExceeded
 
 // NewCompressor constructs a Zstandard (zstd) compressor implementation.
 //
-// The returned value implements `github.com/alexfalkowski/go-service/v2/compress.Compressor`.
+// The returned value implements [github.com/alexfalkowski/go-service/v2/compress.Compressor].
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }
 
 // Compressor implements Zstandard (zstd) compression.
 //
-// It satisfies the `github.com/alexfalkowski/go-service/v2/compress.Compressor` interface.
+// It satisfies the [github.com/alexfalkowski/go-service/v2/compress.Compressor] interface.
 type Compressor struct{}
 
 // Compress returns the zstd-compressed representation of data.

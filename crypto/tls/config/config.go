@@ -87,7 +87,7 @@ func (c *Config) HasServerName() bool {
 // GetCert resolves and returns the certificate bytes from the configured source
 // string.
 //
-// It delegates to fs.ReadSource(c.Cert) and returns any read/resolve error
+// It delegates to [os.FS.ReadSource] with [Config.Cert] and returns any read/resolve error
 // from that operation.
 func (c *Config) GetCert(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.Cert)
@@ -96,7 +96,7 @@ func (c *Config) GetCert(fs *os.FS) ([]byte, error) {
 // GetKey resolves and returns the private key bytes from the configured source
 // string.
 //
-// It delegates to fs.ReadSource(c.Key) and returns any read/resolve error
+// It delegates to [os.FS.ReadSource] with [Config.Key] and returns any read/resolve error
 // from that operation.
 func (c *Config) GetKey(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.Key)
@@ -105,7 +105,7 @@ func (c *Config) GetKey(fs *os.FS) ([]byte, error) {
 // GetCA resolves and returns the peer CA bytes from the configured source
 // string.
 //
-// It delegates to fs.ReadSource(c.CA) and returns any read/resolve error
+// It delegates to [os.FS.ReadSource] with [Config.CA] and returns any read/resolve error
 // from that operation.
 func (c *Config) GetCA(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.CA)

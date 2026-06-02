@@ -27,8 +27,8 @@ type Generator struct {
 //
 // The returned values are compatible with the expectations of [Config]:
 //
-//   - public: SSH authorized_keys format (via x/crypto/ssh.MarshalAuthorizedKey)
-//   - private: PEM-encoded SSH private key (via x/crypto/ssh.MarshalPrivateKey and pem.EncodeToMemory)
+//   - public: SSH authorized_keys format (via [golang.org/x/crypto/ssh.MarshalAuthorizedKey])
+//   - private: PEM-encoded SSH private key (via [golang.org/x/crypto/ssh.MarshalPrivateKey] and [pem.EncodeToMemory])
 //
 // If key generation, marshaling, or encoding fails, the returned error is prefixed with "ssh".
 func (g *Generator) Generate() (string, string, error) {

@@ -43,7 +43,7 @@ const (
 // It is a named type over int64 so it can expose config-friendly text and JSON
 // marshaling helpers while remaining easy to convert at API boundaries.
 //
-// Size uses the decimal units understood by `github.com/docker/go-units`, such
+// Size uses the decimal units understood by [github.com/docker/go-units], such
 // as `B`, `kB`, `MB`, `GB`, and `TB`.
 //
 // Formatting and parsing intentionally follow go-units compatibility behavior.
@@ -111,7 +111,7 @@ func (s *Size) UnmarshalJSON(data []byte) error {
 // ParseSize parses a human-readable decimal size string.
 //
 // The input uses the suffix compatibility rules from
-// `github.com/docker/go-units.FromHumanSize`. Parsed values are decimal sizes,
+// [github.com/docker/go-units.FromHumanSize]. Parsed values are decimal sizes,
 // so accepted suffix spellings such as `MB` and `MiB` both use the decimal `M`
 // multiplier.
 func ParseSize(s string) (Size, error) {
@@ -123,7 +123,7 @@ func ParseSize(s string) (Size, error) {
 //
 // This helper is intended for strict startup/configuration paths where an invalid
 // size is considered a fatal configuration/programming error. It panics by
-// calling runtime.Must on the parse error.
+// calling [runtime.Must] on the parse error.
 //
 // If you need recoverable error handling, use ParseSize instead.
 func MustParseSize(s string) Size {

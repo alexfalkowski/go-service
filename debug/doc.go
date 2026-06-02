@@ -8,7 +8,7 @@
 // At a high level, the debug subsystem consists of:
 //
 //   - A debug HTTP server ([Server]) that runs independently from the main service server.
-//   - A debug router (debug/http.ServeMux) used to register endpoints.
+//   - A debug router ([github.com/alexfalkowski/go-service/v2/debug/http.ServeMux]) used to register endpoints.
 //   - Built-in endpoint registrations installed through [Register].
 //
 // [Register] is the public front door for endpoint registration. The debug module wiring
@@ -27,7 +27,7 @@
 // # TLS
 //
 // When TLS is enabled for the debug server, the package uses
-// config/server.NewConfig to resolve crypto/tls/config.Config source
+// [github.com/alexfalkowski/go-service/v2/config/server.NewConfig] to resolve [github.com/alexfalkowski/go-service/v2/crypto/tls/config.Config] source
 // strings and build the runtime *crypto/tls.Config assigned to the underlying
 // HTTP server.
 //

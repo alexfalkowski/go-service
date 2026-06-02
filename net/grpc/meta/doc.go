@@ -2,7 +2,7 @@
 //
 // The package serves two related purposes:
 //
-//   - it wraps common `google.golang.org/grpc/metadata` context helpers and map
+//   - it wraps common [google.golang.org/grpc/metadata] context helpers and map
 //     constructors so repository code can depend on a single go-service import
 //     path for gRPC metadata operations
 //   - it re-exports the small subset of the root `meta` package that gRPC
@@ -49,8 +49,8 @@
 // strips or overwrites client-supplied forwarding metadata before traffic
 // reaches the service.
 //
-// Start with `UnaryServerInterceptor` / `StreamServerInterceptor` for
-// server-side extraction and `UnaryClientInterceptor` /
-// `StreamClientInterceptor` for client-side injection. Use `ExtractIncoming`
-// and `ExtractOutgoing` when you need mutable copies of metadata maps.
+// Start with [UnaryServerInterceptor] / [StreamServerInterceptor] for
+// server-side extraction and [UnaryClientInterceptor] /
+// [StreamClientInterceptor] for client-side injection. Use [ExtractIncoming]
+// and [ExtractOutgoing] when you need mutable copies of metadata maps.
 package meta

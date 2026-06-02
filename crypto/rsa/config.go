@@ -11,12 +11,12 @@ import (
 
 // Config configures RSA key loading for the RSA-OAEP encryptor/decryptor wired by this package.
 //
-// Public and Private are "source strings" resolved by crypto/pem.Decoder (for example "env:NAME", "file:/path",
+// Public and Private are "source strings" resolved by [github.com/alexfalkowski/go-service/v2/crypto/pem.Decoder] (for example "env:NAME", "file:/path",
 // or a literal PEM value).
 //
 // Expected key formats:
-//   - Public: PEM block "RSA PUBLIC KEY" containing PKCS#1-encoded bytes (parsed via x509.ParsePKCS1PublicKey).
-//   - Private: PEM block "RSA PRIVATE KEY" containing PKCS#1-encoded bytes (parsed via x509.ParsePKCS1PrivateKey).
+//   - Public: PEM block "RSA PUBLIC KEY" containing PKCS#1-encoded bytes (parsed via [crypto/x509.ParsePKCS1PublicKey]).
+//   - Private: PEM block "RSA PRIVATE KEY" containing PKCS#1-encoded bytes (parsed via [crypto/x509.ParsePKCS1PrivateKey]).
 type Config struct {
 	// Public is a "source string" for the RSA public key PEM.
 	//
@@ -31,14 +31,14 @@ type Config struct {
 
 // IsEnabled reports whether RSA configuration is enabled.
 //
-// By convention, a nil *Config is treated as "RSA disabled" by wiring that depends on this configuration.
+// By convention, a nil *[Config] is treated as "RSA disabled" by wiring that depends on this configuration.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }
 
 // PublicKey loads and parses the configured RSA public key.
 //
-// It decodes a PEM "RSA PUBLIC KEY" block and parses it as a PKCS#1 public key (x509.ParsePKCS1PublicKey).
+// It decodes a PEM "RSA PUBLIC KEY" block and parses it as a PKCS#1 public key ([crypto/x509.ParsePKCS1PublicKey]).
 func (c *Config) PublicKey(decoder *pem.Decoder) (*rsa.PublicKey, error) {
 	d, err := decoder.Decode(c.Public, "RSA PUBLIC KEY")
 	if err != nil {
@@ -58,7 +58,7 @@ func (c *Config) PublicKey(decoder *pem.Decoder) (*rsa.PublicKey, error) {
 
 // PrivateKey loads and parses the configured RSA private key.
 //
-// It decodes a PEM "RSA PRIVATE KEY" block and parses it as a PKCS#1 private key (x509.ParsePKCS1PrivateKey).
+// It decodes a PEM "RSA PRIVATE KEY" block and parses it as a PKCS#1 private key ([crypto/x509.ParsePKCS1PrivateKey]).
 func (c *Config) PrivateKey(decoder *pem.Decoder) (*rsa.PrivateKey, error) {
 	d, err := decoder.Decode(c.Private, "RSA PRIVATE KEY")
 	if err != nil {

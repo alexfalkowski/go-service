@@ -9,7 +9,7 @@ import (
 // NewName returns the service name.
 //
 // It prefers the SERVICE_NAME environment variable when set; otherwise it falls back to the executable
-// name as determined by fs.ExecutableName.
+// name as determined by [fs.ExecutableName].
 //
 // The filesystem dependency exists to support consistent name derivation across environments and to
 // enable tests to control the executable name behavior.

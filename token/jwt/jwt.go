@@ -29,7 +29,7 @@ var SigningMethodEdDSA = jwt.SigningMethodEdDSA
 
 // NewToken constructs a Token that issues and validates JWTs according to cfg.
 //
-// The resulting Token uses Ed25519 keys for signing and verification and an id.Generator
+// The resulting Token uses Ed25519 keys for signing and verification and an [id.Generator]
 // for producing unique JWT IDs (jti). The keys are provided by the caller (typically via DI).
 //
 // Enablement is modeled by presence: if cfg is nil, NewToken returns nil.
@@ -42,10 +42,10 @@ func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Ge
 
 // Token generates and verifies JWTs signed using Ed25519 (EdDSA).
 //
-// Issued tokens use standard registered claims (jwt.RegisteredClaims) and include a
+// Issued tokens use standard registered claims ([github.com/golang-jwt/jwt/v4.RegisteredClaims]) and include a
 // "kid" header to bind the token to a configured key identity.
 //
-// Missing generation or verification dependencies are reported as token/errors.ErrInvalidConfig.
+// Missing generation or verification dependencies are reported as [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 type Token struct {
 	cfg       *Config
 	signer    *ed25519.Signer
@@ -64,7 +64,7 @@ type Token struct {
 //   - iat: set to the current time
 //   - nbf: set to the current time
 //   - exp: set to now + parsed cfg.Expiration
-//   - jti: generated via the provided id.Generator
+//   - jti: generated via the provided [id.Generator]
 //
 // In addition, it sets the JWT header:
 //
@@ -99,7 +99,7 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //   - The JWT header "kid" exists, is non-empty, and matches cfg.KeyID exactly.
 //   - The issuer claim ("iss") matches cfg.Issuer.
 //   - The audience claim ("aud") contains the expected aud.
-//   - Registered claim time validity using jwt.RegisteredClaims.Valid (exp/nbf/iat).
+//   - Registered claim time validity using [github.com/golang-jwt/jwt/v4.RegisteredClaims.Valid] (exp/nbf/iat).
 //   - The signed lifetime (exp - iat) does not exceed cfg.Expiration.
 //
 // This method returns sentinel errors from token/errors for some common classes of

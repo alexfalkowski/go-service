@@ -21,11 +21,11 @@ import (
 
 // ClientOption configures gRPC client construction.
 //
-// Client options are applied when building dial options (see `NewDialOptions`) and when assembling
-// interceptor chains (see `UnaryClientInterceptors`).
+// Client options are applied when building dial options (see [NewDialOptions]) and when assembling
+// interceptor chains (see [UnaryClientInterceptors]).
 //
 // Most options are orthogonal and can be combined. Some options enable behavior by providing a non-nil
-// dependency (for example, retries are enabled when `WithClientRetry` provides a non-nil config).
+// dependency (for example, retries are enabled when [WithClientRetry] provides a non-nil config).
 type ClientOption interface {
 	apply(opts *clientOpts)
 }
@@ -81,7 +81,7 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 
 // WithClientTimeout sets the default per-RPC timeout applied by the unary timeout interceptor.
 //
-// If unset or negative, a default timeout is applied (see `NewDialOptions` defaults).
+// If unset or negative, a default timeout is applied (see [NewDialOptions] defaults).
 //
 // Note: this timeout is enforced via an interceptor and is independent from any deadlines already set
 // on the incoming context; the interceptor will typically only apply a timeout when a deadline is not
@@ -96,7 +96,7 @@ func WithClientTimeout(timeout time.Duration) ClientOption {
 //
 // Keepalive affects connection liveness detection and can help discover broken connections.
 //
-// If either value is unset (0), it defaults to the resolved client timeout (see `NewDialOptions`).
+// If either value is unset (0), it defaults to the resolved client timeout (see [NewDialOptions]).
 func WithClientKeepalive(ping, timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.keepalivePing = ping
@@ -138,7 +138,7 @@ func WithClientBreaker(opts ...breaker.Option) ClientOption {
 //
 // TLS configuration is materialized when building dial options. A non-nil sec enables TLS, including an
 // empty config that relies on system roots and the target host name. Source strings may be resolved via the
-// package-registered filesystem (see the package `Register` function).
+// package-registered filesystem (see the package [Register] function).
 func WithClientTLS(sec *tls.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.security = sec
@@ -199,8 +199,8 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 // WithClientUserAgent sets the user agent string used for the gRPC connection and metadata propagation.
 //
 // The value is used in two places:
-//   - as the gRPC dial user agent (`grpc.WithUserAgent`)
-//   - for metadata propagation via the `net/grpc/meta` interceptors
+//   - as the gRPC dial user agent ([grpc.WithUserAgent])
+//   - for metadata propagation via the [github.com/alexfalkowski/go-service/v2/net/grpc/meta] interceptors
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent
@@ -227,7 +227,7 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 	})
 }
 
-// NewDialOptions builds `grpc.DialOption` values from `ClientOption`.
+// NewDialOptions builds [grpc.DialOption] values from [ClientOption].
 //
 // Defaults (see `options()`):
 //   - timeout: 30s
@@ -237,7 +237,7 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 //   - if keepalive ping or timeout are not set (0), they default to the resolved timeout.
 //
 // Transport security:
-//   - if TLS is requested, TLS config is constructed using the package-registered filesystem (see `Register`)
+//   - if TLS is requested, TLS config is constructed using the package-registered filesystem (see [Register])
 //     to resolve TLS source strings.
 //   - otherwise, insecure transport credentials are used.
 //     This default is intended for local and in-cluster/container traffic where transport security is provided
@@ -282,7 +282,7 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	return ops, nil
 }
 
-// ClientConn is an alias for grpc.ClientConn.
+// ClientConn is an alias for [grpc.ClientConn].
 //
 // It is exposed so callers can refer to the concrete connection type without importing the underlying
 // gRPC wrapper package directly.
@@ -290,7 +290,7 @@ type ClientConn = grpc.ClientConn
 
 // NewClient constructs and dials a gRPC client connection to target.
 //
-// It uses dial options derived from opts (see `NewDialOptions`) and adds OpenTelemetry stats handling
+// It uses dial options derived from opts (see [NewDialOptions]) and adds OpenTelemetry stats handling
 // when tracing or metrics are enabled.
 //
 // The returned connection should be closed by the caller when no longer needed.
@@ -311,10 +311,10 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 //
 // Order matters. Interceptors are appended in the following sequence:
 //   - metadata propagation interceptor (user-agent and request-id)
-//   - any custom interceptors provided via `WithClientUnaryInterceptors`
+//   - any custom interceptors provided via [WithClientUnaryInterceptors]
 //   - a timeout interceptor
 //   - optional limiter interceptor (when configured)
-//   - optional circuit breaker interceptor (when enabled via `WithClientBreaker`)
+//   - optional circuit breaker interceptor (when enabled via [WithClientBreaker])
 //   - optional retry interceptor (when configured)
 //   - optional logging interceptor (when configured)
 //   - optional token injection interceptor (when configured)

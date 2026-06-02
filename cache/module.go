@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// Module wires the cache subsystem into Fx.
+// Module wires the cache subsystem into [go.uber.org/fx].
 //
 // It provides, in order:
 //   - a cache [driver.Driver] (see [driver.NewDriver])

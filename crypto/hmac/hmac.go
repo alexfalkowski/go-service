@@ -59,9 +59,9 @@ func (s *Signer) Sign(msg []byte) ([]byte, error) {
 
 // Verify checks that sig is a valid HMAC-SHA-512 for msg.
 //
-// Verification uses crypto/hmac.Equal to compare MACs in constant time.
+// Verification uses [crypto/hmac.Equal] to compare MACs in constant time.
 //
-// It returns crypto/errors.ErrInvalidMatch when verification fails.
+// It returns [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidMatch] when verification fails.
 func (s *Signer) Verify(sig, msg []byte) error {
 	mac := hmac.New(sha512.New, s.key)
 	mac.Write(msg)

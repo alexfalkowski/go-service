@@ -15,14 +15,14 @@ import (
 // Message, Details, Err, and Proto.
 type Status = status.Status
 
-// Code returns the gRPC status code for err as a go-service codes.Code.
+// Code returns the gRPC status code for err as a go-service [codes.Code].
 //
-// This is a thin wrapper around google.golang.org/grpc/status.Code, returning
-// the code as net/grpc/codes.Code (which aliases the upstream codes.Code type).
+// This is a thin wrapper around [google.golang.org/grpc/status.Code], returning
+// the code as [github.com/alexfalkowski/go-service/v2/net/grpc/codes.Code] (which aliases [google.golang.org/grpc/codes.Code]).
 //
 // Behavior is defined by the upstream gRPC implementation. In particular:
 //
-//   - If err is nil, the returned code is codes.OK.
+//   - If err is nil, the returned code is [codes.OK].
 //   - If err is a gRPC status error, the returned code is the status code
 //     contained in that error.
 //   - If err is not a gRPC status error, upstream behavior typically returns
@@ -37,7 +37,7 @@ func Code(err error) codes.Code {
 // FromError returns a status representation for err, if err is or wraps a gRPC
 // status error.
 //
-// This is a thin wrapper around google.golang.org/grpc/status.FromError.
+// This is a thin wrapper around [google.golang.org/grpc/status.FromError].
 // Behavior is identical to the upstream implementation:
 //
 //   - If err was produced from a gRPC status, the returned Status reflects the
@@ -45,7 +45,7 @@ func Code(err error) codes.Code {
 //   - If err wraps a gRPC status error, the returned Status preserves the
 //     underlying status while the message may incorporate wrapping context,
 //     matching upstream behavior.
-//   - Otherwise, ok is false and the returned Status represents codes.Unknown.
+//   - Otherwise, ok is false and the returned Status represents [codes.Unknown].
 func FromError(err error) (*Status, bool) {
 	return status.FromError(err)
 }
@@ -56,7 +56,7 @@ func FromError(err error) (*Status, bool) {
 // corresponding status code and message to the client. The message is client-visible by design.
 //
 // For structured status details (protobuf Any details), use the upstream status
-// API directly (for example status.New(...).WithDetails(...)).
+// API directly (for example [status.New](...).WithDetails(...)).
 func Error(c codes.Code, msg string) error {
 	if c == codes.OK {
 		return nil
@@ -67,7 +67,7 @@ func Error(c codes.Code, msg string) error {
 
 // Errorf formats a message and returns an error with the provided status code.
 //
-// This is a convenience wrapper over Error(c, fmt.Sprintf(...)).
+// This is a convenience wrapper over Error(c, [fmt.Sprintf](...)).
 func Errorf(c codes.Code, format string, a ...any) error {
 	return Error(c, fmt.Sprintf(format, a...))
 }
@@ -75,10 +75,10 @@ func Errorf(c codes.Code, format string, a ...any) error {
 // SafeError wraps err with c and a safe gRPC-prefixed status message that is safe to send to clients.
 //
 // The wrapped error remains available through Unwrap for internal inspection, while gRPC sends the safe message instead
-// of err.Error(). If c is codes.OK, SafeError returns nil to preserve upstream gRPC status invariants.
+// of err.Error(). If c is [codes.OK], SafeError returns nil to preserve upstream gRPC status invariants.
 //
-// Return the SafeError result directly from gRPC handlers. If the result is later wrapped with fmt.Errorf("%w"),
-// upstream status.FromError may include that outer wrapping text in the client-visible status message. Put internal
+// Return the SafeError result directly from gRPC handlers. If the result is later wrapped with [fmt.Errorf]("%w"),
+// upstream [status.FromError] may include that outer wrapping text in the client-visible status message. Put internal
 // context in err before passing it to SafeError instead.
 func SafeError(c codes.Code, err error) error {
 	if c == codes.OK {
@@ -91,7 +91,7 @@ func SafeError(c codes.Code, err error) error {
 // SafeErrorf formats internal context around err and wraps it with a safe gRPC-prefixed status message.
 //
 // The formatted context and err remain available through Unwrap for internal inspection, while gRPC sends the
-// safe message instead of the formatted cause. If c is codes.OK, SafeErrorf returns nil to preserve upstream
+// safe message instead of the formatted cause. If c is [codes.OK], SafeErrorf returns nil to preserve upstream
 // gRPC status invariants.
 //
 // SafeErrorf is the preferred helper when adding internal context to a safe status error. It keeps that
@@ -129,8 +129,8 @@ func (s *statusError) SafeMessage() string {
 
 // GRPCStatus returns the status sent by gRPC.
 //
-// The method name is part of google.golang.org/grpc/status.FromError's contract: gRPC detects custom
-// status errors by looking for GRPCStatus() *Status.
+// The method name is part of [google.golang.org/grpc/status.FromError]'s contract: gRPC detects custom
+// status errors by looking for GRPCStatus() *[Status].
 func (s *statusError) GRPCStatus() *Status {
 	return status.New(s.code, s.msg)
 }

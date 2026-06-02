@@ -17,7 +17,7 @@ var ErrNotFound = errors.New("id: generator not found")
 
 // MapParams defines dependencies used to construct a generator Map.
 //
-// It is intended for dependency injection (Fx/Dig). The default wiring is provided by [Module].
+// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The default wiring is provided by [Module].
 type MapParams struct {
 	di.In
 

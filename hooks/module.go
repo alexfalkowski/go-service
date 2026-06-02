@@ -2,7 +2,7 @@ package hooks
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module wires Standard Webhooks helpers into Fx/Dig.
+// Module wires Standard Webhooks helpers into [go.uber.org/fx]/[go.uber.org/dig].
 //
 // It provides constructors for:
 //   - *[Generator] (via [NewGenerator]), which generates new secret values suitable for Standard Webhooks, and

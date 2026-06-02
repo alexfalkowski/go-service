@@ -18,22 +18,22 @@ import (
 	"github.com/urfave/negroni/v3"
 )
 
-// DefaultMaxHeaderBytes is an alias of http.DefaultMaxHeaderBytes.
+// DefaultMaxHeaderBytes is an alias of [http.DefaultMaxHeaderBytes].
 const DefaultMaxHeaderBytes = http.DefaultMaxHeaderBytes
 
-// Client is an alias for net/http.Client.
+// Client is an alias for [net/http.Client].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Client = http.Client
 
-// MaxBytesError is an alias for net/http.MaxBytesError.
+// MaxBytesError is an alias for [net/http.MaxBytesError].
 //
 // It is returned when MaxBytesReader or MaxBytesHandler observes an inbound request body exceeding
 // the configured byte limit.
 type MaxBytesError = http.MaxBytesError
 
-// Handler is an alias for net/http.Handler.
+// Handler is an alias for [net/http.Handler].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
@@ -45,49 +45,49 @@ type ChainedHandler = negroni.Handler
 // ChainedHandlers is an alias for negroni.Negroni.
 type ChainedHandlers = negroni.Negroni
 
-// HandlerFunc is an alias for net/http.HandlerFunc.
+// HandlerFunc is an alias for [net/http.HandlerFunc].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type HandlerFunc = http.HandlerFunc
 
-// Header is an alias for net/http.Header.
+// Header is an alias for [net/http.Header].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Header = http.Header
 
-// Request is an alias for net/http.Request.
+// Request is an alias for [net/http.Request].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Request = http.Request
 
-// Response is an alias for net/http.Response.
+// Response is an alias for [net/http.Response].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Response = http.Response
 
-// ServeMux is an alias for net/http.ServeMux.
+// ServeMux is an alias for [net/http.ServeMux].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type ServeMux = http.ServeMux
 
-// Server is an alias for net/http.Server.
+// Server is an alias for [net/http.Server].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Server = http.Server
 
-// ResponseWriter is an alias for net/http.ResponseWriter.
+// ResponseWriter is an alias for [net/http.ResponseWriter].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type ResponseWriter = http.ResponseWriter
 
-// RoundTripper is an alias for net/http.RoundTripper.
+// RoundTripper is an alias for [net/http.RoundTripper].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
@@ -110,16 +110,16 @@ func (s ClosingRoundTripper) RoundTrip(req *Request) (*Response, error) {
 	return res, err
 }
 
-// DefaultTransport is an alias for http.DefaultTransport.
+// DefaultTransport is an alias for [http.DefaultTransport].
 var DefaultTransport = http.DefaultTransport
 
-// ErrUseLastResponse is an alias for http.ErrUseLastResponse.
+// ErrUseLastResponse is an alias for [http.ErrUseLastResponse].
 var ErrUseLastResponse = http.ErrUseLastResponse
 
-// ErrServerClosed is an alias for http.ErrServerClosed.
+// ErrServerClosed is an alias for [http.ErrServerClosed].
 var ErrServerClosed = http.ErrServerClosed
 
-// NoBody is an alias for http.NoBody.
+// NoBody is an alias for [http.NoBody].
 var NoBody = http.NoBody
 
 // NewClient constructs an HTTP client with a request timeout.
@@ -128,7 +128,7 @@ var NoBody = http.NoBody
 // transport. When tracing is enabled, it also installs an httptrace-based client trace derived from the
 // request context.
 //
-// The provided timeout is assigned to http.Client.Timeout (total time limit for requests, including
+// The provided timeout is assigned to [http.Client.Timeout] (total time limit for requests, including
 // connection time, redirects, and reading the response body).
 func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
 	var transport http.RoundTripper
@@ -196,7 +196,7 @@ func SameOriginRedirect(req *Request, via []*Request) error {
 
 // NewRequestWithContext constructs a new outgoing HTTP request with ctx.
 //
-// This is a thin wrapper around net/http.NewRequestWithContext. The returned request is canceled
+// This is a thin wrapper around [net/http.NewRequestWithContext]. The returned request is canceled
 // when ctx is canceled.
 func NewRequestWithContext(ctx context.Context, method, url string, body io.Reader) (*Request, error) {
 	return http.NewRequestWithContext(ctx, method, url, body)
@@ -204,7 +204,7 @@ func NewRequestWithContext(ctx context.Context, method, url string, body io.Read
 
 // NewServeMux constructs a new HTTP request multiplexer.
 //
-// This is a thin wrapper around net/http.NewServeMux.
+// This is a thin wrapper around [net/http.NewServeMux].
 func NewServeMux() *ServeMux {
 	return http.NewServeMux()
 }
@@ -216,7 +216,7 @@ func NewChainedHandlers(handlers ...ChainedHandler) *ChainedHandlers {
 
 // MaxBytesHandler wraps h so inbound request bodies are limited to n bytes.
 //
-// This is a thin wrapper around net/http.MaxBytesHandler.
+// This is a thin wrapper around [net/http.MaxBytesHandler].
 func MaxBytesHandler(h Handler, n int64) Handler {
 	return http.MaxBytesHandler(h, n)
 }
@@ -231,7 +231,7 @@ func HandleFunc(mux *ServeMux, pattern string, handler http.HandlerFunc) {
 
 // Handle registers handler for pattern on mux.
 //
-// When tracing or metrics are enabled, handler is wrapped with telemetry.NewHandler using the provided
+// When tracing or metrics are enabled, handler is wrapped with [telemetry.NewHandler] using the provided
 // pattern as the handler name.
 func Handle(mux *ServeMux, pattern string, handler http.Handler) {
 	if !metrics.IsEnabled() && !tracer.IsEnabled() {
@@ -244,7 +244,7 @@ func Handle(mux *ServeMux, pattern string, handler http.Handler) {
 
 // StatusText returns the standard HTTP status text for the given status code.
 //
-// This is a thin wrapper around net/http.StatusText.
+// This is a thin wrapper around [net/http.StatusText].
 func StatusText(code int) string {
 	return http.StatusText(code)
 }
@@ -262,7 +262,7 @@ func StatusText(code int) string {
 //
 // Protocols are configured via Protocols().
 //
-// Note: options.NonNegativeDuration uses MustParseDuration under the hood; invalid or negative option
+// Note: [options.NonNegativeDuration] uses MustParseDuration under the hood; invalid or negative option
 // values will panic at server construction time.
 func NewServer(options options.Map, timeout time.Duration, handler Handler) *Server {
 	return &http.Server{

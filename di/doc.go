@@ -1,8 +1,8 @@
 // Package di provides small wrappers around Uber Fx/Dig to standardize dependency injection wiring.
 //
 // This package is a thin convenience layer over:
-//   - go.uber.org/fx for application lifecycle and dependency injection wiring, and
-//   - go.uber.org/dig for error introspection (RootCause).
+//   - [go.uber.org/fx] for application lifecycle and dependency injection wiring, and
+//   - [go.uber.org/dig] for error introspection (RootCause).
 //
 // Most identifiers in this package are type aliases or small wrappers that re-export Fx/Dig concepts
 // behind a stable go-service import path. The goal is to keep wiring consistent across the module and

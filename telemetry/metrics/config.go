@@ -37,7 +37,7 @@ type Config struct {
 
 // IsEnabled reports whether metrics configuration is present.
 //
-// A nil *Config indicates metrics are disabled.
+// A nil *[Config] indicates metrics are disabled.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

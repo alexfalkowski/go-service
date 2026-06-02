@@ -8,7 +8,7 @@ import (
 // NewText constructs a protobuf text encoder.
 //
 // This encoder is a thin adapter around google.golang.org/protobuf/encoding/prototext Marshal/Unmarshal that
-// satisfies `github.com/alexfalkowski/go-service/v2/encoding.Encoder`.
+// satisfies [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
 func NewText() *Text {
 	return &Text{}
 }
@@ -22,8 +22,8 @@ type Text struct{}
 
 // Encode writes v as protobuf text format to w.
 //
-// If v does not implement proto.Message, Encode returns encoding/errors.ErrInvalidType.
-// Any marshaling error from prototext.Marshal and any write error from w.Write is returned.
+// If v does not implement proto.Message, Encode returns [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType].
+// Any marshaling error from [prototext.Marshal] and any write error from w.Write is returned.
 func (e *Text) Encode(w io.Writer, v any) error {
 	msg, err := message(v)
 	if err != nil {
@@ -42,12 +42,12 @@ func (e *Text) Encode(w io.Writer, v any) error {
 // Decode reads protobuf text format from r and unmarshals it into v.
 //
 // If v does not implement proto.Message, Decode returns
-// encoding/errors.ErrInvalidType without reading from r.
+// [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType] without reading from r.
 //
-// Decode otherwise reads all remaining bytes from r (via io.ReadAll) before
+// Decode otherwise reads all remaining bytes from r (via [io.ReadAll]) before
 // unmarshaling.
 //
-// Any read error from io.ReadAll and any unmarshal error from prototext.Unmarshal is returned.
+// Any read error from [io.ReadAll] and any unmarshal error from [prototext.Unmarshal] is returned.
 func (e *Text) Decode(r io.Reader, v any) error {
 	msg, err := message(v)
 	if err != nil {

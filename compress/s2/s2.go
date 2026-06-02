@@ -8,14 +8,14 @@ import (
 
 // NewCompressor constructs an S2 compressor implementation.
 //
-// The returned value implements `github.com/alexfalkowski/go-service/v2/compress.Compressor`.
+// The returned value implements [github.com/alexfalkowski/go-service/v2/compress.Compressor].
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }
 
 // Compressor implements S2 compression.
 //
-// It satisfies the `github.com/alexfalkowski/go-service/v2/compress.Compressor` interface.
+// It satisfies the [github.com/alexfalkowski/go-service/v2/compress.Compressor] interface.
 type Compressor struct{}
 
 // Compress returns the S2-compressed representation of data.

@@ -14,7 +14,7 @@ import (
 
 // RegisterHealth wires the standard HTTP health routes onto mux for tests.
 //
-// It delegates to transport/http/health.Register using the shared test service name and the
+// It delegates to [github.com/alexfalkowski/go-service/v2/transport/http/health.Register] using the shared test service name and the
 // provided health server so integration-style tests can exercise the same route registration
 // path used in production wiring.
 func RegisterHealth(mux *http.ServeMux, server *server.Server) {

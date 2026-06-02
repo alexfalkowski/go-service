@@ -30,8 +30,8 @@
 //   - jti (token ID): generated via the provided id.Generator
 //   - iat (issued at): set to the current time
 //   - nbf (not before): set to the current time
-//   - exp (expiration): current time + Config.Expiration
-//   - iss (issuer): from Config.Issuer
+//   - exp (expiration): current time + [Config.Expiration]
+//   - iss (issuer): from [Config.Issuer]
 //   - aud (audience): from the Generate aud argument
 //   - sub (subject): from the Generate sub argument
 //
@@ -57,7 +57,7 @@
 //
 // # Configuration and enablement
 //
-// Config provides issuer and expiration settings. A nil *Config is treated as
+// Config provides issuer and expiration settings. A nil *[Config] is treated as
 // disabled: NewToken returns nil.
 //
 // Expiration is a typed duration. In config files it is encoded using the standard
@@ -73,13 +73,13 @@
 // to NewToken. The Secret field is therefore not consumed directly by this
 // package's Token implementation.
 //
-// If your service wants to source key material from config, resolve Config.Secret
-// (using os.FS.ReadSource) and construct the Ed25519 signer/verifier accordingly
+// If your service wants to source key material from config, resolve [Config.Secret]
+// (using [os.FS.ReadSource]) and construct the Ed25519 signer/verifier accordingly
 // in your wiring layer.
 //
 // # Relationship to the top-level token facade
 //
-// Services often use the top-level token.Token facade (package token) which
-// delegates to this implementation when Config.Kind == "paseto". This package
+// Services often use the top-level [github.com/alexfalkowski/go-service/v2/token.Token] facade (package token) which
+// delegates to this implementation when [Config.Kind] == "paseto". This package
 // focuses only on the PASETO-specific format and validation rules.
 package paseto

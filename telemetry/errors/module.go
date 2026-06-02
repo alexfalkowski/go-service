@@ -2,11 +2,11 @@ package errors
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module wires OpenTelemetry global error handling into Fx.
+// Module wires OpenTelemetry global error handling into [go.uber.org/fx].
 //
 // Including this module in an Fx application provides:
 //
-//   - NewHandler: constructs a *Handler that logs OpenTelemetry internal/SDK errors
+//   - NewHandler: constructs a *[Handler] that logs OpenTelemetry internal/SDK errors
 //     through the go-service telemetry logger when logging is enabled. If no
 //     go-service logger is available, NewHandler returns nil.
 //   - Register: installs that handler as the process-wide OpenTelemetry error

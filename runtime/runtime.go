@@ -14,7 +14,7 @@ import (
 //	errors.Is(err, runtime.ErrRecovered) == true
 //
 // When the recovered value is already an error, ConvertRecover wraps it so it remains
-// accessible via errors.As.
+// accessible via [errors.As].
 var ErrRecovered = errors.New("recovered")
 
 // Must panics if err is non-nil.
@@ -51,7 +51,7 @@ func Must(err error) {
 // The returned error always includes ErrRecovered in its chain. The recovered value is
 // represented as:
 //
-//   - error: wrapped with %w (preserving the original error for errors.As / errors.Is)
+//   - error: wrapped with %w (preserving the original error for [errors.As] / [errors.Is])
 //   - string: included as text
 //   - any other value: formatted with %v
 func ConvertRecover(value any) error {

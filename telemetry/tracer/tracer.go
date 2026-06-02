@@ -21,19 +21,19 @@ var (
 	noopProvider trace.TracerProvider = noop.NewTracerProvider()
 )
 
-// ReadOnlySpan is an alias for sdktrace.ReadOnlySpan.
+// ReadOnlySpan is an alias for [go.opentelemetry.io/otel/sdk/trace.ReadOnlySpan].
 type ReadOnlySpan = sdk.ReadOnlySpan
 
-// SpanExporter is an alias for sdktrace.SpanExporter.
+// SpanExporter is an alias for [go.opentelemetry.io/otel/sdk/trace.SpanExporter].
 type SpanExporter = sdk.SpanExporter
 
-// Provider is an alias for trace.TracerProvider.
+// Provider is an alias for [trace.TracerProvider].
 type Provider = trace.TracerProvider
 
-// SDKProvider is an alias for sdktrace.TracerProvider.
+// SDKProvider is an alias for [go.opentelemetry.io/otel/sdk/trace.TracerProvider].
 type SDKProvider = sdk.TracerProvider
 
-// ProviderOption is an alias for sdktrace.TracerProviderOption.
+// ProviderOption is an alias for [go.opentelemetry.io/otel/sdk/trace.TracerProviderOption].
 type ProviderOption = sdk.TracerProviderOption
 
 // NewProvider constructs an OpenTelemetry SDK tracer provider.
@@ -82,9 +82,9 @@ type TracerParams struct {
 //
 // When tracing is configured with kind "otlp", Register:
 //
-//  1. Creates an OTLP/HTTP trace exporter using `Config.URL` and `Config.Headers`.
+//  1. Creates an OTLP/HTTP trace exporter using [Config.URL] and [Config.Headers].
 //  2. Creates an OpenTelemetry resource describing the running service.
-//  3. Installs a `sdk.TracerProvider` globally.
+//  3. Installs a [go.opentelemetry.io/otel/sdk/trace.TracerProvider] globally.
 //  4. Appends lifecycle hooks to start the exporter on application start and to
 //     shut down the provider/exporter on application stop.
 //

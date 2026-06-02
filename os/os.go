@@ -19,14 +19,14 @@ const ExitCodeServeFailure = 2
 
 // Args is the process argument vector.
 //
-// It is an alias of os.Args and is provided so go-service code can depend on
+// It is an alias of [os.Args] and is provided so go-service code can depend on
 // go-service packages consistently while still using the underlying OS
 // implementation.
 var Args = os.Args
 
 // Stdout is the standard output file descriptor.
 //
-// It is an alias of os.Stdout and is typically used for writing user-facing
+// It is an alias of [os.Stdout] and is typically used for writing user-facing
 // output from CLIs.
 var Stdout = os.Stdout
 
@@ -57,19 +57,19 @@ func Unsetenv(key string) error {
 
 // Exit causes the current program to exit with the given status code.
 //
-// This forwards to os.Exit. Note that deferred functions are not run.
+// This forwards to [os.Exit]. Note that deferred functions are not run.
 func Exit(code int) {
 	os.Exit(code)
 }
 
 // Executable returns the absolute path of the running program's executable.
 //
-// It forwards to os.Executable and panics if the executable path cannot be
-// determined (via runtime.Must).
+// It forwards to [os.Executable] and panics if the executable path cannot be
+// determined (via [runtime.Must]).
 //
 // Use this helper when inability to determine the executable is considered
 // unrecoverable for your service. If you need to handle the error, call
-// os.Executable directly.
+// [os.Executable] directly.
 func Executable() string {
 	path, err := os.Executable()
 	runtime.Must(err)
@@ -79,12 +79,12 @@ func Executable() string {
 
 // UserHomeDir returns the current user's home directory.
 //
-// It forwards to os.UserHomeDir and panics if the home directory cannot be
-// determined (via runtime.Must).
+// It forwards to [os.UserHomeDir] and panics if the home directory cannot be
+// determined (via [runtime.Must]).
 //
 // Use this helper when inability to determine the home directory is considered
 // unrecoverable for your service. If you need to handle the error, call
-// os.UserHomeDir directly.
+// [os.UserHomeDir] directly.
 func UserHomeDir() string {
 	dir, err := os.UserHomeDir()
 	runtime.Must(err)
@@ -95,12 +95,12 @@ func UserHomeDir() string {
 // UserConfigDir returns the default root directory to use for user-specific
 // configuration data.
 //
-// It forwards to os.UserConfigDir and panics if the configuration directory
-// cannot be determined (via runtime.Must).
+// It forwards to [os.UserConfigDir] and panics if the configuration directory
+// cannot be determined (via [runtime.Must]).
 //
 // Use this helper when inability to determine the config directory is considered
 // unrecoverable for your service. If you need to handle the error, call
-// os.UserConfigDir directly.
+// [os.UserConfigDir] directly.
 func UserConfigDir() string {
 	dir, err := os.UserConfigDir()
 	runtime.Must(err)

@@ -1,4 +1,4 @@
-// Package telemetry exposes selected otelsql helpers through the go-service
+// Package telemetry exposes selected [github.com/XSAM/otelsql] helpers through the go-service
 // SQL import tree.
 //
 // This package keeps repository SQL instrumentation on a go-service import path

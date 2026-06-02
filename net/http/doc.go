@@ -5,12 +5,12 @@
 //
 //   - NewClient, which applies a client timeout and wraps a RoundTripper with OpenTelemetry instrumentation
 //     when tracing or metrics are enabled,
-//   - NewServer, which builds an http.Server using configured timeouts and protocol settings,
+//   - NewServer, which builds an [http.Server] using configured timeouts and protocol settings,
 //   - Handle/HandleFunc, which register handlers with OpenTelemetry instrumentation when tracing or metrics are enabled,
 //   - Pattern and ParseServiceMethod, which help standardize route naming for telemetry.
 //
 // Server construction reads timeout keys from options.Map (`read_timeout`, `write_timeout`,
 // `idle_timeout`, `read_header_timeout`) and also supports `max_header_bytes` as an SI size string.
 //
-// Start with `NewClient` and `NewServer`.
+// Start with [NewClient] and [NewServer].
 package http

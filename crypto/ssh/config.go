@@ -11,16 +11,16 @@ import (
 
 // Config configures SSH key loading for Ed25519 keys used by this package.
 //
-// Public and Private are "source strings" resolved via os.FS.ReadSource (for example "env:NAME", "file:/path",
+// Public and Private are "source strings" resolved via [os.FS.ReadSource] (for example "env:NAME", "file:/path",
 // or a literal key value).
 //
 // Expected key formats:
-//   - Public: SSH authorized_keys format (parsed via x/crypto/ssh.ParseAuthorizedKey).
+//   - Public: SSH authorized_keys format (parsed via [golang.org/x/crypto/ssh.ParseAuthorizedKey]).
 //     Comments are allowed, but authorized_keys options and trailing entries are rejected.
-//   - Private: SSH private key format (parsed via x/crypto/ssh.ParseRawPrivateKey).
+//   - Private: SSH private key format (parsed via [golang.org/x/crypto/ssh.ParseRawPrivateKey]).
 //
 // If the provided key material is a valid SSH key but not an Ed25519 key,
-// PublicKey and PrivateKey return crypto/errors.ErrInvalidKeyType.
+// PublicKey and PrivateKey return [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType].
 type Config struct {
 	// Public is a "source string" for the SSH public key in authorized_keys format.
 	//
@@ -35,21 +35,21 @@ type Config struct {
 
 // IsEnabled reports whether SSH configuration is enabled.
 //
-// By convention, a nil *Config is treated as "SSH disabled" by wiring that depends on this configuration.
+// By convention, a nil *[Config] is treated as "SSH disabled" by wiring that depends on this configuration.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }
 
 // PublicKey resolves and parses the configured Ed25519 public key.
 //
-// It reads the public key data via os.FS.ReadSource and parses it as an SSH authorized key.
+// It reads the public key data via [os.FS.ReadSource] and parses it as an SSH authorized key.
 //
 // If the parsed SSH public key is not an Ed25519 key, PublicKey returns
-// crypto/errors.ErrInvalidKeyType. This can happen if the input is a valid
+// [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType]. This can happen if the input is a valid
 // authorized_keys entry but contains a different key type (for example RSA).
 //
-// The returned error wraps crypto/errors.ErrInvalidKeyType, so callers can use
-// errors.Is to distinguish this case from read or SSH parsing errors.
+// The returned error wraps [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType], so callers can use
+// [errors.Is] to distinguish this case from read or SSH parsing errors.
 func (c *Config) PublicKey(fs *os.FS) (ed25519.PublicKey, error) {
 	data, err := fs.ReadSource(c.Public)
 	if err != nil {
@@ -88,14 +88,14 @@ func (c *Config) PublicKey(fs *os.FS) (ed25519.PublicKey, error) {
 
 // PrivateKey resolves and parses the configured Ed25519 private key.
 //
-// It reads the private key data via os.FS.ReadSource and parses it as an SSH private key.
+// It reads the private key data via [os.FS.ReadSource] and parses it as an SSH private key.
 //
 // If the parsed SSH private key is not an Ed25519 key, PrivateKey returns
-// crypto/errors.ErrInvalidKeyType. This can happen if the input is a valid SSH
+// [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType]. This can happen if the input is a valid SSH
 // private key but contains a different key type.
 //
-// The returned error wraps crypto/errors.ErrInvalidKeyType, so callers can use
-// errors.Is to distinguish this case from read or SSH parsing errors.
+// The returned error wraps [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType], so callers can use
+// [errors.Is] to distinguish this case from read or SSH parsing errors.
 func (c *Config) PrivateKey(fs *os.FS) (ed25519.PrivateKey, error) {
 	data, err := fs.ReadSource(c.Private)
 	if err != nil {

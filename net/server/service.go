@@ -11,17 +11,17 @@ import (
 
 // NewService constructs a [Service] that manages the lifetime of server.
 //
-// name is used for attribution in log attributes under `meta.SystemKey` and as
+// name is used for attribution in log attributes under [meta.SystemKey] and as
 // the prefix when [Service.Stop] returns a shutdown error. logger may be nil;
 // the resulting Service relies on the logger package's nil-safe methods and
 // simply skips log emission in that case.
 //
 // server is expected to be a non-nil concrete implementation such as an HTTP
 // or gRPC server adapter. sh is expected to be non-nil and is used to trigger
-// application shutdown when server.Serve returns a non-nil error.
+// application shutdown when [server.Serve] returns a non-nil error.
 //
 // NewService does not validate its arguments and does not start serving. Call
-// [Service.Start] to launch server.Serve in the background.
+// [Service.Start] to launch [server.Serve] in the background.
 func NewService(name string, server Server, logger *logger.Logger, sh di.Shutdowner) *Service {
 	return &Service{name: name, server: server, logger: logger, sh: sh}
 }
@@ -36,7 +36,7 @@ func NewService(name string, server Server, logger *logger.Logger, sh di.Shutdow
 // Concurrency and lifecycle semantics:
 //   - [Service.Start] launches [Server.Serve] in a new goroutine and returns immediately.
 //   - [Service.Start] does not report Serve errors to its caller. A non-nil Serve error is
-//     logged and triggers `di.Shutdowner` with [os.ExitCodeServeFailure].
+//     logged and triggers [di.Shutdowner] with [os.ExitCodeServeFailure].
 //   - A nil Serve return is treated as normal termination and does not trigger shutdown.
 //   - [Service.Stop] calls [Server.Shutdown] synchronously with the provided context.
 //   - Service does not guard against repeated or concurrent Start/Stop calls; callers should coordinate lifecycle transitions.
@@ -53,7 +53,7 @@ type Service struct {
 // address and then calls [Server.Serve].
 //
 // If Serve returns a non-nil error, Start requests application shutdown via the
-// configured `di.Shutdowner` and logs the failure. Because Start is
+// configured [di.Shutdowner] and logs the failure. Because Start is
 // asynchronous, it never returns that Serve error directly.
 //
 // Start performs no deduplication or synchronization. Calling it more than once
@@ -84,7 +84,7 @@ func (s *Service) start() {
 // error wrapped with [errors.Prefix] using the service name for attribution. A
 // successful shutdown returns nil.
 //
-// Stop does not trigger `di.Shutdowner`; that mechanism is reserved for
+// Stop does not trigger [di.Shutdowner]; that mechanism is reserved for
 // unexpected Serve failures observed by [Service.Start].
 func (s *Service) Stop(ctx context.Context) error {
 	s.logger.Info("stopping server", logger.String(meta.SystemKey, s.name))

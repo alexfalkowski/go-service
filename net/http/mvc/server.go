@@ -67,7 +67,7 @@ func Patch[Model any](pattern string, controller Controller[Model]) bool {
 // request context (via net/http/meta) before invoking the controller.
 //
 // If controller returns an error, the handler renders the returned view using a safe Error model and writes the
-// corresponding status code (see net/http/status.Code) only after rendering succeeds. The raw error remains
+// corresponding status code (see [github.com/alexfalkowski/go-service/v2/net/http/status.Code]) only after rendering succeeds. The raw error remains
 // available as `mvcModelError` metadata for compatibility; templates that render it can expose diagnostic details.
 // If rendering itself fails, the handler writes the render error status instead.
 func Route[Model any](pattern string, controller Controller[Model]) bool {

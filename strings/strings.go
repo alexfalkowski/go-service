@@ -16,7 +16,7 @@ const Empty = ""
 // It is provided as a named constant for readability and reuse.
 const Space = " "
 
-// Reader is an alias of strings.Reader.
+// Reader is an alias of [strings.Reader].
 //
 // It is provided so go-service code can depend on a consistent import path while
 // preserving standard library semantics.
@@ -24,14 +24,14 @@ type Reader = strings.Reader
 
 // Contains reports whether substr is within s.
 //
-// This is a thin wrapper around strings.Contains and does not change semantics.
+// This is a thin wrapper around [strings.Contains] and does not change semantics.
 func Contains(s, substr string) bool {
 	return strings.Contains(s, substr)
 }
 
 // Count counts the number of non-overlapping instances of substr in s.
 //
-// This is a thin wrapper around strings.Count and does not change semantics.
+// This is a thin wrapper around [strings.Count] and does not change semantics.
 func Count(s, substr string) int {
 	return strings.Count(s, substr)
 }
@@ -39,7 +39,7 @@ func Count(s, substr string) int {
 // LastIndex returns the index of the last instance of substr in s, or -1 if
 // substr is not present in s.
 //
-// This is a thin wrapper around strings.LastIndex and does not change semantics.
+// This is a thin wrapper around [strings.LastIndex] and does not change semantics.
 func LastIndex(s, substr string) int {
 	return strings.LastIndex(s, substr)
 }
@@ -49,42 +49,42 @@ func LastIndex(s, substr string) int {
 //
 // The returned boolean reports whether sep was found.
 //
-// This is a thin wrapper around strings.Cut and does not change semantics.
+// This is a thin wrapper around [strings.Cut] and does not change semantics.
 func Cut(s, sep string) (string, string, bool) {
 	return strings.Cut(s, sep)
 }
 
 // HasPrefix reports whether s begins with prefix.
 //
-// This is a thin wrapper around strings.HasPrefix and does not change semantics.
+// This is a thin wrapper around [strings.HasPrefix] and does not change semantics.
 func HasPrefix(s, prefix string) bool {
 	return strings.HasPrefix(s, prefix)
 }
 
 // Repeat returns a new string consisting of count copies of s.
 //
-// This is a thin wrapper around strings.Repeat and does not change semantics.
+// This is a thin wrapper around [strings.Repeat] and does not change semantics.
 func Repeat(s string, count int) string {
 	return strings.Repeat(s, count)
 }
 
 // NewReader returns a new Reader reading from s.
 //
-// This is a thin wrapper around strings.NewReader and does not change semantics.
+// This is a thin wrapper around [strings.NewReader] and does not change semantics.
 func NewReader(s string) *Reader {
 	return strings.NewReader(s)
 }
 
 // ReplaceAll returns a copy of s with all non-overlapping instances of o replaced by n.
 //
-// This is a thin wrapper around strings.ReplaceAll and does not change semantics.
+// This is a thin wrapper around [strings.ReplaceAll] and does not change semantics.
 func ReplaceAll(s, o, n string) string {
 	return strings.ReplaceAll(s, o, n)
 }
 
 // ToLower returns s with all Unicode letters mapped to their lower case.
 //
-// This is a thin wrapper around strings.ToLower and does not change semantics.
+// This is a thin wrapper around [strings.ToLower] and does not change semantics.
 func ToLower(s string) string {
 	return strings.ToLower(s)
 }
@@ -92,7 +92,7 @@ func ToLower(s string) string {
 // Trim returns a slice of s with all leading and trailing Unicode code points
 // contained in cutset removed.
 //
-// This is a thin wrapper around strings.Trim and does not change semantics.
+// This is a thin wrapper around [strings.Trim] and does not change semantics.
 func Trim(s, cutset string) string {
 	return strings.Trim(s, cutset)
 }
@@ -101,7 +101,7 @@ func Trim(s, cutset string) string {
 //
 // White space is defined by Unicode.
 //
-// This is a thin wrapper around strings.TrimSpace and does not change semantics.
+// This is a thin wrapper around [strings.TrimSpace] and does not change semantics.
 func TrimSpace(s string) string {
 	return strings.TrimSpace(s)
 }
@@ -122,7 +122,7 @@ func IsAnyEmpty(ss ...string) bool {
 
 // Join joins ss with sep.
 //
-// This is equivalent to strings.Join, but it accepts variadic input so callers can
+// This is equivalent to [strings.Join], but it accepts variadic input so callers can
 // avoid allocating a slice at the callsite when they already have discrete string
 // values.
 func Join(sep string, ss ...string) string {

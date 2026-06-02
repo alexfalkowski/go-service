@@ -14,7 +14,7 @@ import (
 // Collection is best-effort: underlying collection helpers intentionally ignore gopsutil errors, so individual
 // sections may be partially populated or empty depending on platform support and runtime permissions.
 //
-// The handler is typically registered under /debug/psutil (namespaced by service name via debug/http.Pattern).
+// The handler is typically registered under /debug/psutil (namespaced by service name via [github.com/alexfalkowski/go-service/v2/debug/http.Pattern]).
 func NewHandler(cont *content.Content) http.HandlerFunc {
 	return content.NewHandler(cont, func(ctx context.Context) (*Response, error) {
 		res := &Response{

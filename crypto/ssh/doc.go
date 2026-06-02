@@ -11,15 +11,15 @@
 //   - private key: SSH private key format (parsed via ssh.ParseRawPrivateKey)
 //
 // Configuration values are typically loaded using the go-service "source string" pattern (for example "env:NAME",
-// "file:/path", or a literal key value) via os.FS.ReadSource.
+// "file:/path", or a literal key value) via [os.FS.ReadSource].
 //
-// The package treats a nil *Config as disabled in constructor-style helpers such
+// The package treats a nil *[Config] as disabled in constructor-style helpers such
 // as NewSigner and NewVerifier, allowing SSH signing/verification to be wired as
 // an optional capability.
 //
 // If the provided key material is valid SSH key data but not an Ed25519 key,
-// key parsing helpers return crypto/errors.ErrInvalidKeyType instead of
-// panicking. Callers can use errors.Is(err, crypto.ErrInvalidKeyType) to
+// key parsing helpers return [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType] instead of
+// panicking. Callers can use [errors.Is](err, crypto.ErrInvalidKeyType) to
 // detect that case while still receiving wrapped context about the actual
 // decoded type.
 package ssh

@@ -2,7 +2,7 @@ package runtime
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module wires runtime integrations into Fx.
+// Module wires runtime integrations into [go.uber.org/fx].
 //
 // Including this module in an Fx application enables optional runtime tuning
 // provided by this package.

@@ -15,7 +15,7 @@
 //
 // # Typical usage
 //
-// Transport-specific packages construct a concrete implementation of [Server] (wrapping a net/http.Server
+// Transport-specific packages construct a concrete implementation of [Server] (wrapping a [net/http.Server]
 // or grpc.Server), then wrap it in a [Service] and call [Service.Start] during application startup.
 // On shutdown, the application stops the underlying server by calling [Service.Stop] with a context.
 //
