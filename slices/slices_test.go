@@ -5,7 +5,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/ptr"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/stretchr/testify/require"
 )
@@ -77,7 +76,7 @@ func TestBackward(t *testing.T) {
 }
 
 func TestElemFunc(t *testing.T) {
-	elems := []*string{ptr.Value("test")}
+	elems := []*string{new("test")}
 
 	elem, ok := slices.ElemFunc(elems, func(t *string) bool { return *t == "test" })
 	require.NotNil(t, elem)

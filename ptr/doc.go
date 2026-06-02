@@ -6,18 +6,14 @@
 //
 // # Helpers
 //
-// Zero returns a pointer to the zero value of T:
+// [Zero] returns a pointer to the zero value of T:
 //
 //	var p *int = ptr.Zero[int]() // points to 0
 //
-// Value returns a pointer to the provided value:
-//
-//	p := ptr.Value("hello") // *string
-//
 // # Semantics and pitfalls
 //
-// These helpers allocate storage for the pointed-to value and return a pointer to
-// that storage. Each call returns a distinct pointer.
+// This helper allocates storage for the pointed-to zero value and returns a
+// pointer to that storage. Each call returns a distinct pointer.
 //
 // For example, two calls produce two different pointers even if the values are equal:
 //
@@ -37,7 +33,6 @@
 //
 //	p := &MyStruct{Field: "x"}
 //
-// This package is best used when you need a pointer but don't have an addressable
-// value at the call site or you want a concise, generic helper in tests and
+// This package is best used when you need a pointer to a zero value in tests or
 // configuration wiring.
 package ptr

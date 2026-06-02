@@ -35,7 +35,7 @@ func TestGenericValidCache(t *testing.T) {
 	config := test.NewCacheConfig("sync", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
 
-	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
+	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
 
 	value, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
@@ -69,7 +69,7 @@ func TestModuleRegistersGenericCache(t *testing.T) {
 		require.NoError(t, app.Stop(context.Background()))
 	})
 
-	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
+	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
 
 	value, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
@@ -79,7 +79,7 @@ func TestModuleRegistersGenericCache(t *testing.T) {
 func TestGenericDisabledCache(t *testing.T) {
 	cache.Register(nil)
 
-	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
+	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
 
 	value, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
@@ -91,7 +91,7 @@ func TestMaxSizeOnPersist(t *testing.T) {
 	cfg.MaxSize = 4
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
-	err := world.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute)
+	err := world.Persist(t.Context(), "test", new("hello?"), time.Minute)
 	require.ErrorIs(t, err, errors.ErrTooLarge)
 }
 
@@ -100,7 +100,7 @@ func TestMaxSizeOnPersistCompressedValue(t *testing.T) {
 	cfg.MaxSize = 4
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
-	err := world.Persist(t.Context(), "test", ptr.Value("a"), time.Minute)
+	err := world.Persist(t.Context(), "test", new("a"), time.Minute)
 	require.ErrorIs(t, err, errors.ErrTooLarge)
 }
 
@@ -108,7 +108,7 @@ func TestMaxSizeOnGet(t *testing.T) {
 	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
-	require.NoError(t, world.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
+	require.NoError(t, world.Persist(t.Context(), "test", new("hello?"), time.Minute))
 
 	cfg.MaxSize = 4
 
@@ -157,7 +157,7 @@ func TestMaxSizeOnGetAllowsHugeConfiguredLimit(t *testing.T) {
 func TestExpiredCache(t *testing.T) {
 	config := test.NewCacheConfig("sync", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
-	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Nanosecond))
+	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Nanosecond))
 
 	// Simulate expiry.
 	time.Sleep(time.Second)
@@ -210,7 +210,7 @@ func TestErroneousSave(t *testing.T) {
 	t.Run("invalid encoder", func(t *testing.T) {
 		config := test.NewCacheConfig("sync", "snappy", "error", "redis")
 		test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
-		require.Error(t, cache.Persist(t.Context(), "test", ptr.Value("test"), time.Minute))
+		require.Error(t, cache.Persist(t.Context(), "test", new("test"), time.Minute))
 	})
 
 	t.Run("read from only falls back to configured encoder", func(t *testing.T) {
@@ -314,7 +314,7 @@ func cacheRoundTripCases() []cacheRoundTripCase {
 		{
 			name:    "sync/default/string",
 			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
-			persist: func() any { return ptr.Value("hello?") },
+			persist: func() any { return new("hello?") },
 			get:     func() any { return ptr.Zero[string]() },
 		},
 		{
