@@ -22,10 +22,22 @@ func TestUserAgent(t *testing.T) {
 }
 
 func TestID(t *testing.T) {
-	generator := uuid.NewGenerator()
-	require.NotEmpty(t, env.NewID(generator).String())
+	t.Run("generated default", func(t *testing.T) {
+		generator := uuid.NewGenerator()
 
-	t.Setenv("SERVICE_ID", "new_id")
-	require.Equal(t, "new_id", env.NewID(generator).String())
-	require.Equal(t, "new_id", env.NewID(nil).String())
+		require.NotEmpty(t, env.NewID(generator).String())
+	})
+
+	t.Run("env override", func(t *testing.T) {
+		generator := uuid.NewGenerator()
+		t.Setenv("SERVICE_ID", "new_id")
+
+		require.Equal(t, "new_id", env.NewID(generator).String())
+	})
+
+	t.Run("env override without generator", func(t *testing.T) {
+		t.Setenv("SERVICE_ID", "new_id")
+
+		require.Equal(t, "new_id", env.NewID(nil).String())
+	})
 }

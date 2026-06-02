@@ -21,6 +21,6 @@ func NewUserID(name Name) UserID {
 type UserID string
 
 // String returns the user id value as a string.
-func (i UserID) String() string {
-	return string(i)
+func (id UserID) String() string {
+	return string(id)
 }

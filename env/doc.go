@@ -2,11 +2,11 @@
 //
 // This package defines small types and constructors for common identity fields that are used across
 // go-service for consistent naming/versioning and outbound metadata, such as:
-//   - service name (Name)
-//   - service version (Version)
-//   - service instance id (ID)
-//   - service user id (UserID)
-//   - HTTP User-Agent value (UserAgent)
+//   - service name ([Name])
+//   - service version ([Version])
+//   - service instance id ([ID])
+//   - service user id ([UserID])
+//   - HTTP User-Agent value ([UserAgent])
 //
 // # Environment variable overrides
 //
@@ -20,8 +20,8 @@
 //
 // # Conventions
 //
-// Identity values are represented as small string wrapper types with a `String()` method.
+// Identity values are represented as small string wrapper types with String methods.
 // These wrappers preserve the underlying semantics while keeping imports consistent across go-service.
 //
-// Start with `NewName`, `NewVersion`, `NewID`, `NewUserID`, and `NewUserAgent`.
+// Start with [NewName], [NewVersion], [NewID], [NewUserID], and [NewUserAgent].
 package env

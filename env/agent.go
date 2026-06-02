@@ -6,8 +6,8 @@ package env
 //
 //	"<name>/<version>"
 //
-// Where name and version are derived from the provided Name and Version values (including any
-// normalization performed by Version.String).
+// Name and version come from the provided [Name] and [Version] values, including any normalization
+// performed by [Version.String].
 //
 // This value is commonly used for outbound HTTP clients so requests can be attributed to a specific
 // service and version by upstreams.
