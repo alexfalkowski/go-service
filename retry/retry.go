@@ -16,8 +16,8 @@ type RetryFunc = retry.RetryFunc
 type RetryFuncValue[T any] = retry.RetryFuncValue[T]
 
 // NewConstant creates a constant backoff.
-func NewConstant(t time.Duration) Backoff {
-	return retry.NewConstant(t.Duration())
+func NewConstant(duration time.Duration) Backoff {
+	return retry.NewConstant(duration.Duration())
 }
 
 // RetryableError marks err as retryable.
@@ -25,7 +25,7 @@ func RetryableError(err error) error {
 	return retry.RetryableError(err)
 }
 
-// WithMaxRetries limits next to attempts retries after the initial attempt.
+// WithMaxRetries wraps next so it retries at most attempts times after the initial attempt.
 func WithMaxRetries(attempts uint64, next Backoff) Backoff {
 	return retry.WithMaxRetries(attempts, next)
 }
