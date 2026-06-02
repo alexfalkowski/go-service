@@ -9,13 +9,11 @@
 //
 // The exported bundles are intended as defaults:
 //
-//   - `Library`: shared, transport-agnostic wiring (building block for both servers and clients).
+//   - [Library]: shared, transport-agnostic wiring.
 //
-//   - `Server`: a typical server composition (builds on Library and adds configuration decoding,
-//     server-side transports, telemetry, debugging, health checks, and common integrations).
+//   - [Server]: a typical server composition.
 //
-//   - `Client`: a typical client composition (builds on Library and adds configuration decoding,
-//     telemetry, and common client integrations/helpers). It does not wire transports by default.
+//   - [Client]: a typical client composition.
 //
 // # Enablement and configuration
 //
@@ -23,6 +21,6 @@
 // pointer sub-configs (nil meaning "disabled"). These bundles wire constructors and registrations;
 // whether a subsystem is active depends on the configuration supplied to the graph.
 //
-// Start with `Library`, `Server`, and `Client`. Drop down to lower-level package composition only when
+// Start with [Library], [Server], and [Client]. Drop down to lower-level package composition only when
 // you intentionally need custom wiring beyond what the standard bundles provide.
 package module
