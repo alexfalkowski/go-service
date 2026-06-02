@@ -16,7 +16,7 @@ func IsNil[T any](value *T) bool {
 // IsZero reports whether value equals the zero value of T.
 //
 // Because it uses == comparison against the zero value, T must be comparable.
-// If you need “zero” semantics for non-comparable types (for example slices, maps,
+// If you need "zero" semantics for non-comparable types (for example slices, maps,
 // or structs containing non-comparable fields), define your own emptiness check.
 func IsZero[T comparable](value T) bool {
 	var zero T
