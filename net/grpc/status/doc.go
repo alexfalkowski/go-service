@@ -46,7 +46,7 @@
 //	return status.SafeErrorf(codes.Internal, err, "load tenant %s", tenantID)
 //
 // Return SafeError and SafeErrorf directly from gRPC handlers. Do not wrap the
-// returned error with fmt.Errorf("%w") before returning it to gRPC: upstream
+// returned error with [fmt.Errorf]("%w") before returning it to gRPC: upstream
 // status.FromError preserves wrapping context in the client-visible status
 // message for wrapped status errors. Put internal context in the cause passed
 // to SafeError or in the SafeErrorf format instead:
@@ -79,7 +79,7 @@
 // gRPC status messages are sent to clients. Error and Errorf treat their
 // messages as client-visible. SafeError and SafeErrorf send a lowercase
 // "grpc: " prefixed status message while preserving an internal cause through
-// Unwrap for inspection with errors.Is and errors.As.
+// Unwrap for inspection with [errors.Is] and [errors.As].
 //
 // # Non-goals
 //

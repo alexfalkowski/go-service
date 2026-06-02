@@ -7,43 +7,43 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// Addr is an alias for net.Addr.
+// Addr is an alias for [net.Addr].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Addr = net.Addr
 
-// Conn is an alias for net.Conn.
+// Conn is an alias for [net.Conn].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Conn = net.Conn
 
-// Dialer is an alias for net.Dialer.
+// Dialer is an alias for [net.Dialer].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Dialer = net.Dialer
 
-// IP is an alias for net.IP.
+// IP is an alias for [net.IP].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type IP = net.IP
 
-// Listener is an alias for net.Listener.
+// Listener is an alias for [net.Listener].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Listener = net.Listener
 
-// TCPAddr is an alias for net.TCPAddr.
+// TCPAddr is an alias for [net.TCPAddr].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type TCPAddr = net.TCPAddr
 
-// UDPAddr is an alias for net.UDPAddr.
+// UDPAddr is an alias for [net.UDPAddr].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
@@ -51,7 +51,7 @@ type UDPAddr = net.UDPAddr
 
 // Listen creates a listener bound to address on the given network.
 //
-// It uses net.ListenConfig so the operation respects ctx cancellation. If ctx is canceled before
+// It uses [net.ListenConfig] so the operation respects ctx cancellation. If ctx is canceled before
 // the listener is created, Listen returns an error from the standard library.
 func Listen(ctx context.Context, network, address string) (Listener, error) {
 	config := &net.ListenConfig{}
@@ -89,7 +89,7 @@ func NetworkAddress(network, address string) string {
 
 // Host returns the host portion of addr if it is in host:port form.
 //
-// If addr cannot be parsed by net.SplitHostPort (for example it has no port, or it is malformed),
+// If addr cannot be parsed by [net.SplitHostPort] (for example it has no port, or it is malformed),
 // Host returns addr unchanged.
 func Host(addr string) string {
 	host, _, err := net.SplitHostPort(addr)

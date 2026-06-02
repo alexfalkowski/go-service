@@ -2,7 +2,7 @@
 //
 // OpenTelemetry SDKs and instrumentations may emit internal errors (for example exporter
 // failures, dropped data warnings, or other SDK/runtime issues). The OpenTelemetry API
-// provides a global error handler hook (see go.opentelemetry.io/otel.ErrorHandler) that
+// provides a global error handler hook (see [go.opentelemetry.io/otel.ErrorHandler]) that
 // applications can set to control how these errors are surfaced.
 //
 // This package provides a go-service implementation of the OpenTelemetry error handler
@@ -11,10 +11,10 @@
 // # Handler
 //
 // Handler implements the OpenTelemetry error handler interface by logging errors through
-// a go-service `*telemetry/logger.Logger`. Errors are logged at error level using a
+// a go-service *[github.com/alexfalkowski/go-service/v2/telemetry/logger.Logger]. Errors are logged at error level using a
 // consistent message and attribute key ("error").
 //
-// When logging is disabled and no `*telemetry/logger.Logger` is available, NewHandler
+// When logging is disabled and no *[github.com/alexfalkowski/go-service/v2/telemetry/logger.Logger] is available, NewHandler
 // returns nil so callers can keep the OpenTelemetry default global error handler.
 //
 // # Registration
@@ -32,13 +32,13 @@
 //
 // # Dependency injection (Fx)
 //
-// This package also exports `Module`, which wires:
+// This package also exports [Module], which wires:
 //   - construction of the Handler (NewHandler), and
 //   - registration of the handler (Register)
 //
 // into an Fx application.
 //
-// Including `telemetry/errors.Module` (or the top-level `telemetry.Module`) wires this
+// Including [github.com/alexfalkowski/go-service/v2/telemetry/errors.Module] (or the top-level [github.com/alexfalkowski/go-service/v2/telemetry.Module]) wires this
 // handler into your service. When a go-service logger is configured, OpenTelemetry
 // internal errors are routed into service logging. When logging is disabled,
 // NewHandler returns nil and Register preserves the OpenTelemetry default global

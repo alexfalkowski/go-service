@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// URL is an alias for net/url.URL.
+// URL is an alias for [net/url.URL].
 type URL = url.URL
 
 // Parse parses a raw URL into a URL structure.

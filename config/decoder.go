@@ -11,7 +11,7 @@ import (
 
 // DecoderParams defines the dependencies used to construct a Decoder.
 //
-// It is intended for dependency injection (Fx/Dig). The default wiring is provided by `config.Module`.
+// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The default wiring is provided by [Module].
 type DecoderParams struct {
 	di.In
 
@@ -32,7 +32,7 @@ type DecoderParams struct {
 
 // NewDecoder constructs a Decoder based on the configured input source.
 //
-// Routing is controlled by the "-config" / "-c" flag (see flag.FlagSet.GetConfig). The value supports a
+// Routing is controlled by the "-config" / "-c" flag (see [flag.FlagSet.GetConfig]). The value supports a
 // "kind:location" format:
 //
 //   - "file:<path>": uses the file decoder to read from <path>. The file extension determines which

@@ -20,7 +20,7 @@ func NewNTSNetwork(address string) *NTSNetwork {
 
 // NTSNetwork implements Network by querying an NTS server and validating the response.
 //
-// This type is a small adapter around github.com/beevik/nts. It prefixes returned errors
+// This type is a small adapter around [github.com/beevik/nts]. It prefixes returned errors
 // with "nts" to make failures easier to attribute when multiple time sources are possible.
 //
 // Note: NTS returns a clock offset relative to the local clock. This implementation returns
@@ -35,7 +35,7 @@ type NTSNetwork struct {
 // This method performs network I/O and validates the NTS response before returning.
 //
 // The algorithm is:
-//   - Establish a session (nts.NewSession).
+//   - Establish a session ([nts.NewSession]).
 //   - Query the server (session.Query).
 //   - Validate the response (res.Validate).
 //   - Apply the server-provided clock offset to the local time.

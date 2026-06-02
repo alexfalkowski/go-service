@@ -1,7 +1,7 @@
 // Package health provides health server wiring for go-service.
 //
 // This package integrates the go-health server with the application lifecycle by constructing a
-// `*server.Server` (from github.com/alexfalkowski/go-health/v2/server) and starting/stopping it using
+// `*server.Server` (from [github.com/alexfalkowski/go-health/v2/server]) and starting/stopping it using
 // Fx/Dig lifecycle hooks.
 //
 // # Registrations and checks

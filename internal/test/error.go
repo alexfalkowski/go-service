@@ -74,12 +74,12 @@ func (e *MessageError) Error() string {
 	return e.Message
 }
 
-// Stringer is an fmt.Stringer test double that returns Value.
+// Stringer is an [fmt.Stringer] test double that returns Value.
 type Stringer struct {
 	Value string
 }
 
-// String implements fmt.Stringer.
+// String implements [fmt.Stringer].
 func (s *Stringer) String() string {
 	return s.Value
 }
@@ -106,7 +106,7 @@ func (e *internalError) Error() string {
 	return "internal"
 }
 
-// Code implements status.Coder.
+// Code implements [status.Coder].
 func (e *internalError) Code() int {
 	return 500
 }

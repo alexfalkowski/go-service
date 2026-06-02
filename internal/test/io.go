@@ -2,7 +2,7 @@ package test
 
 import "github.com/alexfalkowski/go-service/v2/io"
 
-// ErrReaderCloser is an io.ReadCloser test double whose methods fail with ErrFailed.
+// ErrReaderCloser is an [io.ReadCloser] test double whose methods fail with ErrFailed.
 type ErrReaderCloser struct{}
 
 // Read returns ErrFailed.
@@ -15,7 +15,7 @@ func (r *ErrReaderCloser) Close() error {
 	return ErrFailed
 }
 
-// StaticReader is an io.Reader test double that reads from Data.
+// StaticReader is an [io.Reader] test double that reads from Data.
 type StaticReader struct {
 	Data []byte
 }
@@ -30,7 +30,7 @@ func (r StaticReader) Read(p []byte) (int, error) {
 	return n, nil
 }
 
-// TrackingReader is an io.Reader test double that records read attempts.
+// TrackingReader is an [io.Reader] test double that records read attempts.
 type TrackingReader struct {
 	Err   error
 	Reads int
@@ -42,7 +42,7 @@ func (r *TrackingReader) Read(_ []byte) (int, error) {
 	return 0, r.Err
 }
 
-// ErrWriter is an io.Writer test double whose writes fail with ErrFailed.
+// ErrWriter is an [io.Writer] test double whose writes fail with ErrFailed.
 type ErrWriter struct{}
 
 // Write returns ErrFailed.
@@ -50,7 +50,7 @@ func (ErrWriter) Write([]byte) (int, error) {
 	return 0, ErrFailed
 }
 
-// ErrWriterTo is an io.WriterTo test double whose writes fail with ErrFailed.
+// ErrWriterTo is an [io.WriterTo] test double whose writes fail with ErrFailed.
 type ErrWriterTo struct{}
 
 // WriteTo returns ErrFailed.

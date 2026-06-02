@@ -4,15 +4,15 @@
 // This package is intentionally thin and delegates to the upstream OpenTelemetry
 // HTTP instrumentation packages:
 //
-//   - go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
-//   - go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace
+//   - [go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp]
+//   - [go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace]
 //
 // The goal is to standardize how services attach HTTP telemetry without
 // re-exporting the entire upstream API surface.
 //
 // # Server-side instrumentation
 //
-// Use NewHandler to wrap an existing http.Handler. The wrapper creates spans for
+// Use NewHandler to wrap an existing [http.Handler]. The wrapper creates spans for
 // incoming requests and records attributes and status information according to
 // upstream otelhttp behavior and the provided options.
 //
@@ -25,9 +25,9 @@
 //
 // # Client-side instrumentation
 //
-// For outbound requests, use NewTransport to wrap a base http.RoundTripper (for
-// example http.DefaultTransport) and install the returned transport on an
-// http.Client.
+// For outbound requests, use NewTransport to wrap a base [http.RoundTripper] (for
+// example [http.DefaultTransport]) and install the returned transport on an
+// [http.Client].
 //
 // Example:
 //

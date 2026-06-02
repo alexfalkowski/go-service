@@ -19,7 +19,7 @@
 //   - [DeploymentEnvironmentName]
 //
 // These helpers return attribute.KeyValue values that can be passed to
-// resource.NewWithAttributes.
+// [go.opentelemetry.io/otel/sdk/resource.NewWithAttributes].
 //
 // # Schema URL
 //

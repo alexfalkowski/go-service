@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// Options is an alias for client.Options.
+// Options is an alias for [client.Options].
 type Options = client.Options
 
 // ClientOption configures the REST client helper constructed by NewClient.
@@ -40,8 +40,8 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 
 // WithClientTimeout sets the client timeout using a duration string (for example "1s" or "500ms").
 //
-// The duration string is parsed using time.MustParseDuration and will panic if it cannot be parsed.
-// The resulting duration is applied to the underlying http.Client.Timeout.
+// The duration string is parsed using [time.MustParseDuration] and will panic if it cannot be parsed.
+// The resulting duration is applied to the underlying [http.Client.Timeout].
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = time.MustParseDuration(timeout)
@@ -50,12 +50,12 @@ func WithClientTimeout(timeout string) ClientOption {
 
 // NewClient constructs a REST client backed by net/http/client.
 //
-// NewClient depends on package-level registration (see rest.Register) for the content codecs (cont)
-// and buffer pool (pool). Register must be called before NewClient; otherwise it will panic due to
+// NewClient depends on package-level registration (see [Register]) for the content codecs (cont)
+// and buffer pool (pool). [Register] must be called before NewClient; otherwise it will panic due to
 // nil dependencies.
 //
 // Behavior:
-//   - It constructs a content-aware client.Client configured with the selected RoundTripper and timeout.
+//   - It constructs a content-aware [client.Client] configured with the selected RoundTripper and timeout.
 //   - It disables automatic redirect following (returns redirect responses instead of following them).
 func NewClient(opts ...ClientOption) *Client {
 	os := options(opts...)
@@ -68,7 +68,7 @@ func NewClient(opts ...ClientOption) *Client {
 	return &Client{client}
 }
 
-// Client wraps client.Client for REST usage.
+// Client wraps [client.Client] for REST usage.
 type Client struct {
 	*client.Client
 }

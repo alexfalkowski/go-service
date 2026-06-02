@@ -6,6 +6,6 @@
 // Logged attributes include system ("grpc"), service/method (derived from the full method name),
 // duration, and gRPC status code. Log level is derived from the status code (see CodeToLevel).
 //
-// Start with `UnaryServerInterceptor` / `StreamServerInterceptor` for server-side logging and
-// `UnaryClientInterceptor` / `StreamClientInterceptor` for client-side logging.
+// Start with [UnaryServerInterceptor] / [StreamServerInterceptor] for server-side logging and
+// [UnaryClientInterceptor] / [StreamClientInterceptor] for client-side logging.
 package logger

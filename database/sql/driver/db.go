@@ -6,7 +6,7 @@ import (
 	"github.com/linxGnu/mssqlx"
 )
 
-// DBs wraps the upstream master/slave SQL pool collection.
+// DBs wraps [mssqlx.DBs].
 //
 // It embeds the upstream type so callers keep the usual mssqlx query, exec,
 // transaction, ping, and pool-configuration methods while go-service can attach

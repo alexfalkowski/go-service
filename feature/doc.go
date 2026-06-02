@@ -7,16 +7,16 @@
 // # Provider registration and enablement
 //
 // Provider registration is intentionally optional. The [Register] function is wired via [Module] and
-// is a no-op when no openfeature.FeatureProvider is available in the DI graph (i.e. it is not
+// is a no-op when no [github.com/open-feature/go-sdk/openfeature.FeatureProvider] is available in the DI graph (i.e. it is not
 // provided by the consuming service).
 //
 // This repository does not construct or connect a built-in OpenFeature provider from [Config].
 // Consuming services that need a remote or custom provider should use that config in their own provider
-// constructor and provide the resulting openfeature.FeatureProvider to the DI graph.
+// constructor and provide the resulting [github.com/open-feature/go-sdk/openfeature.FeatureProvider] to the DI graph.
 //
 // When a provider is present, [Register] appends lifecycle hooks that:
-//   - call openfeature.SetProviderWithContextAndWait during application start, and
-//   - call openfeature.ShutdownWithContext during application stop.
+//   - call [github.com/open-feature/go-sdk/openfeature.SetProviderWithContextAndWait] during application start, and
+//   - call [github.com/open-feature/go-sdk/openfeature.ShutdownWithContext] during application stop.
 //
 // Register uses OpenFeature's package-level SDK APIs, so provider registration, hooks, and shutdown are
 // process-global effects.

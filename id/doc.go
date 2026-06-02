@@ -6,8 +6,10 @@
 //
 // # Kinds and implementations
 //
-// Concrete generator implementations live in subpackages under `id/*` (for example `id/uuid`,
-// `id/ksuid`, `id/ulid`, `id/nanoid`, and `id/xid`). The [Module] wiring constructs these
+// Concrete generator implementations live in subpackages under `id/*` (for example
+// [github.com/alexfalkowski/go-service/v2/id/uuid], [github.com/alexfalkowski/go-service/v2/id/ksuid],
+// [github.com/alexfalkowski/go-service/v2/id/ulid], [github.com/alexfalkowski/go-service/v2/id/nanoid],
+// and [github.com/alexfalkowski/go-service/v2/id/xid]). The [Module] wiring constructs these
 // generators and registers them into a *[Map].
 //
 // Generator kinds are selected for different operational properties. The "uuid" generator is the

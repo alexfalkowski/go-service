@@ -23,17 +23,17 @@ var (
 // The HTTP status code is derived from err using Code(err), which understands:
 //   - errors implementing Coder,
 //   - errors created by this package, and
-//   - raw *http.MaxBytesError values mapped to 413 Request Entity Too Large, and
+//   - raw *[http.MaxBytesError] values mapped to 413 Request Entity Too Large, and
 //   - gRPC status errors mapped to HTTP codes.
 //
 // Write behavior:
-// The error message is written as a single line (via fmt.Fprintln) containing the first SafeMessage in
+// The error message is written as a single line (via [fmt.Fprintln]) containing the first SafeMessage in
 // err's chain. If no safe message is available, WriteError uses the default safe HTTP status message for Code(err).
 // Use SafeError to preserve an internal cause while returning the default safe HTTP status message to the client.
 // If writing the body fails, WriteError returns the write error and does not attempt to write a
 // secondary error response.
 //
-// This helper is conceptually similar to net/http.Error but uses go-service status code extraction
+// This helper is conceptually similar to [net/http.Error] but uses go-service status code extraction
 // and the dedicated error media type.
 func WriteError(res http.ResponseWriter, err error) error {
 	header := res.Header()
@@ -50,9 +50,9 @@ func WriteError(res http.ResponseWriter, err error) error {
 
 // WriteText writes a plain-text success response to res.
 //
-// It clears any precomputed Content-Length, sets "Content-Type" to media.Text with UTF-8 charset,
+// It clears any precomputed Content-Length, sets "Content-Type" to [media.Text] with UTF-8 charset,
 // sets "X-Content-Type-Options: nosniff", writes HTTP 200 OK, and emits text followed by
-// a trailing newline via fmt.Fprintln.
+// a trailing newline via [fmt.Fprintln].
 //
 // If writing the body fails, WriteText returns the write error and does not attempt to write a
 // secondary response.

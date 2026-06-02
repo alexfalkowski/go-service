@@ -2,7 +2,7 @@ package retry
 
 import "github.com/alexfalkowski/go-service/v2/time"
 
-// DefaultBackoff is the shared retry backoff used when Config.Backoff is unset.
+// DefaultBackoff is the shared retry backoff used when [Config.Backoff] is unset.
 const DefaultBackoff time.Duration = 100 * time.Millisecond
 
 // Config configures retry behavior for an operation.
@@ -14,7 +14,7 @@ const DefaultBackoff time.Duration = 100 * time.Millisecond
 // the common knobs most implementations interpret similarly.
 //
 // Timeout and Backoff are typed durations encoded as Go duration strings in config
-// (see time.ParseDuration), such as "250ms", "5s", or "1m".
+// (see [time.ParseDuration]), such as "250ms", "5s", or "1m".
 type Config struct {
 	// Timeout is the per-attempt timeout duration.
 	//
@@ -58,7 +58,7 @@ func (c *Config) MaxAttempts() uint64 {
 
 // GetTimeout returns the configured per-attempt retry timeout.
 //
-// A nil receiver or a non-positive value falls back to time.DefaultTimeout.
+// A nil receiver or a non-positive value falls back to [time.DefaultTimeout].
 func (c *Config) GetTimeout() time.Duration {
 	if c == nil || c.Timeout <= 0 {
 		return time.DefaultTimeout

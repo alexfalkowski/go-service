@@ -10,7 +10,7 @@ import (
 	snoop "github.com/felixge/httpsnoop"
 )
 
-// Logger is an alias for `telemetry/logger.Logger`.
+// Logger is an alias for [github.com/alexfalkowski/go-service/v2/telemetry/logger.Logger].
 //
 // It is re-exported here so transport-layer code can depend on a single logger type when composing
 // middleware.
@@ -32,11 +32,11 @@ type Handler struct {
 
 // ServeHTTP logs the request outcome after next completes.
 //
-// Service-owned operation paths (health/metrics/etc.) bypass logging (see `net/http/strings.IsOperationPath`).
+// Service-owned operation paths (health/metrics/etc.) bypass logging (see [github.com/alexfalkowski/go-service/v2/net/http/strings.IsOperationPath]).
 //
 // Logged attributes include:
 //   - system: "http"
-//   - service/method: derived from the request (see `http.ParseServiceMethod`)
+//   - service/method: derived from the request (see [http.ParseServiceMethod])
 //   - duration: wall-clock elapsed time
 //   - code: HTTP response status code
 //
@@ -83,7 +83,7 @@ type RoundTripper struct {
 //
 // Logged attributes include:
 //   - system: "http"
-//   - service/method: derived from the request (see `http.ParseServiceMethod`)
+//   - service/method: derived from the request (see [http.ParseServiceMethod])
 //   - duration: wall-clock elapsed time
 //   - code: HTTP response status code (when available)
 //   - error: transport error (when present)

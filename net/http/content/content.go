@@ -20,7 +20,7 @@ func NewContent(enc *encoding.Map, pool *sync.BufferPool) *Content {
 
 // Content resolves encoders from HTTP media types and provides helpers for content-aware request/response handling.
 //
-// It uses an encoding.Map registry to resolve an encoder by media subtype (e.g. "json", "hjson", "yaml", "toml").
+// It uses an [encoding.Map] registry to resolve an encoder by media subtype (e.g. "json", "hjson", "yaml", "toml").
 //
 // Fallback behavior:
 //   - If media type parsing fails, Content falls back to JSON.

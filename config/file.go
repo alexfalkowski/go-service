@@ -11,7 +11,7 @@ import (
 // or ".hjson" → "hjson").
 // If no encoder is registered for the extension, Decode will return ErrNoEncoder.
 //
-// The file path is normalized by the underlying filesystem using os.FS.CleanPath during Decode, so
+// The file path is normalized by the underlying filesystem using [os.FS.CleanPath] during Decode, so
 // inputs such as "~/config.yml" are handled consistently with other go-service filesystem helpers.
 func NewFile(location string, enc *encoding.Map, fs *os.FS) *File {
 	return &File{location: location, enc: enc, fs: fs}
@@ -19,7 +19,7 @@ func NewFile(location string, enc *encoding.Map, fs *os.FS) *File {
 
 // File decodes configuration from a specific file path.
 //
-// The file extension determines which encoder is used (via encoding.Map). This decoder does not attempt
+// The file extension determines which encoder is used (via [encoding.Map]). This decoder does not attempt
 // to infer the configuration kind from content.
 type File struct {
 	fs       *os.FS
@@ -30,7 +30,7 @@ type File struct {
 // Decode opens the configured file and decodes its contents into v.
 //
 // The destination v should be a pointer to the target configuration type.
-// The configured path is normalized with os.FS.CleanPath before the file is opened and before the
+// The configured path is normalized with [os.FS.CleanPath] before the file is opened and before the
 // decoder kind is selected from the file extension.
 //
 // Errors:

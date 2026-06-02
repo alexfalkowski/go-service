@@ -49,7 +49,7 @@ var Library = di.Module(
 // It builds on [Library] and adds server-oriented wiring commonly needed by services:
 //   - [debug.Module] (debug server + diagnostic endpoints)
 //   - [config.Module] (config decoding + validation + common sub-config projections)
-//   - [telemetry.Module] (logging/tracing/metrics wiring)
+//   - [Module] (logging/tracing/metrics wiring)
 //   - [cache.Module] (cache drivers, cache facade, and package-level cache registration)
 //   - [feature.Module] (OpenFeature client + optional provider registration)
 //   - [sql.Module] (SQL database wiring; currently PostgreSQL)
@@ -80,7 +80,7 @@ var Server = di.Module(
 // It builds on [Library] and adds client-oriented wiring commonly needed by client processes
 // and batch jobs:
 //   - [config.Module] (config decoding + validation + common sub-config projections)
-//   - [telemetry.Module] (logging/tracing/metrics wiring)
+//   - [Module] (logging/tracing/metrics wiring)
 //   - [cache.Module] (cache drivers/facade; optional by config)
 //   - [feature.Module] (OpenFeature client + optional provider registration)
 //   - [hooks.Module] (Standard Webhooks helpers; used by HTTP hook integrations)

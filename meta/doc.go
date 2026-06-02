@@ -1,6 +1,6 @@
 // Package meta provides context-scoped metadata storage and helpers for go-service.
 //
-// This package implements a small attribute store backed by context.Context. Attributes are stored as
+// This package implements a small attribute store backed by [context.Context]. Attributes are stored as
 // key→[Value] pairs, where Value carries both the underlying string and rendering semantics.
 //
 // # Storage model

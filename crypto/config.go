@@ -16,13 +16,13 @@ import (
 // # Optional pointers and "enabled" semantics
 //
 // All sub-config fields are pointers and are intentionally optional. A nil sub-config is generally
-// interpreted as "disabled" by the corresponding subsystem (see each subpackage's `IsEnabled`
+// interpreted as "disabled" by the corresponding subsystem (see each subpackage's [IsEnabled]
 // convention where applicable).
 //
 // # Key material sources
 //
 // Many crypto subpackages support "source string" values (for example `env:NAME`, `file:/path`, or a
-// raw literal) for secrets and key material. Those source strings are resolved by `os.FS.ReadSource`
+// raw literal) for secrets and key material. Those source strings are resolved by [github.com/alexfalkowski/go-service/v2/os.FS.ReadSource]
 // during construction or use, depending on the subsystem.
 type Config struct {
 	// AES configures AES key material used by AES-based primitives (for example encrypt/decrypt helpers).
@@ -44,7 +44,7 @@ type Config struct {
 
 // IsEnabled reports whether crypto configuration is enabled.
 //
-// By convention, a nil *Config is treated as "crypto disabled" by wiring that depends on this configuration.
+// By convention, a nil *[Config] is treated as "crypto disabled" by wiring that depends on this configuration.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

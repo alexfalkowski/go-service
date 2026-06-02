@@ -2,7 +2,7 @@ package config
 
 // Config configures how a go-service gRPC server binds to the network.
 //
-// The configuration is consumed by the gRPC server wiring in `net/grpc/server`.
+// The configuration is consumed by the gRPC server wiring in [github.com/alexfalkowski/go-service/v2/net/grpc/server].
 // In particular, `server.NewServer` splits Address into a network and address
 // and then creates a listener via `net.Listen`.
 //

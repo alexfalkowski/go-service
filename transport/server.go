@@ -28,7 +28,7 @@ type ServersParams struct {
 
 // NewServers collects the enabled transport services.
 //
-// It returns a slice of `*server.Service` that excludes nil services, so it is safe to pass the returned slice
+// It returns a slice of *[server.Service] that excludes nil services, so it is safe to pass the returned slice
 // to `Register` for lifecycle wiring.
 func NewServers(params ServersParams) []*server.Service {
 	return slices.AppendNotZero([]*server.Service{}, params.HTTP.GetService(), params.GRPC.GetService(), params.Debug.GetService())

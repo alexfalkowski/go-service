@@ -12,12 +12,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
 )
 
-// Module wires the default encoder implementations and the encoder registry into Fx/Dig.
+// Module wires the default encoder implementations and the encoder registry into [go.uber.org/fx]/[go.uber.org/dig].
 //
-// It provides protobuf encoders (*proto.Binary, *proto.Text, *proto.JSON),
-// structured config encoders (*json.Encoder, *hjson.Encoder, *toml.Encoder,
-// *yaml.Encoder, *msgpack.Encoder), and passthrough/specialized encoders
-// (*gob.Encoder and *bytes.Encoder).
+// It provides protobuf encoders (*[proto.Binary], *[proto.Text], *[proto.JSON]),
+// structured config encoders (*[json.Encoder], *[hjson.Encoder], *[toml.Encoder],
+// *[yaml.Encoder], *[msgpack.Encoder]), and passthrough/specialized encoders
+// (*[gob.Encoder] and *[bytes.Encoder]).
 //
 // Finally, it constructs a *[Map] via [NewMap], pre-populated with common kind
 // aliases (for example "yaml"/"yml", protobuf kind synonyms, and

@@ -4,7 +4,7 @@ import "github.com/alexfalkowski/go-service/v2/time"
 
 // Config configures the in-memory rate limiter.
 //
-// The limiter is typically constructed by `NewLimiter`, which interprets these fields as:
+// The limiter is typically constructed by [NewLimiter], which interprets these fields as:
 //
 //   - Kind: selects how request keys are derived from context metadata (see NewKeyMap for default kinds).
 //     Examples: "user-agent", "ip", "user-id", "service-method".
@@ -17,7 +17,7 @@ import "github.com/alexfalkowski/go-service/v2/time"
 // # Optional pointers and "enabled" semantics
 //
 // This config is intentionally optional. By convention across go-service configuration types, a nil
-// *Config is treated as "limiter disabled" (see IsEnabled).
+// *[Config] is treated as "limiter disabled" (see IsEnabled).
 type Config struct {
 	// Kind selects which limiter key kind is used for limiting (see NewKeyMap for default kinds).
 	//
@@ -38,7 +38,7 @@ type Config struct {
 
 // IsEnabled reports whether limiter configuration is present.
 //
-// By convention, a nil *Config is treated as "disabled".
+// By convention, a nil *[Config] is treated as "disabled".
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

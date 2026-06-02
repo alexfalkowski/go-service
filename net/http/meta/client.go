@@ -18,7 +18,7 @@ func NewRoundTripper(userAgent env.UserAgent, generator id.Generator, hrt http.R
 	return &RoundTripper{RoundTripper: hrt, userAgent: userAgent, generator: generator}
 }
 
-// RoundTripper wraps an underlying `http.RoundTripper` and injects request metadata.
+// RoundTripper wraps an underlying [http.RoundTripper] and injects request metadata.
 //
 // This RoundTripper is intended to be applied as an outer wrapper so that other RoundTripper middleware
 // (retry/breaker/logger/token, etc.) observes the finalized headers and context values.
@@ -34,7 +34,7 @@ type RoundTripper struct {
 // request headers, and stores the chosen values back into the request context.
 //
 // Precedence rules:
-//   - If the context already contains a value (meta.UserAgent/meta.RequestID), that value is used.
+//   - If the context already contains a value ([meta.UserAgent]/[meta.RequestID]), that value is used.
 //   - Else, if the request header already contains a value, that value is used.
 //   - Else, a default is used (userAgent parameter or a generated request id).
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {

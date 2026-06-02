@@ -23,8 +23,8 @@
 // The following identifiers are thin wrappers around the standard library and do not
 // materially change semantics:
 //
-//   - [Time] aliases time.Time.
-//   - [Duration] wraps time.Duration and adds Text/JSON marshaling helpers while
+//   - [Time] aliases [time.Time].
+//   - [Duration] wraps [time.Duration] and adds Text/JSON marshaling helpers while
 //     preserving Go duration string semantics.
 //   - [Now], [Since], [Sleep], [NewTimer], [NewTicker], and [ParseDuration]
 //     forward to time.Now, time.Since, time.Sleep, time.NewTimer,
@@ -37,8 +37,8 @@
 //
 // # Strict helpers
 //
-// [MustParseDuration] parses a Go duration string (see time.ParseDuration) and
-// panics if parsing fails (via runtime.Must).
+// [MustParseDuration] parses a Go duration string (see [time.ParseDuration]) and
+// panics if parsing fails (via [runtime.Must]).
 //
 // This is intended for strict startup/configuration code paths where an invalid
 // duration is a programmer/configuration error and should fail fast. If you need
@@ -51,7 +51,7 @@
 //   - Now() (Time, error): returns the current time as reported by the provider.
 //
 // [NewNetwork] constructs a Network implementation based on [Config].
-// Enablement is modeled by presence: a nil *Config is treated as disabled and
+// Enablement is modeled by presence: a nil *[Config] is treated as disabled and
 // NewNetwork returns (nil, nil).
 //
 // [Config.Kind] selects the provider implementation. This package currently
@@ -61,7 +61,7 @@
 //   - "nts": Network Time Security (NTS), which provides authenticated time as
 //     defined by RFC 8915.
 //
-// If Config.Kind is not recognized, [NewNetwork] returns [ErrNotFound].
+// If [Config.Kind] is not recognized, [NewNetwork] returns [ErrNotFound].
 //
 // Provider implementations may wrap and prefix errors to provide clearer context
 // (for example "ntp: ..." or "nts: ...").

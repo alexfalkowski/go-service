@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/xid"
 )
 
-// Module wires ID generation into Fx/Dig.
+// Module wires ID generation into [go.uber.org/fx]/[go.uber.org/dig].
 //
 // It provides constructors for the built-in generator implementations:
 //   - *[ksuid.Generator] via [ksuid.NewGenerator] (kind "ksuid")

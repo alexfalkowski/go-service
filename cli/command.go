@@ -7,14 +7,14 @@ import (
 
 // NewCommand creates a new CLI Command with the given name.
 //
-// The returned Command embeds a `*flag.FlagSet` that you can use to define CLI flags.
-// Application subcommands call `(*flag.FlagSet).Parse` before starting DI, and the Command's
+// The returned Command embeds a *[flag.FlagSet] that you can use to define CLI flags.
+// Application subcommands call [flag.FlagSet.Parse] before starting DI, and the Command's
 // `module` wires the parsed FlagSet into the DI container so constructors can read flag values.
 func NewCommand(name string) *Command {
 	return &Command{FlagSet: flag.NewFlagSet(name)}
 }
 
-// Command wraps a `*flag.FlagSet` and provides DI wiring for CLI subcommands.
+// Command wraps a *[flag.FlagSet] and provides DI wiring for CLI subcommands.
 //
 // The embedded FlagSet is intended to be configured with flags by the caller, then parsed by the
 // subcommand execution path. The `module` method exposes providers for the filesystem/name/version

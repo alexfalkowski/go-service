@@ -12,19 +12,19 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 )
 
-// Module wires the HTTP transport stack into Fx.
+// Module wires the HTTP transport stack into [go.uber.org/fx].
 //
 // It composes constructors and registrations required to run an HTTP server and to support common
 // handler styles used by go-service:
-//   - mux construction (`http.NewServeMux`)
-//   - content negotiation and encoding (`content.NewContent`)
-//   - MVC view rendering helpers (`mvc.NewFunctionMap`, `mvc.Register`)
-//   - RPC and REST routing (`rpc.Register`, `rest.Register`)
+//   - mux construction ([http.NewServeMux])
+//   - content negotiation and encoding ([content.NewContent])
+//   - MVC view rendering helpers ([mvc.NewFunctionMap], [mvc.Register])
+//   - RPC and REST routing ([rpc.Register], [rest.Register])
 //   - transport-level middleware wiring (limiter and token helpers)
-//   - server construction (`NewServer`)
+//   - server construction ([NewServer])
 //   - operational endpoints (Prometheus metrics and health)
 //
-// This module also registers `Register`, which injects the filesystem dependency used by this package
+// This module also registers [Register], which injects the filesystem dependency used by this package
 // (required when constructing TLS configuration from source strings).
 var Module = di.Module(
 	di.Register(Register),

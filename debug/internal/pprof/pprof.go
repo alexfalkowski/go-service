@@ -9,7 +9,7 @@ import (
 
 // Register installs net/http/pprof handlers on mux.
 //
-// Handlers are registered under the "/debug/pprof" prefix (namespaced by service name via http.Pattern),
+// Handlers are registered under the "/debug/pprof" prefix (namespaced by service name via [http.Pattern]),
 // providing standard pprof endpoints such as:
 //   - index and profile listing
 //   - cmdline

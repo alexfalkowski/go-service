@@ -1,6 +1,6 @@
 // Package encoding provides value encoding/decoding helpers and DI wiring used by go-service.
 //
-// This package defines a small [Encoder] interface (encode to an io.Writer, decode from an io.Reader)
+// This package defines a small [Encoder] interface (encode to an [io.Writer], decode from an [io.Reader])
 // and a registry ([Map]) used to select an encoder by kind at runtime.
 //
 // # Registry
@@ -20,7 +20,7 @@
 //   - JSON, HJSON, YAML, TOML, MessagePack
 //   - protobuf binary/text/JSON variants
 //   - gob
-//   - "plain"/bytes passthrough for io.ReaderFrom/io.WriterTo payloads
+//   - "plain"/bytes passthrough for [io.ReaderFrom]/[io.WriterTo] payloads
 //
 // Start with [Encoder], [Map], [NewMap], and [Module].
 package encoding

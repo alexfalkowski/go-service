@@ -4,5 +4,5 @@
 // service-owned operational endpoints such as health and metrics routes that are typically ignored by
 // auth, limiter, and logging middleware.
 //
-// Start with `IsOperationPath`.
+// Start with [IsOperationPath].
 package strings

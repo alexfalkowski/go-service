@@ -17,7 +17,7 @@ import (
 
 // MapParams defines the dependencies used to construct an encoding Map.
 //
-// It is intended for dependency injection (Fx/Dig). The default wiring is provided by `encoding.Module`.
+// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The default wiring is provided by [Module].
 type MapParams struct {
 	di.In
 
@@ -51,7 +51,7 @@ type MapParams struct {
 	// GOB is the encoder implementation registered under kind "gob".
 	GOB *gob.Encoder
 
-	// Bytes is the passthrough encoder for io.ReaderFrom/io.WriterTo payloads, registered under kinds
+	// Bytes is the passthrough encoder for [io.ReaderFrom]/[io.WriterTo] payloads, registered under kinds
 	// like "plain", "octet-stream", and "markdown".
 	Bytes *bytes.Encoder
 }
@@ -74,7 +74,7 @@ type MapParams struct {
 //
 //   - bytes/plain passthrough: "plain", "octet-stream", "markdown"
 //
-// Callers can add additional kinds or override existing kinds via (*Map).Register.
+// Callers can add additional kinds or override existing kinds via [Map.Register].
 func NewMap(params MapParams) *Map {
 	return &Map{
 		encoders: map[string]Encoder{

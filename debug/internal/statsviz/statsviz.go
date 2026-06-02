@@ -10,7 +10,7 @@ import (
 
 // Register installs statsviz handlers on mux.
 //
-// The handler tree is mounted at "/debug/statsviz" (namespaced by service name via http.Pattern), which
+// The handler tree is mounted at "/debug/statsviz" (namespaced by service name via [http.Pattern]), which
 // serves statsviz's runtime visualization UI and endpoints.
 //
 // This registration is intended to be composed into the go-service debug server wiring. The underlying

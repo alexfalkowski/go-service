@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// BadReaderWriter is an os.ReaderWriter test double whose read and write operations fail.
+// BadReaderWriter is an [os.ReaderWriter] test double whose read and write operations fail.
 type BadReaderWriter struct{}
 
 // Exists reports true so callers continue into failing read and write paths.

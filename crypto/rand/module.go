@@ -2,11 +2,11 @@ package rand
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module wires the crypto/rand subsystem into Fx/Dig.
+// Module wires the crypto/rand subsystem into [go.uber.org/fx]/[go.uber.org/dig].
 //
 // It provides constructors for:
 //   - Reader (via NewReader), which returns a cryptographically secure random source (crypto/rand.Reader), and
-//   - *Generator (via NewGenerator), which produces cryptographically secure random values derived from that Reader.
+//   - *[Generator] (via NewGenerator), which produces cryptographically secure random values derived from that Reader.
 //
 // This module does not require configuration.
 var Module = di.Module(

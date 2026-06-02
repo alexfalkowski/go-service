@@ -7,7 +7,7 @@ import (
 
 // As reports whether any error in err's chain matches target, and if so sets target to that error value.
 //
-// This is a thin wrapper around the standard library errors.As, provided so go-service code can depend
+// This is a thin wrapper around the standard library [errors.As], provided so go-service code can depend
 // on a stable import path.
 //
 // See: https://pkg.go.dev/errors#As
@@ -17,7 +17,7 @@ func As(err error, target any) bool {
 
 // AsType reports whether any error in err's chain matches T, and if so returns the matched value.
 //
-// This is a thin wrapper around the standard library errors.AsType. It is useful when callers want the
+// This is a thin wrapper around the standard library [errors.AsType]. It is useful when callers want the
 // matched typed value directly instead of allocating a temporary target variable first.
 //
 // If no matching error is found, AsType returns the zero value of T and false.
@@ -29,7 +29,7 @@ func AsType[T error](err error) (T, bool) {
 
 // New returns an error that formats as the given text.
 //
-// This is a thin wrapper around the standard library errors.New. It is typically used to define
+// This is a thin wrapper around the standard library [errors.New]. It is typically used to define
 // sentinel errors for comparisons with Is.
 //
 // See: https://pkg.go.dev/errors#New
@@ -39,7 +39,7 @@ func New(text string) error {
 
 // Is reports whether any error in err's chain matches target.
 //
-// This is a thin wrapper around the standard library errors.Is.
+// This is a thin wrapper around the standard library [errors.Is].
 //
 // See: https://pkg.go.dev/errors#Is
 func Is(err, target error) bool {
@@ -48,7 +48,7 @@ func Is(err, target error) bool {
 
 // Join returns an error that wraps the given errors.
 //
-// This is a thin wrapper around the standard library errors.Join. A nil error in errs is ignored.
+// This is a thin wrapper around the standard library [errors.Join]. A nil error in errs is ignored.
 // If all errors are nil, Join returns nil.
 //
 // See: https://pkg.go.dev/errors#Join

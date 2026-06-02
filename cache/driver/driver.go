@@ -61,7 +61,7 @@ type DriverParams struct {
 // then the client is instrumented for tracing and metrics via [telemetry]
 // when those telemetry providers are enabled.
 //
-// The Redis client is closed from the supplied lifecycle's OnStop hook.
+// The Redis client is closed from the supplied lifecycle's [di.Hook.OnStop] hook.
 //
 // Instrumentation errors are treated as fatal configuration/runtime errors and
 // are converted into panics via [runtime.Must], matching the existing repository
@@ -70,8 +70,8 @@ type DriverParams struct {
 // # Backends
 //
 // Supported kinds include:
-//   - "redis": Redis backend using github.com/redis/go-redis
-//   - "sync": in-memory backend using github.com/alexfalkowski/go-sync Map
+//   - "redis": Redis backend using [github.com/redis/go-redis/v9]
+//   - "sync": in-memory backend using [github.com/alexfalkowski/go-sync] Map
 //
 // The built-in "sync" backend stores values in process memory and expires entries lazily on access.
 //

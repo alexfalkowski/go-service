@@ -15,8 +15,8 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 //
 // Context population:
 // The handler attaches request-scoped values to the context via net/http/meta:
-//   - the original *http.Request,
-//   - the http.ResponseWriter, and
+//   - the original *[http.Request],
+//   - the [http.ResponseWriter], and
 //   - the selected encoder.
 //
 // Content negotiation:
@@ -25,7 +25,7 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 //
 // Errors:
 // If request decoding fails, NewRequestHandler converts the decode error into a 400 Bad Request using
-// net/http/status, allowing the response to be rendered consistently by status.WriteError.
+// net/http/status, allowing the response to be rendered consistently by [status.WriteError].
 //
 // Successful responses are encoded into a pooled in-memory buffer before being written to the live
 // response writer, so encode failures do not leak partial success bodies.

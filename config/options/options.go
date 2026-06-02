@@ -21,7 +21,7 @@ type Map map[string]string
 
 // Duration returns a duration option for key if present; otherwise it returns fallback.
 //
-// The stored value must be a Go duration string accepted by time.ParseDuration (for example "250ms",
+// The stored value must be a Go duration string accepted by [time.ParseDuration] (for example "250ms",
 // "30s", or "5m").
 func (m Map) Duration(key string, fallback time.Duration) time.Duration {
 	if val, ok := m[key]; ok {
@@ -46,7 +46,7 @@ func (m Map) NonNegativeDuration(key string, fallback time.Duration) time.Durati
 
 // Uint32 returns an unsigned integer option for key if present; otherwise it returns fallback.
 //
-// The stored value must be a base-10 unsigned integer accepted by strconv.ParseUint for a 32-bit size.
+// The stored value must be a base-10 unsigned integer accepted by [strconv.ParseUint] for a 32-bit size.
 func (m Map) Uint32(key string, fallback uint32) uint32 {
 	if val, ok := m[key]; ok {
 		num, err := strconv.ParseUint(val, 10, 32)
@@ -60,7 +60,7 @@ func (m Map) Uint32(key string, fallback uint32) uint32 {
 
 // Size returns a byte-size option for key if present; otherwise it returns fallback.
 //
-// The stored value must be a human-readable decimal size string accepted by bytes.ParseSize, such
+// The stored value must be a human-readable decimal size string accepted by [bytes.ParseSize], such
 // as "64B", "2MB", or "4GB".
 func (m Map) Size(key string, fallback bytes.Size) bytes.Size {
 	if val, ok := m[key]; ok {

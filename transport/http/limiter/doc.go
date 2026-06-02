@@ -15,5 +15,5 @@
 // gateway, ingress, load balancer, or service-mesh limiter when those attempts
 // need quota enforcement.
 //
-// Start with `NewHandler` for server-side limiting and `NewRoundTripper` for client-side limiting.
+// Start with [NewHandler] for server-side limiting and [NewRoundTripper] for client-side limiting.
 package limiter

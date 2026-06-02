@@ -12,10 +12,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// ServerParams defines dependencies for constructing the gRPC health `Server` implementation.
+// ServerParams defines dependencies for constructing the gRPC health [Server] implementation.
 //
-// It is an Fx parameter struct (`di.In`) that provides the underlying `*health.Server`
-// from `github.com/alexfalkowski/go-health/v2/server`, which maintains health observers.
+// It is an Fx parameter struct ([di.In]) that provides the underlying *[health.Server]
+// from [github.com/alexfalkowski/go-health/v2/server], which maintains health observers.
 type ServerParams struct {
 	di.In
 
@@ -25,18 +25,18 @@ type ServerParams struct {
 	Server *server.Server
 }
 
-// NewServer constructs a new gRPC health `Server` implementation.
+// NewServer constructs a new gRPC health [Server] implementation.
 //
 // The returned server implements the standard gRPC health service
 // (`grpc.health.v1.Health`) and delegates health state lookups to the provided
-// underlying `*health.Server`.
+// underlying *[health.Server].
 func NewServer(params ServerParams) *Server {
 	return &Server{server: params.Server}
 }
 
 // Server implements the standard gRPC health service.
 //
-// It exposes health state by querying observers registered in the underlying `*health.Server`.
+// It exposes health state by querying observers registered in the underlying *[health.Server].
 // The service is typically used by load balancers and orchestration systems to determine whether
 // a server is serving traffic.
 type Server struct {
@@ -47,10 +47,10 @@ type Server struct {
 // Check returns the health status for a single service.
 //
 // The requested service name is taken from `req.GetService()`. The health state is resolved by looking up
-// an observer from the underlying `*health.Server` using the "grpc" transport kind.
+// an observer from the underlying *[health.Server] using the "grpc" transport kind.
 //
 // Error mapping:
-//   - If the requested service does not exist, it returns `codes.NotFound`.
+//   - If the requested service does not exist, it returns [codes.NotFound].
 //   - Otherwise, it returns a `Response` whose status is derived from the observer's error state.
 func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response, error) {
 	service := req.GetService()

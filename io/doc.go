@@ -6,7 +6,7 @@
 // Most identifiers in this package are thin standard-library aliases/wrappers (for example [Reader],
 // [Writer], [ReaderFrom], [WriterTo], [ReadCloser], [NopCloser], and [WriteString]). They preserve
 // standard-library semantics while letting packages within go-service and downstream services consistently
-// import `github.com/alexfalkowski/go-service/v2/io` without mixing direct stdlib imports across the
+// import [github.com/alexfalkowski/go-service/v2/io] without mixing direct stdlib imports across the
 // codebase.
 //
 // This package also provides small repository-specific helpers. [Resetter] is a local abstraction

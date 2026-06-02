@@ -12,7 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// Module wires cryptographic subpackages into Fx/Dig.
+// Module wires cryptographic subpackages into [go.uber.org/fx]/[go.uber.org/dig].
 //
 // It composes the modules from the crypto subpackages so services can include a single
 // [Module] to register the supported crypto primitives and helpers.

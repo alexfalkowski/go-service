@@ -66,7 +66,7 @@ type Cipher struct {
 // Encrypt encrypts msg using AES-GCM and returns nonce||ciphertext.
 //
 // A fresh nonce is generated for each call and is prefixed to the returned byte slice so Decrypt can recover it.
-// The returned slice includes the GCM authentication tag as produced by cipher.AEAD.Seal.
+// The returned slice includes the GCM authentication tag as produced by [cipher.AEAD.Seal].
 //
 // Errors are returned if plaintext exceeds AES-GCM's per-nonce maximum, nonce generation fails,
 // or the configured key is invalid for AES.

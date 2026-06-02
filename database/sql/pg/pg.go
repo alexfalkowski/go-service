@@ -9,14 +9,14 @@ import (
 	pgx "github.com/jackc/pgx/v5/stdlib"
 )
 
-// Register registers the pgx stdlib `database/sql` driver under the name "pg".
+// Register registers the pgx stdlib [database/sql] driver under the name "pg".
 //
-// The registration is performed via `database/sql/driver.Register`, which wraps
+// The registration is performed via [github.com/alexfalkowski/go-service/v2/database/sql/driver.Register], which wraps
 // the underlying driver with OpenTelemetry instrumentation via
-// `database/sql/telemetry`. The returned error from registration is
+// [github.com/alexfalkowski/go-service/v2/database/sql/telemetry]. The returned error from registration is
 // intentionally ignored.
 //
-// Register is typically called during process initialization via DI wiring (see `pg.Module`).
+// Register is typically called during process initialization via DI wiring (see [Module]).
 func Register() {
 	_ = driver.Register("pg", pgx.GetDefaultDriver(), options()...)
 }
@@ -32,7 +32,7 @@ func Register() {
 //   - apply connection pool limits/lifetime.
 //
 // The returned type wraps the upstream master/slave pool collection and is
-// aliased by the root `database/sql` package as `sql.DBs` for higher-level
+// aliased by the root [github.com/alexfalkowski/go-service/v2/database/sql] package as [github.com/alexfalkowski/go-service/v2/database/sql.DBs] for higher-level
 // callers.
 func Connect(fs *os.FS, cfg *Config) (*driver.DBs, error) {
 	if !cfg.IsEnabled() {
@@ -47,7 +47,7 @@ func Connect(fs *os.FS, cfg *Config) (*driver.DBs, error) {
 // Open preserves PostgreSQL's nil/disabled config semantics and then delegates
 // connection lifecycle ownership to the shared SQL driver helper.
 //
-// The returned type is the same go-service DBs wrapper returned by Connect.
+// The returned type is the same go-service [driver.DBs] wrapper returned by [Connect].
 func Open(lc di.Lifecycle, fs *os.FS, cfg *Config) (*driver.DBs, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil

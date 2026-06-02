@@ -24,7 +24,7 @@ const maxBase64EncodedLenInput = math.MaxInt / 4 * 3
 
 // CacheParams defines dependencies for constructing a [Cache].
 //
-// It is intended for dependency injection (Fx/Dig). The constructor will typically be wired via [Module].
+// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The constructor will typically be wired via [Module].
 type CacheParams struct {
 	di.In
 	Config     *config.Config
@@ -36,7 +36,7 @@ type CacheParams struct {
 
 // NewCache constructs a [Cache] from configuration.
 //
-// If caching is disabled (i.e. params.Config is nil), [NewCache] returns nil. Callers are expected to
+// If caching is disabled (i.e. [CacheParams.Config] is nil), [NewCache] returns nil. Callers are expected to
 // tolerate a nil cache instance.
 func NewCache(params CacheParams) *Cache {
 	if !params.Config.IsEnabled() {

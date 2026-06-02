@@ -12,15 +12,15 @@ var defaultEncoder = &Encoder{}
 
 // NewEncoder constructs a gob encoder.
 //
-// This encoder is a thin adapter around the standard library `encoding/gob` package that satisfies
-// `github.com/alexfalkowski/go-service/v2/encoding.Encoder`.
+// This encoder is a thin adapter around the standard library [encoding/gob] package that satisfies
+// [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
 
 // Encoder implements gob encoding and decoding.
 //
-// It uses the standard library `encoding/gob` encoder/decoder with default settings.
+// It uses the standard library [encoding/gob] encoder/decoder with default settings.
 type Encoder struct{}
 
 // Encode writes v to w as gob.

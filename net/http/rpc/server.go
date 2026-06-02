@@ -16,14 +16,14 @@ import (
 //
 //	Route("/greet.v1.Greeter/SayHello", handler) // registers "POST /greet.v1.Greeter/SayHello"
 //
-// The handler is constructed using net/http/content.NewRequestHandler, which:
+// The handler is constructed using [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler], which:
 //   - decodes the request body using Content-Type, falling back to JSON when Content-Type is absent or unknown,
 //   - decodes the request body into a newly allocated request model, and
 //   - encodes the returned response model using the negotiated media type.
 //
 // Registration:
-// The resulting handler is registered on the package-level mux configured via Register.
-// Register must be called before Route; otherwise mux/cont will be nil and this function will panic.
+// The resulting handler is registered on the package-level mux configured via [Register].
+// [Register] must be called before Route; otherwise mux/cont will be nil and this function will panic.
 func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
 	http.HandleFunc(
 		mux,

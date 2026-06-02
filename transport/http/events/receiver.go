@@ -16,7 +16,7 @@ type ReceiverFunc func(ctx context.Context, e events.Event)
 // Receiver registers HTTP handlers that receive CloudEvents.
 //
 // It wires CloudEvents SDK receive handlers onto a mux and optionally wraps them with webhook verification
-// middleware (see `transport/http/events/hooks`).
+// middleware (see [github.com/alexfalkowski/go-service/v2/transport/http/events/hooks]).
 type Receiver struct {
 	mux  *http.ServeMux
 	hook *hooks.Webhook

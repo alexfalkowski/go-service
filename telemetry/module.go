@@ -8,17 +8,17 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 )
 
-// Module composes and wires the telemetry subsystem into Fx.
+// Module composes and wires the telemetry subsystem into [go.uber.org/fx].
 //
 // Including this module in an Fx application enables the go-service telemetry
 // wiring for:
 //
-//   - logging (telemetry/logger.Module),
-//   - metrics (telemetry/metrics.Module),
-//   - tracing (telemetry/tracer.Module), and
-//   - OpenTelemetry internal error handling (telemetry/errors.Module).
+//   - logging ([github.com/alexfalkowski/go-service/v2/telemetry/logger.Module]),
+//   - metrics ([github.com/alexfalkowski/go-service/v2/telemetry/metrics.Module]),
+//   - tracing ([github.com/alexfalkowski/go-service/v2/telemetry/tracer.Module]), and
+//   - OpenTelemetry internal error handling ([github.com/alexfalkowski/go-service/v2/telemetry/errors.Module]).
 //
-// In addition, Module registers telemetry.Register, which configures the global
+// In addition, Module registers [Register], which configures the global
 // OpenTelemetry TextMapPropagator (W3C Trace Context + W3C Baggage). This affects
 // context extraction/injection performed by instrumentation that relies on the
 // global propagator (for example HTTP/gRPC instrumentation).

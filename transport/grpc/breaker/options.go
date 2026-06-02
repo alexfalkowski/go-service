@@ -5,9 +5,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 )
 
-// Option configures the gRPC circuit breaker interceptor returned by `UnaryClientInterceptor`.
+// Option configures the gRPC circuit breaker interceptor returned by [UnaryClientInterceptor].
 //
-// Options are applied in the order provided to `UnaryClientInterceptor`. If multiple options configure
+// Options are applied in the order provided to [UnaryClientInterceptor]. If multiple options configure
 // the same field, the last one wins.
 type Option interface {
 	apply(opts *opts)
@@ -28,10 +28,10 @@ func (f optionFunc) apply(o *opts) {
 //
 // The settings value is copied into each created breaker, and the interceptor wiring will also set:
 //
-//   - `Settings.Name` to the `fullMethod`, and
-//   - `Settings.IsSuccessful` to treat selected gRPC status codes as failures (see `WithFailureCodes`).
+//   - [github.com/sony/gobreaker.Settings.Name] to the `fullMethod`, and
+//   - [github.com/sony/gobreaker.Settings.IsSuccessful] to treat selected gRPC status codes as failures (see [WithFailureCodes]).
 //
-// Note: because settings are copied, if your `Settings` contains function fields that close over
+// Note: because settings are copied, if your [Settings] contains function fields that close over
 // mutable state, ensure that state is safe for concurrent use.
 func WithSettings(s Settings) Option {
 	return optionFunc(func(o *opts) {

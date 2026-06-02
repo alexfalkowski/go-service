@@ -38,7 +38,7 @@ type Verifier struct {
 
 // Verify verifies that sig is a valid Ed25519 signature for msg.
 //
-// It returns crypto.ErrInvalidMatch when verification fails.
+// It returns [crypto.ErrInvalidMatch] when verification fails.
 //
 // Note: Ed25519 verification is a boolean check and does not return an error on failure. This method
 // returns a sentinel error to provide a uniform verification API across crypto implementations.

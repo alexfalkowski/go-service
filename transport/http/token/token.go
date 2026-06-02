@@ -27,7 +27,7 @@ func NewAccessController(cfg *token.Config, fs *os.FS) (AccessController, error)
 	return access.NewController(cfg.Access, fs)
 }
 
-// AccessController is an alias for `token/access.Controller`.
+// AccessController is an alias for [github.com/alexfalkowski/go-service/v2/token/access.Controller].
 //
 // It is exposed from this package so callers can refer to the access controller type from the HTTP token
 // integration layer.
@@ -46,7 +46,7 @@ func NewToken(name env.Name, cfg *token.Config, fs *os.FS, sig *ed25519.Signer, 
 	return &Token{Token: token.NewToken(name, cfg, fs, sig, ver, gen)}
 }
 
-// Token wraps `*token.Token` for HTTP transport integration.
+// Token wraps *[github.com/alexfalkowski/go-service/v2/token.Token] for HTTP transport integration.
 //
 // It exists so transport-level wiring can keep a distinct type for HTTP token functionality while still
 // delegating generation and verification to the underlying token implementation.
@@ -54,7 +54,7 @@ type Token struct {
 	*token.Token
 }
 
-// NewVerifier returns a `Verifier` backed by token.
+// NewVerifier returns a [Verifier] backed by token.
 //
 // If token is nil, it returns nil. This pattern allows DI graphs to inject a verifier only when token auth
 // is enabled/configured, and to leave verification middleware disabled otherwise.
@@ -65,7 +65,7 @@ func NewVerifier(token *Token) Verifier {
 	return nil
 }
 
-// Verifier is an alias for `token.Verifier`.
+// Verifier is an alias for [token.Verifier].
 //
 // Verifiers validate Authorization tokens and typically return a "subject" string (the authenticated
 // principal) on success.
@@ -87,10 +87,10 @@ type Handler struct {
 
 // ServeHTTP verifies the request Authorization token and stores the verified subject in the context.
 //
-// Service-owned operation paths (health/metrics/etc.) bypass verification (see `net/http/strings.IsOperationPath`).
+// Service-owned operation paths (health/metrics/etc.) bypass verification (see [github.com/alexfalkowski/go-service/v2/net/http/strings.IsOperationPath]).
 //
 // The handler expects an Authorization value to be available in the request context (typically injected by
-// `net/http/meta.Handler`). It verifies the token using verifier, scoping verification to the request path.
+// [github.com/alexfalkowski/go-service/v2/net/http/meta.Handler]). It verifies the token using verifier, scoping verification to the request path.
 //
 // Behavior:
 //   - If verification fails, it writes an HTTP 401 error response and does not call next.
@@ -116,7 +116,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	next(res, req.WithContext(ctx))
 }
 
-// NewGenerator returns a `Generator` backed by token.
+// NewGenerator returns a [Generator] backed by token.
 //
 // If token is nil, it returns nil. This pattern allows DI graphs to inject a token generator only when token
 // auth is enabled/configured, and to leave client token-injection middleware disabled otherwise.
@@ -127,7 +127,7 @@ func NewGenerator(token *Token) Generator {
 	return nil
 }
 
-// Generator is an alias for `token.Generator`.
+// Generator is an alias for [token.Generator].
 //
 // Generators create Authorization tokens for outbound HTTP requests, typically scoped to the request path
 // and a caller identity (user id).
@@ -143,7 +143,7 @@ func NewRoundTripper(id env.UserID, generator Generator, hrt http.RoundTripper) 
 	return &RoundTripper{RoundTripper: hrt, id: id, generator: generator}
 }
 
-// RoundTripper wraps an underlying `http.RoundTripper` and adds Authorization headers.
+// RoundTripper wraps an underlying [http.RoundTripper] and adds Authorization headers.
 type RoundTripper struct {
 	http.RoundTripper
 	generator Generator
@@ -157,7 +157,7 @@ type RoundTripper struct {
 //
 // Failure behavior:
 //   - If token generation fails, it returns an unauthorized status error.
-//   - If token generation returns an empty token, it returns an unauthorized status error with `header.ErrInvalidAuthorization`.
+//   - If token generation returns an empty token, it returns an unauthorized status error with [header.ErrInvalidAuthorization].
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	return http.ClosingRoundTripper(r.roundTrip).RoundTrip(req)
 }

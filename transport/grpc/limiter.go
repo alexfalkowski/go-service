@@ -7,7 +7,7 @@ import (
 
 // NewServerLimiter constructs a gRPC server-side rate limiter when enabled.
 //
-// This is a small wiring helper that adapts the gRPC transport `Config` to the limiter package constructor.
+// This is a small wiring helper that adapts the gRPC transport [Config] to the limiter package constructor.
 // It is intended to be used by Fx module wiring.
 //
 // If cfg is disabled, it returns (nil, nil) so downstream wiring can treat rate limiting as not configured.

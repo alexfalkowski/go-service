@@ -55,21 +55,21 @@ func Patch[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 
 // RouteRequest registers a handler under pattern that decodes a request and encodes a response.
 //
-// The handler is built using net/http/content.NewRequestHandler, which:
+// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler], which:
 //   - decodes the request body using Content-Type, falling back to JSON when Content-Type is absent or unknown,
 //   - decodes the request body into a newly allocated request model, and
 //   - encodes the returned response model using the negotiated media type.
 //
 // Registration:
-// The resulting handler is registered on the package-level mux configured via Register.
-// Register must be called before RouteRequest; otherwise mux/cont will be nil and this function will panic.
+// The resulting handler is registered on the package-level mux configured via [Register].
+// [Register] must be called before RouteRequest; otherwise mux/cont will be nil and this function will panic.
 func RouteRequest[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
 	http.HandleFunc(mux, pattern, content.NewRequestHandler(cont, handler))
 }
 
 // Route registers a handler under pattern that encodes a response.
 //
-// The handler is built using net/http/content.NewHandler, which:
+// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content.NewHandler], which:
 //   - selects an encoder based on the request Content-Type, falling back to the first Accept media type when
 //     Content-Type is absent, and
 //   - encodes the returned response model using the negotiated media type.

@@ -16,12 +16,12 @@ const (
 	tokenVersion   = "v1"
 )
 
-// Signer is an alias for crypto/ssh.Signer.
+// Signer is an alias for [golang.org/x/crypto/ssh.Signer].
 //
 // It represents an object capable of producing signatures using SSH key material.
 type Signer = ssh.Signer
 
-// Verifier is an alias for crypto/ssh.Verifier.
+// Verifier is an alias for [golang.org/x/crypto/ssh.Verifier].
 //
 // It represents an object capable of verifying signatures produced by an SSH signer.
 type Verifier = ssh.Verifier
@@ -30,7 +30,7 @@ type Verifier = ssh.Verifier
 //
 // The returned Token loads key material using fs when generating and verifying tokens.
 //
-// Enablement is modeled by configuration: if cfg is disabled (see Config.IsEnabled),
+// Enablement is modeled by configuration: if cfg is disabled (see [Config.IsEnabled]),
 // NewToken returns nil.
 func NewToken(cfg *Config, fs *os.FS) *Token {
 	if !cfg.IsEnabled() {
@@ -45,7 +45,7 @@ func NewToken(cfg *Config, fs *os.FS) *Token {
 // to a signature.
 //
 // Missing per-operation key material is treated as invalid configuration and
-// reported via token/errors.ErrInvalidConfig.
+// reported via [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 type Token struct {
 	cfg *Config
 	fs  *os.FS
@@ -122,7 +122,7 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //
 // Verification is name-based and audience-bound: Verify decodes the signed claims,
 // checks claims.aud against aud, selects the matching verification key
-// configuration from t.cfg.Keys using Keys.Get(claims.kid), and verifies the
+// configuration from t.cfg.Keys using [Keys.Get](claims.kid), and verifies the
 // signature over the exact claims bytes with that key.
 //
 // High-level algorithm:

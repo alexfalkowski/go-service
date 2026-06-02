@@ -8,16 +8,16 @@
 //
 // # Access checks
 //
-// Controller.HasAccess expects separate user, system, and action values. The
+// [Controller.HasAccess] expects separate user, system, and action values. The
 // implementation treats system as the authorization object and action as the
 // operation being requested.
 //
 // # Casbin implementation
 //
-// NewController constructs a CasbinController backed by github.com/casbin/casbin/v2:
+// NewController constructs a CasbinController backed by [github.com/casbin/casbin/v2]:
 //
-//   - The model is resolved with os.FS.ReadSource and parsed by Casbin.
-//   - The policy is resolved with os.FS.ReadSource and loaded using Casbin's string adapter.
+//   - The model is resolved with [os.FS.ReadSource] and parsed by Casbin.
+//   - The policy is resolved with [os.FS.ReadSource] and loaded using Casbin's string adapter.
 //
 // Security note: Casbin's string adapter ignores malformed policy-line errors.
 // Policy content is treated as trusted deployment configuration here, and startup
@@ -28,7 +28,7 @@
 //
 // # Enablement
 //
-// Enablement is modeled by presence: if *Config is nil, NewController returns
+// Enablement is modeled by presence: if *[Config] is nil, NewController returns
 // (nil, nil). Callers should handle a nil Controller as "authorization
 // disabled/unconfigured" and decide on an appropriate default behavior at a
 // higher layer.

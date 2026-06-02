@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-sync"
 )
 
-// Settings is an alias for `github.com/alexfalkowski/go-service/v2/transport/breaker.Settings`.
+// Settings is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.Settings].
 //
 // It is re-exported from this package so callers can configure breaker behavior (trip thresholds, timeouts,
 // half-open probing, etc.) without importing the lower-level breaker package directly.
@@ -30,13 +30,13 @@ type Settings = breaker.Settings
 // # Failure classification
 //
 // The interceptor counts failures based on gRPC status codes. By default it treats a subset of transient/server
-// codes as failures (see `WithFailureCodes` and the defaults in `defaultOpts`). Calls that return other codes
+// codes as failures (see [WithFailureCodes] and the defaults in `defaultOpts`). Calls that return other codes
 // do not contribute to opening the breaker.
 //
 // # Error mapping
 //
-// If the breaker rejects a call because it is open (`breaker.ErrOpenState`) or because the half-open
-// MaxRequests limit would be exceeded (`breaker.ErrTooManyRequests`), the interceptor maps that condition to
+// If the breaker rejects a call because it is open ([breaker.ErrOpenState]) or because the half-open
+// MaxRequests limit would be exceeded ([breaker.ErrTooManyRequests]), the interceptor maps that condition to
 // a gRPC `ResourceExhausted` status error.
 //
 // All other errors from the invoker are returned as-is.

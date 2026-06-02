@@ -68,7 +68,7 @@ func BadRequestError(err error) error {
 //
 // This helper is intentionally idempotent for errors already produced by this package (or any error
 // implementing Coder): calling FromError on such errors does not overwrite the original status code.
-// Raw *http.MaxBytesError values are normalized to StatusRequestEntityTooLarge (413) regardless of the
+// Raw *[http.MaxBytesError] values are normalized to StatusRequestEntityTooLarge (413) regardless of the
 // provided code so oversized request bodies surface consistently.
 // The wrapped error message remains diagnostic through Error, but WriteError sends a safe status message instead
 // of err.Error().
@@ -80,7 +80,7 @@ func FromError(code int, err error) error {
 
 // Errorf formats a message and returns an error with the provided status code.
 //
-// This is a convenience wrapper over Error(code, fmt.Sprintf(...)).
+// This is a convenience wrapper over Error(code, [fmt.Sprintf](...)).
 func Errorf(code int, format string, a ...any) error {
 	return Error(code, fmt.Sprintf(format, a...))
 }
@@ -110,7 +110,7 @@ func DefaultMessage(code int) string {
 //
 // Resolution order:
 //  1. If err implements Coder, return coder.Code().
-//  2. If err is a raw *http.MaxBytesError, return StatusRequestEntityTooLarge (413).
+//  2. If err is a raw *[http.MaxBytesError], return StatusRequestEntityTooLarge (413).
 //  3. If err is a gRPC status error, map its gRPC code to an HTTP status code using the statusCodes table.
 //  4. Otherwise return StatusInternalServerError (500).
 func Code(err error) int {

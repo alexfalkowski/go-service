@@ -22,7 +22,8 @@
 // panic due to type assertions.
 //
 // These helpers are typically used in tightly controlled handler pipelines (for example those created by
-// `net/http/content.NewHandler` / `NewRequestHandler`), which populate the context before invoking
+// [github.com/alexfalkowski/go-service/v2/net/http/content.NewHandler] /
+// [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler]), which populate the context before invoking
 // downstream logic.
 //
 // # Forwarded IP trust boundary
@@ -53,5 +54,5 @@
 // it as the idempotency key for retryable write operations. It is not a per-wire
 // attempt id.
 //
-// This package also provides HTTP metadata middleware via `NewHandler` and `NewRoundTripper`.
+// This package also provides HTTP metadata middleware via [NewHandler] and [NewRoundTripper].
 package meta

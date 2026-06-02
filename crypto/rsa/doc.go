@@ -2,8 +2,8 @@
 //
 // This package supports loading RSA keys from PEM-encoded PKCS#1 formats:
 //
-//   - public key: PEM block "RSA PUBLIC KEY" containing PKCS#1-encoded bytes (x509.ParsePKCS1PublicKey)
-//   - private key: PEM block "RSA PRIVATE KEY" containing PKCS#1-encoded bytes (x509.ParsePKCS1PrivateKey)
+//   - public key: PEM block "RSA PUBLIC KEY" containing PKCS#1-encoded bytes ([crypto/x509.ParsePKCS1PublicKey])
+//   - private key: PEM block "RSA PRIVATE KEY" containing PKCS#1-encoded bytes ([crypto/x509.ParsePKCS1PrivateKey])
 //
 // It also provides Encryptor/Decryptor helpers that use RSA-OAEP with SHA-512.
 // Configured keys must use a modulus of at least KeySize bits.

@@ -18,7 +18,7 @@
 //
 // Metrics are enabled by presence:
 //
-//   - If *Config is nil, metrics are treated as disabled.
+//   - If *[Config] is nil, metrics are treated as disabled.
 //   - If the configured Reader is nil, metrics are treated as disabled even when
 //     Config is non-nil (this allows DI to short-circuit metrics when reader
 //     construction fails or is intentionally omitted).
@@ -29,17 +29,17 @@
 //
 // # Exporters / readers
 //
-// Config.Kind selects the reader/exporter implementation. This package typically supports:
+// [Config.Kind] selects the reader/exporter implementation. This package typically supports:
 //
 //   - "otlp": uses an OTLP/HTTP metrics exporter and a periodic reader.
 //   - "prometheus": uses the Prometheus exporter/reader with a namespace derived from
 //     the service name.
 //
-// If Config.Kind is unknown, NewReader returns ErrNotFound.
+// If [Config.Kind] is unknown, NewReader returns [ErrNotFound].
 //
 // # OTLP endpoint security
 //
-// When Config.Headers is non-empty, non-loopback "http://" OTLP endpoints are
+// When [Config.Headers] is non-empty, non-loopback "http://" OTLP endpoints are
 // rejected to avoid sending credential-bearing headers over cleartext transport.
 // Use "https://" for external collectors. Local development collectors on
 // "localhost" or loopback IP addresses may use "http://".
@@ -47,7 +47,7 @@
 // # Global provider installation
 //
 // When enabled, NewMeterProvider installs the constructed provider as the process-wide
-// default via otel.SetMeterProvider. Instrumentation that uses the global provider
+// default via [go.opentelemetry.io/otel.SetMeterProvider]. Instrumentation that uses the global provider
 // (directly or indirectly) will emit metrics through this provider.
 //
 // This package does not configure propagation. Propagation concerns apply primarily to

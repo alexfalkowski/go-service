@@ -89,7 +89,7 @@ func (h *Webhook) Sign(req *http.Request) error {
 //
 // Security note:
 // This method intentionally does not add a second local size cap. Supported inbound use goes through
-// `transport/http.NewServer`, whose body middleware enforces Config.MaxReceiveSize before mux handlers and
+// [github.com/alexfalkowski/go-service/v2/transport/http.NewServer], whose body middleware enforces Config.MaxReceiveSize before mux handlers and
 // webhook verification run. Callers that bypass the transport server are responsible for applying the same
 // request-level cap before invoking Verify.
 //

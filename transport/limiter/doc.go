@@ -7,15 +7,15 @@
 // # Keys and kinds
 //
 // Rate limits are keyed by a string derived from the request context. The default key derivation functions
-// are provided by `NewKeyMap`, mapping a configured kind to a function that extracts a value from context
+// are provided by [NewKeyMap], mapping a configured kind to a function that extracts a value from context
 // metadata:
 //
-//   - "user-agent": meta.UserAgent
-//   - "ip": meta.IPAddr
-//   - "user-id": meta.UserID
-//   - "service-method": meta.ServiceMethod
+//   - "user-agent": [meta.UserAgent]
+//   - "ip": [meta.IPAddr]
+//   - "user-id": [meta.UserID]
+//   - "service-method": [meta.ServiceMethod]
 //
-// The configured kind is typically provided via `Config.Kind`. If the kind is not present in the KeyMap,
+// The configured kind is typically provided via [Config.Kind]. If the kind is not present in the KeyMap,
 // limiter construction fails with ErrMissingKey.
 //
 // The "ip" key uses IP metadata populated by transport metadata middleware. That
@@ -49,8 +49,8 @@
 // layers can enforce limits consistently across replicas and before requests
 // spend application CPU.
 //
-// When constructed via `NewLimiter`, the underlying store is closed on application shutdown via an Fx/Dig
+// When constructed via [NewLimiter], the underlying store is closed on application shutdown via an Fx/Dig
 // lifecycle hook.
 //
-// Start with `Config`, `KeyMap`/`NewKeyMap`, and `NewLimiter`.
+// Start with [Config], [KeyMap]/[NewKeyMap], and [NewLimiter].
 package limiter

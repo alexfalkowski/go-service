@@ -11,7 +11,7 @@ import (
 // BenchmarkSQLDriver is a database/sql driver test double that returns empty result sets.
 type BenchmarkSQLDriver struct{}
 
-// Open implements driver.Driver.
+// Open implements [driver.Driver].
 func (BenchmarkSQLDriver) Open(string) (driver.Conn, error) {
 	return BenchmarkSQLConn{}, nil
 }
@@ -19,22 +19,22 @@ func (BenchmarkSQLDriver) Open(string) (driver.Conn, error) {
 // BenchmarkSQLConn is a database/sql connection test double.
 type BenchmarkSQLConn struct{}
 
-// Prepare implements driver.Conn and returns driver.ErrSkip.
+// Prepare implements [driver.Conn] and returns [driver.ErrSkip].
 func (BenchmarkSQLConn) Prepare(string) (driver.Stmt, error) {
 	return nil, driver.ErrSkip
 }
 
-// Close implements driver.Conn and always succeeds.
+// Close implements [driver.Conn] and always succeeds.
 func (BenchmarkSQLConn) Close() error {
 	return nil
 }
 
-// Begin implements driver.Conn and returns driver.ErrSkip.
+// Begin implements [driver.Conn] and returns [driver.ErrSkip].
 func (BenchmarkSQLConn) Begin() (driver.Tx, error) {
 	return nil, driver.ErrSkip
 }
 
-// QueryContext implements driver.QueryerContext and returns empty rows.
+// QueryContext implements [driver.QueryerContext] and returns empty rows.
 func (BenchmarkSQLConn) QueryContext(context.Context, string, []driver.NamedValue) (driver.Rows, error) {
 	return BenchmarkSQLRows{}, nil
 }
@@ -47,12 +47,12 @@ func (BenchmarkSQLRows) Columns() []string {
 	return []string{"value"}
 }
 
-// Close implements driver.Rows and always succeeds.
+// Close implements [driver.Rows] and always succeeds.
 func (BenchmarkSQLRows) Close() error {
 	return nil
 }
 
-// Next implements driver.Rows and returns io.EOF.
+// Next implements [driver.Rows] and returns [io.EOF].
 func (BenchmarkSQLRows) Next([]driver.Value) error {
 	return io.EOF
 }

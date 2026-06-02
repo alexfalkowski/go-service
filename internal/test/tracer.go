@@ -37,7 +37,7 @@ func (e *SpanExporter) ExportSpans(_ context.Context, spans []tracer.ReadOnlySpa
 	return nil
 }
 
-// Shutdown satisfies tracer.SpanExporter.
+// Shutdown satisfies [tracer.SpanExporter].
 func (e *SpanExporter) Shutdown(context.Context) error {
 	return nil
 }

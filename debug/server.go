@@ -17,7 +17,7 @@ import (
 
 // ServerParams defines dependencies for constructing the debug server.
 //
-// It is intended for dependency injection (Fx/Dig). `NewServer` uses these dependencies to build an
+// It is intended for dependency injection (Fx/Dig). [NewServer] uses these dependencies to build an
 // HTTP debug service and register lifecycle/shutdown behavior.
 //
 // Fields:
@@ -74,7 +74,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Server wraps the managed debug HTTP service.
 //
-// The embedded *httpserver.Service provides lifecycle integration and start/stop behavior.
+// The embedded *[httpserver.Service] provides lifecycle integration and start/stop behavior.
 // This wrapper adds a nil-safe accessor via GetService.
 type Server struct {
 	*httpserver.Service

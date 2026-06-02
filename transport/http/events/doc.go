@@ -5,5 +5,5 @@
 //   - register HTTP handlers that receive CloudEvents and dispatch to a ReceiverFunc, and
 //   - create CloudEvents HTTP clients that send events using an HTTP RoundTripper.
 //
-// Start with `NewReceiver` / `(*Receiver).Register` for receiving and `NewSender` for sending.
+// Start with [NewReceiver] / [Receiver.Register] for receiving and [NewSender] for sending.
 package events

@@ -114,20 +114,20 @@ func (s *Server) Register() error {
 // EmptyHandler is a no-op chained middleware used in server tests.
 type EmptyHandler struct{}
 
-// ServeHTTP implements http.ChainedHandler and just calls the next handler.
+// ServeHTTP implements [http.ChainedHandler] and just calls the next handler.
 func (*EmptyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	next(rw, r)
 }
 
-// ErrServer is a server.Server test double whose Serve method fails with ErrFailed.
+// ErrServer is a [server.Server] test double whose Serve method fails with ErrFailed.
 type ErrServer struct{}
 
-// Serve implements server.Server and returns ErrFailed.
+// Serve implements [server.Server] and returns ErrFailed.
 func (s *ErrServer) Serve() error {
 	return ErrFailed
 }
 
-// Shutdown implements server.Server and always succeeds.
+// Shutdown implements [server.Server] and always succeeds.
 func (s *ErrServer) Shutdown(_ context.Context) error {
 	return nil
 }
@@ -137,15 +137,15 @@ func (s *ErrServer) String() string {
 	return "test"
 }
 
-// NoopServer is a server.Server test double whose lifecycle methods always succeed.
+// NoopServer is a [server.Server] test double whose lifecycle methods always succeed.
 type NoopServer struct{}
 
-// Serve implements server.Server and always succeeds.
+// Serve implements [server.Server] and always succeeds.
 func (s *NoopServer) Serve() error {
 	return nil
 }
 
-// Shutdown implements server.Server and always succeeds.
+// Shutdown implements [server.Server] and always succeeds.
 func (s *NoopServer) Shutdown(_ context.Context) error {
 	return nil
 }
@@ -160,7 +160,7 @@ func NewObservableServer(err, shutdownErr error) *ObservableServer {
 	return &ObservableServer{Err: err, ShutdownErr: shutdownErr, Done: make(chan struct{})}
 }
 
-// ObservableServer is a server.Server test double that records serve and shutdown activity.
+// ObservableServer is a [server.Server] test double that records serve and shutdown activity.
 type ObservableServer struct {
 	Err         error
 	ShutdownErr error

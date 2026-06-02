@@ -9,7 +9,7 @@ import (
 
 // Encode encodes src using standard base64 encoding (RFC 4648) and returns the encoded string.
 //
-// This helper uses `base64.StdEncoding` and allocates a new buffer sized to the encoded output.
+// This helper uses [base64.StdEncoding] and allocates a new buffer sized to the encoded output.
 func Encode(src []byte) string {
 	buf := make([]byte, base64.StdEncoding.EncodedLen(len(src)))
 	base64.StdEncoding.Encode(buf, src)
@@ -25,7 +25,7 @@ func EncodedLen(size bytes.Size) int64 {
 
 // Decode decodes a standard base64-encoded string s into a byte slice.
 //
-// This helper uses `base64.StdEncoding`. It allocates a destination buffer sized to the maximum decoded
+// This helper uses [base64.StdEncoding]. It allocates a destination buffer sized to the maximum decoded
 // length, then returns the subslice actually written.
 //
 // It returns a non-nil error if s contains invalid base64 data.

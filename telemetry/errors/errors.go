@@ -6,7 +6,7 @@ import (
 
 // Register installs handler as the global OpenTelemetry error handler.
 //
-// This function forwards to otel.SetErrorHandler(handler). The OpenTelemetry error
+// This function forwards to [go.opentelemetry.io/otel.SetErrorHandler]. The OpenTelemetry error
 // handler is process-wide; the last handler registered wins.
 //
 // Register is typically invoked once during service startup (for example via an
@@ -26,7 +26,7 @@ func Register(handler *Handler) {
 // NewHandler constructs a Handler that logs OpenTelemetry internal errors.
 //
 // The returned Handler implements the OpenTelemetry error handler interface and
-// writes errors using the provided go-service *logger.Logger.
+// writes errors using the provided go-service *[logger.Logger].
 //
 // If logger is nil, NewHandler returns nil so callers can preserve the
 // OpenTelemetry default global error handler when logging is disabled.
@@ -42,7 +42,7 @@ func NewHandler(logger *logger.Logger) *Handler {
 //
 // Handler is intended to be registered via Register so that OpenTelemetry errors
 // are visible in service logs. It logs a consistent message and includes a
-// standardized "error" attribute produced by logger.Error.
+// standardized "error" attribute produced by [logger.Error].
 type Handler struct {
 	logger *logger.Logger
 }

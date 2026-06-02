@@ -15,26 +15,26 @@ import (
 //
 // Config separates those concerns:
 //
-//   - Key is the single signing key used by Token.Generate.
-//   - Keys is the set of verification keys that Token.Verify may use.
+//   - Key is the single signing key used by [Token.Generate].
+//   - Keys is the set of verification keys that [Token.Verify] may use.
 //   - Expiration is how long newly generated tokens are valid.
 //
 // # Key rotation and multi-key verification
 //
 // Verification is name-based: the signed token claims embed a key id, and
-// verification selects a matching public key config from Keys (via Keys.Get(name)).
+// verification selects a matching public key config from Keys (via [Keys.Get](name)).
 // This design supports key rotation by allowing you to:
 //
 //   - mint new tokens with the active signing key name, and
 //   - continue verifying older tokens by keeping historical public keys in Keys.
 //
-// Note: This package does not enforce that Key.Name exists in Keys. If you want tokens
+// Note: This package does not enforce that [Key.Name] exists in Keys. If you want tokens
 // minted by Key to be verifiable by this same Config, include the corresponding public
 // key entry in Keys under the same name.
 //
 // # Enablement
 //
-// Enablement is modeled by presence and content: a nil *Config is disabled, and a config
+// Enablement is modeled by presence and content: a nil *[Config] is disabled, and a config
 // with neither Key nor Keys is disabled (see IsEnabled).
 type Config struct {
 	// Key is the signing key configuration used to mint SSH-style tokens.
@@ -68,15 +68,15 @@ func (c *Config) IsEnabled() bool {
 
 // Key describes SSH key material configuration along with its logical name.
 //
-// The embedded crypto/ssh.Config provides the public/private key source configuration
-// used by go-service crypto/ssh helpers (typically via an os.FS).
+// The embedded [github.com/alexfalkowski/go-service/v2/crypto/ssh.Config] provides the public/private key source configuration
+// used by go-service crypto/ssh helpers (typically via an [os.FS]).
 //
 // The Name identifies the key logically and is used to select keys during verification.
 type Key struct {
 	// Config contains the SSH key material configuration (public/private key sources).
 	*ssh.Config `yaml:",inline" json:",inline" toml:",inline"`
 
-	// Name is the logical key name used to select a key (for example via Keys.Get).
+	// Name is the logical key name used to select a key (for example via [Keys.Get]).
 	//
 	// For signing, this name is embedded into the signed token claims as the key id.
 	// For verification, this name is used as the lookup key into Keys.

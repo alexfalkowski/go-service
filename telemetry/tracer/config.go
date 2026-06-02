@@ -30,7 +30,7 @@ type Config struct {
 
 // IsEnabled reports whether tracing is configured.
 //
-// A nil *Config or empty Kind indicates tracing is disabled.
+// A nil *[Config] or empty Kind indicates tracing is disabled.
 func (c *Config) IsEnabled() bool {
 	return c != nil && c.Kind != ""
 }

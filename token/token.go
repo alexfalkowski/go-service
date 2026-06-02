@@ -27,10 +27,10 @@ import (
 // be nil when their nested configuration is nil.
 //
 // A nil cfg is treated as disabled and returns nil. If Kind selects an implementation whose
-// nested config is missing, Generate/Verify return token/errors.ErrInvalidConfig instead of panicking.
+// nested config is missing, Generate/Verify return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig] instead of panicking.
 //
 // Unknown kinds are treated as invalid configuration by the facade methods: Generate and Verify
-// return token/errors.ErrInvalidConfig.
+// return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
@@ -66,7 +66,7 @@ type Token struct {
 //   - "ssh": the token is minted for the provided audience (aud), while subject
 //     is ignored. The SSH token kind typically identifies a key rather than a subject.
 //
-// If the configured kind is unknown, Generate returns token/errors.ErrInvalidConfig.
+// If the configured kind is unknown, Generate returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 func (t *Token) Generate(aud, sub string) ([]byte, error) {
 	switch t.cfg.Kind {
 	case "jwt":
@@ -102,7 +102,7 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 //   - "ssh": verifies the token for the provided audience (aud), and the
 //     returned string is the selected key name (not a JWT/PASETO "sub" claim).
 //
-// If the configured kind is unknown, Verify returns token/errors.ErrInvalidConfig.
+// If the configured kind is unknown, Verify returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 func (t *Token) Verify(tkn []byte, aud string) (string, error) {
 	switch t.cfg.Kind {
 	case "jwt":

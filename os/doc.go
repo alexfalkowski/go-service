@@ -52,7 +52,7 @@
 // # Strict helpers and panics
 //
 // Some OS directory helpers are intentionally strict and will panic on unexpected
-// OS errors by using runtime.Must:
+// OS errors by using [runtime.Must]:
 //
 //   - [Executable]
 //   - [UserHomeDir]

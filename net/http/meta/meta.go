@@ -9,13 +9,13 @@ import (
 
 const contentKey = context.Key("content")
 
-// NoPrefix is an alias for meta.NoPrefix.
+// NoPrefix is an alias for [meta.NoPrefix].
 const NoPrefix = meta.NoPrefix
 
-// Map is an alias for meta.Map.
+// Map is an alias for [meta.Map].
 type Map = meta.Map
 
-// Pair is an alias for meta.Pair.
+// Pair is an alias for [meta.Pair].
 type Pair = meta.Pair
 
 type content struct {
@@ -32,7 +32,7 @@ func CamelStrings(ctx context.Context, prefix string) Map {
 	return meta.CamelStrings(ctx, prefix)
 }
 
-// Error converts err to a meta.Value using err.Error().
+// Error converts err to a [meta.Value] using err.Error().
 func Error(err error) meta.Value {
 	return meta.Error(err)
 }
@@ -47,7 +47,7 @@ func WithAttributes(ctx context.Context, pairs ...Pair) context.Context {
 	return meta.WithAttributes(ctx, pairs...)
 }
 
-// Request returns the stored *http.Request from ctx.
+// Request returns the stored *[http.Request] from ctx.
 //
 // Panics: Request expects WithContent to have been called. It will panic if no content metadata is stored
 // in ctx or if the stored value is invalid.
@@ -55,7 +55,7 @@ func Request(ctx context.Context) *http.Request {
 	return ctx.Value(contentKey).(content).request
 }
 
-// Response returns the stored http.ResponseWriter from ctx.
+// Response returns the stored [http.ResponseWriter] from ctx.
 //
 // Panics: Response expects WithContent to have been called. It will panic if no content metadata is stored
 // in ctx or if the stored value is invalid.
@@ -63,7 +63,7 @@ func Response(ctx context.Context) http.ResponseWriter {
 	return ctx.Value(contentKey).(content).response
 }
 
-// Encoder returns the stored encoding.Encoder from ctx.
+// Encoder returns the stored [encoding.Encoder] from ctx.
 //
 // Panics: Encoder expects WithContent to have been called. It will panic if no content metadata is stored
 // in ctx or if the stored value is invalid.

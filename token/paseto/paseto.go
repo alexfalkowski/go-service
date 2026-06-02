@@ -11,7 +11,7 @@ import (
 
 // NewToken constructs a Token that issues and validates PASETO v4 public (asymmetric) tokens.
 //
-// The resulting Token uses Ed25519 keys for signing and verification and an id.Generator
+// The resulting Token uses Ed25519 keys for signing and verification and an [id.Generator]
 // for producing unique token IDs (jti). The keys are provided by the caller (typically
 // via DI wiring).
 //
@@ -27,7 +27,7 @@ func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Ge
 //
 // Issued tokens set common PASETO claims and identity fields (jti/iat/nbf/exp/iss/aud/sub).
 //
-// Missing generation or verification dependencies are reported as token/errors.ErrInvalidConfig.
+// Missing generation or verification dependencies are reported as [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 type Token struct {
 	cfg       *Config
 	signer    *ed25519.Signer
@@ -40,7 +40,7 @@ type Token struct {
 // The token is signed using PASETO v4 public tokens (Ed25519 signatures). It sets
 // common claims:
 //
-//   - jti: generated via the provided id.Generator
+//   - jti: generated via the provided [id.Generator]
 //   - iat: set to the current time
 //   - nbf: set to the current time
 //   - exp: set to now + parsed cfg.Expiration

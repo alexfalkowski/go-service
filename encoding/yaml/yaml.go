@@ -11,8 +11,8 @@ var defaultEncoder = &Encoder{}
 
 // NewEncoder constructs a YAML encoder.
 //
-// This encoder is a thin adapter around go-yaml v3 (imported as go.yaml.in/yaml/v3) that satisfies
-// `github.com/alexfalkowski/go-service/v2/encoding.Encoder`.
+// This encoder is a thin adapter around go-yaml v3 (imported as [go.yaml.in/yaml/v3]) that satisfies
+// [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }

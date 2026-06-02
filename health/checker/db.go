@@ -43,7 +43,7 @@ type DBChecker struct {
 
 // Check verifies database health by pinging all configured master and slave databases.
 //
-// It returns a single aggregated error (via errors.Join) containing all ping errors.
+// It returns a single aggregated error (via [errors.Join]) containing all ping errors.
 // If no database pools are configured, Check returns ErrNoConnections.
 // If all pings succeed, Check returns nil.
 func (c *DBChecker) Check(ctx context.Context) error {

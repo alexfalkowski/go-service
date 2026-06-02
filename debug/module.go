@@ -9,7 +9,7 @@ import (
 //
 // It provides:
 //
-//   - a debug router (*debug/http.ServeMux) via http.NewServeMux,
+//   - a debug router (*[github.com/alexfalkowski/go-service/v2/debug/http.ServeMux]) via [http.NewServeMux],
 //   - the debug server (*[Server]) via [NewServer] (returns nil when disabled), and
 //   - [Register], the front door for optional debug endpoint registration.
 //

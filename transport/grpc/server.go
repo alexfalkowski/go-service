@@ -23,9 +23,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 )
 
-// ServerParams defines dependencies for constructing a gRPC transport `Server`.
+// ServerParams defines dependencies for constructing a gRPC transport [Server].
 //
-// It is an Fx parameter struct (`di.In`) that collects the configuration and optional
+// It is an Fx parameter struct ([di.In]) that collects the configuration and optional
 // dependencies used to build and run the gRPC server.
 //
 // Optional fields:
@@ -36,7 +36,7 @@ import (
 type ServerParams struct {
 	di.In
 
-	// Shutdowner is used by the underlying `*server.Service` to coordinate shutdown.
+	// Shutdowner is used by the underlying *[server.Service] to coordinate shutdown.
 	Shutdowner di.Shutdowner
 
 	// Config controls gRPC server enablement, address, timeouts, TLS, and low-level gRPC options.
@@ -70,7 +70,7 @@ type ServerParams struct {
 	Stream []grpc.StreamServerInterceptor `optional:"true"`
 }
 
-// NewServer constructs a gRPC transport `Server` when the transport is enabled.
+// NewServer constructs a gRPC transport [Server] when the transport is enabled.
 //
 // If `params.Config` is disabled, it returns (nil, nil) so that downstream wiring can treat the server
 // as not configured.
@@ -84,10 +84,10 @@ type ServerParams struct {
 //
 // TLS:
 // If TLS is enabled in config, server credentials are built from `params.Config.TLS`. Certificate/key
-// sources may be resolved via the package-registered filesystem (see `Register` in this package).
+// sources may be resolved via the package-registered filesystem (see [Register] in this package).
 //
 // Inbound size limits:
-// params.Config.GetMaxReceiveSize() is applied via grpc.MaxRecvMsgSize, which caps each inbound unary
+// params.Config.GetMaxReceiveSize() is applied via [grpc.MaxRecvMsgSize], which caps each inbound unary
 // request and each inbound stream message independently.
 //
 // If the configured address uses an ephemeral port such as `localhost:0`, the actual bound listener address
@@ -126,8 +126,8 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Server wraps a configured gRPC server and its runnable service wrapper.
 //
-// The embedded `*grpcserver.Service` provides start/stop orchestration and integrates with the application's
-// lifecycle, while the underlying `*grpc.Server` is used as the `grpc.ServiceRegistrar` for registering
+// The embedded *[grpcserver.Service] provides start/stop orchestration and integrates with the application's
+// lifecycle, while the underlying *[grpc.Server] is used as the [grpc.ServiceRegistrar] for registering
 // service implementations.
 type Server struct {
 	server *grpc.Server
@@ -149,7 +149,7 @@ func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 //
 // It returns nil if s is nil (for example, when the transport is disabled).
 // This method is commonly used by higher-level wiring to collect enabled server services for lifecycle
-// registration (see `transport.NewServers` and `net/server.Register`).
+// registration (see [github.com/alexfalkowski/go-service/v2/transport.NewServers] and [github.com/alexfalkowski/go-service/v2/net/server.Register]).
 func (s *Server) GetService() *grpcserver.Service {
 	if s == nil {
 		return nil

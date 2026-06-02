@@ -8,8 +8,8 @@ import (
 
 // Server defines the minimal interface required by Service to manage a transport server.
 //
-// Implementations are typically thin adapters over concrete servers such as `net/http.Server` or `grpc.Server`.
-// The embedded fmt.Stringer is expected to return a human-readable address or identifier (used for logging).
+// Implementations are typically thin adapters over concrete servers such as [github.com/alexfalkowski/go-service/v2/net/http.Server] or `grpc.Server`.
+// The embedded [fmt.Stringer] is expected to return a human-readable address or identifier (used for logging).
 type Server interface {
 	fmt.Stringer
 

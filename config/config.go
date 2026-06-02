@@ -28,7 +28,7 @@ import (
 //
 // After decoding, NewConfig enforces two additional invariants:
 //
-//  1. Empty detection: if the decoded value is considered empty (see structs.IsEmpty), NewConfig returns
+//  1. Empty detection: if the decoded value is considered empty (see [structs.IsEmpty]), NewConfig returns
 //     ErrInvalidConfig. This guards against accidentally starting with a zero-value configuration when the
 //     input is missing or does not populate any fields.
 //

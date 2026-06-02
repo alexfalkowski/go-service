@@ -4,7 +4,7 @@
 // reduce repetitive boilerplate in common slice-manipulation patterns used across
 // go-service.
 //
-// This package complements the Go standard library `slices` package rather than
+// This package complements the Go standard library [slices] package rather than
 // replacing it. Prefer the standard library first when it provides what you need,
 // and use these helpers when they improve readability or avoid repeated nil/zero
 // checks.
@@ -24,7 +24,7 @@
 // [ElemFunc] returns the first pointer element in a slice that matches a
 // predicate, along with a boolean indicating whether a match was found.
 //
-// It is a convenience wrapper around `slices.IndexFunc` that returns the element
+// It is a convenience wrapper around [slices.IndexFunc] that returns the element
 // directly instead of an index.
 //
 // # Capacity helpers
@@ -37,7 +37,7 @@
 //
 // These helpers are designed to be predictable and side-effect free aside from
 // modifying the returned slice as normal for append-style operations. They do not
-// mutate elements beyond appending them. "Zero" is defined by reflect.IsZero, so
+// mutate elements beyond appending them. "Zero" is defined by [reflect.IsZero], so
 // nil slices and maps are skipped, while non-nil empty slices and maps are
 // appended.
 package slices

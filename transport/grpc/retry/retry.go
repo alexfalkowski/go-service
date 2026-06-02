@@ -12,7 +12,7 @@ import (
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 )
 
-// Config is an alias for `github.com/alexfalkowski/go-service/v2/transport/retry.Config`.
+// Config is an alias for [github.com/alexfalkowski/go-service/v2/transport/retry.Config].
 //
 // It describes the retry policy for gRPC unary client calls, including:
 //   - `Attempts`: maximum number of attempts (initial call + retries).
@@ -59,7 +59,7 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 //
 // Failure classification:
 // Retries are only attempted for selected gRPC status codes. This implementation currently retries on
-// `codes.Unavailable`.
+// [codes.Unavailable].
 //
 // Policy behavior:
 // When no policy is provided, only side-effect-safe unary RPCs are eligible for retry: AIP-style read methods,

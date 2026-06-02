@@ -27,9 +27,9 @@
 // Config is a convenience root used by services to configure telemetry in one
 // place. It contains pointers to per-signal configs:
 //
-//   - Logger (*telemetry/logger.Config)
-//   - Metrics (*telemetry/metrics.Config)
-//   - Tracer (*telemetry/tracer.Config)
+//   - Logger (*[github.com/alexfalkowski/go-service/v2/telemetry/logger.Config])
+//   - Metrics (*[github.com/alexfalkowski/go-service/v2/telemetry/metrics.Config])
+//   - Tracer (*[github.com/alexfalkowski/go-service/v2/telemetry/tracer.Config])
 //
 // A nil Config typically means "telemetry disabled" at the top level, while
 // subpackages may also support their own enable/disable semantics (for example
@@ -37,7 +37,7 @@
 //
 // # OTLP endpoint security
 //
-// Logger, metrics, and tracer OTLP exporters may send Config.Headers as outbound
+// Logger, metrics, and tracer OTLP exporters may send [Config.Headers] as outbound
 // request headers. When headers are configured, non-loopback "http://" endpoints
 // are rejected to avoid sending credential-bearing headers over cleartext
 // transport. Use "https://" for external collectors. Local development
@@ -48,8 +48,8 @@
 // Register configures the global OpenTelemetry TextMapPropagator to a composite
 // propagator containing:
 //
-//   - W3C Trace Context (propagation.TraceContext)
-//   - W3C Baggage (propagation.Baggage)
+//   - W3C Trace Context ([propagation.TraceContext])
+//   - W3C Baggage ([propagation.Baggage])
 //
 // This affects context extraction/injection for supported transports
 // (HTTP/gRPC) when instrumentation uses the global propagator.

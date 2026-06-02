@@ -56,9 +56,9 @@ type RegisterParams struct {
 // Definition rules:
 // MVC routing/rendering is considered "defined" only when both:
 //   - FileSystem is non-nil, and
-//   - Layout is valid (see (*Layout).IsValid).
+//   - Layout is valid (see [Layout.IsValid]).
 //
-// Pool must be non-nil. Standard go-service module wiring provides it from sync.Module.
+// Pool must be non-nil. Standard go-service module wiring provides it from [sync.Module].
 //
 // If MVC is not defined, routing helpers (Route/Get/Post/etc. and static helpers) return false and do not
 // register handlers.

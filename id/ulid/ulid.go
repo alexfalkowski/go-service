@@ -24,10 +24,10 @@ type Generator struct {
 
 // Generate returns a newly generated ULID string.
 //
-// The ULID timestamp component is derived from time.Now(), and the entropy component is read from the
+// The ULID timestamp component is derived from [time.Now](), and the entropy component is read from the
 // injected cryptographically secure reader.
 //
-// If ULID generation fails (for example due to reader errors), this method panics via runtime.Must.
+// If ULID generation fails (for example due to reader errors), this method panics via [runtime.Must].
 func (g *Generator) Generate() string {
 	id, err := ulid.New(ulid.Timestamp(time.Now()), g.reader)
 	runtime.Must(err)

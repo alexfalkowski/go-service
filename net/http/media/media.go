@@ -132,7 +132,7 @@ func (t Type) WithUTF8() string {
 
 // TypeByExtension returns the media type associated with ext.
 //
-// It wraps mime.TypeByExtension so HTTP packages can use the shared media package
+// It wraps [mime.TypeByExtension] so HTTP packages can use the shared media package
 // for media type lookup.
 func TypeByExtension(ext string) string {
 	return mime.TypeByExtension(ext)

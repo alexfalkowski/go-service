@@ -8,22 +8,22 @@ import (
 // NewBinary constructs a protobuf binary encoder.
 //
 // This encoder is a thin adapter around google.golang.org/protobuf/proto Marshal/Unmarshal that satisfies
-// `github.com/alexfalkowski/go-service/v2/encoding.Encoder`.
+// [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
 func NewBinary() *Binary {
 	return &Binary{}
 }
 
 // Binary implements protobuf binary encoding and decoding.
 //
-// Encode expects v to implement proto.Message and writes the protobuf binary wire format to the writer.
-// Decode expects v to implement proto.Message (typically a pointer to a generated message) and unmarshals
+// Encode expects v to implement [proto.Message] and writes the protobuf binary wire format to the writer.
+// Decode expects v to implement [proto.Message] (typically a pointer to a generated message) and unmarshals
 // the protobuf binary wire format from the reader into v.
 type Binary struct{}
 
 // Encode writes v as protobuf binary (wire format) to w.
 //
-// If v does not implement proto.Message, Encode returns encoding/errors.ErrInvalidType.
-// Any marshaling error from proto.Marshal and any write error from w.Write is returned.
+// If v does not implement [proto.Message], Encode returns [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType].
+// Any marshaling error from [proto.Marshal] and any write error from w.Write is returned.
 func (e *Binary) Encode(w io.Writer, v any) error {
 	msg, err := message(v)
 	if err != nil {
@@ -41,13 +41,13 @@ func (e *Binary) Encode(w io.Writer, v any) error {
 
 // Decode reads protobuf binary (wire format) from r and unmarshals it into v.
 //
-// If v does not implement proto.Message, Decode returns
-// encoding/errors.ErrInvalidType without reading from r.
+// If v does not implement [proto.Message], Decode returns
+// [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType] without reading from r.
 //
-// Decode otherwise reads all remaining bytes from r (via io.ReadAll) before
+// Decode otherwise reads all remaining bytes from r (via [io.ReadAll]) before
 // unmarshaling.
 //
-// Any read error from io.ReadAll and any unmarshal error from proto.Unmarshal is returned.
+// Any read error from [io.ReadAll] and any unmarshal error from [proto.Unmarshal] is returned.
 func (e *Binary) Decode(r io.Reader, v any) error {
 	msg, err := message(v)
 	if err != nil {

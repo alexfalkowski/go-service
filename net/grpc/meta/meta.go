@@ -8,11 +8,11 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// Map aliases gRPC metadata.MD.
+// Map aliases gRPC [metadata.MD].
 //
 // It represents the incoming or outgoing metadata map attached to a gRPC
 // context. The alias exists so callers can work with gRPC metadata through the
-// go-service import path rather than importing `google.golang.org/grpc/metadata`
+// go-service import path rather than importing [google.golang.org/grpc/metadata]
 // directly.
 type Map = metadata.MD
 
@@ -61,7 +61,7 @@ func WithUserAgent(value meta.Value) Pair {
 
 // UserAgent returns the user agent attribute stored on ctx.
 //
-// If no value is present, it returns the zero-value meta.Value.
+// If no value is present, it returns the zero-value [meta.Value].
 func UserAgent(ctx context.Context) meta.Value {
 	return meta.UserAgent(ctx)
 }
@@ -73,7 +73,7 @@ func WithUserID(value meta.Value) Pair {
 
 // IPAddr returns the stored IP address attribute from ctx.
 //
-// If no value is present, it returns the zero-value meta.Value.
+// If no value is present, it returns the zero-value [meta.Value].
 func IPAddr(ctx context.Context) meta.Value {
 	return meta.IPAddr(ctx)
 }
@@ -87,14 +87,14 @@ func WithAuthorization(value meta.Value) Pair {
 
 // Authorization returns the authorization attribute stored on ctx.
 //
-// If no value is present, it returns the zero-value meta.Value.
+// If no value is present, it returns the zero-value [meta.Value].
 func Authorization(ctx context.Context) meta.Value {
 	return meta.Authorization(ctx)
 }
 
 // AppendToOutgoingContext adds kv to the outgoing metadata in ctx.
 //
-// It is an alias for metadata.AppendToOutgoingContext. The kv slice must
+// It is an alias for [metadata.AppendToOutgoingContext]. The kv slice must
 // contain an even number of elements arranged as alternating key/value pairs.
 func AppendToOutgoingContext(ctx context.Context, kv ...string) context.Context {
 	return metadata.AppendToOutgoingContext(ctx, kv...)
@@ -110,14 +110,14 @@ func Ignored(value string) meta.Value {
 
 // FromOutgoingContext returns the outgoing metadata in ctx, if any.
 //
-// It is an alias for metadata.FromOutgoingContext.
+// It is an alias for [metadata.FromOutgoingContext].
 func FromOutgoingContext(ctx context.Context) (Map, bool) {
 	return metadata.FromOutgoingContext(ctx)
 }
 
 // FromIncomingContext returns the incoming metadata in ctx, if any.
 //
-// It is an alias for metadata.FromIncomingContext.
+// It is an alias for [metadata.FromIncomingContext].
 func FromIncomingContext(ctx context.Context) (Map, bool) {
 	return metadata.FromIncomingContext(ctx)
 }
@@ -131,7 +131,7 @@ func New(md map[string]string) Map {
 
 // NewIncomingContext attaches md as incoming metadata to ctx.
 //
-// It is an alias for metadata.NewIncomingContext.
+// It is an alias for [metadata.NewIncomingContext].
 func NewIncomingContext(ctx context.Context, md Map) context.Context {
 	return metadata.NewIncomingContext(ctx, md)
 }

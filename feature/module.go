@@ -2,7 +2,7 @@ package feature
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module wires OpenFeature into Fx/Dig.
+// Module wires OpenFeature into [go.uber.org/fx]/[go.uber.org/dig].
 //
 // It provides:
 //   - an OpenFeature client constructor ([NewClient]), and

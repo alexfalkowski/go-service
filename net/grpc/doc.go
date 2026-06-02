@@ -1,7 +1,7 @@
 // Package grpc provides the go-service gRPC import path.
 //
 // This package deliberately exposes a small, stable surface area over
-// `google.golang.org/grpc` so repository packages can depend on a consistent
+// [google.golang.org/grpc] so repository packages can depend on a consistent
 // go-service import path instead of importing upstream gRPC packages directly.
 //
 // It includes:

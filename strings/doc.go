@@ -26,7 +26,7 @@
 //     allocating a slice at the callsite. Concat concatenates without a
 //     separator.
 //
-//   - [CutColon]: a small helper that splits on the first ":" using strings.Cut,
+//   - [CutColon]: a small helper that splits on the first ":" using [strings.Cut],
 //     returning the part before and after. If ":" is not present, the "after"
 //     return value is empty.
 //

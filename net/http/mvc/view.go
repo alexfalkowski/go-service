@@ -78,7 +78,7 @@ func NewViewPair(name string) (*View, *View) {
 //
 // It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
 // If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
-// panic because it uses template.Must.
+// panic because it uses [template.Must].
 func NewFullView(name string) *View {
 	template := template.Must(template.New(strings.Empty).Funcs(fmap).ParseFS(fileSystem, layout.Full(), name))
 
@@ -89,7 +89,7 @@ func NewFullView(name string) *View {
 //
 // It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
 // If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
-// panic because it uses template.Must.
+// panic because it uses [template.Must].
 func NewPartialView(name string) *View {
 	template := template.Must(template.New(strings.Empty).Funcs(fmap).ParseFS(fileSystem, layout.Partial(), name))
 
@@ -109,7 +109,7 @@ type View struct {
 // (Handlers created by this package's routing helpers populate that value before invoking controllers/views.)
 //
 // Render model:
-// Render wraps the provided model in a Template which includes exported meta attributes under Template.Meta.
+// Render wraps the provided model in a Template which includes exported meta attributes under [Template.Meta].
 // This allows templates to access request-scoped metadata (for example requestId) without controllers having
 // to explicitly thread those values through the model.
 //

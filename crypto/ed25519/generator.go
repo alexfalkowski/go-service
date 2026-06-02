@@ -27,8 +27,8 @@ type Generator struct {
 //
 // The returned PEM blocks are compatible with the expectations of [Config]:
 //
-//   - public:  a PEM block with Type "PUBLIC KEY" containing PKIX-encoded bytes (x509.MarshalPKIXPublicKey)
-//   - private: a PEM block with Type "PRIVATE KEY" containing PKCS#8-encoded bytes (x509.MarshalPKCS8PrivateKey)
+//   - public:  a PEM block with Type "PUBLIC KEY" containing PKIX-encoded bytes ([x509.MarshalPKIXPublicKey])
+//   - private: a PEM block with Type "PRIVATE KEY" containing PKCS#8-encoded bytes ([x509.MarshalPKCS8PrivateKey])
 //
 // If key generation, marshaling, or encoding fails, the returned error is prefixed with "ed25519".
 func (g *Generator) Generate() (string, string, error) {

@@ -17,13 +17,13 @@ type Config struct {
 	// GRPC configures the gRPC transport stack (client and server).
 	//
 	// When nil or when the nested config is disabled, gRPC transport wiring is effectively
-	// turned off and constructors such as `transport/grpc.NewServer` typically return nil.
+	// turned off and constructors such as [github.com/alexfalkowski/go-service/v2/transport/grpc.NewServer] typically return nil.
 	GRPC *grpc.Config `yaml:"grpc,omitempty" json:"grpc,omitempty" toml:"grpc,omitempty"`
 
 	// HTTP configures the HTTP transport stack (client and server).
 	//
 	// When nil or when the nested config is disabled, HTTP transport wiring is effectively
-	// turned off and constructors such as `transport/http.NewServer` typically return nil.
+	// turned off and constructors such as [github.com/alexfalkowski/go-service/v2/transport/http.NewServer] typically return nil.
 	HTTP *http.Config `yaml:"http,omitempty" json:"http,omitempty" toml:"http,omitempty"`
 }
 

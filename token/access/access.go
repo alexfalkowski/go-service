@@ -23,8 +23,8 @@ type Controller interface {
 // When cfg is nil (disabled), NewController returns (nil, nil).
 //
 // When enabled, NewController builds a Casbin enforcer using:
-//   - the configured model value (cfg.Model) resolved through fs.ReadSource, and
-//   - the configured policy value (cfg.Policy) resolved through fs.ReadSource.
+//   - the configured model value (cfg.Model) resolved through [os.FS.ReadSource], and
+//   - the configured policy value (cfg.Policy) resolved through [os.FS.ReadSource].
 func NewController(cfg *Config, fs *os.FS) (Controller, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil

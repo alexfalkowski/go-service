@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
-// KeyMap is an alias for `limiter.KeyMap`.
+// KeyMap is an alias for [limiter.KeyMap].
 //
 // It maps limiter key kinds (for example, "user-agent" or "ip") to functions that derive a rate-limit key
 // from the request context.
@@ -19,7 +19,7 @@ type KeyMap = limiter.KeyMap
 //
 // If cfg is disabled, it returns (nil, nil) so callers can treat the limiter as not configured.
 //
-// The returned limiter is backed by `limiter.NewLimiter` and is registered with the provided lifecycle.
+// The returned limiter is backed by [limiter.NewLimiter] and is registered with the provided lifecycle.
 // The `keys` map controls how request contexts are turned into limiter keys (for example, per user-agent).
 func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
 	if !cfg.IsEnabled() {
@@ -34,7 +34,7 @@ func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Serve
 	return &Server{rateLimiter}, nil
 }
 
-// Server wraps `*limiter.Limiter` for HTTP server integration.
+// Server wraps *[limiter.Limiter] for HTTP server integration.
 type Server struct {
 	*limiter.Limiter
 }
@@ -54,7 +54,7 @@ type Handler struct {
 
 // ServeHTTP enforces the configured limiter.
 //
-// Service-owned operation paths (health/metrics/etc.) bypass limiting (see `net/http/strings.IsOperationPath`).
+// Service-owned operation paths (health/metrics/etc.) bypass limiting (see [github.com/alexfalkowski/go-service/v2/net/http/strings.IsOperationPath]).
 //
 // Behavior:
 //   - If `Take` returns an error, it writes an internal server error response.
@@ -89,7 +89,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 //
 // If cfg is disabled, it returns (nil, nil) so callers can treat the limiter as not configured.
 //
-// The returned limiter is backed by `limiter.NewLimiter` and is registered with the provided lifecycle.
+// The returned limiter is backed by [limiter.NewLimiter] and is registered with the provided lifecycle.
 // The `keys` map controls how request contexts are turned into limiter keys.
 func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
 	if !cfg.IsEnabled() {
@@ -104,20 +104,20 @@ func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Clien
 	return &Client{rateLimiter}, nil
 }
 
-// Client wraps `*limiter.Limiter` for HTTP client integration.
+// Client wraps *[limiter.Limiter] for HTTP client integration.
 type Client struct {
 	*limiter.Limiter
 }
 
 // NewRoundTripper constructs an HTTP RoundTripper that enforces rate limiting on outbound requests.
 //
-// The returned RoundTripper calls `limiter.Take` before delegating to the underlying transport.
+// The returned RoundTripper calls [limiter.Take] before delegating to the underlying transport.
 // Callers should only install this RoundTripper when limiter is non-nil.
 func NewRoundTripper(limiter *Client, rt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{limiter: limiter, RoundTripper: rt}
 }
 
-// RoundTripper wraps an underlying `http.RoundTripper` and applies client-side rate limiting.
+// RoundTripper wraps an underlying [http.RoundTripper] and applies client-side rate limiting.
 type RoundTripper struct {
 	limiter *Client
 	http.RoundTripper

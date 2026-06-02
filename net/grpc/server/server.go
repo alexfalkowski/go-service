@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
-// Service is an alias for server.Service.
+// Service is an alias for [server.Service].
 //
 // A Service is a managed, runnable unit that participates in the application's
 // lifecycle (start/stop) and integrates with go-service logging and shutdown
@@ -20,7 +20,7 @@ type Service = server.Service
 // NewService constructs a managed go-service Service for a gRPC server.
 //
 // It:
-//   - Binds the provided *grpc.Server to the listener described by cfg.Address
+//   - Binds the provided *[grpc.Server] to the listener described by cfg.Address
 //     (via NewServer).
 //   - Wraps the resulting Server in a generic go-service server runner
 //     (server.NewService) that handles logging and coordinates shutdown via sh.
@@ -44,11 +44,11 @@ func NewService(name string, grpcServer *grpc.Server, cfg *config.Config, logger
 	return server.NewService(name, serv, logger, sh), nil
 }
 
-// NewServer constructs a Server that binds the provided *grpc.Server to cfg.Address.
+// NewServer constructs a Server that binds the provided *[grpc.Server] to cfg.Address.
 //
 // The address is expected to be in the go-service network address format (for
 // example "tcp://:9090"). Internally, this is split into a network and address
-// via net.ListenNetworkAddress and then bound using net.Listen. Raw listen
+// via [net.ListenNetworkAddress] and then bound using [net.Listen]. Raw listen
 // addresses such as ":9090" default to the "tcp" network.
 //
 // On listen error, NewServer returns nil and the listener error.
@@ -63,7 +63,7 @@ func NewServer(server *grpc.Server, cfg *config.Config) (*Server, error) {
 	return &Server{server: server, listener: l}, nil
 }
 
-// Server wraps a *grpc.Server together with the net.Listener it serves on.
+// Server wraps a *[grpc.Server] together with the [net.Listener] it serves on.
 //
 // It adapts gRPC's Serve/GracefulStop API to the go-service generic server
 // runner expectations (Serve, Shutdown, and String).
@@ -74,7 +74,7 @@ type Server struct {
 
 // Serve starts serving requests on the configured listener.
 //
-// This delegates to (*grpc.Server).Serve. It will return an error if the server
+// This delegates to (*[grpc.Server]).Serve. It will return an error if the server
 // cannot begin serving, or if the underlying listener encounters an error.
 func (s *Server) Serve() error {
 	return s.server.Serve(s.listener)

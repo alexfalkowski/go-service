@@ -30,7 +30,7 @@ func MessageMediaTypes() []MessageMediaType {
 	}
 }
 
-// ErrResponseWriter is an http.ResponseWriter test double whose writes fail with ErrFailed.
+// ErrResponseWriter is an [http.ResponseWriter] test double whose writes fail with ErrFailed.
 type ErrResponseWriter struct {
 	Code int
 }
@@ -50,7 +50,7 @@ func (w *ErrResponseWriter) WriteHeader(code int) {
 	w.Code = code
 }
 
-// RoundTripperFunc adapts a function to http.RoundTripper.
+// RoundTripperFunc adapts a function to [http.RoundTripper].
 type RoundTripperFunc func(*http.Request) (*http.Response, error)
 
 // RoundTrip calls f(req).
@@ -58,7 +58,7 @@ func (f RoundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)
 }
 
-// ErrorRoundTripper is an http.RoundTripper test double that always returns Err.
+// ErrorRoundTripper is an [http.RoundTripper] test double that always returns Err.
 type ErrorRoundTripper struct {
 	Err   error
 	Calls int
@@ -70,7 +70,7 @@ func (r *ErrorRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
 	return nil, r.Err
 }
 
-// StatusRoundTripper is an http.RoundTripper test double that returns Status.
+// StatusRoundTripper is an [http.RoundTripper] test double that returns Status.
 type StatusRoundTripper struct {
 	Status int
 	Calls  int
@@ -222,7 +222,7 @@ func (r *CauseRoundTripper) RoundTrip(req *http.Request) (*http.Response, error)
 	return ResponseWithStatus(http.StatusOK), nil
 }
 
-// NonReplayableReader is an io.Reader whose contents can only be read once.
+// NonReplayableReader is an [io.Reader] whose contents can only be read once.
 type NonReplayableReader struct {
 	Value string
 	read  bool
@@ -239,7 +239,7 @@ func (r *NonReplayableReader) Read(p []byte) (int, error) {
 	return len(r.Value), io.EOF
 }
 
-// TrackedBody is an io.ReadCloser that records Close calls.
+// TrackedBody is an [io.ReadCloser] that records Close calls.
 type TrackedBody struct {
 	*strings.Reader
 	Closed bool
@@ -269,10 +269,10 @@ func (r *HeaderDeletingRoundTripper) RoundTrip(req *http.Request) (*http.Respons
 	return r.RoundTripper.RoundTrip(req)
 }
 
-// ErrFileSystem is an fs.FS test double whose file read returns a partial payload and ErrFailed.
+// ErrFileSystem is an [fs.FS] test double whose file read returns a partial payload and ErrFailed.
 type ErrFileSystem struct{}
 
-// Open returns a failing file for asset.txt and fs.ErrNotExist for other names.
+// Open returns a failing file for asset.txt and [fs.ErrNotExist] for other names.
 func (ErrFileSystem) Open(name string) (fs.File, error) {
 	if name != "asset.txt" {
 		return nil, fs.ErrNotExist
@@ -281,7 +281,7 @@ func (ErrFileSystem) Open(name string) (fs.File, error) {
 	return &ErrFile{}, nil
 }
 
-// ErrFile is an fs.File test double that returns a partial payload and ErrFailed.
+// ErrFile is an [fs.File] test double that returns a partial payload and ErrFailed.
 type ErrFile struct {
 	read bool
 }
@@ -303,12 +303,12 @@ func (f *ErrFile) Read(p []byte) (int, error) {
 	return len("hello"), ErrFailed
 }
 
-// Close implements fs.File and always succeeds.
+// Close implements [fs.File] and always succeeds.
 func (f *ErrFile) Close() error {
 	return nil
 }
 
-// ErrFileInfo is an fs.FileInfo test double for ErrFile.
+// ErrFileInfo is an [fs.FileInfo] test double for ErrFile.
 type ErrFileInfo struct{}
 
 // Name returns asset.txt.

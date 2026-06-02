@@ -2,12 +2,12 @@ package config
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module wires the configuration subsystem into Fx/Dig.
+// Module wires the configuration subsystem into [go.uber.org/fx]/[go.uber.org/dig].
 //
 // It provides the core configuration components:
 //   - Validator (NewValidator) used to validate decoded config structs.
 //   - Decoder (NewDecoder) that dispatches config loading based on the "-config" / "-c" flag.
-//   - *config.Config (NewConfig[Config]) as the standard top-level configuration.
+//   - *[Config] ([NewConfig]) as the standard top-level configuration.
 //
 // It also provides a set of small "projection" constructors that extract commonly-used sub-configs from
 // the top-level Config. These projections are used by other modules so they can depend directly on the

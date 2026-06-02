@@ -2,60 +2,60 @@ package codes
 
 import "google.golang.org/grpc/codes"
 
-// OK is an alias for google.golang.org/grpc/codes.OK.
+// OK is an alias for [google.golang.org/grpc/codes.OK].
 const OK = codes.OK
 
-// Canceled is an alias for google.golang.org/grpc/codes.Canceled.
+// Canceled is an alias for [google.golang.org/grpc/codes.Canceled].
 const Canceled = codes.Canceled
 
-// Unknown is an alias for google.golang.org/grpc/codes.Unknown.
+// Unknown is an alias for [google.golang.org/grpc/codes.Unknown].
 const Unknown = codes.Unknown
 
-// InvalidArgument is an alias for google.golang.org/grpc/codes.InvalidArgument.
+// InvalidArgument is an alias for [google.golang.org/grpc/codes.InvalidArgument].
 const InvalidArgument = codes.InvalidArgument
 
-// DeadlineExceeded is an alias for google.golang.org/grpc/codes.DeadlineExceeded.
+// DeadlineExceeded is an alias for [google.golang.org/grpc/codes.DeadlineExceeded].
 const DeadlineExceeded = codes.DeadlineExceeded
 
-// NotFound is an alias for google.golang.org/grpc/codes.NotFound.
+// NotFound is an alias for [google.golang.org/grpc/codes.NotFound].
 const NotFound = codes.NotFound
 
-// AlreadyExists is an alias for google.golang.org/grpc/codes.AlreadyExists.
+// AlreadyExists is an alias for [google.golang.org/grpc/codes.AlreadyExists].
 const AlreadyExists = codes.AlreadyExists
 
-// PermissionDenied is an alias for google.golang.org/grpc/codes.PermissionDenied.
+// PermissionDenied is an alias for [google.golang.org/grpc/codes.PermissionDenied].
 const PermissionDenied = codes.PermissionDenied
 
-// ResourceExhausted is an alias for google.golang.org/grpc/codes.ResourceExhausted.
+// ResourceExhausted is an alias for [google.golang.org/grpc/codes.ResourceExhausted].
 const ResourceExhausted = codes.ResourceExhausted
 
-// FailedPrecondition is an alias for google.golang.org/grpc/codes.FailedPrecondition.
+// FailedPrecondition is an alias for [google.golang.org/grpc/codes.FailedPrecondition].
 const FailedPrecondition = codes.FailedPrecondition
 
-// Aborted is an alias for google.golang.org/grpc/codes.Aborted.
+// Aborted is an alias for [google.golang.org/grpc/codes.Aborted].
 const Aborted = codes.Aborted
 
-// OutOfRange is an alias for google.golang.org/grpc/codes.OutOfRange.
+// OutOfRange is an alias for [google.golang.org/grpc/codes.OutOfRange].
 const OutOfRange = codes.OutOfRange
 
-// Unimplemented is an alias for google.golang.org/grpc/codes.Unimplemented.
+// Unimplemented is an alias for [google.golang.org/grpc/codes.Unimplemented].
 const Unimplemented = codes.Unimplemented
 
-// Internal is an alias for google.golang.org/grpc/codes.Internal.
+// Internal is an alias for [google.golang.org/grpc/codes.Internal].
 const Internal = codes.Internal
 
-// Unavailable is an alias for google.golang.org/grpc/codes.Unavailable.
+// Unavailable is an alias for [google.golang.org/grpc/codes.Unavailable].
 const Unavailable = codes.Unavailable
 
-// DataLoss is an alias for google.golang.org/grpc/codes.DataLoss.
+// DataLoss is an alias for [google.golang.org/grpc/codes.DataLoss].
 const DataLoss = codes.DataLoss
 
-// Unauthenticated is an alias for google.golang.org/grpc/codes.Unauthenticated.
+// Unauthenticated is an alias for [google.golang.org/grpc/codes.Unauthenticated].
 const Unauthenticated = codes.Unauthenticated
 
 // Code is the canonical gRPC status code type used by go-service.
 //
-// It is an alias of google.golang.org/grpc/codes.Code, re-exported so callers
+// It is an alias of [google.golang.org/grpc/codes.Code], re-exported so callers
 // can depend on go-service packages while still using the upstream gRPC status
 // code representation.
 //

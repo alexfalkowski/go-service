@@ -11,7 +11,7 @@
 // # Sentinel errors and matching
 //
 // The exported variables in this package are intended to be used as sentinel errors.
-// Token implementations should wrap these errors (for example using fmt.Errorf with %w
+// Token implementations should wrap these errors (for example using [fmt.Errorf] with %w
 // or a helper that preserves an error chain) so callers can detect the failure reason
 // while still preserving additional context.
 //

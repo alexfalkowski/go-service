@@ -10,7 +10,7 @@ import (
 
 // MapParams defines dependencies used to construct a Map.
 //
-// It is intended for dependency injection (Fx/Dig). The default wiring is provided by `compress.Module`.
+// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The default wiring is provided by [Module].
 type MapParams struct {
 	di.In
 
@@ -36,7 +36,7 @@ type MapParams struct {
 //   - "snappy"
 //   - "none"
 //
-// Callers can add additional implementations or override existing kinds via (*Map).Register.
+// Callers can add additional implementations or override existing kinds via [Map.Register].
 func NewMap(params MapParams) *Map {
 	return &Map{
 		compressors: map[string]Compressor{

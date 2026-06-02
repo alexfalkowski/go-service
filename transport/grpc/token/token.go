@@ -29,7 +29,7 @@ func NewAccessController(cfg *token.Config, fs *os.FS) (AccessController, error)
 	return access.NewController(cfg.Access, fs)
 }
 
-// AccessController is an alias for `token/access.Controller`.
+// AccessController is an alias for [github.com/alexfalkowski/go-service/v2/token/access.Controller].
 //
 // It is exposed from this package so callers can refer to the access controller type from the gRPC token
 // integration layer.
@@ -48,7 +48,7 @@ func NewToken(name env.Name, cfg *token.Config, fs *os.FS, sig *ed25519.Signer, 
 	return &Token{Token: token.NewToken(name, cfg, fs, sig, ver, gen)}
 }
 
-// Token wraps `*token.Token` for gRPC transport integration.
+// Token wraps *[github.com/alexfalkowski/go-service/v2/token.Token] for gRPC transport integration.
 //
 // It exists so transport-level wiring can keep a distinct type for gRPC token functionality while still
 // delegating generation and verification to the underlying token implementation.
@@ -56,7 +56,7 @@ type Token struct {
 	*token.Token
 }
 
-// NewVerifier returns a `Verifier` backed by token.
+// NewVerifier returns a [Verifier] backed by token.
 //
 // If token is nil, it returns nil. This pattern allows DI graphs to inject a verifier only when token auth
 // is enabled/configured, and to leave verification interceptors disabled otherwise.
@@ -67,7 +67,7 @@ func NewVerifier(token *Token) Verifier {
 	return nil
 }
 
-// Verifier is an alias for `token.Verifier`.
+// Verifier is an alias for [token.Verifier].
 //
 // Verifiers validate Authorization tokens and typically return a "subject" string (the authenticated
 // principal) on success.
@@ -75,14 +75,14 @@ type Verifier token.Verifier
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that verifies Authorization tokens.
 //
-// Operation RPC methods (health/metrics/etc.) bypass verification (see `net/grpc/strings.IsOperationMethod`).
+// Operation RPC methods (health/metrics/etc.) bypass verification (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
 //
 // The interceptor expects an Authorization value to have been extracted into the context by the metadata
-// interceptor (`net/grpc/meta.UnaryServerInterceptor`). It verifies the token using verifier, scoping
+// interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.UnaryServerInterceptor]). It verifies the token using verifier, scoping
 // verification to the RPC `FullMethod`.
 //
 // Behavior:
-//   - If verification fails, it returns `codes.Unauthenticated`.
+//   - If verification fails, it returns [codes.Unauthenticated].
 //   - If verification succeeds, it stores the verified subject as the user id in the context and invokes
 //     the handler.
 //
@@ -107,14 +107,14 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that verifies Authorization tokens.
 //
-// Operation RPC methods (health/metrics/etc.) bypass verification (see `net/grpc/strings.IsOperationMethod`).
+// Operation RPC methods (health/metrics/etc.) bypass verification (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
 //
 // The interceptor expects an Authorization value to have been extracted into the stream context by the
-// metadata interceptor (`net/grpc/meta.StreamServerInterceptor`). It verifies the token using verifier,
+// metadata interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.StreamServerInterceptor]). It verifies the token using verifier,
 // scoping verification to the RPC `FullMethod`.
 //
 // Behavior:
-//   - If verification fails, it returns `codes.Unauthenticated`.
+//   - If verification fails, it returns [codes.Unauthenticated].
 //   - If verification succeeds, it injects the verified subject as the user id into the stream context and
 //     invokes the handler using a wrapped stream (`go-grpc-middleware` wrapper) that carries the new context.
 //
@@ -141,7 +141,7 @@ func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServer
 	}
 }
 
-// NewGenerator returns a `Generator` backed by token.
+// NewGenerator returns a [Generator] backed by token.
 //
 // If token is nil, it returns nil. This pattern allows DI graphs to inject a token generator only when token
 // auth is enabled/configured, and to leave client token-injection interceptors disabled otherwise.
@@ -152,7 +152,7 @@ func NewGenerator(token *Token) Generator {
 	return nil
 }
 
-// Generator is an alias for `token.Generator`.
+// Generator is an alias for [token.Generator].
 //
 // Generators create Authorization tokens for outbound RPCs, typically scoped to the RPC full method name
 // and a caller identity (user id).
@@ -163,14 +163,14 @@ type Generator token.Generator
 // For each outbound unary RPC, it generates a token scoped to `fullMethod` and the provided user id and
 // stores it in outgoing metadata under the "authorization" key using the `Bearer` scheme.
 //
-// The interceptor also stores the Authorization value in the context via `meta.WithAttributes`, which can
+// The interceptor also stores the Authorization value in the context via [meta.WithAttributes], which can
 // be useful for downstream instrumentation. Any existing outgoing "authorization" metadata is replaced so
 // stale values do not take precedence over the newly generated token.
 //
 // Failure behavior:
-//   - If token generation fails, it returns `codes.Unauthenticated`.
-//   - If token generation returns an empty token, it returns `codes.Unauthenticated` with
-//     `header.ErrInvalidAuthorization`.
+//   - If token generation fails, it returns [codes.Unauthenticated].
+//   - If token generation returns an empty token, it returns [codes.Unauthenticated] with
+//     [header.ErrInvalidAuthorization].
 //
 // Callers should only install this interceptor when generator is non-nil.
 func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClientInterceptor {
@@ -201,14 +201,14 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 // For each outbound streaming RPC, it generates a token scoped to `fullMethod` and the provided user id and
 // stores it in outgoing metadata under the "authorization" key using the `Bearer` scheme.
 //
-// The interceptor also stores the Authorization value in the context via `meta.WithAttributes`. Any
+// The interceptor also stores the Authorization value in the context via [meta.WithAttributes]. Any
 // existing outgoing "authorization" metadata is replaced so stale values do not take precedence over the
 // newly generated token.
 //
 // Failure behavior:
-//   - If token generation fails, it returns `codes.Unauthenticated`.
-//   - If token generation returns an empty token, it returns `codes.Unauthenticated` with
-//     `header.ErrInvalidAuthorization`.
+//   - If token generation fails, it returns [codes.Unauthenticated].
+//   - If token generation returns an empty token, it returns [codes.Unauthenticated] with
+//     [header.ErrInvalidAuthorization].
 //
 // Callers should only install this interceptor when generator is non-nil.
 func StreamClientInterceptor(id env.UserID, generator Generator) grpc.StreamClientInterceptor {
