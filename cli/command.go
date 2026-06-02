@@ -11,8 +11,7 @@ import (
 // Application subcommands call `(*flag.FlagSet).Parse` before starting DI, and the Command's
 // `module` wires the parsed FlagSet into the DI container so constructors can read flag values.
 func NewCommand(name string) *Command {
-	set := flag.NewFlagSet(name)
-	return &Command{FlagSet: set}
+	return &Command{FlagSet: flag.NewFlagSet(name)}
 }
 
 // Command wraps a `*flag.FlagSet` and provides DI wiring for CLI subcommands.
