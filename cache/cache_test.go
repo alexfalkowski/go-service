@@ -225,7 +225,7 @@ func TestErroneousSave(t *testing.T) {
 }
 
 func TestErroneousGet(t *testing.T) {
-	values := []struct {
+	tests := []struct {
 		driver driver.Driver
 		config *config.Config
 		name   string
@@ -236,11 +236,11 @@ func TestErroneousGet(t *testing.T) {
 		{name: "driver error", config: test.NewCacheConfig("sync", "snappy", "json", "redis"), driver: &test.ErrCache{}},
 	}
 
-	for _, value := range values {
-		t.Run(value.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
-				test.WithWorldCacheConfig(value.config),
-				test.WithWorldCacheDriver(value.driver),
+				test.WithWorldCacheConfig(tt.config),
+				test.WithWorldCacheDriver(tt.driver),
 			)
 
 			require.Error(t, world.Get(t.Context(), "test", ptr.Zero[string]()))
@@ -304,39 +304,41 @@ func TestExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
 func cacheRoundTripCases() []cacheRoundTripCase {
 	compressors := []string{"none", "snappy", "s2", "zstd"}
 	encoders := []string{"json", "hjson", "yaml", "yml", "toml", "gob", "msgpack"}
-	tests := make([]cacheRoundTripCase, 0, 4+len(compressors)*len(encoders))
-	tests = append(tests,
-		cacheRoundTripCase{
+	cases := []cacheRoundTripCase{
+		{
 			name:    "redis/default/request",
 			config:  test.NewCacheConfig("redis", "snappy", strings.Empty, "redis"),
 			persist: func() any { return &test.Request{Name: "hello?"} },
 			get:     func() any { return &test.Request{} },
 		},
-		cacheRoundTripCase{
+		{
 			name:    "sync/default/string",
 			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
 			persist: func() any { return ptr.Value("hello?") },
 			get:     func() any { return ptr.Zero[string]() },
 		},
-		cacheRoundTripCase{
+		{
 			name:    "sync/default/buffer",
 			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
 			persist: func() any { return bytes.NewBufferString("hello?") },
 			get:     func() any { return &bytes.Buffer{} },
 		},
-		cacheRoundTripCase{
+		{
 			name:    "sync/default/protobuf",
 			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
 			persist: func() any { return &v1.SayHelloRequest{Name: "hello?"} },
 			get:     func() any { return &v1.SayHelloRequest{} },
 		},
-		cacheRoundTripCase{
+		{
 			name:    "sync/unknown/unknown/request",
 			config:  test.NewCacheConfig("sync", "unknown", "unknown", "redis"),
 			persist: func() any { return &test.Request{Name: "hello?"} },
 			get:     func() any { return &test.Request{} },
 		},
-	)
+	}
+
+	tests := make([]cacheRoundTripCase, 0, len(cases)+len(compressors)*len(encoders))
+	tests = append(tests, cases...)
 
 	for _, compressor := range compressors {
 		for _, encoder := range encoders {

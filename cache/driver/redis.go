@@ -4,11 +4,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/time"
-	client "github.com/redis/go-redis/v9"
+	redis "github.com/redis/go-redis/v9"
 )
 
 type redisDriver struct {
-	client *client.Client
+	client *redis.Client
 }
 
 func (d *redisDriver) Delete(ctx context.Context, key string) error {
@@ -17,7 +17,7 @@ func (d *redisDriver) Delete(ctx context.Context, key string) error {
 
 func (d *redisDriver) Fetch(ctx context.Context, key string) (string, error) {
 	value, err := d.client.Get(ctx, key).Result()
-	if errors.Is(err, client.Nil) {
+	if errors.Is(err, redis.Nil) {
 		return "", ErrMissing
 	}
 
