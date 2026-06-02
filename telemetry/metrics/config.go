@@ -9,7 +9,7 @@ type Config struct {
 	// These headers are primarily used by exporter-based kinds (for example "otlp") to pass
 	// authentication and/or routing metadata to a collector.
 	//
-	// Values may be configured as go-service “source strings” (for example "env:NAME",
+	// Values may be configured as go-service "source strings" (for example "env:NAME",
 	// "file:/path", or a literal value). Resolution is performed by the consumer that
 	// prepares configuration for use by the exporter (for example via header.Map.Secrets
 	// or header.Map.MustSecrets).
@@ -22,7 +22,7 @@ type Config struct {
 	//   - "otlp": export metrics via OpenTelemetry OTLP/HTTP using a periodic reader.
 	//   - "prometheus": expose metrics via the Prometheus exporter/reader.
 	//
-	// If Kind is unknown, reader construction will return an error (see the metrics package’s
+	// If Kind is unknown, reader construction will return an error (see the metrics package's
 	// ErrNotFound).
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 

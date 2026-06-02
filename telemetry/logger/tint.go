@@ -10,7 +10,7 @@ import (
 func newTintLogger(params LoggerParams) *slog.Logger {
 	opts := &tint.Options{
 		Level: level(params.Config),
-		ReplaceAttr: func(groups []string, attr slog.Attr) slog.Attr {
+		ReplaceAttr: func(_ []string, attr slog.Attr) slog.Attr {
 			if attr.Value.Kind() == slog.KindAny {
 				if err, ok := attr.Value.Any().(error); ok {
 					err := tint.Err(err)

@@ -72,7 +72,6 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		return noopProvider
 	}
 
-	reader := params.Reader
 	attrs := resource.NewWithAttributes(
 		attributes.SchemaURL,
 		attributes.HostID(params.ID.String()),
@@ -80,7 +79,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		attributes.ServiceVersion(params.Version.String()),
 		attributes.DeploymentEnvironmentName(params.Environment.String()),
 	)
-	provider := sdk.NewMeterProvider(sdk.WithReader(reader), sdk.WithResource(attrs))
+	provider := sdk.NewMeterProvider(sdk.WithReader(params.Reader), sdk.WithResource(attrs))
 	SetMeterProvider(provider)
 	enabled.Store(true)
 

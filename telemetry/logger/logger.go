@@ -187,18 +187,6 @@ func (l *Logger) Info(msg string, args ...any) {
 	l.Logger.Info(msg, args...)
 }
 
-// Error logs at [LevelError].
-//
-// It forwards msg and args to the embedded [slog.Logger] unchanged. It is a
-// no-op when l is nil.
-func (l *Logger) Error(msg string, args ...any) {
-	if l == nil {
-		return
-	}
-
-	l.Logger.Error(msg, args...)
-}
-
 // Warn logs at [LevelWarn].
 //
 // It forwards msg and args to the embedded [slog.Logger] unchanged. It is a
@@ -209,6 +197,18 @@ func (l *Logger) Warn(msg string, args ...any) {
 	}
 
 	l.Logger.Warn(msg, args...)
+}
+
+// Error logs at [LevelError].
+//
+// It forwards msg and args to the embedded [slog.Logger] unchanged. It is a
+// no-op when l is nil.
+func (l *Logger) Error(msg string, args ...any) {
+	if l == nil {
+		return
+	}
+
+	l.Logger.Error(msg, args...)
 }
 
 // Log logs msg.Text at the level derived from [Message.Level].

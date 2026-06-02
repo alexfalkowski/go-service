@@ -9,7 +9,7 @@ type Config struct {
 	// These headers are primarily used by exporter-backed tracer kinds (for example
 	// "otlp") to pass authentication and/or routing metadata to a collector.
 	//
-	// Values may be configured using go-service “source strings” (for example "env:NAME",
+	// Values may be configured using go-service "source strings" (for example "env:NAME",
 	// "file:/path", or a literal value). This package does not resolve secrets itself;
 	// resolution is performed by the consumer that prepares configuration for use by the
 	// exporter (for example via header.Map.Secrets or header.Map.MustSecrets).
