@@ -150,12 +150,12 @@ func (t *Token) Verify(tkn, aud string) (string, error) {
 		return strings.Empty, token.ErrInvalidConfig
 	}
 
-	data, encoded, key, err := parseClaims(tkn)
+	claims, claimsJSON, rawSignature, err := parseClaims(tkn)
 	if err != nil {
 		return strings.Empty, err
 	}
 
-	cfg := t.cfg.Keys.Get(data.KeyID)
+	cfg := t.cfg.Keys.Get(claims.KeyID)
 	if cfg == nil {
 		return strings.Empty, crypto.ErrInvalidMatch
 	}
@@ -169,18 +169,18 @@ func (t *Token) Verify(tkn, aud string) (string, error) {
 		return strings.Empty, err
 	}
 
-	sig, err := base64.Decode(key)
+	sig, err := base64.Decode(rawSignature)
 	if err != nil {
 		return strings.Empty, err
 	}
 
-	if err := verifier.Verify(sig, encoded); err != nil {
+	if err := verifier.Verify(sig, claimsJSON); err != nil {
 		return strings.Empty, err
 	}
 
-	if err := validateClaims(data, aud, time.Now().UnixNano(), t.cfg.Expiration); err != nil {
+	if err := validateClaims(claims, aud, time.Now().UnixNano(), t.cfg.Expiration); err != nil {
 		return strings.Empty, err
 	}
 
-	return data.KeyID, nil
+	return claims.KeyID, nil
 }

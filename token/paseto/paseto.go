@@ -107,16 +107,16 @@ func (t *Token) Verify(token, aud string) (string, error) {
 		return strings.Empty, err
 	}
 
-	to, err := parser.ParseV4Public(s, token, nil)
+	parsed, err := parser.ParseV4Public(s, token, nil)
 	if err != nil {
 		return strings.Empty, err
 	}
 
-	if err := validateLifetime(to, t.cfg.Expiration); err != nil {
+	if err := validateLifetime(parsed, t.cfg.Expiration); err != nil {
 		return strings.Empty, err
 	}
 
-	return subject(to)
+	return subject(parsed)
 }
 
 func subject(token *paseto.Token) (string, error) {

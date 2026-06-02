@@ -142,7 +142,7 @@ func (t *Token) Verify(token, aud string) (string, error) {
 	return claims.Subject, nil
 }
 
-func (j *Token) validate(token *jwt.Token) (any, error) {
+func (t *Token) validate(token *jwt.Token) (any, error) {
 	if token.Method.Alg() != SigningMethodEdDSA.Alg() {
 		return nil, errors.ErrInvalidAlgorithm
 	}
@@ -152,11 +152,11 @@ func (j *Token) validate(token *jwt.Token) (any, error) {
 		return nil, errors.ErrInvalidKeyID
 	}
 
-	if kid != j.cfg.KeyID {
+	if kid != t.cfg.KeyID {
 		return nil, errors.ErrInvalidKeyID
 	}
 
-	return j.verifier.PublicKey, nil
+	return t.verifier.PublicKey, nil
 }
 
 func validateRequiredClaims(claims *RegisteredClaims) error {

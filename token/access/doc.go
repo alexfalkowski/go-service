@@ -1,6 +1,6 @@
 // Package access provides authorization (access control) helpers used by go-service.
 //
-// This package is focused on answering the question “is subject X allowed to do Y?”
+// This package is focused on answering the question "is subject X allowed to do Y?"
 // based on an authorization policy. It currently provides:
 //
 //   - Controller: an interface for permission checks.
@@ -28,9 +28,10 @@
 //
 // # Enablement
 //
-// Enablement is modeled by presence: if *Config is nil, NewController returns (nil, nil).
-// Callers should handle a nil Controller as “authorization disabled/unconfigured” and
-// decide on an appropriate default behavior at a higher layer.
+// Enablement is modeled by presence: if *Config is nil, NewController returns
+// (nil, nil). Callers should handle a nil Controller as "authorization
+// disabled/unconfigured" and decide on an appropriate default behavior at a
+// higher layer.
 //
 // Start with Config and NewController.
 package access
