@@ -17,10 +17,7 @@ import (
 
 func TestApplicationRun(t *testing.T) {
 	config := test.FilePath("configs/config.yml")
-
-	os.Args = []string{test.Name.String(), "server", "-config", config}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("server", "-config", config)
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -33,8 +30,7 @@ func TestApplicationRun(t *testing.T) {
 
 func TestApplicationRunCodeWithError(t *testing.T) {
 	config := test.FilePath("configs/invalid_http.config.yml")
-
-	os.Args = []string{test.Name.String(), "server", "-config", config}
+	setupCLI("server", "-config", config)
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -47,9 +43,7 @@ func TestApplicationRunCodeWithError(t *testing.T) {
 }
 
 func TestApplicationRunCodeOnSuccess(t *testing.T) {
-	os.Args = []string{test.Name.String(), "client"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("client")
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -61,29 +55,29 @@ func TestApplicationRunCodeOnSuccess(t *testing.T) {
 }
 
 func TestApplicationRunWithInvalidFlag(t *testing.T) {
-	os.Args = []string{test.Name.String(), "server", "--invalid-flag"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	t.Run("server", func(t *testing.T) {
+		setupCLI("server", "--invalid-flag")
 
-	app := cli.NewApplication(
-		func(c cli.Commander) {
-			cmd := c.AddServer("server", "Start the server.", test.Options()...)
-			cmd.AddConfig(strings.Empty)
-		},
-	)
-	require.Error(t, app.Run(t.Context()))
+		app := cli.NewApplication(
+			func(c cli.Commander) {
+				cmd := c.AddServer("server", "Start the server.", test.Options()...)
+				cmd.AddConfig(strings.Empty)
+			},
+		)
+		require.Error(t, app.Run(t.Context()))
+	})
 
-	os.Args = []string{test.Name.String(), "client", "--invalid-flag"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	t.Run("client", func(t *testing.T) {
+		setupCLI("client", "--invalid-flag")
 
-	app = cli.NewApplication(
-		func(c cli.Commander) {
-			cmd := c.AddClient("client", "Start the client.", test.Options()...)
-			cmd.AddConfig(strings.Empty)
-		},
-	)
-	require.Error(t, app.Run(t.Context()))
+		app := cli.NewApplication(
+			func(c cli.Commander) {
+				cmd := c.AddClient("client", "Start the client.", test.Options()...)
+				cmd.AddConfig(strings.Empty)
+			},
+		)
+		require.Error(t, app.Run(t.Context()))
+	})
 }
 
 func TestApplicationDuplicateCommand(t *testing.T) {
@@ -106,12 +100,9 @@ func TestApplicationDuplicateCommand(t *testing.T) {
 	require.ErrorContains(t, err, "server")
 }
 
-func TestApplicationRunWithInvalidParams(t *testing.T) {
+func TestApplicationRunWithConfigFlag(t *testing.T) {
 	config := test.FilePath("configs/config.yml")
-
-	os.Args = []string{test.Name.String(), "server", "-config", config}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("server", "-config", config)
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -131,9 +122,7 @@ func TestApplicationInvalid(t *testing.T) {
 
 	for _, config := range configs {
 		t.Run(config, func(t *testing.T) {
-			os.Args = []string{test.Name.String(), "server", "-config", config}
-			cli.Name = test.Name
-			cli.Version = test.Version
+			setupCLI("server", "-config", config)
 
 			app := cli.NewApplication(
 				func(c cli.Commander) {
@@ -144,15 +133,13 @@ func TestApplicationInvalid(t *testing.T) {
 
 			err := app.Run(t.Context())
 			require.Error(t, err)
-			require.Contains(t, err.Error(), "unknown port")
+			require.ErrorContains(t, err, "unknown port")
 		})
 	}
 }
 
 func TestApplicationDisabled(t *testing.T) {
-	os.Args = []string{test.Name.String(), "server", "-config", test.FilePath("configs/disabled.config.yml")}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("server", "-config", test.FilePath("configs/disabled.config.yml"))
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -164,9 +151,7 @@ func TestApplicationDisabled(t *testing.T) {
 }
 
 func TestApplicationClient(t *testing.T) {
-	os.Args = []string{test.Name.String(), "client"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("client")
 
 	opts := []di.Option{di.NoLogger}
 	app := cli.NewApplication(
@@ -179,9 +164,7 @@ func TestApplicationClient(t *testing.T) {
 }
 
 func TestApplicationClientCanRunTwice(t *testing.T) {
-	os.Args = []string{test.Name.String(), "client"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("client")
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -194,9 +177,7 @@ func TestApplicationClientCanRunTwice(t *testing.T) {
 }
 
 func TestApplicationClientRecoversFromPanic(t *testing.T) {
-	os.Args = []string{test.Name.String(), "client"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("client")
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -213,13 +194,11 @@ func TestApplicationClientRecoversFromPanic(t *testing.T) {
 
 	err := app.Run(t.Context())
 	require.Error(t, err)
-	require.Contains(t, err.Error(), `panic: "bad client"`)
+	require.ErrorContains(t, err, `panic: "bad client"`)
 }
 
 func TestApplicationServerHonorsContextCancellation(t *testing.T) {
-	os.Args = []string{test.Name.String(), "server"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("server")
 
 	started := make(chan struct{})
 	stopped := make(chan error, 1)
@@ -261,9 +240,7 @@ func TestApplicationServerHonorsContextCancellation(t *testing.T) {
 }
 
 func TestApplicationServerShutdownExitCodeIsReturned(t *testing.T) {
-	os.Args = []string{test.Name.String(), "server"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("server")
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -275,9 +252,7 @@ func TestApplicationServerShutdownExitCodeIsReturned(t *testing.T) {
 }
 
 func TestApplicationServerShutdownExitCodeIsReturnedWhenStopFails(t *testing.T) {
-	os.Args = []string{test.Name.String(), "server"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("server")
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -291,9 +266,7 @@ func TestApplicationServerShutdownExitCodeIsReturnedWhenStopFails(t *testing.T) 
 }
 
 func TestApplicationClientShutdownExitCodeIsReturned(t *testing.T) {
-	os.Args = []string{test.Name.String(), "client"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("client")
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -315,9 +288,7 @@ func TestApplicationClientShutdownExitCodeIsReturned(t *testing.T) {
 }
 
 func TestApplicationClientShutdownExitCodeIsReturnedWhenStopFails(t *testing.T) {
-	os.Args = []string{test.Name.String(), "client"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("client")
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -331,9 +302,7 @@ func TestApplicationClientShutdownExitCodeIsReturnedWhenStopFails(t *testing.T) 
 }
 
 func TestApplicationServerServeFailureReturnsServeFailureExitCode(t *testing.T) {
-	os.Args = []string{test.Name.String(), "server"}
-	cli.Name = test.Name
-	cli.Version = test.Version
+	setupCLI("server")
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -352,9 +321,7 @@ func TestApplicationInvalidClient(t *testing.T) {
 
 	for _, config := range configs {
 		t.Run(config, func(t *testing.T) {
-			os.Args = []string{test.Name.String(), "client", "-config", config}
-			cli.Name = test.Name
-			cli.Version = test.Version
+			setupCLI("client", "-config", config)
 
 			app := cli.NewApplication(
 				func(c cli.Commander) {
@@ -365,9 +332,15 @@ func TestApplicationInvalidClient(t *testing.T) {
 
 			err := app.Run(t.Context())
 			require.Error(t, err)
-			require.Contains(t, err.Error(), "unknown port")
+			require.ErrorContains(t, err, "unknown port")
 		})
 	}
+}
+
+func setupCLI(args ...string) {
+	os.Args = append([]string{test.Name.String()}, args...)
+	cli.Name = test.Name
+	cli.Version = test.Version
 }
 
 func shutdownExitCodeAndStopErrorOption(code int) di.Option {

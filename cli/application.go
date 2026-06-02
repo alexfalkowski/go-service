@@ -12,7 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	cmd "github.com/cristalhq/acmd"
+	"github.com/cristalhq/acmd"
 )
 
 // ErrCommandRegistered indicates a subcommand name has already been registered on an Application.
@@ -40,7 +40,7 @@ func NewApplication(register RegisterFunc) *Application {
 // An Application maintains a set of commands and delegates parsing/execution to the underlying command
 // framework (github.com/cristalhq/acmd).
 type Application struct {
-	cmds    map[string]cmd.Command
+	cmds    map[string]acmd.Command
 	name    env.Name
 	version env.Version
 }
@@ -63,7 +63,7 @@ type Application struct {
 func (a *Application) AddServer(name, description string, opts ...Option) *Command {
 	opts = slices.Clone(opts)
 	server := NewCommand(name)
-	cmd := cmd.Command{
+	command := acmd.Command{
 		Name:        name,
 		Description: description,
 		ExecFunc: func(ctx context.Context, args []string) error {
@@ -85,14 +85,10 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 			case <-ctx.Done():
 			}
 
-			if err := a.shutdownError(name, app.Stop(a.stopContext(ctx)), code); err != nil {
-				return err
-			}
-
-			return nil
+			return a.shutdownError(name, app.Stop(a.stopContext(ctx)), code)
 		},
 	}
-	runtime.Must(a.register(cmd))
+	runtime.Must(a.register(command))
 
 	return server
 }
@@ -114,7 +110,7 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 func (a *Application) AddClient(name, description string, opts ...Option) *Command {
 	opts = slices.Clone(opts)
 	client := NewCommand(name)
-	cmd := cmd.Command{
+	command := acmd.Command{
 		Name:        name,
 		Description: description,
 		ExecFunc: func(ctx context.Context, args []string) error {
@@ -136,14 +132,10 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 			default:
 			}
 
-			if err := a.shutdownError(name, app.Stop(a.stopContext(ctx)), code); err != nil {
-				return err
-			}
-
-			return nil
+			return a.shutdownError(name, app.Stop(a.stopContext(ctx)), code)
 		},
 	}
-	runtime.Must(a.register(cmd))
+	runtime.Must(a.register(command))
 
 	return client
 }
@@ -159,7 +151,7 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 // It returns any execution error from the underlying runner or command ExecFunc.
 func (a *Application) Run(ctx context.Context) error {
 	name := a.name.String()
-	runner := cmd.RunnerOf(slices.Collect(maps.Values(a.cmds)), cmd.Config{
+	runner := acmd.RunnerOf(slices.Collect(maps.Values(a.cmds)), acmd.Config{
 		AppName:        name,
 		AppDescription: name,
 		Version:        a.version.String(),
@@ -185,9 +177,9 @@ func (a *Application) RunCode(ctx context.Context) int {
 	return os.ExitCodeSuccess
 }
 
-func (a *Application) register(command cmd.Command) error {
+func (a *Application) register(command acmd.Command) error {
 	if a.cmds == nil {
-		a.cmds = make(map[string]cmd.Command)
+		a.cmds = make(map[string]acmd.Command)
 	}
 
 	if _, ok := a.cmds[command.Name]; ok {
@@ -199,8 +191,8 @@ func (a *Application) register(command cmd.Command) error {
 	return nil
 }
 
-func (a *Application) prefix(prefix string, err error) error {
-	return errors.Prefix(prefix+": failed to run", di.RootCause(err))
+func (a *Application) prefix(name string, err error) error {
+	return errors.Prefix(name+": failed to run", di.RootCause(err))
 }
 
 func (a *Application) shutdownError(name string, err error, code int) error {
