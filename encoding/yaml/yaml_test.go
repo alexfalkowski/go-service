@@ -12,14 +12,14 @@ import (
 )
 
 func TestEncode(t *testing.T) {
-	bytes := test.Pool.Get()
-	defer test.Pool.Put(bytes)
+	buffer := test.Pool.Get()
+	defer test.Pool.Put(buffer)
 
 	encoder := yaml.NewEncoder()
 	msg := map[string]string{"test": "test"}
 
-	require.NoError(t, encoder.Encode(bytes, msg))
-	require.Equal(t, "test: test", strings.TrimSpace(bytes.String()))
+	require.NoError(t, encoder.Encode(buffer, msg))
+	require.Equal(t, "test: test", strings.TrimSpace(buffer.String()))
 }
 
 func TestMarshalUnmarshal(t *testing.T) {

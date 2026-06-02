@@ -11,14 +11,14 @@ import (
 )
 
 func TestEncode(t *testing.T) {
-	bytes := test.Pool.Get()
-	defer test.Pool.Put(bytes)
+	buffer := test.Pool.Get()
+	defer test.Pool.Put(buffer)
 
 	encoder := toml.NewEncoder()
 	msg := map[string]string{"test": "test"}
 
-	require.NoError(t, encoder.Encode(bytes, msg))
-	require.Equal(t, `test = "test"`, strings.TrimSpace(bytes.String()))
+	require.NoError(t, encoder.Encode(buffer, msg))
+	require.Equal(t, `test = "test"`, strings.TrimSpace(buffer.String()))
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
@@ -40,12 +40,12 @@ func TestMarshalReturnsError(t *testing.T) {
 }
 
 func TestEncodeReturnsError(t *testing.T) {
-	bytes := test.Pool.Get()
-	defer test.Pool.Put(bytes)
+	buffer := test.Pool.Get()
+	defer test.Pool.Put(buffer)
 
 	encoder := toml.NewEncoder()
 
-	require.Error(t, encoder.Encode(bytes, func() {}))
+	require.Error(t, encoder.Encode(buffer, func() {}))
 }
 
 func TestDecode(t *testing.T) {

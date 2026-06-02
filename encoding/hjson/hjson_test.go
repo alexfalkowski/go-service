@@ -10,10 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type message struct {
-	Test string `json:"test"`
-}
-
 func TestEncode(t *testing.T) {
 	encoder := hjson.NewEncoder()
 	buf := &bytes.Buffer{}
@@ -81,4 +77,8 @@ func TestUnmarshalRejectsDuplicateKeys(t *testing.T) {
 	err := hjson.Unmarshal([]byte("{\n  test: first\n  test: second\n}\n"), msg)
 	require.Error(t, err)
 	require.Contains(t, strings.ToLower(err.Error()), "duplicate")
+}
+
+type message struct {
+	Test string `json:"test"`
 }
