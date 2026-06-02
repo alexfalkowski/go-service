@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const alphanumeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 // ErrInvalidSize is returned when a random value size is negative.
 var ErrInvalidSize = errors.New("rand: invalid size")
@@ -79,7 +79,7 @@ func (g *Generator) GenerateBytes(size int) ([]byte, error) {
 
 // GenerateText returns a cryptographically random string of length size.
 //
-// Characters are drawn from the package's letter set, making this helper
+// Characters are drawn from the package's alphanumeric set, making this helper
 // suitable for text tokens but not a substitute for GenerateBytes when binary
 // randomness is required.
 func (g *Generator) GenerateText(size int) (string, error) {
@@ -88,7 +88,7 @@ func (g *Generator) GenerateText(size int) (string, error) {
 	}
 
 	data := make([]byte, size)
-	length := int64(len(letters))
+	length := int64(len(alphanumeric))
 
 	for i := range size {
 		num, err := rand.Int(g.reader, big.NewInt(length))
@@ -96,7 +96,7 @@ func (g *Generator) GenerateText(size int) (string, error) {
 			return strings.Empty, err
 		}
 
-		data[i] = letters[num.Int64()]
+		data[i] = alphanumeric[num.Int64()]
 	}
 
 	return bytes.String(data), nil

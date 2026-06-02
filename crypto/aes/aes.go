@@ -80,12 +80,12 @@ func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	bytes, err := c.gen.GenerateBytes(aead.NonceSize())
+	nonce, err := c.gen.GenerateBytes(aead.NonceSize())
 	if err != nil {
 		return nil, err
 	}
 
-	return aead.Seal(bytes, bytes, msg, nil), nil
+	return aead.Seal(nonce, nonce, msg, nil), nil
 }
 
 // Decrypt decrypts a value produced by Encrypt.

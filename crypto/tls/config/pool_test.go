@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/stretchr/testify/require"
 )
@@ -42,8 +41,7 @@ func TestNewCertPoolInvalid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := tls.NewCertPool(test.FS, tt.config)
-			require.Error(t, err)
-			require.True(t, errors.Is(err, tls.ErrInvalidCA))
+			require.ErrorIs(t, err, tls.ErrInvalidCA)
 		})
 	}
 }
@@ -51,5 +49,5 @@ func TestNewCertPoolInvalid(t *testing.T) {
 func TestNewCertPoolSourceError(t *testing.T) {
 	_, err := tls.NewCertPool(test.FS, &tls.Config{CA: test.FilePath("certs/missing.pem")})
 	require.Error(t, err)
-	require.False(t, errors.Is(err, tls.ErrInvalidCA))
+	require.NotErrorIs(t, err, tls.ErrInvalidCA)
 }

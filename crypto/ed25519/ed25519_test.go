@@ -51,9 +51,9 @@ func TestValid(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, verifier.PublicKey)
 
-	e, err := signer.Sign(strings.Bytes("test"))
+	sig, err := signer.Sign(strings.Bytes("test"))
 	require.NoError(t, err)
-	require.NoError(t, verifier.Verify(e, strings.Bytes("test")))
+	require.NoError(t, verifier.Verify(sig, strings.Bytes("test")))
 
 	signer, err = ed25519.NewSigner(nil, nil)
 	require.NoError(t, err)
@@ -123,9 +123,9 @@ func TestInvalidSignature(t *testing.T) {
 	sig = append(sig, byte('w'))
 	require.Error(t, verifier.Verify(sig, strings.Bytes("test")))
 
-	e, err := signer.Sign(strings.Bytes("test"))
+	sig, err = signer.Sign(strings.Bytes("test"))
 	require.NoError(t, err)
-	require.ErrorIs(t, verifier.Verify(e, strings.Bytes("bob")), errors.ErrInvalidMatch)
+	require.ErrorIs(t, verifier.Verify(sig, strings.Bytes("bob")), errors.ErrInvalidMatch)
 }
 
 func TestInvalidSignerPrivateKey(t *testing.T) {

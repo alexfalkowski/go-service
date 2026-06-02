@@ -31,53 +31,53 @@ func TestGenerator(t *testing.T) {
 }
 
 func TestValid(t *testing.T) {
-	rand := rand.NewGenerator(rand.NewReader())
+	gen := rand.NewGenerator(rand.NewReader())
 
-	enc, err := rsa.NewEncryptor(rand, test.PEM, test.NewRSA())
+	enc, err := rsa.NewEncryptor(gen, test.PEM, test.NewRSA())
 	require.NoError(t, err)
 	require.NotNil(t, enc)
 
-	dec, err := rsa.NewDecryptor(rand, test.PEM, test.NewRSA())
+	dec, err := rsa.NewDecryptor(gen, test.PEM, test.NewRSA())
 	require.NoError(t, err)
 	require.NotNil(t, dec)
 
 	cfg := test.NewRSA()
 
-	enc, err = rsa.NewEncryptor(rand, test.PEM, cfg)
+	enc, err = rsa.NewEncryptor(gen, test.PEM, cfg)
 	require.NoError(t, err)
 
-	dec, err = rsa.NewDecryptor(rand, test.PEM, cfg)
+	dec, err = rsa.NewDecryptor(gen, test.PEM, cfg)
 	require.NoError(t, err)
 
-	e, err := enc.Encrypt(strings.Bytes("test"))
+	ciphertext, err := enc.Encrypt(strings.Bytes("test"))
 	require.NoError(t, err)
 
-	d, err := dec.Decrypt(e)
+	plaintext, err := dec.Decrypt(ciphertext)
 	require.NoError(t, err)
-	require.Equal(t, "test", bytes.String(d))
+	require.Equal(t, "test", bytes.String(plaintext))
 
 	privateKey, err := cfg.PrivateKey(test.PEM)
 	require.NoError(t, err)
 
-	d, err = rsa.DecryptOAEP(rand, privateKey, e)
+	plaintext, err = rsa.DecryptOAEP(gen, privateKey, ciphertext)
 	require.NoError(t, err)
-	require.Equal(t, "test", bytes.String(d))
+	require.Equal(t, "test", bytes.String(plaintext))
 
 	publicKey, err := cfg.PublicKey(test.PEM)
 	require.NoError(t, err)
 
-	e, err = rsa.EncryptOAEP(rand, publicKey, strings.Bytes("test"))
+	ciphertext, err = rsa.EncryptOAEP(gen, publicKey, strings.Bytes("test"))
 	require.NoError(t, err)
 
-	d, err = dec.Decrypt(e)
+	plaintext, err = dec.Decrypt(ciphertext)
 	require.NoError(t, err)
-	require.Equal(t, "test", bytes.String(d))
+	require.Equal(t, "test", bytes.String(plaintext))
 
-	enc, err = rsa.NewEncryptor(rand, test.PEM, nil)
+	enc, err = rsa.NewEncryptor(gen, test.PEM, nil)
 	require.NoError(t, err)
 	require.Nil(t, enc)
 
-	dec, err = rsa.NewDecryptor(rand, test.PEM, nil)
+	dec, err = rsa.NewDecryptor(gen, test.PEM, nil)
 	require.NoError(t, err)
 	require.Nil(t, dec)
 }
@@ -129,11 +129,11 @@ func TestInvalid(t *testing.T) {
 		dec, err := rsa.NewDecryptor(gen, test.PEM, cfg)
 		require.NoError(t, err)
 
-		e, err := enc.Encrypt(strings.Bytes("test"))
+		ciphertext, err := enc.Encrypt(strings.Bytes("test"))
 		require.NoError(t, err)
 
-		e = append(e, byte('w'))
-		_, err = dec.Decrypt(e)
+		ciphertext = append(ciphertext, byte('w'))
+		_, err = dec.Decrypt(ciphertext)
 		require.Error(t, err)
 	})
 

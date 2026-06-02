@@ -26,9 +26,9 @@ func TestGenerator(t *testing.T) {
 }
 
 func TestValidCipher(t *testing.T) {
-	rand := rand.NewGenerator(rand.NewReader())
+	gen := rand.NewGenerator(rand.NewReader())
 
-	cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
+	cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
 	require.NoError(t, err)
 	require.NotNil(t, cipher)
 

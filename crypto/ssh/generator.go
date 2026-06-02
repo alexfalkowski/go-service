@@ -25,7 +25,7 @@ type Generator struct {
 
 // Generate returns an Ed25519 public/private key pair encoded in SSH formats.
 //
-// The returned values are compatible with the expectations of `crypto/ssh.Config`:
+// The returned values are compatible with the expectations of [Config]:
 //
 //   - public: SSH authorized_keys format (via x/crypto/ssh.MarshalAuthorizedKey)
 //   - private: PEM-encoded SSH private key (via x/crypto/ssh.MarshalPrivateKey and pem.EncodeToMemory)
@@ -37,18 +37,18 @@ func (g *Generator) Generate() (string, string, error) {
 		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
-	mpu, err := ssh.NewPublicKey(public)
+	publicKey, err := ssh.NewPublicKey(public)
 	if err != nil {
 		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
-	mpr, err := ssh.MarshalPrivateKey(private, strings.Empty)
+	privateBlock, err := ssh.MarshalPrivateKey(private, strings.Empty)
 	if err != nil {
 		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
-	pub := ssh.MarshalAuthorizedKey(mpu)
-	pri := pem.EncodeToMemory(mpr)
+	pub := ssh.MarshalAuthorizedKey(publicKey)
+	pri := pem.EncodeToMemory(privateBlock)
 	return bytes.String(pub), bytes.String(pri), nil
 }
 

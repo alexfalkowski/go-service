@@ -33,9 +33,9 @@ type Decoder struct {
 	fs *os.FS
 }
 
-// Decode resolves PEM data from path (a go-service "source string") and returns the raw bytes for a PEM block of kind.
+// Decode resolves PEM data from source (a go-service "source string") and returns the raw bytes for a PEM block of kind.
 //
-// The path parameter is resolved via os.FS.ReadSource, so it can be:
+// The source parameter is resolved via [os.FS.ReadSource], so it can be:
 //   - "env:NAME" (read from environment variable NAME)
 //   - "file:/path" (read from the filesystem)
 //   - or a literal PEM value.
@@ -47,12 +47,12 @@ type Decoder struct {
 //   - returns ErrInvalidBlock if no PEM block can be decoded.
 //   - returns ErrInvalidKind if a PEM block is decoded but its Type does not equal kind.
 //   - returns any error from fs.ReadSource if the input cannot be resolved/read.
-func (d *Decoder) Decode(path, kind string) ([]byte, error) {
-	if strings.IsEmpty(path) {
+func (d *Decoder) Decode(source, kind string) ([]byte, error) {
+	if strings.IsEmpty(source) {
 		return nil, crypto.ErrMissingKey
 	}
 
-	data, err := d.fs.ReadSource(path)
+	data, err := d.fs.ReadSource(source)
 	if err != nil {
 		return nil, err
 	}

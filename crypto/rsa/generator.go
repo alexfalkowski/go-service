@@ -31,20 +31,20 @@ type Generator struct {
 // With Go 1.26 and later, crypto/rsa.GenerateKey uses the standard library's
 // secure random source and ignores this Generator's injected reader by default.
 //
-// The returned PEM blocks are compatible with the expectations of `crypto/rsa.Config`:
+// The returned PEM blocks are compatible with the expectations of [Config]:
 //
 //   - public:  a PEM block with Type "RSA PUBLIC KEY" containing PKCS#1-encoded bytes (x509.MarshalPKCS1PublicKey)
 //   - private: a PEM block with Type "RSA PRIVATE KEY" containing PKCS#1-encoded bytes (x509.MarshalPKCS1PrivateKey)
 //
 // If key generation or encoding fails, the returned error is prefixed with "rsa".
 func (g *Generator) Generate() (string, string, error) {
-	public, err := rsa.GenerateKey(g.generator, KeySize)
+	privateKey, err := rsa.GenerateKey(g.generator, KeySize)
 	if err != nil {
 		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
-	pub := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&public.PublicKey)})
-	pri := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(public)})
+	pub := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&privateKey.PublicKey)})
+	pri := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)})
 	return bytes.String(pub), bytes.String(pri), nil
 }
 

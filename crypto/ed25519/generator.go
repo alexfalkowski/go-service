@@ -25,7 +25,7 @@ type Generator struct {
 
 // Generate returns an Ed25519 public/private key pair encoded as PEM strings.
 //
-// The returned PEM blocks are compatible with the expectations of `crypto/ed25519.Config`:
+// The returned PEM blocks are compatible with the expectations of [Config]:
 //
 //   - public:  a PEM block with Type "PUBLIC KEY" containing PKIX-encoded bytes (x509.MarshalPKIXPublicKey)
 //   - private: a PEM block with Type "PRIVATE KEY" containing PKCS#8-encoded bytes (x509.MarshalPKCS8PrivateKey)
@@ -37,18 +37,18 @@ func (g *Generator) Generate() (string, string, error) {
 		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
-	mpu, err := x509.MarshalPKIXPublicKey(public)
+	publicDER, err := x509.MarshalPKIXPublicKey(public)
 	if err != nil {
 		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
-	mpr, err := x509.MarshalPKCS8PrivateKey(private)
+	privateDER, err := x509.MarshalPKCS8PrivateKey(private)
 	if err != nil {
 		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
-	pub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu})
-	pri := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr})
+	pub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: publicDER})
+	pri := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateDER})
 	return bytes.String(pub), bytes.String(pri), nil
 }
 

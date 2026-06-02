@@ -11,7 +11,7 @@ var ErrInvalidCA = errors.New("tls: invalid ca")
 
 // Config configures TLS key material loading from go-service source strings.
 //
-// Cert, Key, and CA are "source strings" resolved by `os.FS.ReadSource`.
+// Cert, Key, and CA are "source strings" resolved by [os.FS.ReadSource].
 // They may be:
 //   - "env:NAME" to read PEM bytes from environment variable NAME,
 //   - "file:/path/to/pem" to read PEM bytes from a file, or
@@ -20,7 +20,7 @@ var ErrInvalidCA = errors.New("tls: invalid ca")
 // This config is intentionally minimal: it models leaf certificate/private-key
 // material, an optional peer CA bundle, and an optional client-side server name.
 // It does not model cipher suites, ALPN, session tickets, or the many other
-// knobs on `crypto/tls.Config`.
+// knobs on crypto/tls.Config.
 type Config struct {
 	// Cert is a "source string" for the TLS certificate (PEM-encoded).
 	//
@@ -87,7 +87,7 @@ func (c *Config) HasServerName() bool {
 // GetCert resolves and returns the certificate bytes from the configured source
 // string.
 //
-// It delegates to `fs.ReadSource(c.Cert)` and returns any read/resolve error
+// It delegates to fs.ReadSource(c.Cert) and returns any read/resolve error
 // from that operation.
 func (c *Config) GetCert(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.Cert)
@@ -96,7 +96,7 @@ func (c *Config) GetCert(fs *os.FS) ([]byte, error) {
 // GetKey resolves and returns the private key bytes from the configured source
 // string.
 //
-// It delegates to `fs.ReadSource(c.Key)` and returns any read/resolve error
+// It delegates to fs.ReadSource(c.Key) and returns any read/resolve error
 // from that operation.
 func (c *Config) GetKey(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.Key)
@@ -105,7 +105,7 @@ func (c *Config) GetKey(fs *os.FS) ([]byte, error) {
 // GetCA resolves and returns the peer CA bytes from the configured source
 // string.
 //
-// It delegates to `fs.ReadSource(c.CA)` and returns any read/resolve error
+// It delegates to fs.ReadSource(c.CA) and returns any read/resolve error
 // from that operation.
 func (c *Config) GetCA(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.CA)

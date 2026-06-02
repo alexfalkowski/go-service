@@ -2,7 +2,7 @@
 // crypto helpers.
 //
 // The package centralizes sentinel errors that callers can compare with
-// `errors.Is` regardless of which concrete crypto helper produced them.
+// errors.Is regardless of which concrete crypto helper produced them.
 //
 // Current sentinels include:
 //   - ErrInvalidMatch: a verification operation failed because the provided
