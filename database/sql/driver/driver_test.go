@@ -17,6 +17,8 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+const dbStatsMetricCount = 7
+
 func TestOpenUnregistersDBStatsMetrics(t *testing.T) {
 	reader := test.EnableMetricsReader(t)
 	driverName := registerDriver(t)
@@ -171,7 +173,7 @@ func requireDBStatsMetrics(t *testing.T, reader metrics.Reader) {
 	got := &metrics.ResourceMetrics{}
 	require.NoError(t, reader.Collect(t.Context(), got))
 	require.Len(t, got.ScopeMetrics, 1)
-	require.Len(t, got.ScopeMetrics[0].Metrics, 7)
+	require.Len(t, got.ScopeMetrics[0].Metrics, dbStatsMetricCount)
 }
 
 func requireNoDBStatsMetrics(t *testing.T, reader metrics.Reader) {

@@ -147,32 +147,14 @@ func ConnectMasterSlaves(name string, masterDSNs, slaveDSNs []string) (*DBs, []e
 }
 
 func connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Option) (*DBs, error) {
-	masters := make([]string, len(cfg.Masters))
-
-	for i, m := range cfg.Masters {
-		u, err := m.GetURL(fs)
-		if err != nil {
-			return nil, err
-		}
-		if len(u) == 0 {
-			return nil, ErrEmptyDSN
-		}
-
-		masters[i] = bytes.String(u)
+	masters, err := resolveDSNs(fs, cfg.Masters)
+	if err != nil {
+		return nil, err
 	}
 
-	slaves := make([]string, len(cfg.Slaves))
-
-	for i, s := range cfg.Slaves {
-		u, err := s.GetURL(fs)
-		if err != nil {
-			return nil, err
-		}
-		if len(u) == 0 {
-			return nil, ErrEmptyDSN
-		}
-
-		slaves[i] = bytes.String(u)
+	slaves, err := resolveDSNs(fs, cfg.Slaves)
+	if err != nil {
+		return nil, err
 	}
 
 	db, err := connectDBs(name, masters, slaves, opts...)
@@ -185,6 +167,24 @@ func connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Optio
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 
 	return db, nil
+}
+
+func resolveDSNs(fs *os.FS, dsns []config.DSN) ([]string, error) {
+	resolved := make([]string, len(dsns))
+
+	for i, dsn := range dsns {
+		url, err := dsn.GetURL(fs)
+		if err != nil {
+			return nil, err
+		}
+		if len(url) == 0 {
+			return nil, ErrEmptyDSN
+		}
+
+		resolved[i] = bytes.String(url)
+	}
+
+	return resolved, nil
 }
 
 func connectDBs(name string, masterDSNs, slaveDSNs []string, opts ...telemetry.Option) (*DBs, error) {
