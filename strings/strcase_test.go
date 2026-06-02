@@ -7,14 +7,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestToDelimited(t *testing.T) {
-	require.Equal(t, "invalid argument", strings.ToDelimited("InvalidArgument", ' '))
-}
+func TestCaseConversion(t *testing.T) {
+	tests := []struct {
+		convert func() string
+		name    string
+		want    string
+	}{
+		{name: "delimited", convert: func() string { return strings.ToDelimited("InvalidArgument", ' ') }, want: "invalid argument"},
+		{name: "lower camel", convert: func() string { return strings.ToLowerCamel("request_id") }, want: "requestId"},
+		{name: "snake", convert: func() string { return strings.ToSnake("requestID") }, want: "request_id"},
+	}
 
-func TestToLowerCamel(t *testing.T) {
-	require.Equal(t, "requestId", strings.ToLowerCamel("request_id"))
-}
-
-func TestToSnake(t *testing.T) {
-	require.Equal(t, "request_id", strings.ToSnake("requestID"))
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, test.want, test.convert())
+		})
+	}
 }

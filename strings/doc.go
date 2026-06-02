@@ -7,38 +7,39 @@
 //     still delegating to the standard library for core string operations.
 //   - Provide a few convenience helpers that are frequently needed across the
 //     repository (for example emptiness checks and small splitting helpers).
-//   - Expose carefully documented unsafe utilities (see Bytes) for performance-
+//   - Expose carefully documented unsafe utilities (see [Bytes]) for performance-
 //     sensitive paths where avoiding allocations is important.
 //
 // Most functions in this package are thin wrappers around the corresponding
-// functions in the standard library strings package (for example Contains,
-// HasPrefix, ReplaceAll, TrimSpace) or the strcase package (for example
-// ToSnake, ToLowerCamel, ToDelimited). These wrappers do not change semantics.
+// functions in the standard library strings package (for example [Contains],
+// [HasPrefix], [ReplaceAll], [TrimSpace]) or the strcase package (for example
+// [ToSnake], [ToLowerCamel], [ToDelimited]). These wrappers do not change
+// semantics.
 //
 // # Convenience helpers
 //
 // This package also provides helpers not present in the standard library:
 //
-//   - IsEmpty / IsAnyEmpty: common emptiness checks.
+//   - [IsEmpty] / [IsAnyEmpty]: common emptiness checks.
 //
-//   - Join and Concat: Join accepts variadic strings so callers can avoid
+//   - [Join] and [Concat]: Join accepts variadic strings so callers can avoid
 //     allocating a slice at the callsite. Concat concatenates without a
 //     separator.
 //
-//   - CutColon: a small helper that splits on the first ":" using strings.Cut,
+//   - [CutColon]: a small helper that splits on the first ":" using strings.Cut,
 //     returning the part before and after. If ":" is not present, the "after"
 //     return value is empty.
 //
-//   - ToSnake / ToLowerCamel / ToDelimited: common string case conversion
+//   - [ToSnake] / [ToLowerCamel] / [ToDelimited]: common string case conversion
 //     helpers delegated to strcase.
 //
 // # Constants
 //
-// Empty and Space are provided as named constants for readability and reuse.
+// [Empty] and [Space] are provided as named constants for readability and reuse.
 //
 // # Unsafe conversions
 //
-// Bytes converts a string to a byte slice without allocation by using unsafe.
+// [Bytes] converts a string to a byte slice without allocation by using unsafe.
 //
 // Important: the returned []byte aliases the same memory as the input string.
 //
