@@ -12,7 +12,8 @@ type Config struct {
 	// Kind selects the cache backend implementation.
 	//
 	// The built-in driver kinds are "redis" and "sync". Unknown kinds cause
-	// cache/driver.NewDriver to return ErrNotFound.
+	// [github.com/alexfalkowski/go-service/v2/cache/driver.NewDriver] to return
+	// [github.com/alexfalkowski/go-service/v2/cache/driver.ErrNotFound].
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 
 	// Compressor selects the compression algorithm used for cached values (if supported by the implementation).
@@ -26,7 +27,7 @@ type Config struct {
 	//
 	// In config files it is encoded as a human-readable SI size string (for example "64B", "2MB", "4GB").
 	//
-	// A zero value applies bytes.DefaultSize. Values must be between 0 and bytes.MaxConfigSize.
+	// A zero value applies [bytes.DefaultSize]. Values must be between 0 and [bytes.MaxConfigSize].
 	MaxSize bytes.Size `yaml:"max_size,omitempty" json:"max_size,omitempty" toml:"max_size,omitempty" validate:"config_size"`
 }
 
@@ -37,7 +38,7 @@ func (c *Config) IsEnabled() bool {
 
 // GetMaxSize returns the configured cache value limit.
 //
-// A nil receiver or a zero value falls back to bytes.DefaultSize.
+// A nil receiver or a zero value falls back to [bytes.DefaultSize].
 func (c *Config) GetMaxSize() bytes.Size {
 	if c == nil || c.MaxSize == 0 {
 		return bytes.DefaultSize

@@ -3,7 +3,7 @@ package driver
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/time"
-	sync "github.com/alexfalkowski/go-sync"
+	"github.com/alexfalkowski/go-sync"
 )
 
 type syncDriver struct {
@@ -30,18 +30,18 @@ func (d *syncDriver) Fetch(ctx context.Context, key string) (string, error) {
 		return "", err
 	}
 
-	value, ok := d.items.Load(key)
+	entry, ok := d.items.Load(key)
 	if !ok {
 		return "", ErrMissing
 	}
 
-	if !value.expiresAt.IsZero() && time.Now().After(value.expiresAt) {
-		d.items.CompareAndDelete(key, value)
+	if !entry.expiresAt.IsZero() && time.Now().After(entry.expiresAt) {
+		d.items.CompareAndDelete(key, entry)
 
 		return "", ErrExpired
 	}
 
-	return value.value, nil
+	return entry.value, nil
 }
 
 func (d *syncDriver) Flush(ctx context.Context) error {

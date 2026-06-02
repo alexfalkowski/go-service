@@ -8,6 +8,6 @@
 //
 // Use this package when instrumenting go-redis clients that back the go-service
 // cache subsystem. Higher-level cache code should generally prefer
-// `cache/driver.NewDriver`, which applies this instrumentation automatically for
+// [github.com/alexfalkowski/go-service/v2/cache/driver.NewDriver], which applies this instrumentation automatically for
 // the built-in Redis backend.
 package telemetry
