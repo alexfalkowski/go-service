@@ -26,11 +26,11 @@ type ProviderParams struct {
 
 	// FeatureProvider is the OpenFeature provider to register.
 	//
-	// It is optional: if not present in the DI graph, Register is a no-op and OpenFeature uses its default
-	// provider semantics.
+	// It is optional: if not present in the DI graph, [Register] is a no-op and OpenFeature uses its
+	// default provider semantics.
 	FeatureProvider openfeature.FeatureProvider `optional:"true"`
 
-	// Name is the service name. It is typically used when constructing an OpenFeature client (see NewClient).
+	// Name is the service name. It is typically used when constructing an OpenFeature client (see [NewClient]).
 	Name env.Name
 }
 
@@ -41,9 +41,8 @@ type ProviderParams struct {
 // Enabled behavior:
 //   - If a MetricProvider is available, Register installs OpenTelemetry hooks so evaluations emit metrics
 //     and traces.
-//   - Register appends lifecycle hooks that:
-//   - set the OpenFeature provider during application start, and
-//   - shut down the OpenFeature SDK during application stop.
+//   - Register appends lifecycle hooks that set the OpenFeature provider during application start and
+//     shut down the OpenFeature SDK during application stop.
 //
 // Register uses OpenFeature's package-level SDK APIs, so provider registration, hooks, and shutdown are
 // process-global effects.

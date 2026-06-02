@@ -10,48 +10,37 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestNoProvider(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
-	attrs := map[string]any{"favorite_color": "blue"}
-	provider, err := test.NewPrometheusMeterProvider(lc)
-	require.NoError(t, err)
+func TestRegister(t *testing.T) {
+	for _, tt := range []struct {
+		provider openfeature.FeatureProvider
+		name     string
+	}{
+		{name: "no provider"},
+		{provider: openfeature.NoopProvider{}, name: "provider"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			lc := fxtest.NewLifecycle(t)
+			meterProvider, err := test.NewPrometheusMeterProvider(lc)
+			require.NoError(t, err)
 
-	feature.Register(feature.ProviderParams{
-		Lifecycle:      lc,
-		Name:           test.Name,
-		MetricProvider: provider,
-	})
+			feature.Register(feature.ProviderParams{
+				Lifecycle:       lc,
+				Name:            test.Name,
+				MetricProvider:  meterProvider,
+				FeatureProvider: tt.provider,
+			})
 
-	client := feature.NewClient(test.Name)
+			client := feature.NewClient(test.Name)
 
-	lc.RequireStart()
+			lc.RequireStart()
 
-	v, err := client.BooleanValue(t.Context(), "v2_enabled", false, openfeature.NewEvaluationContext("tim@apple.com", attrs))
-	require.NoError(t, err)
-	require.False(t, v)
+			attrs := map[string]any{"favorite_color": "blue"}
+			evalCtx := openfeature.NewEvaluationContext("tim@apple.com", attrs)
+			v, err := client.BooleanValue(t.Context(), "v2_enabled", false, evalCtx)
+			require.NoError(t, err)
+			require.False(t, v)
 
-	lc.RequireStop()
-}
-
-func TestProvider(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
-	attrs := map[string]any{"favorite_color": "blue"}
-	provider, err := test.NewPrometheusMeterProvider(lc)
-	require.NoError(t, err)
-	feature.Register(feature.ProviderParams{
-		Lifecycle:       lc,
-		Name:            test.Name,
-		MetricProvider:  provider,
-		FeatureProvider: openfeature.NoopProvider{},
-	})
-
-	client := feature.NewClient(test.Name)
-
-	lc.RequireStart()
-
-	v, err := client.BooleanValue(t.Context(), "v2_enabled", false, openfeature.NewEvaluationContext("tim@apple.com", attrs))
-	require.NoError(t, err)
-	require.False(t, v)
-
-	lc.RequireStop()
+			lc.RequireStop()
+		})
+	}
 }
