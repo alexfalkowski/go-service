@@ -10,7 +10,7 @@ import (
 // Config configures token generation and verification for a go-service application.
 //
 // This type is typically embedded into a larger service configuration and consumed
-// by the top-level token facade (see token.NewToken), which delegates to the
+// by the top-level token facade (see [NewToken]), which delegates to the
 // configured token implementation.
 //
 // # Enablement model
@@ -28,17 +28,18 @@ import (
 //   - "paseto": PASETO v4 public tokens (see package token/paseto)
 //   - "ssh": SSH-style signed tokens (see package token/ssh)
 //
-// The selected implementation’s nested configuration should typically be provided
+// The selected implementation's nested configuration should typically be provided
 // in the corresponding field (JWT/Paseto/SSH).
 //
 // If Kind is unknown, the token facade treats the configuration as invalid and
-// Generate/Verify return token/errors.ErrInvalidConfig.
+// [Token.Generate]/[Token.Verify] return token/errors.ErrInvalidConfig.
 //
 // # Access control (Access)
 //
-// Access configures optional access-control policy wiring (see package token/access).
-// It is orthogonal to the token kind: some services may use token verification to
-// establish identity (subject) and then evaluate permissions via Access.
+// Access configures optional access-control policy wiring (see package
+// token/access). It is orthogonal to the token kind: some services may use token
+// verification to establish identity (subject) and then evaluate permissions via
+// Access.
 type Config struct {
 	// Access configures access control policy used by token/access.
 	//

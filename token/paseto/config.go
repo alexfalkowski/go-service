@@ -18,7 +18,7 @@ import "github.com/alexfalkowski/go-service/v2/time"
 // is not consumed directly by that implementation.
 //
 // If you want to source Ed25519 key material from configuration, resolve Secret using the
-// go-service “source string” convention (for example via os.FS.ReadSource) and build the
+// go-service "source string" convention (for example via os.FS.ReadSource) and build the
 // Ed25519 signer/verifier in your wiring layer.
 //
 // # Expiration parsing and panics
@@ -34,7 +34,7 @@ import "github.com/alexfalkowski/go-service/v2/time"
 type Config struct {
 	// Secret is a "source string" intended to provide PASETO key material.
 	//
-	// It supports the go-service “source string” pattern:
+	// It supports the go-service "source string" pattern:
 	// - "env:NAME" to read from an environment variable
 	// - "file:/path" to read from a file
 	// - otherwise treated as the literal value

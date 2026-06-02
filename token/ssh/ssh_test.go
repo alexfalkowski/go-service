@@ -247,26 +247,32 @@ func TestValidNameWithDash(t *testing.T) {
 	require.Equal(t, "test-user", sub)
 }
 
-func TestInvalid(t *testing.T) {
+func TestInvalidPrivateKey(t *testing.T) {
 	token := ssh.NewToken(&ssh.Config{
 		Key: &ssh.Key{
 			Name:   "test",
 			Config: test.NewSSH("secrets/ssh_public", "secrets/none"),
 		},
 	}, test.FS)
+
 	_, err := token.Generate(strings.Empty, strings.Empty)
 	require.Error(t, err)
+}
 
+func TestInvalidTokenShapes(t *testing.T) {
 	for _, tkn := range []string{strings.Empty, "none-", "test-", "test-bob"} {
 		t.Run(tkn, func(t *testing.T) {
 			token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
+
 			sub, err := token.Verify(tkn, strings.Empty)
 			require.Error(t, err)
 			require.Empty(t, sub)
 		})
 	}
+}
 
-	token = ssh.NewToken(&ssh.Config{
+func TestInvalidPublicKey(t *testing.T) {
+	token := ssh.NewToken(&ssh.Config{
 		Keys: ssh.Keys{
 			&ssh.Key{
 				Name:   "test",
@@ -274,15 +280,18 @@ func TestInvalid(t *testing.T) {
 			},
 		},
 	}, test.FS)
+
 	sub, err := token.Verify("test-bob", strings.Empty)
 	require.Error(t, err)
 	require.Empty(t, sub)
+}
 
+func TestInvalidUnknownKey(t *testing.T) {
 	valid := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 	tkn, err := valid.Generate(strings.Empty, strings.Empty)
 	require.NoError(t, err)
 
-	token = ssh.NewToken(&ssh.Config{
+	token := ssh.NewToken(&ssh.Config{
 		Expiration: time.Hour,
 		Keys: ssh.Keys{
 			&ssh.Key{
@@ -291,18 +300,27 @@ func TestInvalid(t *testing.T) {
 			},
 		},
 	}, test.FS)
-	sub, err = token.Verify(tkn, strings.Empty)
+
+	sub, err := token.Verify(tkn, strings.Empty)
 	require.Empty(t, sub)
 	require.ErrorIs(t, err, crypto.ErrInvalidMatch)
+}
+
+func TestInvalidSignature(t *testing.T) {
+	valid := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
+	tkn, err := valid.Generate(strings.Empty, strings.Empty)
+	require.NoError(t, err)
 
 	encoded, _, ok := strings.Cut(tkn, ".")
 	require.True(t, ok)
 
-	sub, err = valid.Verify(encoded+"."+base64.Encode([]byte("bad")), "other")
+	sub, err := valid.Verify(encoded+"."+base64.Encode([]byte("bad")), "other")
 	require.Empty(t, sub)
 	require.ErrorIs(t, err, crypto.ErrInvalidMatch)
+}
 
-	token = ssh.NewToken(nil, test.FS)
+func TestInvalidConfig(t *testing.T) {
+	token := ssh.NewToken(nil, test.FS)
 	require.Nil(t, token)
 }
 

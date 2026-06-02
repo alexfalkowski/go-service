@@ -67,11 +67,11 @@
 // # Secret field note
 //
 // Config contains a Secret field described as PASETO key material using the
-// go-service “source string” convention (env:/file:/literal). However, the
+// go-service "source string" convention (env:/file:/literal). However, the
 // current implementation constructs PASETO v4 public tokens using Ed25519 key
 // material supplied via crypto/ed25519.Signer and crypto/ed25519.Verifier passed
 // to NewToken. The Secret field is therefore not consumed directly by this
-// package’s Token implementation.
+// package's Token implementation.
 //
 // If your service wants to source key material from config, resolve Config.Secret
 // (using os.FS.ReadSource) and construct the Ed25519 signer/verifier accordingly

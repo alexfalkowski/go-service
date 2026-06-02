@@ -29,7 +29,7 @@
 //   - Config.Keys is a set of named public keys used for Verify.
 //   - Config.Expiration controls how long generated tokens remain valid.
 //
-// Verification is “name-based”: Verify extracts kid from the signed claims and
+// Verification is "name-based": Verify extracts kid from the signed claims and
 // then looks up a matching public key configuration in Config.Keys (via
 // Keys.Get(kid)). If no key with that name exists, verification fails.
 //
@@ -37,14 +37,15 @@
 // with the active signing key name while allowing verification against multiple
 // historical/active public keys by including them in Config.Keys.
 //
-// # Key material loading and “source strings”
+// # Key material loading and "source strings"
 //
 // The Token constructor accepts an *os.FS and uses go-service crypto/ssh helpers to
 // load key material based on the embedded crypto/ssh.Config in Key.
 //
-// Those configs commonly support go-service “source strings” for key sources
-// (for example env:/file:/literal). Resolution and filesystem behavior depend on
-// the go-service os.FS and crypto/ssh packages used by your wiring.
+// Those configs commonly support go-service "source strings" for key sources
+// (for example "env:SSH_KEY", "file:/path/to/key", or a literal value).
+// Resolution and filesystem behavior depend on the go-service os.FS and
+// crypto/ssh packages used by your wiring.
 //
 // # Error handling expectations
 //
@@ -59,7 +60,7 @@
 //   - signature verification fails,
 //   - key material cannot be loaded.
 //
-// Some invalid-token cases are intentionally collapsed into a generic “invalid match”
+// Some invalid-token cases are intentionally collapsed into a generic "invalid match"
 // class so callers do not learn whether a name exists or which specific check failed.
 // Callers that need fine-grained diagnostics should add logging/metrics at the call
 // site rather than relying on error text.

@@ -47,13 +47,13 @@ func TestValid(t *testing.T) {
 	ec := test.NewEd25519()
 	signer, _ := ed25519.NewSigner(test.PEM, ec)
 	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-	paseto := paseto.NewToken(cfg.Paseto, signer, verifier, uuid.NewGenerator())
+	token := paseto.NewToken(cfg.Paseto, signer, verifier, uuid.NewGenerator())
 
-	token, err := paseto.Generate("hello", test.UserID.String())
+	tkn, err := token.Generate("hello", test.UserID.String())
 	require.NoError(t, err)
-	require.NotEmpty(t, token)
+	require.NotEmpty(t, tkn)
 
-	sub, err := paseto.Verify(token, "hello")
+	sub, err := token.Verify(tkn, "hello")
 	require.NoError(t, err)
 	require.Equal(t, test.UserID.String(), sub)
 }
@@ -143,47 +143,57 @@ func TestInvalid(t *testing.T) {
 	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	gen := uuid.NewGenerator()
 
-	cfg := test.NewToken("paseto")
-	token := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
+	t.Run("audience mismatch", func(t *testing.T) {
+		cfg := test.NewToken("paseto")
+		token := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
 
-	tkn, err := token.Generate("hello", test.UserID.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
+		tkn, err := token.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
+		require.NotEmpty(t, tkn)
 
-	_, err = token.Verify(tkn, "test")
-	require.Error(t, err)
+		_, err = token.Verify(tkn, "test")
+		require.Error(t, err)
+	})
 
-	token = paseto.NewToken(&paseto.Config{Issuer: "test", Expiration: time.Hour}, signer, verifier, gen)
+	t.Run("matching issuer and audience", func(t *testing.T) {
+		token := paseto.NewToken(&paseto.Config{Issuer: "test", Expiration: time.Hour}, signer, verifier, gen)
 
-	tkn, err = token.Generate("hello", test.UserID.String())
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
+		tkn, err := token.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
+		require.NotEmpty(t, tkn)
 
-	_, err = token.Verify(tkn, "hello")
-	require.NoError(t, err)
+		_, err = token.Verify(tkn, "hello")
+		require.NoError(t, err)
+	})
 
-	for _, tkn := range []string{"invalid"} {
-		t.Run(tkn, func(t *testing.T) {
-			cfg := test.NewToken("paseto")
-			token := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
+	t.Run("malformed token", func(t *testing.T) {
+		cfg := test.NewToken("paseto")
+		token := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
 
-			_, err := token.Verify(tkn, "aud")
-			require.Error(t, err)
-		})
-	}
+		_, err := token.Verify("invalid", "aud")
+		require.Error(t, err)
+	})
 
-	cfg = test.NewToken("paseto")
+	t.Run("generate with malformed private key", func(t *testing.T) {
+		cfg := test.NewToken("paseto")
+		token := paseto.NewToken(cfg.Paseto, &ed25519.Signer{}, verifier, gen)
 
-	token = paseto.NewToken(cfg.Paseto, &ed25519.Signer{}, verifier, gen)
-	_, err = token.Generate("hello", test.UserID.String())
-	require.Error(t, err)
+		_, err := token.Generate("hello", test.UserID.String())
+		require.Error(t, err)
+	})
 
-	token = paseto.NewToken(cfg.Paseto, signer, &ed25519.Verifier{}, gen)
-	_, err = token.Verify(strings.Empty, "aud")
-	require.Error(t, err)
+	t.Run("verify with malformed public key", func(t *testing.T) {
+		cfg := test.NewToken("paseto")
+		token := paseto.NewToken(cfg.Paseto, signer, &ed25519.Verifier{}, gen)
 
-	token = paseto.NewToken(nil, signer, verifier, gen)
-	require.Nil(t, token)
+		_, err := token.Verify(strings.Empty, "aud")
+		require.Error(t, err)
+	})
+
+	t.Run("nil config", func(t *testing.T) {
+		token := paseto.NewToken(nil, signer, verifier, gen)
+		require.Nil(t, token)
+	})
 }
 
 func TestInvalidConfigDoesNotPanic(t *testing.T) {

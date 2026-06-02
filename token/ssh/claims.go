@@ -47,7 +47,9 @@ func validateClaims(c *claims, aud string, now int64, maxLifetime time.Duration)
 	if c.Version != tokenVersion {
 		return crypto.ErrInvalidMatch
 	}
-	if c.IssuedAt <= 0 || c.IssuedAt > now || c.ExpiresAt <= now || c.ExpiresAt <= c.IssuedAt {
+	invalidIssuedAt := c.IssuedAt <= 0 || c.IssuedAt > now
+	invalidExpiration := c.ExpiresAt <= now || c.ExpiresAt <= c.IssuedAt
+	if invalidIssuedAt || invalidExpiration {
 		return token.ErrInvalidTime
 	}
 	if c.ExpiresAt-c.IssuedAt > maxLifetime.Duration().Nanoseconds() {
