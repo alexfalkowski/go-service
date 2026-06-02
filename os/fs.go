@@ -51,9 +51,10 @@ func NewFS() *FS {
 //
 // FS is intended to be used anywhere go-service needs filesystem access, while
 // also providing:
-//   - consistent path normalization (CleanPath / ExpandPath),
-//   - convenience helpers (ExecutableName / ExecutableDir / PathExtension),
-//   - and "source string" loading (ReadSource).
+//   - consistent path normalization ([FS.CleanPath] / [FS.ExpandPath]),
+//   - convenience helpers
+//     ([FS.ExecutableName] / [FS.ExecutableDir] / [FS.PathExtension]),
+//   - and "source string" loading ([FS.ReadSource]).
 //
 // The embedded avfs.VFS exposes a rich filesystem API; FS adds small, opinionated
 // behavior on top (notably whitespace trimming for ReadFile/WriteFile).
