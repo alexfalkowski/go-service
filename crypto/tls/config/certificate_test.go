@@ -29,16 +29,16 @@ func TestNewKeyPair(t *testing.T) {
 	}
 
 	invalidTests := []struct {
-		config        *tls.Config
-		name          string
-		errMissingKey bool
+		config         *tls.Config
+		name           string
+		wantMissingKey bool
 	}{
-		{name: "nil config", errMissingKey: true},
-		{name: "empty config", config: &tls.Config{}, errMissingKey: true},
-		{name: "missing cert", config: &tls.Config{Key: test.FilePath("certs/key.pem")}, errMissingKey: true},
-		{name: "missing key", config: &tls.Config{Cert: test.FilePath("certs/cert.pem")}, errMissingKey: true},
-		{name: "empty cert source", config: &tls.Config{Cert: "env:TLS_EMPTY", Key: test.FilePath("certs/key.pem")}, errMissingKey: true},
-		{name: "empty key source", config: &tls.Config{Cert: test.FilePath("certs/cert.pem"), Key: "env:TLS_EMPTY"}, errMissingKey: true},
+		{name: "nil config", wantMissingKey: true},
+		{name: "empty config", config: &tls.Config{}, wantMissingKey: true},
+		{name: "missing cert", config: &tls.Config{Key: test.FilePath("certs/key.pem")}, wantMissingKey: true},
+		{name: "missing key", config: &tls.Config{Cert: test.FilePath("certs/cert.pem")}, wantMissingKey: true},
+		{name: "empty cert source", config: &tls.Config{Cert: "env:TLS_EMPTY", Key: test.FilePath("certs/key.pem")}, wantMissingKey: true},
+		{name: "empty key source", config: &tls.Config{Cert: test.FilePath("certs/cert.pem"), Key: "env:TLS_EMPTY"}, wantMissingKey: true},
 		{name: "invalid key", config: test.NewTLSConfig("certs/client-cert.pem", "secrets/none")},
 		{name: "invalid cert", config: test.NewTLSConfig("secrets/none", "certs/client-key.pem")},
 		{name: "invalid pair", config: test.NewTLSConfig("secrets/hooks", "certs/client-key.pem")},
@@ -49,7 +49,7 @@ func TestNewKeyPair(t *testing.T) {
 	for _, tt := range invalidTests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := tls.NewKeyPair(test.FS, tt.config)
-			if tt.errMissingKey {
+			if tt.wantMissingKey {
 				require.ErrorIs(t, err, errors.ErrMissingKey)
 				return
 			}

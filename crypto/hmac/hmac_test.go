@@ -39,10 +39,10 @@ func TestValidSigner(t *testing.T) {
 	signer, err = hmac.NewSigner(test.FS, test.NewHMAC())
 	require.NoError(t, err)
 
-	e, err := signer.Sign(strings.Bytes("test"))
+	mac, err := signer.Sign(strings.Bytes("test"))
 	require.NoError(t, err)
-	require.Len(t, e, hmac.Size)
-	require.NoError(t, signer.Verify(e, strings.Bytes("test")))
+	require.Len(t, mac, hmac.Size)
+	require.NoError(t, signer.Verify(mac, strings.Bytes("test")))
 
 	signer, err = hmac.NewSigner(nil, nil)
 	require.NoError(t, err)
@@ -77,19 +77,19 @@ func TestInvalidSigner(t *testing.T) {
 		signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
 		require.NoError(t, err)
 
-		sign, err := signer.Sign(strings.Bytes("test"))
+		mac, err := signer.Sign(strings.Bytes("test"))
 		require.NoError(t, err)
 
-		sign = append(sign, byte('w'))
-		require.Error(t, signer.Verify(sign, strings.Bytes("test")))
+		mac = append(mac, byte('w'))
+		require.Error(t, signer.Verify(mac, strings.Bytes("test")))
 	})
 
 	t.Run("wrong message", func(t *testing.T) {
 		signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
 		require.NoError(t, err)
 
-		e, err := signer.Sign(strings.Bytes("test"))
+		mac, err := signer.Sign(strings.Bytes("test"))
 		require.NoError(t, err)
-		require.ErrorIs(t, signer.Verify(e, strings.Bytes("bob")), errors.ErrInvalidMatch)
+		require.ErrorIs(t, signer.Verify(mac, strings.Bytes("bob")), errors.ErrInvalidMatch)
 	})
 }

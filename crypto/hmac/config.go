@@ -6,7 +6,7 @@ import "github.com/alexfalkowski/go-service/v2/os"
 type Config struct {
 	// Key is a "source string" that resolves to the raw HMAC key bytes.
 	//
-	// It supports the go-service source string pattern implemented by `os.FS.ReadSource`:
+	// It supports the go-service source string pattern implemented by [os.FS.ReadSource]:
 	//   - "env:NAME" to read from an environment variable,
 	//   - "file:/path/to/key" to read from a file, or
 	//   - any other value treated as a literal.
@@ -24,7 +24,7 @@ func (c *Config) IsEnabled() bool {
 
 // GetKey resolves and returns the HMAC key bytes using the configured Key source.
 //
-// It delegates to `fs.ReadSource(c.Key)` and returns any read/resolve error from that operation.
+// It delegates to fs.ReadSource(c.Key) and returns any read/resolve error from that operation.
 func (c *Config) GetKey(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.Key)
 }

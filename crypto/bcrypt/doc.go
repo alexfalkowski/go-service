@@ -4,5 +4,5 @@
 //   - hashes passwords using bcrypt.GenerateFromPassword with bcrypt.DefaultCost, and
 //   - verifies password hashes using bcrypt.CompareHashAndPassword.
 //
-// Start with `Signer` and `NewSigner`.
+// Start with [Signer] and [NewSigner].
 package bcrypt

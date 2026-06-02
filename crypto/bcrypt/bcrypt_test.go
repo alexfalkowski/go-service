@@ -13,21 +13,21 @@ func TestSigner(t *testing.T) {
 	signer := bcrypt.NewSigner()
 
 	t.Run("sign and verify", func(t *testing.T) {
-		s, err := signer.Sign(strings.Bytes("test"))
+		hash, err := signer.Sign(strings.Bytes("test"))
 		require.NoError(t, err)
-		require.NotEmpty(t, s)
+		require.NotEmpty(t, hash)
 
-		cost, err := bcrypt.Cost(s)
+		cost, err := bcrypt.Cost(hash)
 		require.NoError(t, err)
 		require.Equal(t, bcrypt.DefaultCost, cost)
 
-		require.NoError(t, signer.Verify(s, strings.Bytes("test")))
+		require.NoError(t, signer.Verify(hash, strings.Bytes("test")))
 	})
 
 	t.Run("wrong password", func(t *testing.T) {
-		s, err := signer.Sign(strings.Bytes("steve"))
+		hash, err := signer.Sign(strings.Bytes("steve"))
 		require.NoError(t, err)
-		require.ErrorIs(t, signer.Verify(s, strings.Bytes("bob")), errors.ErrInvalidMatch)
+		require.ErrorIs(t, signer.Verify(hash, strings.Bytes("bob")), errors.ErrInvalidMatch)
 	})
 
 	t.Run("malformed hash", func(t *testing.T) {

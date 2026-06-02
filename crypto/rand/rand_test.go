@@ -16,9 +16,9 @@ func TestValidRand(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, c, 5)
 
-	s, err := gen.GenerateText(32)
+	text, err := gen.GenerateText(32)
 	require.NoError(t, err)
-	require.Len(t, s, 32)
+	require.Len(t, text, 32)
 }
 
 func TestGenerateTextUsesAlphanumericAlphabet(t *testing.T) {
