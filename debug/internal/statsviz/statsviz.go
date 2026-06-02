@@ -23,9 +23,6 @@ func Register(lc di.Lifecycle, name env.Name, mux *http.ServeMux) error {
 
 	server.Register(mux.ServeMux)
 	lc.Append(di.Hook{
-		OnStart: func(context.Context) error {
-			return nil
-		},
 		OnStop: func(context.Context) error {
 			return server.Close()
 		},
