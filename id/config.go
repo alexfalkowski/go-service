@@ -13,14 +13,14 @@ package id
 type Config struct {
 	// Kind selects the ID generator implementation.
 	//
-	// The set of supported kinds depends on what has been wired into the application (see the id module
-	// wiring). If Kind is set to an unknown value, generator selection typically returns ErrNotFound.
+	// The set of supported kinds depends on what has been wired into the application (see [Module]).
+	// If Kind is set to an unknown value, generator selection typically returns [ErrNotFound].
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 }
 
 // IsEnabled reports whether ID configuration is present.
 //
-// By convention, a nil *Config is treated as "disabled".
+// By convention, a nil *[Config] is treated as "disabled".
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

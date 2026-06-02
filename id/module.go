@@ -12,16 +12,16 @@ import (
 // Module wires ID generation into Fx/Dig.
 //
 // It provides constructors for the built-in generator implementations:
-//   - *ksuid.Generator via ksuid.NewGenerator (kind "ksuid")
-//   - *nanoid.Generator via nanoid.NewGenerator (kind "nanoid")
-//   - *ulid.Generator via ulid.NewGenerator (kind "ulid")
-//   - *uuid.Generator via uuid.NewGenerator (kind "uuid")
-//   - *xid.Generator via xid.NewGenerator (kind "xid")
+//   - *[ksuid.Generator] via [ksuid.NewGenerator] (kind "ksuid")
+//   - *[nanoid.Generator] via [nanoid.NewGenerator] (kind "nanoid")
+//   - *[ulid.Generator] via [ulid.NewGenerator] (kind "ulid")
+//   - *[uuid.Generator] via [uuid.NewGenerator] (kind "uuid")
+//   - *[xid.Generator] via [xid.NewGenerator] (kind "xid")
 //
-// It then constructs a generator registry (*id.Map) via NewMap and finally selects a concrete
-// Generator via NewGenerator using Config.Kind.
+// It then constructs a generator registry (*[Map]) via [NewMap] and finally selects a concrete
+// [Generator] via [NewGenerator] using [Config.Kind].
 //
-// Default behavior: when *id.Config is nil/disabled, NewGenerator returns the "uuid" generator so
+// Default behavior: when *[Config] is nil/disabled, [NewGenerator] returns the "uuid" generator so
 // downstream consumers always have a usable ID source.
 var Module = di.Module(
 	di.Constructor(ksuid.NewGenerator),

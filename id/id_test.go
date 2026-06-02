@@ -9,17 +9,17 @@ import (
 )
 
 func TestValidID(t *testing.T) {
-	configs := []*id.Config{
-		{Kind: "uuid"},
-		{Kind: "ksuid"},
-		{Kind: "nanoid"},
-		{Kind: "ulid"},
-		{Kind: "xid"},
+	kinds := []string{
+		"uuid",
+		"ksuid",
+		"nanoid",
+		"ulid",
+		"xid",
 	}
 
-	for _, config := range configs {
-		t.Run(config.Kind, func(t *testing.T) {
-			gen, err := id.NewGenerator(config, test.Generators)
+	for _, kind := range kinds {
+		t.Run(kind, func(t *testing.T) {
+			gen, err := id.NewGenerator(&id.Config{Kind: kind}, test.Generators)
 			require.NoError(t, err)
 
 			require.NotEmpty(t, gen.Generate())
@@ -36,5 +36,5 @@ func TestDefaultID(t *testing.T) {
 
 func TestInvalidID(t *testing.T) {
 	_, err := id.NewGenerator(&id.Config{Kind: "invalid"}, test.Generators)
-	require.Error(t, err)
+	require.ErrorIs(t, err, id.ErrNotFound)
 }

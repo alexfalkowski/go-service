@@ -9,20 +9,17 @@ import (
 )
 
 func BenchmarkGenerators(b *testing.B) {
-	benchmarks := []struct {
-		name string
-		kind string
-	}{
-		{name: "ksuid", kind: "ksuid"},
-		{name: "nanoid", kind: "nanoid"},
-		{name: "ulid", kind: "ulid"},
-		{name: "uuid", kind: "uuid"},
-		{name: "xid", kind: "xid"},
+	kinds := []string{
+		"ksuid",
+		"nanoid",
+		"ulid",
+		"uuid",
+		"xid",
 	}
 
-	for _, benchmark := range benchmarks {
-		b.Run(benchmark.name, func(b *testing.B) {
-			gen, err := id.NewGenerator(&id.Config{Kind: benchmark.kind}, test.Generators)
+	for _, kind := range kinds {
+		b.Run(kind, func(b *testing.B) {
+			gen, err := id.NewGenerator(&id.Config{Kind: kind}, test.Generators)
 			require.NoError(b, err)
 
 			b.ReportAllocs()
