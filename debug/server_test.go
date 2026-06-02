@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var paths = []string{
+var debugPaths = []string{
 	"debug/statsviz",
 	"debug/pprof/",
 	"debug/pprof/cmdline",
@@ -21,33 +21,11 @@ var paths = []string{
 }
 
 func TestInsecureDebug(t *testing.T) {
-	for _, path := range paths {
-		t.Run(path, func(t *testing.T) {
-			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldDebug())
-
-			header := http.Header{}
-			url := world.NamedDebugURL("http", path)
-
-			res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
-			require.NoError(t, err)
-			require.Equal(t, http.StatusOK, res.StatusCode)
-		})
-	}
+	requireDebugEndpoints(t, "http", test.WithWorldDebug())
 }
 
 func TestSecureDebug(t *testing.T) {
-	for _, path := range paths {
-		t.Run(path, func(t *testing.T) {
-			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldSecure(), test.WithWorldDebug())
-
-			header := http.Header{}
-			url := world.NamedDebugURL("https", path)
-
-			res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
-			require.NoError(t, err)
-			require.Equal(t, http.StatusOK, res.StatusCode)
-		})
-	}
+	requireDebugEndpoints(t, "https", test.WithWorldSecure(), test.WithWorldDebug())
 }
 
 func TestInvalidServer(t *testing.T) {
@@ -65,4 +43,23 @@ func TestInvalidServer(t *testing.T) {
 
 	_, err := debug.NewServer(params)
 	require.Error(t, err)
+}
+
+func requireDebugEndpoints(t *testing.T, scheme string, options ...test.WorldOption) {
+	t.Helper()
+
+	options = append([]test.WorldOption{test.WithWorldTelemetry("otlp")}, options...)
+
+	for _, path := range debugPaths {
+		t.Run(path, func(t *testing.T) {
+			world := test.NewStartedWorld(t, options...)
+
+			header := http.Header{}
+			url := world.NamedDebugURL(scheme, path)
+
+			res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
+			require.NoError(t, err)
+			require.Equal(t, http.StatusOK, res.StatusCode)
+		})
+	}
 }

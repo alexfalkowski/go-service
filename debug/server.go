@@ -92,11 +92,11 @@ func (s *Server) GetService() *httpserver.Service {
 }
 
 func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
-	config := &config.Config{
+	serverConfig := &config.Config{
 		Address: cmp.Or(cfg.Address, net.DefaultAddress("6060")),
 	}
 	if !cfg.TLS.HasKeyMaterial() && !cfg.TLS.HasCA() {
-		return config, nil
+		return serverConfig, nil
 	}
 
 	tlsConfig, err := server.NewConfig(fs, cfg.TLS)
@@ -104,8 +104,8 @@ func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 		return nil, prefix(err)
 	}
 
-	config.TLS = tlsConfig
-	return config, nil
+	serverConfig.TLS = tlsConfig
+	return serverConfig, nil
 }
 
 func prefix(err error) error {

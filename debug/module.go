@@ -9,19 +9,12 @@ import (
 //
 // It provides:
 //
-//   - a debug router (`*debug/http.ServeMux`) via `http.NewServeMux`,
+//   - a debug router (*debug/http.ServeMux) via http.NewServeMux,
+//   - the debug server (*[Server]) via [NewServer] (returns nil when disabled), and
+//   - [Register], the front door for optional debug endpoint registration.
 //
-//   - the debug server (`*debug.Server`) via `NewServer` (returns nil when disabled), and
-//
-//   - `Register`, the front door for optional debug endpoint registration:
-//
-//   - statsviz under /debug/statsviz
-//
-//   - pprof under /debug/pprof
-//
-//   - fgprof under /debug/fgprof
-//
-//   - psutil under /debug/psutil
+// Register installs statsviz, pprof, fgprof, and psutil handlers under their
+// /debug/... routes.
 //
 // Register attaches handlers to the debug mux only when the debug server is enabled. The mux is then
 // used by the debug server when it is enabled via configuration.

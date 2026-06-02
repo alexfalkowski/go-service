@@ -7,14 +7,14 @@ import (
 
 // NewMem collects memory and swap statistics for the debug endpoint.
 func NewMem(ctx context.Context) *Mem {
-	swapMem, _ := mem.SwapMemoryWithContext(ctx)
-	swapDev, _ := mem.SwapDevicesWithContext(ctx)
-	vms, _ := mem.VirtualMemoryWithContext(ctx)
+	swap, _ := mem.SwapMemoryWithContext(ctx)
+	devices, _ := mem.SwapDevicesWithContext(ctx)
+	virtual, _ := mem.VirtualMemoryWithContext(ctx)
 
 	return &Mem{
-		Swap:    swapMem,
-		Devices: swapDev,
-		Virtual: vms,
+		Swap:    swap,
+		Devices: devices,
+		Virtual: virtual,
 	}
 }
 
