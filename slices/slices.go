@@ -9,8 +9,8 @@ import (
 
 // AppendNotZero appends elems to slice, skipping nil and zero elements.
 //
-// Zero values are determined using reflect.IsZero, which supports non-comparable
-// values such as slices, maps, funcs, and structs containing them.
+// Zero values are determined using [reflect.IsZero], which supports
+// non-comparable values such as slices, maps, funcs, and structs containing them.
 //
 // This helper preserves the relative order of appended elements and returns the
 // resulting slice.
