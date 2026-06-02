@@ -9,33 +9,42 @@ import (
 )
 
 func TestIsNil(t *testing.T) {
-	require.True(t, reflect.IsNil(nil))
-}
-
-func TestIsNilWithTypedNil(t *testing.T) {
 	var err error = (*test.NilError)(nil)
 
-	require.True(t, reflect.IsNil(err))
-}
+	tests := []struct {
+		value any
+		name  string
+		want  bool
+	}{
+		{name: "nil", value: nil, want: true},
+		{name: "typed nil", value: err, want: true},
+		{name: "value", value: "value"},
+		{name: "kind that cannot be nil", value: 42},
+	}
 
-func TestIsNilWithValue(t *testing.T) {
-	require.False(t, reflect.IsNil("value"))
-}
-
-func TestIsNilWithNonNillableKind(t *testing.T) {
-	require.False(t, reflect.IsNil(42))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, reflect.IsNil(tt.value))
+		})
+	}
 }
 
 func TestIsZero(t *testing.T) {
-	require.True(t, reflect.IsZero(nil))
-}
-
-func TestIsZeroWithTypedNil(t *testing.T) {
 	var err error = (*test.NilError)(nil)
 
-	require.True(t, reflect.IsZero(err))
-}
+	tests := []struct {
+		value any
+		name  string
+		want  bool
+	}{
+		{name: "nil", value: nil, want: true},
+		{name: "typed nil", value: err, want: true},
+		{name: "value", value: "value"},
+	}
 
-func TestIsZeroWithValue(t *testing.T) {
-	require.False(t, reflect.IsZero("value"))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, reflect.IsZero(tt.value))
+		})
+	}
 }
