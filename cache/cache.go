@@ -52,7 +52,7 @@ func NewCache(params CacheParams) *Cache {
 	}
 }
 
-// Cache provides a typed-ish cache facade on top of a cache driver.
+// Cache provides a typed cache facade on top of a cache driver.
 //
 // It serializes values using an encoder, optionally compresses the serialized bytes, base64-encodes the
 // final bytes, and stores the resulting string via the configured driver.
@@ -156,7 +156,7 @@ func (c *Cache) decode(value string, field any) error {
 	}
 
 	// Enforce the read-side limit on decompressed payloads, not on the stored base64 wrapper.
-	decompressed, err := c.compressor().Decompress(decoded, c.cfg.GetMaxSize())
+	decompressed, err := c.compressor().Decompress(decoded, maxSize)
 	if err != nil {
 		return err
 	}

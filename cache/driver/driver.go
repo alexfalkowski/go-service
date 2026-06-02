@@ -2,7 +2,7 @@ package driver
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	cache "github.com/alexfalkowski/go-service/v2/cache/config"
+	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/telemetry"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
@@ -13,7 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
-	client "github.com/redis/go-redis/v9"
+	redis "github.com/redis/go-redis/v9"
 	notifications "github.com/redis/go-redis/v9/maintnotifications"
 )
 
@@ -38,7 +38,7 @@ type DriverParams struct {
 	di.In
 	Lifecycle di.Lifecycle
 	FS        *os.FS
-	Config    *cache.Config
+	Config    *config.Config
 
 	// Logger routes Redis client logs through the go-service logger when configured.
 	Logger *logger.Logger
@@ -98,7 +98,7 @@ func newRedisDriver(params DriverParams) (Driver, error) {
 		return nil, err
 	}
 
-	opts, err := client.ParseURL(bytes.String(data))
+	opts, err := redis.ParseURL(bytes.String(data))
 	if err != nil {
 		return nil, ErrInvalidURL
 	}
@@ -107,10 +107,10 @@ func newRedisDriver(params DriverParams) (Driver, error) {
 		Mode: notifications.ModeDisabled,
 	}
 	if params.Logger != nil {
-		client.SetLogger(redisLogger{logger: params.Logger})
+		redis.SetLogger(redisLogger{logger: params.Logger})
 	}
 
-	redisClient := client.NewClient(opts)
+	redisClient := redis.NewClient(opts)
 	if tracer.IsEnabled() {
 		runtime.Must(telemetry.InstrumentTracing(redisClient))
 	}
@@ -164,7 +164,7 @@ func IsExpiredError(err error) bool {
 // This helper normalizes the miss semantics of the backends currently supported by this package,
 // including Redis nil replies.
 func IsMissingError(err error) bool {
-	if errors.Is(err, client.Nil) {
+	if errors.Is(err, redis.Nil) {
 		return true
 	}
 

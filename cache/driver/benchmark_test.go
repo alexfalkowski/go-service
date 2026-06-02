@@ -31,13 +31,13 @@ func BenchmarkRedisTelemetry(b *testing.B) {
 			b.ResetTimer()
 
 			for b.Loop() {
-				cache, err := driver.NewDriver(driver.DriverParams{
+				drv, err := driver.NewDriver(driver.DriverParams{
 					Lifecycle: lc,
 					FS:        test.FS,
 					Config:    cfg,
 				})
 				require.NoError(b, err)
-				driverSink = cache
+				driverSink = drv
 			}
 		})
 	}

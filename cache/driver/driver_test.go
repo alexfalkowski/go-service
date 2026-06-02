@@ -18,21 +18,21 @@ import (
 
 func TestNewDriver(t *testing.T) {
 	tests := []struct {
-		config *config.Config
-		err    error
-		name   string
-		nil    bool
+		config  *config.Config
+		err     error
+		name    string
+		wantNil bool
 	}{
-		{name: "disabled", nil: true},
+		{name: "disabled", wantNil: true},
 		{name: "sync", config: &config.Config{Kind: "sync"}},
-		{name: "unknown", config: &config.Config{Kind: "unknown"}, err: driver.ErrNotFound, nil: true},
+		{name: "unknown", config: &config.Config{Kind: "unknown"}, err: driver.ErrNotFound, wantNil: true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d, err := driver.NewDriver(driver.DriverParams{Config: tt.config})
 			require.ErrorIs(t, err, tt.err)
-			if tt.nil {
+			if tt.wantNil {
 				require.Nil(t, d)
 				return
 			}
