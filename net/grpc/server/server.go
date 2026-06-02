@@ -27,7 +27,7 @@ type Service = server.Service
 //
 // Parameters:
 //   - name: a logical service name used for logging/identification.
-//   - grpc: the already-configured gRPC server instance (services registered,
+//   - grpcServer: the already-configured gRPC server instance (services registered,
 //     interceptors/credentials/stats handlers configured, etc.).
 //   - cfg: gRPC bind configuration; cfg.Address is expected to be in the
 //     go-service network address format (for example "tcp://:9090").
@@ -35,8 +35,8 @@ type Service = server.Service
 //   - sh: a shutdown coordinator used to signal application shutdown.
 //
 // Returns an error if the listener cannot be created.
-func NewService(name string, grpc *grpc.Server, cfg *config.Config, logger *logger.Logger, sh di.Shutdowner) (*Service, error) {
-	serv, err := NewServer(grpc, cfg)
+func NewService(name string, grpcServer *grpc.Server, cfg *config.Config, logger *logger.Logger, sh di.Shutdowner) (*Service, error) {
+	serv, err := NewServer(grpcServer, cfg)
 	if err != nil {
 		return nil, err
 	}

@@ -7,5 +7,5 @@
 // extracted IPs for access logs, policy, or rate limiting should only receive traffic through trusted edge
 // infrastructure that strips or overwrites client-supplied forwarding headers.
 //
-// Start with `ParseBearer` and `ForwardedIPs`.
+// Start with [ParseBearer] and [ForwardedIPs].
 package header

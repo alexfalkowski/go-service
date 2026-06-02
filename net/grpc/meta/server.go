@@ -47,7 +47,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 		ua := serverUserAgent(ctx, userAgent)
 		id := serverRequestID(ctx, generator)
 
-		kind, ip := serverIPAddr(ctx)
+		ipKind, ipAddr := serverIPAddr(ctx)
 		geolocation := serverGeolocation(ctx)
 
 		auth, err := serverAuthorization(ctx)
@@ -58,8 +58,8 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(id),
 			meta.WithServiceMethod(meta.Ignored(info.FullMethod)),
-			meta.WithIPAddr(ip),
-			meta.WithIPAddrKind(kind),
+			meta.WithIPAddr(ipAddr),
+			meta.WithIPAddrKind(ipKind),
 			meta.WithGeolocation(geolocation),
 			meta.WithAuthorization(auth),
 		)
@@ -86,7 +86,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 
 		id := serverRequestID(ctx, generator)
 
-		kind, ip := serverIPAddr(ctx)
+		ipKind, ipAddr := serverIPAddr(ctx)
 		geolocation := serverGeolocation(ctx)
 
 		// Operation streams still need metadata for limiting, but they keep the same auth bypass as unary
@@ -105,8 +105,8 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(id),
 			meta.WithServiceMethod(meta.Ignored(info.FullMethod)),
-			meta.WithIPAddr(ip),
-			meta.WithIPAddrKind(kind),
+			meta.WithIPAddr(ipAddr),
+			meta.WithIPAddrKind(ipKind),
 			meta.WithGeolocation(geolocation),
 			meta.WithAuthorization(auth),
 		)

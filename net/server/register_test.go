@@ -31,8 +31,8 @@ func TestRegisterStopErrors(t *testing.T) {
 	require.ErrorIs(t, err, secondErr)
 	require.ErrorContains(t, err, "first: failed")
 	require.ErrorContains(t, err, "second: other failed")
-	require.Equal(t, 1, first.Shutdowns)
-	require.Equal(t, 1, second.Shutdowns)
+	require.Equal(t, 1, first.Shutdowns, "first shutdowns")
+	require.Equal(t, 1, second.Shutdowns, "second shutdowns")
 }
 
 func TestRegisterStartsAllServices(t *testing.T) {
@@ -51,8 +51,8 @@ func TestRegisterStartsAllServices(t *testing.T) {
 	waitForRegisteredService(t, second.Done)
 
 	require.NoError(t, lc.Stop(t.Context()))
-	require.Equal(t, 1, first.Shutdowns)
-	require.Equal(t, 1, second.Shutdowns)
+	require.Equal(t, 1, first.Shutdowns, "first shutdowns")
+	require.Equal(t, 1, second.Shutdowns, "second shutdowns")
 }
 
 func TestRegisterSnapshotsServices(t *testing.T) {
@@ -68,15 +68,11 @@ func TestRegisterSnapshotsServices(t *testing.T) {
 	services[0] = server.NewService("replacement", replacement, nil, sh)
 
 	require.NoError(t, lc.Start(t.Context()))
-	select {
-	case <-original.Done:
-	case <-time.After(time.Second):
-		require.Fail(t, "registered service was not started")
-	}
+	waitForRegisteredService(t, original.Done)
 
 	require.NoError(t, lc.Stop(t.Context()))
-	require.Equal(t, 1, original.Shutdowns)
-	require.Equal(t, 0, replacement.Shutdowns)
+	require.Equal(t, 1, original.Shutdowns, "original shutdowns")
+	require.Equal(t, 0, replacement.Shutdowns, "replacement shutdowns")
 }
 
 func waitForRegisteredService(t *testing.T, done <-chan struct{}) {

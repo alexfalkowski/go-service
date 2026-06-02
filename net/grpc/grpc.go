@@ -356,41 +356,41 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 // Any additional opts are appended after the keepalive options and may further
 // customize server behavior (for example interceptors, credentials, or stats handlers).
 func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption) *Server {
-	os := make([]ServerOption, 0, 8+len(opts))
-	os = append(os, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+	serverOptions := make([]ServerOption, 0, 8+len(opts))
+	serverOptions = append(serverOptions, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 		MinTime:             options.NonNegativeDuration("keepalive_enforcement_policy_ping_min_time", timeout).Duration(),
 		PermitWithoutStream: true,
 	}))
-	os = append(os, grpc.KeepaliveParams(keepalive.ServerParameters{
+	serverOptions = append(serverOptions, grpc.KeepaliveParams(keepalive.ServerParameters{
 		MaxConnectionIdle:     options.NonNegativeDuration("keepalive_max_connection_idle", timeout).Duration(),
 		MaxConnectionAge:      options.NonNegativeDuration("keepalive_max_connection_age", timeout).Duration(),
 		MaxConnectionAgeGrace: options.NonNegativeDuration("keepalive_max_connection_age_grace", timeout).Duration(),
 		Time:                  options.NonNegativeDuration("keepalive_ping_time", timeout).Duration(),
 		Timeout:               timeout.Duration(),
 	}))
-	os = append(os, grpc.ConnectionTimeout(options.NonNegativeDuration("connection_timeout", timeout).Duration()))
+	serverOptions = append(serverOptions, grpc.ConnectionTimeout(options.NonNegativeDuration("connection_timeout", timeout).Duration()))
 	if _, ok := options["max_concurrent_streams"]; ok {
-		os = append(os, grpc.MaxConcurrentStreams(options.Uint32("max_concurrent_streams", 0)))
+		serverOptions = append(serverOptions, grpc.MaxConcurrentStreams(options.Uint32("max_concurrent_streams", 0)))
 	}
 
 	if _, ok := options["max_header_list_size"]; ok {
-		os = append(os, grpc.MaxHeaderListSize(options.Uint32Size("max_header_list_size", 0)))
+		serverOptions = append(serverOptions, grpc.MaxHeaderListSize(options.Uint32Size("max_header_list_size", 0)))
 	}
 
 	if _, ok := options["initial_window_size"]; ok {
-		os = append(os, grpc.InitialWindowSize(options.Int32Size("initial_window_size", 0)))
+		serverOptions = append(serverOptions, grpc.InitialWindowSize(options.Int32Size("initial_window_size", 0)))
 	}
 
 	if _, ok := options["initial_conn_window_size"]; ok {
-		os = append(os, grpc.InitialConnWindowSize(options.Int32Size("initial_conn_window_size", 0)))
+		serverOptions = append(serverOptions, grpc.InitialConnWindowSize(options.Int32Size("initial_conn_window_size", 0)))
 	}
 
 	if _, ok := options["max_send_msg_size"]; ok {
-		os = append(os, grpc.MaxSendMsgSize(options.IntSize("max_send_msg_size", 0)))
+		serverOptions = append(serverOptions, grpc.MaxSendMsgSize(options.IntSize("max_send_msg_size", 0)))
 	}
-	os = append(os, opts...)
+	serverOptions = append(serverOptions, opts...)
 
-	server := grpc.NewServer(os...)
+	server := grpc.NewServer(serverOptions...)
 	// security: reflection is intentionally always enabled for go-service
 	// servers so internal tooling can discover registered services. Restrict
 	// public exposure at the network/auth boundary when needed.

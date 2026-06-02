@@ -26,14 +26,16 @@ type ClientOption interface {
 // Redirect configures how Client handles HTTP redirects.
 type Redirect int
 
-// RedirectFollow follows redirects using the standard library default policy.
-const RedirectFollow Redirect = iota
+const (
+	// RedirectFollow follows redirects using the standard library default policy.
+	RedirectFollow Redirect = iota
 
-// RedirectIgnore returns redirect responses without following them.
-const RedirectIgnore Redirect = 1
+	// RedirectIgnore returns redirect responses without following them.
+	RedirectIgnore
 
-// RedirectSameOrigin follows redirects only when scheme and host are unchanged.
-const RedirectSameOrigin Redirect = 2
+	// RedirectSameOrigin follows redirects only when scheme and host are unchanged.
+	RedirectSameOrigin
+)
 
 type clientOpts struct {
 	roundTripper    http.RoundTripper
@@ -102,17 +104,17 @@ func WithRedirect(redirect Redirect) ClientOption {
 //
 // Callers should treat the returned Client as safe for concurrent use.
 func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOption) *Client {
-	os := options(opts...)
-	client := http.NewClient(os.roundTripper, os.timeout)
+	clientOptions := options(opts...)
+	client := http.NewClient(clientOptions.roundTripper, clientOptions.timeout)
 
-	switch os.redirect {
+	switch clientOptions.redirect {
 	case RedirectIgnore:
 		client.CheckRedirect = http.IgnoreRedirect
 	case RedirectSameOrigin:
 		client.CheckRedirect = http.SameOriginRedirect
 	}
 
-	return &Client{client: client, content: content, pool: pool, maxResponseSize: os.maxResponseSize.Bytes()}
+	return &Client{client: client, content: content, pool: pool, maxResponseSize: clientOptions.maxResponseSize.Bytes()}
 }
 
 // Options describes the request/response payloads and content type for a single call.
@@ -211,17 +213,17 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 //     selected by the response Content-Type (falling back to opts.ContentType if absent).
 //
 // Notes:
-//   - callers may pass the zero Options value when no request/response bodies are needed.
+//   - Callers may pass the zero Options value when no request/response bodies are needed.
 //   - This method buffers response bodies in memory up to the configured limit.
 //
 //nolint:cyclop
 func (c *Client) Do(ctx context.Context, method, url string, opts Options) error {
-	mediaType := c.content.NewFromMedia(opts.ContentType)
+	requestMedia := c.content.NewFromMedia(opts.ContentType)
 
 	body := io.Reader(http.NoBody)
 	if opts.HasRequest() {
 		var requestBody bytes.Buffer
-		if err := mediaType.Encoder.Encode(&requestBody, opts.Request); err != nil {
+		if err := requestMedia.Encoder.Encode(&requestBody, opts.Request); err != nil {
 			return errors.Prefix("http: encode", err)
 		}
 
@@ -235,7 +237,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 		return errors.Prefix("http: new request", err)
 	}
 
-	request.Header.Set(content.TypeKey, mediaType.String())
+	request.Header.Set(content.TypeKey, requestMedia.String())
 
 	response, err := c.client.Do(request)
 	if err != nil {
@@ -255,8 +257,8 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	contentType := cmp.Or(response.Header.Get(content.TypeKey), opts.ContentType)
 
 	// The server handlers return text/error to indicate an error.
-	media := c.content.NewFromMedia(contentType)
-	if media.IsError() {
+	responseMedia := c.content.NewFromMedia(contentType)
+	if responseMedia.IsError() {
 		code := response.StatusCode
 		if !isErrorStatus(code) {
 			code = http.StatusInternalServerError
@@ -270,7 +272,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	}
 
 	if opts.HasResponse() {
-		if err := media.Encoder.Decode(responseBody, opts.Response); err != nil {
+		if err := responseMedia.Encoder.Decode(responseBody, opts.Response); err != nil {
 			return errors.Prefix("http: decode", err)
 		}
 	}
@@ -296,22 +298,22 @@ func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {
 }
 
 func options(opts ...ClientOption) *clientOpts {
-	os := &clientOpts{redirect: RedirectSameOrigin}
+	clientOptions := &clientOpts{redirect: RedirectSameOrigin}
 	for _, o := range opts {
-		o.apply(os)
+		o.apply(clientOptions)
 	}
 
-	if os.timeout <= 0 {
-		os.timeout = time.DefaultTimeout
+	if clientOptions.timeout <= 0 {
+		clientOptions.timeout = time.DefaultTimeout
 	}
 
-	if os.maxResponseSize <= 0 {
-		os.maxResponseSize = bytes.DefaultSize
+	if clientOptions.maxResponseSize <= 0 {
+		clientOptions.maxResponseSize = bytes.DefaultSize
 	}
 
-	if os.roundTripper == nil {
-		os.roundTripper = http.Transport(nil)
+	if clientOptions.roundTripper == nil {
+		clientOptions.roundTripper = http.Transport(nil)
 	}
 
-	return os
+	return clientOptions
 }
