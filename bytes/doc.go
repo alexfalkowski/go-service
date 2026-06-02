@@ -7,8 +7,9 @@
 //
 // # Aliases and wrappers
 //
-// `Buffer` is an alias for `bytes.Buffer`, and constructors like `NewBuffer`, `NewBufferString`,
-// and `NewReader` delegate directly to the standard library.
+// `Buffer` is an alias for `bytes.Buffer`, constructors like `NewBuffer`, `NewBufferString`, and
+// `NewReader` delegate directly to the standard library, and helpers like `Clone` and `TrimSpace`
+// mirror standard library behavior through the go-service import path.
 //
 // # Zero-copy conversions
 //
@@ -18,7 +19,7 @@
 //
 // # Human-readable sizes
 //
-// `Size` is a named byte-count type for typed configuration surfaces. `String` and `ParseSize`
+// `Size` is a named byte-count type for typed configuration surfaces. `Size.String` and `ParseSize`
 // use human-readable decimal size strings such as `64B`, `2MB`, and `4GB`.
 //
 // Text and JSON marshaling emit exact raw byte counts with a `B` suffix, such as `4000000B`.

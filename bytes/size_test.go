@@ -22,11 +22,11 @@ func TestSizeTextRoundTrip(t *testing.T) {
 		text string
 		size bytes.Size
 	}{
-		{name: "decimal boundary", size: bytes.MustParseSize("4MB"), text: "4000000B"},
-		{name: "above byte boundary", size: bytes.Size(1001), text: "1001B"},
-		{name: "binary megabyte", size: bytes.Size(1048576), text: "1048576B"},
-		{name: "below decimal megabyte", size: bytes.Size(999999), text: "999999B"},
-		{name: "above decimal megabyte", size: bytes.Size(1000001), text: "1000001B"},
+		{name: "decimal boundary", text: "4000000B", size: bytes.MustParseSize("4MB")},
+		{name: "above byte boundary", text: "1001B", size: bytes.Size(1001)},
+		{name: "binary megabyte", text: "1048576B", size: bytes.Size(1048576)},
+		{name: "below decimal megabyte", text: "999999B", size: bytes.Size(999999)},
+		{name: "above decimal megabyte", text: "1000001B", size: bytes.Size(1000001)},
 	}
 
 	for _, tt := range tests {
@@ -43,27 +43,26 @@ func TestSizeTextRoundTrip(t *testing.T) {
 }
 
 func TestSizeJSONRoundTrip(t *testing.T) {
-	size := bytes.MustParseSize("64B")
+	tests := []struct {
+		name string
+		text string
+		size bytes.Size
+	}{
+		{name: "byte size", text: `"64B"`, size: bytes.MustParseSize("64B")},
+		{name: "binary megabyte", text: `"1048576B"`, size: bytes.Size(1048576)},
+	}
 
-	data, err := json.Marshal(size)
-	require.NoError(t, err)
-	require.Equal(t, `"64B"`, string(data))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data, err := json.Marshal(tt.size)
+			require.NoError(t, err)
+			require.Equal(t, tt.text, string(data))
 
-	var decoded bytes.Size
-	require.NoError(t, json.Unmarshal(data, &decoded))
-	require.Equal(t, size, decoded)
-}
-
-func TestSizeJSONRoundTripPreservesByteCount(t *testing.T) {
-	size := bytes.Size(1048576)
-
-	data, err := json.Marshal(size)
-	require.NoError(t, err)
-	require.Equal(t, `"1048576B"`, string(data))
-
-	var decoded bytes.Size
-	require.NoError(t, json.Unmarshal(data, &decoded))
-	require.Equal(t, size, decoded)
+			var decoded bytes.Size
+			require.NoError(t, json.Unmarshal(data, &decoded))
+			require.Equal(t, tt.size, decoded)
+		})
+	}
 }
 
 func TestSizeUnmarshalTextInvalid(t *testing.T) {

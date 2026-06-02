@@ -19,13 +19,13 @@ func BenchmarkBytes(b *testing.B) {
 	require.NoError(b, err)
 
 	b.Run("copy", func(b *testing.B) {
-		for n := 0; b.Loop(); n++ {
+		for b.Loop() {
 			benchmarkStringSink = string(bs)
 		}
 	})
 
 	b.Run("convert", func(b *testing.B) {
-		for n := 0; b.Loop(); n++ {
+		for b.Loop() {
 			benchmarkStringSink = bytes.String(bs)
 		}
 	})
