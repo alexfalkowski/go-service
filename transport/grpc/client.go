@@ -31,24 +31,24 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	gen               token.Generator
-	generator         id.Generator
-	security          *tls.Config
-	logger            *logger.Logger
-	retry             *retry.Config
-	retryPolicies     []retry.Policy
-	limiter           *limiter.Client
-	userAgent         env.UserAgent
-	id                env.UserID
-	opts              []grpc.DialOption
-	unary             []grpc.UnaryClientInterceptor
-	stream            []grpc.StreamClientInterceptor
-	breakerOptions    []breaker.Option
-	keepalive_ping    time.Duration
-	keepalive_timeout time.Duration
-	timeout           time.Duration
-	breaker           bool
-	compression       bool
+	gen              token.Generator
+	generator        id.Generator
+	security         *tls.Config
+	logger           *logger.Logger
+	retry            *retry.Config
+	retryPolicies    []retry.Policy
+	limiter          *limiter.Client
+	userAgent        env.UserAgent
+	id               env.UserID
+	opts             []grpc.DialOption
+	unary            []grpc.UnaryClientInterceptor
+	stream           []grpc.StreamClientInterceptor
+	breakerOptions   []breaker.Option
+	keepalivePing    time.Duration
+	keepaliveTimeout time.Duration
+	timeout          time.Duration
+	breaker          bool
+	compression      bool
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -99,8 +99,8 @@ func WithClientTimeout(timeout time.Duration) ClientOption {
 // If either value is unset (0), it defaults to the resolved client timeout (see `NewDialOptions`).
 func WithClientKeepalive(ping, timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.keepalive_ping = ping
-		o.keepalive_timeout = timeout
+		o.keepalivePing = ping
+		o.keepaliveTimeout = timeout
 	})
 }
 
@@ -243,19 +243,19 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 //     This default is intended for local and in-cluster/container traffic where transport security is provided
 //     at the platform boundary; use WithClientTLS for calls outside that trusted boundary.
 func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
-	os := options(opts...)
+	resolved := options(opts...)
 
-	if os.keepalive_ping == 0 {
-		os.keepalive_ping = os.timeout
+	if resolved.keepalivePing == 0 {
+		resolved.keepalivePing = resolved.timeout
 	}
 
-	if os.keepalive_timeout == 0 {
-		os.keepalive_timeout = os.timeout
+	if resolved.keepaliveTimeout == 0 {
+		resolved.keepaliveTimeout = resolved.timeout
 	}
 
 	var security grpc.DialOption
-	if os.security != nil {
-		conf, err := client.NewConfig(fs, os.security)
+	if resolved.security != nil {
+		conf, err := client.NewConfig(fs, resolved.security)
 		if err != nil {
 			return nil, err
 		}
@@ -266,18 +266,18 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	}
 
 	cis := UnaryClientInterceptors(opts...)
-	sto := streamDialOption(os)
+	sto := streamDialOption(resolved)
 	ops := []grpc.DialOption{
-		grpc.WithUserAgent(os.userAgent.String()),
-		grpc.WithKeepaliveParams(os.keepalive_ping, os.keepalive_timeout),
+		grpc.WithUserAgent(resolved.userAgent.String()),
+		grpc.WithKeepaliveParams(resolved.keepalivePing, resolved.keepaliveTimeout),
 		grpc.WithChainUnaryInterceptor(cis...), sto, security,
 	}
 
-	if os.compression {
+	if resolved.compression {
 		ops = append(ops, grpc.WithDefaultCallOptions(grpc.UseCompressor("gzip")))
 	}
 
-	ops = append(ops, os.opts...)
+	ops = append(ops, resolved.opts...)
 
 	return ops, nil
 }
@@ -295,16 +295,16 @@ type ClientConn = grpc.ClientConn
 //
 // The returned connection should be closed by the caller when no longer needed.
 func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
-	os, err := NewDialOptions(opts...)
+	dialOptions, err := NewDialOptions(opts...)
 	if err != nil {
 		return nil, err
 	}
 
 	if metrics.IsEnabled() || tracer.IsEnabled() {
-		os = append(os, grpc.WithStatsHandler(telemetry.NewClientHandler()))
+		dialOptions = append(dialOptions, grpc.WithStatsHandler(telemetry.NewClientHandler()))
 	}
 
-	return grpc.NewClient(target, os...)
+	return grpc.NewClient(target, dialOptions...)
 }
 
 // UnaryClientInterceptors builds the unary client interceptor chain derived from opts.
@@ -321,31 +321,31 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 //
 // The limiter stays before the breaker so local quota denials are not counted as upstream failures.
 func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor {
-	os := options(opts...)
+	resolved := options(opts...)
 	unary := []grpc.UnaryClientInterceptor{}
 
-	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
-	unary = append(unary, os.unary...)
-	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(os.timeout))
+	unary = append(unary, meta.UnaryClientInterceptor(resolved.userAgent, resolved.generator))
+	unary = append(unary, resolved.unary...)
+	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(resolved.timeout))
 
-	if os.limiter != nil {
-		unary = append(unary, limiter.UnaryClientInterceptor(os.limiter))
+	if resolved.limiter != nil {
+		unary = append(unary, limiter.UnaryClientInterceptor(resolved.limiter))
 	}
 
-	if os.breaker {
-		unary = append(unary, breaker.UnaryClientInterceptor(os.breakerOptions...))
+	if resolved.breaker {
+		unary = append(unary, breaker.UnaryClientInterceptor(resolved.breakerOptions...))
 	}
 
-	if os.retry != nil {
-		unary = append(unary, retry.UnaryClientInterceptor(os.retry, os.retryPolicies...))
+	if resolved.retry != nil {
+		unary = append(unary, retry.UnaryClientInterceptor(resolved.retry, resolved.retryPolicies...))
 	}
 
-	if os.logger != nil {
-		unary = append(unary, logger.UnaryClientInterceptor(os.logger))
+	if resolved.logger != nil {
+		unary = append(unary, logger.UnaryClientInterceptor(resolved.logger))
 	}
 
-	if os.gen != nil {
-		unary = append(unary, token.UnaryClientInterceptor(os.id, os.gen))
+	if resolved.gen != nil {
+		unary = append(unary, token.UnaryClientInterceptor(resolved.id, resolved.gen))
 	}
 
 	return unary
@@ -372,16 +372,16 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 }
 
 func options(opts ...ClientOption) *clientOpts {
-	os := &clientOpts{}
+	resolved := &clientOpts{}
 	for _, o := range opts {
-		o.apply(os)
+		o.apply(resolved)
 	}
-	if os.timeout <= 0 {
-		os.timeout = time.DefaultTimeout
+	if resolved.timeout <= 0 {
+		resolved.timeout = time.DefaultTimeout
 	}
-	if os.generator == nil {
-		os.generator = uuid.NewGenerator()
+	if resolved.generator == nil {
+		resolved.generator = uuid.NewGenerator()
 	}
 
-	return os
+	return resolved
 }

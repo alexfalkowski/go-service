@@ -51,8 +51,8 @@ func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 // Note: the provided hook must be configured appropriately (for example with the expected secret) for
 // signing to succeed.
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) *Sender {
-	os := options(opts...)
-	rt := hooks.NewRoundTripper(hook, os.roundTripper)
+	resolved := options(opts...)
+	rt := hooks.NewRoundTripper(hook, resolved.roundTripper)
 	httpClient := http.Client{Transport: rt, CheckRedirect: http.SameOriginRedirect}
 
 	sender, _ := events.NewClientHTTP(transport.WithClient(httpClient))
@@ -70,12 +70,12 @@ func (s *Sender) Send(ctx context.Context, event events.Event) protocol.Result {
 }
 
 func options(opts ...SenderOption) *senderOptions {
-	os := &senderOptions{}
+	resolved := &senderOptions{}
 	for _, o := range opts {
-		o.apply(os)
+		o.apply(resolved)
 	}
-	if os.roundTripper == nil {
-		os.roundTripper = http.Transport(nil)
+	if resolved.roundTripper == nil {
+		resolved.roundTripper = http.Transport(nil)
 	}
-	return os
+	return resolved
 }

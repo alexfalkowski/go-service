@@ -70,7 +70,7 @@ func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response
 //
 // It enumerates all observers registered for the "grpc" transport kind and returns their current serving
 // statuses.
-func (s *Server) List(_ context.Context, req *health.ListRequest) (*health.ListResponse, error) {
+func (s *Server) List(_ context.Context, _ *health.ListRequest) (*health.ListResponse, error) {
 	res := &health.ListResponse{Statuses: map[string]*health.Response{}}
 	for name, observer := range s.server.Observers("grpc") {
 		res.Statuses[name] = &health.Response{Status: s.status(observer)}

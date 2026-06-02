@@ -32,7 +32,7 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
 	result := world.Sender.Send(ctx, e)
-	require.True(t, protocol.IsACK(result))
+	requireACK(t, result)
 	require.NotNil(t, world.Event)
 	require.Equal(t, "test", bytes.String(e.Data()))
 }
@@ -50,7 +50,7 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
 	result := world.Sender.Send(ctx, e)
-	require.True(t, protocol.IsACK(result))
+	requireACK(t, result)
 	require.NotNil(t, world.Event)
 	require.Equal(t, "test", bytes.String(e.Data()))
 }
@@ -75,7 +75,7 @@ func TestSendNotReceive(t *testing.T) {
 	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
 	result := world.Sender.Send(ctx, e)
-	require.True(t, protocol.IsNACK(result))
+	requireNACK(t, result)
 	require.Nil(t, world.Event)
 }
 
@@ -105,7 +105,7 @@ func TestSenderWithWebhookDoesNotFollowCrossOriginRedirect(t *testing.T) {
 	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
 	result := sender.Send(events.ContextWithTarget(t.Context(), trusted.URL+"/events"), e)
-	require.True(t, protocol.IsNACK(result))
+	requireNACK(t, result)
 	require.NotEmpty(t, trustedSignature)
 	require.Empty(t, attackerSignature)
 }
@@ -137,7 +137,7 @@ func TestSenderUsesStructuredEncoding(t *testing.T) {
 
 	result := sender.Send(events.ContextWithTarget(t.Context(), server.URL+"/events"), e)
 	require.NoError(t, <-readErrors)
-	require.True(t, protocol.IsACK(result))
+	requireACK(t, result)
 	require.Equal(t, "application/cloudevents+json", <-contentTypes)
 	require.Empty(t, <-specVersions)
 	body := <-bodies
@@ -168,4 +168,16 @@ func TestReceiveUsesServerMaxReceiveSizeBeforeWebhookVerification(t *testing.T) 
 
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
 	require.Nil(t, world.Event)
+}
+
+func requireACK(t *testing.T, result protocol.Result) {
+	t.Helper()
+
+	require.True(t, protocol.IsACK(result), "expected CloudEvents ACK: %v", result)
+}
+
+func requireNACK(t *testing.T, result protocol.Result) {
+	t.Helper()
+
+	require.True(t, protocol.IsNACK(result), "expected CloudEvents NACK: %v", result)
 }

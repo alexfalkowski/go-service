@@ -79,7 +79,7 @@ type ServerParams struct {
 //   - OpenTelemetry stats handling when tracing or metrics are enabled.
 //   - A unary interceptor chain that performs metadata extraction/injection, and optionally logging,
 //     token verification, and rate limiting, followed by any user-provided interceptors.
-//   - A stream interceptor chain that performs metadata extraction/injection, and optionally logging
+//   - A stream interceptor chain that performs metadata extraction/injection, and optionally logging,
 //     token verification, and rate limiting, followed by any user-provided interceptors.
 //
 // TLS:
