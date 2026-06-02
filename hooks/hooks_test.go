@@ -6,31 +6,41 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
 
-func TestHooks(t *testing.T) {
+func TestGenerator(t *testing.T) {
 	gen := hooks.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
-	c, err := gen.Generate()
+	secret, err := gen.Generate()
 	require.NoError(t, err)
-	require.NotEmpty(t, c)
+	require.NotEmpty(t, secret)
+}
 
-	_, err = hooks.NewHook(test.FS, &hooks.Config{Secret: test.FilePath("secrets/none")})
+func TestNewHookReturnsSourceError(t *testing.T) {
+	_, err := hooks.NewHook(test.FS, &hooks.Config{Secret: test.FilePath("secrets/none")})
 	require.Error(t, err)
+}
 
-	_, err = hooks.NewHook(test.FS, &hooks.Config{Secret: test.FilePath("secrets/redis")})
+func TestNewHookReturnsInvalidSecretError(t *testing.T) {
+	_, err := hooks.NewHook(test.FS, &hooks.Config{Secret: test.FilePath("secrets/redis")})
 	require.Error(t, err)
+}
 
-	_, err = hooks.NewHook(test.FS, &hooks.Config{Secret: ""})
+func TestNewHookRejectsEmptySecret(t *testing.T) {
+	_, err := hooks.NewHook(test.FS, &hooks.Config{Secret: ""})
 	require.ErrorIs(t, err, hooks.ErrEmptySecret)
+}
 
+func TestNewHookRejectsEmptyEnvSecret(t *testing.T) {
 	t.Setenv("EMPTY_WEBHOOK_VALUE", "")
-	source := strings.Join(":", "env", "EMPTY_WEBHOOK_VALUE")
-	_, err = hooks.NewHook(test.FS, &hooks.Config{Secret: source})
-	require.ErrorIs(t, err, hooks.ErrEmptySecret)
 
+	source := "env:" + "EMPTY_WEBHOOK_VALUE"
+	_, err := hooks.NewHook(test.FS, &hooks.Config{Secret: source})
+	require.ErrorIs(t, err, hooks.ErrEmptySecret)
+}
+
+func TestNewHookReturnsNilWhenDisabled(t *testing.T) {
 	h, err := hooks.NewHook(nil, nil)
 	require.NoError(t, err)
 	require.Nil(t, h)
