@@ -13,8 +13,8 @@ import (
 // It prefers the SERVICE_VERSION environment variable when set; otherwise it falls back to
 // [runtime.Version]().
 //
-// The returned Version is not normalized at construction time; normalization (currently stripping a
-// leading "v") is applied when calling [Version.String].
+// The returned Version is not normalized at construction time; normalization
+// is applied when calling [Version.String].
 func NewVersion() Version {
 	return Version(cmp.Or(os.Getenv("SERVICE_VERSION"), runtime.Version()))
 }
@@ -30,9 +30,13 @@ type Version string
 // so callers get "1.2.3". Other values are returned unchanged.
 func (v Version) String() string {
 	s := string(v)
-	if strings.IsEmpty(s) || s[0] != 'v' {
+	if strings.IsEmpty(s) || s[0] != 'v' || len(s) == 1 || !isDigit(s[1]) {
 		return s
 	}
 
 	return s[1:]
+}
+
+func isDigit(b byte) bool {
+	return b >= '0' && b <= '9'
 }

@@ -73,6 +73,9 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 	if t.signer == nil || len(t.signer.PrivateKey) != ed25519.PrivateKeySize || t.generator == nil {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
+	if strings.IsEmpty(t.cfg.Issuer) || strings.IsEmpty(t.cfg.KeyID) || t.cfg.Expiration <= 0 {
+		return strings.Empty, errors.ErrInvalidConfig
+	}
 
 	key := t.signer.PrivateKey
 	now := time.Now()
