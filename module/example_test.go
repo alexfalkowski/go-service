@@ -6,21 +6,21 @@ import (
 )
 
 func ExampleServer() {
-	app := cli.NewApplication(func(commander cli.Commander) {
+	application := cli.NewApplication(func(commander cli.Commander) {
 		server := commander.AddServer("serve", "Run the service", module.Server)
 		server.AddConfig("file:./config.yml")
 	})
 
-	_ = app
+	_ = application
 	// Output:
 }
 
 func ExampleClient() {
-	app := cli.NewApplication(func(commander cli.Commander) {
+	application := cli.NewApplication(func(commander cli.Commander) {
 		client := commander.AddClient("migrate", "Run client tasks", module.Client)
 		client.AddConfig("file:./config.yml")
 	})
 
-	_ = app
+	_ = application
 	// Output:
 }
