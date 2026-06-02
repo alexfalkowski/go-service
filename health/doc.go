@@ -7,10 +7,10 @@
 // # Registrations and checks
 //
 // The go-health server exposes health endpoints based on registrations and checkers managed by the
-// go-health package. This package provides the `Registrations` alias to make it easier to pass around
+// go-health package. This package provides the [Registrations] alias to make it easier to pass around
 // lists of health check registrations in go-service wiring.
 //
-// Health check implementations and constructors live under `health/checker`.
+// Health check implementations and constructors live under health/checker.
 //
-// Start with `Module` and `NewServer`.
+// Start with [Module] and [NewServer].
 package health

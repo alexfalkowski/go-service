@@ -69,8 +69,8 @@ func (c *DBChecker) dbs() []*sqlx.DB {
 	return dbs
 }
 
-func (o *DBChecker) ping(ctx context.Context, db *sqlx.DB) error {
-	ctx, cancel := context.WithTimeoutCause(ctx, o.timeout, ErrPingTimeout)
+func (c *DBChecker) ping(ctx context.Context, db *sqlx.DB) error {
+	ctx, cancel := context.WithTimeoutCause(ctx, c.timeout, ErrPingTimeout)
 	defer cancel()
 
 	return db.PingContext(ctx)
