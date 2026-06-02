@@ -17,18 +17,20 @@ import (
 	"go.uber.org/fx"
 )
 
+var compressorKinds = []string{"zstd", "s2", "snappy", "none"}
+
 func TestMap(t *testing.T) {
-	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
+	for _, kind := range compressorKinds {
 		t.Run(kind, func(t *testing.T) {
 			cmp := test.Compressor.Get(kind)
 
 			data := strings.Bytes("hello")
-			d, err := cmp.Compress(data, bytes.KB)
+			compressed, err := cmp.Compress(data, bytes.KB)
 			require.NoError(t, err)
 
-			ns, err := cmp.Decompress(d, bytes.KB)
+			decompressed, err := cmp.Decompress(compressed, bytes.KB)
 			require.NoError(t, err)
-			require.Equal(t, data, ns)
+			require.Equal(t, data, decompressed)
 		})
 	}
 
@@ -53,10 +55,18 @@ func TestNewMapRegistersDefaultCompressors(t *testing.T) {
 		None:   noneCompressor,
 	})
 
-	require.Same(t, zstdCompressor, compressors.Get("zstd"))
-	require.Same(t, s2Compressor, compressors.Get("s2"))
-	require.Same(t, snappyCompressor, compressors.Get("snappy"))
-	require.Same(t, noneCompressor, compressors.Get("none"))
+	expected := map[string]compress.Compressor{
+		"zstd":   zstdCompressor,
+		"s2":     s2Compressor,
+		"snappy": snappyCompressor,
+		"none":   noneCompressor,
+	}
+
+	for kind, expectedCompressor := range expected {
+		t.Run(kind, func(t *testing.T) {
+			require.Same(t, expectedCompressor, compressors.Get(kind))
+		})
+	}
 }
 
 func TestMapRegister(t *testing.T) {
@@ -81,7 +91,7 @@ func TestModuleProvidesDefaultCompressors(t *testing.T) {
 	)
 
 	require.NoError(t, app.Err())
-	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
+	for _, kind := range compressorKinds {
 		t.Run(kind, func(t *testing.T) {
 			require.NotNil(t, compressors.Get(kind))
 		})
@@ -102,7 +112,7 @@ func TestNoneCompressorReturnsDataUnchanged(t *testing.T) {
 }
 
 func TestExactSizeLimits(t *testing.T) {
-	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
+	for _, kind := range compressorKinds {
 		t.Run(kind, func(t *testing.T) {
 			cmp := test.Compressor.Get(kind)
 			data := strings.Bytes("hello")
@@ -119,7 +129,7 @@ func TestExactSizeLimits(t *testing.T) {
 }
 
 func TestCompressRejectsTooLarge(t *testing.T) {
-	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
+	for _, kind := range compressorKinds {
 		t.Run(kind, func(t *testing.T) {
 			cmp := test.Compressor.Get(kind)
 
@@ -130,15 +140,15 @@ func TestCompressRejectsTooLarge(t *testing.T) {
 }
 
 func TestDecompressRejectsTooLarge(t *testing.T) {
-	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
+	for _, kind := range compressorKinds {
 		t.Run(kind, func(t *testing.T) {
 			cmp := test.Compressor.Get(kind)
 
 			data := strings.Bytes("hello")
-			d, err := cmp.Compress(data, bytes.KB)
+			compressed, err := cmp.Compress(data, bytes.KB)
 			require.NoError(t, err)
 
-			_, err = cmp.Decompress(d, bytes.Size(len(data)-1))
+			_, err = cmp.Decompress(compressed, bytes.Size(len(data)-1))
 			require.ErrorIs(t, err, errors.ErrTooLarge)
 		})
 	}

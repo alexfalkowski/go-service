@@ -39,13 +39,13 @@ func (c *Compressor) Compress(data []byte, size bytes.Size) ([]byte, error) {
 		return nil, compress.ErrTooLarge
 	}
 
-	e, err := zstd.NewWriter(nil)
+	encoder, err := zstd.NewWriter(nil)
 	if err != nil {
 		return nil, err
 	}
-	defer e.Close()
+	defer encoder.Close()
 
-	return e.EncodeAll(data, nil), nil
+	return encoder.EncodeAll(data, nil), nil
 }
 
 // Decompress returns the decompressed representation of data.
@@ -58,16 +58,16 @@ func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {
 	}
 
 	maxMemory := uint64(max(limit, int64(MinWindowSize)))
-	d, err := zstd.NewReader(
+	decoder, err := zstd.NewReader(
 		bytes.NewReader(data),
 		zstd.WithDecoderMaxMemory(maxMemory),
 	)
 	if err != nil {
 		return nil, err
 	}
-	defer d.Close()
+	defer decoder.Close()
 
-	decoded, _, err := io.ReadAll(io.LimitReader(d, limit+1))
+	decoded, _, err := io.ReadAll(io.LimitReader(decoder, limit+1))
 	if err != nil {
 		if errors.Is(err, ErrDecoderSizeExceeded) {
 			return nil, fmt.Errorf("%w: %w", compress.ErrTooLarge, err)

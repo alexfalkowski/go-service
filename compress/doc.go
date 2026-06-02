@@ -5,7 +5,7 @@
 //
 // # Registry
 //
-// `Map` is a simple kind→Compressor lookup (e.g. "zstd", "s2", "snappy", "none"). Callers typically
+// `Map` is a simple kind-to-Compressor lookup (e.g. "zstd", "s2", "snappy", "none"). Callers typically
 // obtain a `*Map` via DI and then use `Get` to select the configured algorithm, falling back to "none"
 // when the configured kind is not present.
 //
