@@ -12,12 +12,12 @@ import (
 
 // ErrNotFound is returned when generator selection fails because the configured kind is unknown.
 //
-// It is returned by NewGenerator when Config.Kind does not match any generator registered in the Map.
+// It is returned by [NewGenerator] when [Config.Kind] does not match any generator registered in the [Map].
 var ErrNotFound = errors.New("id: generator not found")
 
 // MapParams defines dependencies used to construct a generator Map.
 //
-// It is intended for dependency injection (Fx/Dig). The default wiring is provided by id.Module.
+// It is intended for dependency injection (Fx/Dig). The default wiring is provided by [Module].
 type MapParams struct {
 	di.In
 
@@ -47,7 +47,7 @@ type MapParams struct {
 //   - "xid"
 //
 // The map is fixed by standard wiring. Services that need custom generator kinds should provide
-// custom DI wiring for Map or Generator selection.
+// custom DI wiring for [Map] or [Generator] selection.
 func NewMap(params MapParams) *Map {
 	return &Map{
 		generators: map[string]Generator{
@@ -71,16 +71,16 @@ type Map struct {
 // Get returns the generator registered for kind.
 //
 // If no generator is registered for kind, Get returns nil.
-func (f *Map) Get(kind string) Generator {
-	return f.generators[kind]
+func (m *Map) Get(kind string) Generator {
+	return m.generators[kind]
 }
 
-// NewGenerator selects a Generator based on config.Kind from the provided registry.
+// NewGenerator selects a [Generator] based on [Config.Kind] from the provided registry.
 //
-// Default behavior: if config is nil/disabled, NewGenerator returns the "uuid" generator.
+// Default behavior: if config is nil/disabled, [NewGenerator] returns the "uuid" generator.
 //
-// Enabled behavior: if config is enabled, NewGenerator looks up the generator for config.Kind in m.
-// If the kind is registered, it returns that generator. If the kind is not registered, it returns ErrNotFound.
+// Enabled behavior: if config is enabled, [NewGenerator] looks up the generator for [Config.Kind] in m.
+// If the kind is registered, it returns that generator. If the kind is not registered, it returns [ErrNotFound].
 func NewGenerator(config *Config, m *Map) (Generator, error) {
 	if !config.IsEnabled() {
 		return m.Get("uuid"), nil

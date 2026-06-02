@@ -28,8 +28,8 @@ type Generator struct {
 // injected cryptographically secure reader.
 //
 // If ULID generation fails (for example due to reader errors), this method panics via runtime.Must.
-func (k *Generator) Generate() string {
-	id, err := ulid.New(ulid.Timestamp(time.Now()), k.reader)
+func (g *Generator) Generate() string {
+	id, err := ulid.New(ulid.Timestamp(time.Now()), g.reader)
 	runtime.Must(err)
 	return id.String()
 }

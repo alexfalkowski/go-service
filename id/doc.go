@@ -1,14 +1,14 @@
 // Package id provides ID generation abstractions, registries, and wiring used by go-service.
 //
-// This package defines a small `Generator` interface and provides a registry (`Map`) of generators
+// This package defines a small [Generator] interface and provides a registry ([Map]) of generators
 // keyed by kind (e.g. "uuid", "ksuid", etc.). A concrete generator can be selected at runtime via
-// `NewGenerator` using `Config.Kind`.
+// [NewGenerator] using [Config.Kind].
 //
 // # Kinds and implementations
 //
 // Concrete generator implementations live in subpackages under `id/*` (for example `id/uuid`,
-// `id/ksuid`, `id/ulid`, `id/nanoid`, and `id/xid`). The `id.Module` wiring constructs these
-// generators and registers them into a `*Map`.
+// `id/ksuid`, `id/ulid`, `id/nanoid`, and `id/xid`). The [Module] wiring constructs these
+// generators and registers them into a *[Map].
 //
 // Generator kinds are selected for different operational properties. The "uuid" generator is the
 // default and is optimized for the request metadata hot path. The "xid" generator is intentionally
@@ -17,8 +17,8 @@
 //
 // # Configuration and enablement
 //
-// ID generation configuration is optional. A nil `*id.Config` selects the default "uuid" generator.
-// If configuration is present but the configured kind is unknown, `NewGenerator` returns ErrNotFound.
+// ID generation configuration is optional. A nil *[Config] selects the default "uuid" generator.
+// If configuration is present but the configured kind is unknown, [NewGenerator] returns [ErrNotFound].
 //
-// Start with `Generator`, `Config`, `NewGenerator`, `Map`, and `Module`.
+// Start with [Generator], [Config], [NewGenerator], [Map], and [Module].
 package id
