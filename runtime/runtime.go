@@ -55,12 +55,12 @@ func Must(err error) {
 //   - string: included as text
 //   - any other value: formatted with %v
 func ConvertRecover(value any) error {
-	switch kind := value.(type) {
+	switch recovered := value.(type) {
 	case error:
-		return fmt.Errorf("%w: %w", ErrRecovered, kind)
+		return fmt.Errorf("%w: %w", ErrRecovered, recovered)
 	case string:
-		return fmt.Errorf("%w: %s", ErrRecovered, kind)
+		return fmt.Errorf("%w: %s", ErrRecovered, recovered)
 	default:
-		return fmt.Errorf("%w: %v", ErrRecovered, kind)
+		return fmt.Errorf("%w: %v", ErrRecovered, recovered)
 	}
 }
