@@ -12,7 +12,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestInvalidServer(t *testing.T) {
+func TestStartRequestsShutdownOnServeError(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	l, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
 	require.NoError(t, err)
@@ -37,7 +37,7 @@ func TestInvalidServer(t *testing.T) {
 	require.True(t, sh.Called())
 }
 
-func TestValidServer(t *testing.T) {
+func TestStartDoesNotShutdownOnNilServeReturn(t *testing.T) {
 	sh := test.NewShutdowner()
 	srv := test.NewObservableServer(nil, nil)
 	svc := server.NewService("test", srv, nil, sh)

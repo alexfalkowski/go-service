@@ -25,12 +25,12 @@ func TestSplitPath(t *testing.T) {
 		{name: "empty", path: ""},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			first, rest, ok := url.SplitPath(test.path)
-			require.Equal(t, test.first, first)
-			require.Equal(t, test.rest, rest)
-			require.Equal(t, test.ok, ok)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			first, rest, ok := url.SplitPath(tt.path)
+			require.Equal(t, tt.first, first)
+			require.Equal(t, tt.rest, rest)
+			require.Equal(t, tt.ok, ok)
 		})
 	}
 }

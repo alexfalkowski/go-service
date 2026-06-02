@@ -72,7 +72,7 @@ func TestSafeErrorf(t *testing.T) {
 	require.NotContains(t, s.Message(), "secret database failure")
 	require.ErrorIs(t, err, cause)
 
-	unwrapper, ok := err.(interface{ Unwrap() error })
+	unwrapper, ok := err.(unwrapper)
 	require.True(t, ok)
 	require.Contains(t, unwrapper.Unwrap().Error(), "load tenant tenant-1")
 }
@@ -85,7 +85,7 @@ func TestSafeErrorfWithoutCause(t *testing.T) {
 	require.Equal(t, codes.Internal, s.Code())
 	require.Equal(t, "grpc: internal", s.Message())
 
-	unwrapper, ok := err.(interface{ Unwrap() error })
+	unwrapper, ok := err.(unwrapper)
 	require.True(t, ok)
 	require.EqualError(t, unwrapper.Unwrap(), "load tenant tenant-1")
 }
@@ -100,7 +100,7 @@ func TestSafeErrorfWithoutFormat(t *testing.T) {
 	require.Equal(t, "grpc: internal", s.Message())
 	require.ErrorIs(t, err, cause)
 
-	unwrapper, ok := err.(interface{ Unwrap() error })
+	unwrapper, ok := err.(unwrapper)
 	require.True(t, ok)
 	require.Same(t, cause, unwrapper.Unwrap())
 }
@@ -128,4 +128,8 @@ func TestErrorIs(t *testing.T) {
 	target := status.Error(codes.NotFound, "missing")
 
 	require.ErrorIs(t, err, target)
+}
+
+type unwrapper interface {
+	Unwrap() error
 }

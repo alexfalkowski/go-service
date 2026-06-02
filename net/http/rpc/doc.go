@@ -28,6 +28,6 @@
 //
 // # Registration requirement
 //
-// Register must be called before using any server or client helpers in this package; otherwise globals will be nil and
-// handler/client construction will panic.
+// Register must be called before using any server or client helpers in this package.
+// Otherwise globals will be nil and handler/client construction will panic.
 package rpc

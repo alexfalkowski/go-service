@@ -22,11 +22,11 @@ import (
 // values ahead of the resolved value.
 func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		md, ua, id := clientMetadata(ctx, userAgent, generator)
+		md, ua, requestID := clientMetadata(ctx, userAgent, generator)
 
 		ctx = meta.WithAttributes(ctx,
 			meta.WithUserAgent(ua),
-			meta.WithRequestID(id),
+			meta.WithRequestID(requestID),
 			meta.WithServiceMethod(meta.Ignored(fullMethod)),
 		)
 		ctx = NewOutgoingContext(ctx, md)
@@ -45,11 +45,11 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 // values ahead of the resolved value.
 func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		md, ua, id := clientMetadata(ctx, userAgent, generator)
+		md, ua, requestID := clientMetadata(ctx, userAgent, generator)
 
 		ctx = meta.WithAttributes(ctx,
 			meta.WithUserAgent(ua),
-			meta.WithRequestID(id),
+			meta.WithRequestID(requestID),
 			meta.WithServiceMethod(meta.Ignored(fullMethod)),
 		)
 		ctx = NewOutgoingContext(ctx, md)
@@ -60,14 +60,14 @@ func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) gr
 func clientMetadata(ctx context.Context, userAgent env.UserAgent, generator id.Generator) (Map, meta.Value, meta.Value) {
 	md, ok := FromOutgoingContext(ctx)
 	ua := clientUserAgent(ctx, md, userAgent)
-	id := clientRequestID(ctx, generator, md)
+	requestID := clientRequestID(ctx, generator, md)
 	if !ok {
-		return clientOutgoingHeaders(ua.Value(), id.Value()), ua, id
+		return clientOutgoingHeaders(ua.Value(), requestID.Value()), ua, requestID
 	}
 
-	setClientOutgoingHeaders(md, ua.Value(), id.Value())
+	setClientOutgoingHeaders(md, ua.Value(), requestID.Value())
 
-	return md, ua, id
+	return md, ua, requestID
 }
 
 func clientOutgoingHeaders(userAgent, requestID string) Map {
@@ -100,11 +100,11 @@ func clientUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgen
 }
 
 func clientRequestID(ctx context.Context, generator id.Generator, md metadata.MD) meta.Value {
-	if id := meta.RequestID(ctx); !id.IsEmpty() {
-		return id
+	if requestID := meta.RequestID(ctx); !requestID.IsEmpty() {
+		return requestID
 	}
-	if id := md.Get("request-id"); len(id) > 0 && !strings.IsEmpty(id[0]) {
-		return meta.String(id[0])
+	if requestID := md.Get("request-id"); len(requestID) > 0 && !strings.IsEmpty(requestID[0]) {
+		return meta.String(requestID[0])
 	}
 
 	return meta.String(generator.Generate())
