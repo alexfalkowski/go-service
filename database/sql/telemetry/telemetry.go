@@ -24,8 +24,8 @@ type SpanOptions = otelsql.SpanOptions
 //
 // Raw SQL query text capture is disabled by default. Callers that need raw
 // statements in spans may opt in with WithSpanOptions.
-func Open(driverName, dataSourceName string, options ...Option) (*sql.DB, error) {
-	return otelsql.Open(driverName, dataSourceName, optionsWithDefaults(options)...)
+func Open(driverName, dataSourceName string, opts ...Option) (*sql.DB, error) {
+	return otelsql.Open(driverName, dataSourceName, optionsWithDefaults(opts)...)
 }
 
 // WrapDriver wraps a `database/sql/driver.Driver` with OpenTelemetry
@@ -58,10 +58,10 @@ func RegisterDBStatsMetrics(db *sql.DB, opts ...Option) (metrics.Registration, e
 	return otelsql.RegisterDBStatsMetrics(db, opts...)
 }
 
-func optionsWithDefaults(options []Option) []Option {
-	opts := make([]Option, 0, len(options)+1)
-	opts = append(opts, WithSpanOptions(SpanOptions{DisableQuery: true}))
-	opts = append(opts, options...)
+func optionsWithDefaults(opts []Option) []Option {
+	options := make([]Option, 0, len(opts)+1)
+	options = append(options, WithSpanOptions(SpanOptions{DisableQuery: true}))
+	options = append(options, opts...)
 
-	return opts
+	return options
 }
