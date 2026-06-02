@@ -11,14 +11,14 @@ import (
 
 func TestSafeMessage(t *testing.T) {
 	for _, tc := range []struct {
-		err  error
 		name string
+		err  error
 		want string
 	}{
 		{name: "nil", want: "fallback"},
 		{name: "plain", err: errors.New("internal"), want: "fallback"},
 		{name: "wrapped", err: fmt.Errorf("wrapped: %w", test.SafeMessageError{Message: "safe"}), want: "safe"},
-		{name: "empty", err: test.EmptySafeMessageError{Err: test.SafeMessageError{Message: "safe"}}, want: "safe"},
+		{name: "empty safe message", err: test.EmptySafeMessageError{Err: test.SafeMessageError{Message: "safe"}}, want: "safe"},
 		{name: "joined", err: errors.Join(errors.New("internal"), test.SafeMessageError{Message: "safe"}), want: "safe"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
