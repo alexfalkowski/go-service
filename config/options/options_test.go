@@ -13,7 +13,7 @@ import (
 func TestDuration(t *testing.T) {
 	require.Equal(t, 10*time.Minute, test.ConfigOptions.Duration("read_timeout", 5*time.Second))
 	require.Equal(t, 5*time.Second, test.ConfigOptions.Duration("timeout", 5*time.Second))
-	require.Equal(t, 5*time.Second, test.ConfigOptions.Duration("bob", 5*time.Second))
+	require.Equal(t, 5*time.Second, test.ConfigOptions.Duration("missing", 5*time.Second))
 }
 
 func TestNonNegativeDuration(t *testing.T) {

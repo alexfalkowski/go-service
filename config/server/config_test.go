@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -176,5 +175,5 @@ func TestNewConfigInvalidCA(t *testing.T) {
 		CA:   "invalid ca",
 	})
 	require.Error(t, err)
-	require.True(t, errors.Is(err, config.ErrInvalidCA))
+	require.ErrorIs(t, err, config.ErrInvalidCA)
 }

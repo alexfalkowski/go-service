@@ -64,25 +64,26 @@ func (c *Default) Decode(v any) error {
 }
 
 func (c *Default) find() (string, io.ReadCloser, error) {
+	name := c.name.String()
+	dirs := []string{
+		c.fs.ExecutableDir(),
+		c.fs.Join(os.UserConfigDir(), name),
+		"/etc/" + name,
+	}
 	extensions := []string{".yaml", ".yml", ".hjson", ".toml", ".json"}
+
 	for _, extension := range extensions {
-		n := c.name.String()
-		file := n + extension
-		dirs := []string{
-			c.fs.ExecutableDir(),
-			c.fs.Join(os.UserConfigDir(), n),
-			"/etc/" + n,
-		}
+		file := name + extension
 
 		for _, dir := range dirs {
-			name := c.fs.Join(dir, file)
-			if !c.fs.PathExists(name) {
+			path := c.fs.Join(dir, file)
+			if !c.fs.PathExists(path) {
 				continue
 			}
 
-			f, err := c.fs.Open(name)
+			f, err := c.fs.Open(path)
 
-			return c.fs.PathExtension(name), f, err
+			return c.fs.PathExtension(path), f, err
 		}
 	}
 

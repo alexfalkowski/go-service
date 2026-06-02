@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/config/client"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -106,5 +105,5 @@ func TestNewConfigInvalidKeyPair(t *testing.T) {
 func TestNewConfigInvalidCA(t *testing.T) {
 	_, err := client.NewConfig(test.FS, &config.Config{CA: "invalid ca"})
 	require.Error(t, err)
-	require.True(t, errors.Is(err, config.ErrInvalidCA))
+	require.ErrorIs(t, err, config.ErrInvalidCA)
 }

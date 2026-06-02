@@ -51,33 +51,33 @@ func (c *Config) IsEnabled() bool {
 // configured, it is copied into the runtime TLS config for server certificate
 // hostname verification.
 func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
-	config := &tls.Config{
+	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12,
 	}
 
 	if !cfg.IsEnabled() {
-		return config, nil
+		return tlsConfig, nil
 	}
 
 	if cfg.HasKeyMaterial() {
 		pair, err := tlsconfig.NewKeyPair(fs, cfg)
 		if err != nil {
-			return config, err
+			return tlsConfig, err
 		}
 
-		config.Certificates = []tls.Certificate{pair}
+		tlsConfig.Certificates = []tls.Certificate{pair}
 	}
 
 	if cfg.HasCA() {
 		pool, err := tlsconfig.NewCertPool(fs, cfg)
 		if err != nil {
-			return config, err
+			return tlsConfig, err
 		}
 
-		config.RootCAs = pool
+		tlsConfig.RootCAs = pool
 	}
 
-	config.ServerName = cfg.ServerName
+	tlsConfig.ServerName = cfg.ServerName
 
-	return config, nil
+	return tlsConfig, nil
 }

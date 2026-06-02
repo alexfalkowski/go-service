@@ -29,9 +29,9 @@ func TestValidFileConfig(t *testing.T) {
 
 			decoder := test.NewDecoder(set)
 
-			config, err := config.NewConfig[config.Config](decoder, test.Validator)
+			cfg, err := config.NewConfig[config.Config](decoder, test.Validator)
 			require.NoError(t, err)
-			verifyConfig(t, config)
+			verifyConfig(t, cfg)
 		})
 	}
 }
@@ -49,9 +49,9 @@ func TestValidHomeFileConfig(t *testing.T) {
 
 	decoder := test.NewDecoder(set)
 
-	config, err := config.NewConfig[config.Config](decoder, test.Validator)
+	cfg, err := config.NewConfig[config.Config](decoder, test.Validator)
 	require.NoError(t, err)
-	verifyConfig(t, config)
+	verifyConfig(t, cfg)
 }
 
 func TestInvalidFileConfig(t *testing.T) {
@@ -101,9 +101,9 @@ func TestValidEnvConfig(t *testing.T) {
 
 			decoder := test.NewDecoder(set)
 
-			config, err := config.NewConfig[config.Config](decoder, test.Validator)
+			cfg, err := config.NewConfig[config.Config](decoder, test.Validator)
 			require.NoError(t, err)
-			verifyConfig(t, config)
+			verifyConfig(t, cfg)
 		})
 	}
 }
@@ -177,9 +177,9 @@ func TestValidCommonConfig(t *testing.T) {
 
 			decoder := test.NewDecoder(set)
 
-			config, err := config.NewConfig[config.Config](decoder, test.Validator)
+			cfg, err := config.NewConfig[config.Config](decoder, test.Validator)
 			require.NoError(t, err)
-			verifyConfig(t, config)
+			verifyConfig(t, cfg)
 
 			require.NoError(t, test.FS.RemoveAll(path))
 		})
@@ -214,70 +214,129 @@ func TestNewConfigRejectsEmptyDecodedConfig(t *testing.T) {
 	require.ErrorIs(t, err, config.ErrInvalidConfig)
 }
 
-//nolint:funlen,gosec
-func verifyConfig(t *testing.T, config *config.Config) {
+func verifyConfig(t *testing.T, cfg *config.Config) {
 	t.Helper()
 
-	require.Equal(t, "tcp://localhost:6060", config.Debug.Address)
-	require.False(t, config.Debug.TLS.IsEnabled())
-	require.True(t, config.Crypto.RSA.IsEnabled())
-	require.Equal(t, "redis", config.Cache.Kind)
-	require.Equal(t, "snappy", config.Cache.Compressor)
-	require.Equal(t, "proto", config.Cache.Encoder)
-	require.Equal(t, 4*bytes.MB, config.Cache.MaxSize)
-	require.Equal(t, "file:../test/secrets/redis", config.Cache.Options["url"])
-	require.True(t, config.Crypto.IsEnabled())
-	require.True(t, config.Crypto.AES.IsEnabled())
-	require.NotEmpty(t, config.Crypto.AES.Key)
-	require.True(t, config.Crypto.Ed25519.IsEnabled())
-	require.NotEmpty(t, config.Crypto.Ed25519.Public)
-	require.NotEmpty(t, config.Crypto.Ed25519.Private)
-	require.True(t, config.Crypto.HMAC.IsEnabled())
-	require.NotEmpty(t, config.Crypto.HMAC.Key)
-	require.True(t, config.Crypto.RSA.IsEnabled())
-	require.NotEmpty(t, config.Crypto.RSA.Public)
-	require.NotEmpty(t, config.Crypto.RSA.Private)
-	require.True(t, config.Crypto.SSH.IsEnabled())
-	require.NotEmpty(t, config.Crypto.SSH.Public)
-	require.NotEmpty(t, config.Crypto.SSH.Private)
-	require.True(t, config.Debug.IsEnabled())
-	require.Equal(t, "development", config.Environment.String())
-	require.True(t, config.Feature.IsEnabled())
-	require.Equal(t, "localhost:9000", config.Feature.Address)
-	require.Equal(t, 10*time.Second, config.Feature.Timeout)
-	require.Equal(t, 100*time.Millisecond, config.Feature.Retry.Backoff)
-	require.Equal(t, time.Second, config.Feature.Retry.Timeout)
-	require.Equal(t, uint64(3), config.Feature.Retry.Attempts)
-	require.Equal(t, "uuid", config.ID.Kind)
-	require.Equal(t, "file:../test/secrets/hooks", config.Hooks.Secret)
-	require.Len(t, config.SQL.PG.Masters, 1)
-	require.Equal(t, "file:../test/secrets/pg", config.SQL.PG.Masters[0].URL)
-	require.Len(t, config.SQL.PG.Slaves, 1)
-	require.Equal(t, "file:../test/secrets/pg", config.SQL.PG.Slaves[0].URL)
-	require.Equal(t, 5, config.SQL.PG.MaxIdleConns)
-	require.Equal(t, 5, config.SQL.PG.MaxOpenConns)
-	require.Equal(t, time.Hour, config.SQL.PG.ConnMaxLifetime)
-	require.Equal(t, "text", config.Telemetry.Logger.Kind)
-	require.Equal(t, "info", config.Telemetry.Logger.Level)
-	require.Equal(t, "prometheus", config.Telemetry.Metrics.Kind)
-	require.Equal(t, "nts", config.Time.Kind)
-	require.Equal(t, "time.cloudflare.com", config.Time.Address)
-	require.Equal(t, "http://localhost:4318/v1/traces", config.Telemetry.Tracer.URL)
-	require.Equal(t, "otlp", config.Telemetry.Tracer.Kind)
-	require.True(t, config.Transport.GRPC.Token.IsEnabled())
-	require.Equal(t, "file:../test/configs/rbac.conf", config.Transport.GRPC.Token.Access.Model)
-	require.Equal(t, "file:../test/configs/rbac.csv", config.Transport.GRPC.Token.Access.Policy)
-	require.Equal(t, "jwt", config.Transport.GRPC.Token.Kind)
-	require.Equal(t, time.Hour, config.Transport.GRPC.Token.JWT.Expiration)
-	require.Equal(t, "iss", config.Transport.GRPC.Token.JWT.Issuer)
-	require.Equal(t, "1234567890", config.Transport.GRPC.Token.JWT.KeyID)
-	require.True(t, config.Transport.GRPC.Config.IsEnabled())
-	require.Equal(t, "tcp://localhost:12000", config.Transport.GRPC.Address)
-	require.Equal(t, 10*time.Second, config.Transport.GRPC.Timeout)
-	require.Equal(t, 3*bytes.MB, config.Transport.GRPC.MaxReceiveSize)
-	require.Equal(t, "user-agent", config.Transport.GRPC.Limiter.Kind)
-	require.Equal(t, 10, int(config.Transport.GRPC.Limiter.Tokens))
-	require.Equal(t, time.Second, config.Transport.GRPC.Limiter.Interval)
+	verifyDebugConfig(t, cfg)
+	verifyCacheConfig(t, cfg)
+	verifyCryptoConfig(t, cfg)
+	verifyFeatureConfig(t, cfg)
+	verifyIDConfig(t, cfg)
+	verifyHooksConfig(t, cfg)
+	verifySQLConfig(t, cfg)
+	verifyTelemetryConfig(t, cfg)
+	verifyTimeConfig(t, cfg)
+	verifyGRPCConfig(t, cfg)
+	verifyHTTPConfig(t, cfg)
+}
+
+func verifyDebugConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.True(t, cfg.Debug.IsEnabled())
+	require.Equal(t, "tcp://localhost:6060", cfg.Debug.Address)
+	require.False(t, cfg.Debug.TLS.IsEnabled())
+}
+
+func verifyCacheConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.Equal(t, "redis", cfg.Cache.Kind)
+	require.Equal(t, "snappy", cfg.Cache.Compressor)
+	require.Equal(t, "proto", cfg.Cache.Encoder)
+	require.Equal(t, 4*bytes.MB, cfg.Cache.MaxSize)
+	require.Equal(t, "file:../test/secrets/redis", cfg.Cache.Options["url"])
+}
+
+func verifyCryptoConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.True(t, cfg.Crypto.IsEnabled())
+	require.True(t, cfg.Crypto.AES.IsEnabled())
+	require.NotEmpty(t, cfg.Crypto.AES.Key)
+	require.True(t, cfg.Crypto.Ed25519.IsEnabled())
+	require.NotEmpty(t, cfg.Crypto.Ed25519.Public)
+	require.NotEmpty(t, cfg.Crypto.Ed25519.Private)
+	require.True(t, cfg.Crypto.HMAC.IsEnabled())
+	require.NotEmpty(t, cfg.Crypto.HMAC.Key)
+	require.True(t, cfg.Crypto.RSA.IsEnabled())
+	require.NotEmpty(t, cfg.Crypto.RSA.Public)
+	require.NotEmpty(t, cfg.Crypto.RSA.Private)
+	require.True(t, cfg.Crypto.SSH.IsEnabled())
+	require.NotEmpty(t, cfg.Crypto.SSH.Public)
+	require.NotEmpty(t, cfg.Crypto.SSH.Private)
+}
+
+func verifyFeatureConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.Equal(t, "development", cfg.Environment.String())
+	require.True(t, cfg.Feature.IsEnabled())
+	require.Equal(t, "localhost:9000", cfg.Feature.Address)
+	require.Equal(t, 10*time.Second, cfg.Feature.Timeout)
+	require.Equal(t, 100*time.Millisecond, cfg.Feature.Retry.Backoff)
+	require.Equal(t, time.Second, cfg.Feature.Retry.Timeout)
+	require.Equal(t, uint64(3), cfg.Feature.Retry.Attempts)
+}
+
+func verifyIDConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.Equal(t, "uuid", cfg.ID.Kind)
+}
+
+func verifyHooksConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.Equal(t, "file:../test/secrets/hooks", cfg.Hooks.Secret)
+}
+
+func verifySQLConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.Len(t, cfg.SQL.PG.Masters, 1)
+	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Masters[0].URL)
+	require.Len(t, cfg.SQL.PG.Slaves, 1)
+	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Slaves[0].URL)
+	require.Equal(t, 5, cfg.SQL.PG.MaxIdleConns)
+	require.Equal(t, 5, cfg.SQL.PG.MaxOpenConns)
+	require.Equal(t, time.Hour, cfg.SQL.PG.ConnMaxLifetime)
+}
+
+func verifyTelemetryConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.Equal(t, "text", cfg.Telemetry.Logger.Kind)
+	require.Equal(t, "info", cfg.Telemetry.Logger.Level)
+	require.Equal(t, "prometheus", cfg.Telemetry.Metrics.Kind)
+	require.Equal(t, "http://localhost:4318/v1/traces", cfg.Telemetry.Tracer.URL)
+	require.Equal(t, "otlp", cfg.Telemetry.Tracer.Kind)
+}
+
+func verifyTimeConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.Equal(t, "nts", cfg.Time.Kind)
+	require.Equal(t, "time.cloudflare.com", cfg.Time.Address)
+}
+
+func verifyGRPCConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.True(t, cfg.Transport.GRPC.Token.IsEnabled())
+	require.Equal(t, "file:../test/configs/rbac.conf", cfg.Transport.GRPC.Token.Access.Model)
+	require.Equal(t, "file:../test/configs/rbac.csv", cfg.Transport.GRPC.Token.Access.Policy)
+	require.Equal(t, "jwt", cfg.Transport.GRPC.Token.Kind)
+	require.Equal(t, time.Hour, cfg.Transport.GRPC.Token.JWT.Expiration)
+	require.Equal(t, "iss", cfg.Transport.GRPC.Token.JWT.Issuer)
+	require.Equal(t, "1234567890", cfg.Transport.GRPC.Token.JWT.KeyID)
+	require.True(t, cfg.Transport.GRPC.Config.IsEnabled())
+	require.Equal(t, "tcp://localhost:12000", cfg.Transport.GRPC.Address)
+	require.Equal(t, 10*time.Second, cfg.Transport.GRPC.Timeout)
+	require.Equal(t, 3*bytes.MB, cfg.Transport.GRPC.MaxReceiveSize)
+	require.Equal(t, "user-agent", cfg.Transport.GRPC.Limiter.Kind)
+	require.Equal(t, uint64(10), cfg.Transport.GRPC.Limiter.Tokens)
+	require.Equal(t, time.Second, cfg.Transport.GRPC.Limiter.Interval)
 	require.Equal(t,
 		options.Map{
 			"keepalive_enforcement_policy_ping_min_time": "10s",
@@ -292,23 +351,28 @@ func verifyConfig(t *testing.T, config *config.Config) {
 			"initial_conn_window_size":                   "2MB",
 			"max_send_msg_size":                          "8MB",
 		},
-		config.Transport.GRPC.Options,
+		cfg.Transport.GRPC.Options,
 	)
-	require.False(t, config.Transport.GRPC.TLS.IsEnabled())
-	require.True(t, config.Transport.HTTP.Token.IsEnabled())
-	require.Equal(t, "file:../test/configs/rbac.conf", config.Transport.HTTP.Token.Access.Model)
-	require.Equal(t, "file:../test/configs/rbac.csv", config.Transport.HTTP.Token.Access.Policy)
-	require.Equal(t, "jwt", config.Transport.HTTP.Token.Kind)
-	require.Equal(t, time.Hour, config.Transport.HTTP.Token.JWT.Expiration)
-	require.Equal(t, "iss", config.Transport.HTTP.Token.JWT.Issuer)
-	require.Equal(t, "1234567890", config.Transport.HTTP.Token.JWT.KeyID)
-	require.True(t, config.Transport.HTTP.Config.IsEnabled())
-	require.Equal(t, "tcp://localhost:11000", config.Transport.HTTP.Address)
-	require.Equal(t, 10*time.Second, config.Transport.HTTP.Timeout)
-	require.Equal(t, 2*bytes.MB, config.Transport.HTTP.MaxReceiveSize)
-	require.Equal(t, "user-agent", config.Transport.HTTP.Limiter.Kind)
-	require.Equal(t, 10, int(config.Transport.HTTP.Limiter.Tokens))
-	require.Equal(t, time.Second, config.Transport.HTTP.Limiter.Interval)
+	require.False(t, cfg.Transport.GRPC.TLS.IsEnabled())
+}
+
+func verifyHTTPConfig(t *testing.T, cfg *config.Config) {
+	t.Helper()
+
+	require.True(t, cfg.Transport.HTTP.Token.IsEnabled())
+	require.Equal(t, "file:../test/configs/rbac.conf", cfg.Transport.HTTP.Token.Access.Model)
+	require.Equal(t, "file:../test/configs/rbac.csv", cfg.Transport.HTTP.Token.Access.Policy)
+	require.Equal(t, "jwt", cfg.Transport.HTTP.Token.Kind)
+	require.Equal(t, time.Hour, cfg.Transport.HTTP.Token.JWT.Expiration)
+	require.Equal(t, "iss", cfg.Transport.HTTP.Token.JWT.Issuer)
+	require.Equal(t, "1234567890", cfg.Transport.HTTP.Token.JWT.KeyID)
+	require.True(t, cfg.Transport.HTTP.Config.IsEnabled())
+	require.Equal(t, "tcp://localhost:11000", cfg.Transport.HTTP.Address)
+	require.Equal(t, 10*time.Second, cfg.Transport.HTTP.Timeout)
+	require.Equal(t, 2*bytes.MB, cfg.Transport.HTTP.MaxReceiveSize)
+	require.Equal(t, "user-agent", cfg.Transport.HTTP.Limiter.Kind)
+	require.Equal(t, uint64(10), cfg.Transport.HTTP.Limiter.Tokens)
+	require.Equal(t, time.Second, cfg.Transport.HTTP.Limiter.Interval)
 	require.Equal(t,
 		options.Map{
 			"read_timeout":        "10s",
@@ -317,9 +381,9 @@ func verifyConfig(t *testing.T, config *config.Config) {
 			"read_header_timeout": "10s",
 			"max_header_bytes":    "32KB",
 		},
-		config.Transport.HTTP.Options,
+		cfg.Transport.HTTP.Options,
 	)
-	require.False(t, config.Transport.HTTP.TLS.IsEnabled())
+	require.False(t, cfg.Transport.HTTP.TLS.IsEnabled())
 }
 
 type decoderFunc func(any) error
