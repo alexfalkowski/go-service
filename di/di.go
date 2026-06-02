@@ -12,8 +12,13 @@ type Hook = fx.Hook
 
 // Lifecycle is an alias for fx.Lifecycle.
 //
-// It is used to manage application start/stop hooks (e.g. via Lifecycle.Append).
+// It is used to manage application start/stop hooks, for example via [Lifecycle.Append].
 type Lifecycle = fx.Lifecycle
+
+// App is an alias for fx.App.
+//
+// It represents an Fx application built from Options.
+type App = fx.App
 
 // In is an alias for fx.In.
 //
@@ -66,7 +71,7 @@ func Decorate(decorators ...any) Option {
 // New constructs a new Fx application from the provided options.
 //
 // This is a thin wrapper around fx.New.
-func New(opts ...Option) *fx.App {
+func New(opts ...Option) *App {
 	return fx.New(opts...)
 }
 
