@@ -14,9 +14,9 @@
 //   - "file:/path/to/config.yaml" to read configuration from a file (decoder selected by extension)
 //   - "env:MY_CONFIG" to read configuration from an environment variable (typically "<ext>:<base64-content>")
 //
-// The `FlagSet` type in this package supports installing this convention via `(*FlagSet).AddConfig` and
-// retrieving it via `(*FlagSet).GetConfig`. The config subsystem (`config.NewDecoder`) consumes this value
+// The [FlagSet] type in this package supports installing this convention via [FlagSet.AddConfig] and
+// retrieving it via [FlagSet.GetConfig]. The config subsystem (config.NewDecoder) consumes this value
 // to route to the appropriate decoder.
 //
-// Start with `NewFlagSet`, `FlagSet.AddConfig`, and `FlagSet.GetConfig`.
+// Start with [NewFlagSet], [FlagSet.AddConfig], and [FlagSet.GetConfig].
 package flag
