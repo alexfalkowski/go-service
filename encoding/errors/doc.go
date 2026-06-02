@@ -1,2 +1,2 @@
-// Package errors provides encoding helpers and adapters used by go-service.
+// Package errors provides encoding error values and helpers used by go-service.
 package errors
