@@ -39,12 +39,7 @@ func TestDBCheckerReturnsPingError(t *testing.T) {
 }
 
 func TestDBCheckerPingsMastersAndSlaves(t *testing.T) {
-	driverName := registerPingDriver(t)
-	db, errs := sql.ConnectMasterSlaves(driverName, []string{"master"}, []string{"slave"})
-	require.Empty(t, errs)
-	defer func() {
-		require.NoError(t, db.Destroy())
-	}()
+	db := newPingDB(t, []string{"master"}, []string{"slave"})
 
 	check := checker.NewDBChecker(db, time.Second)
 	err := check.Check(t.Context())
@@ -53,12 +48,7 @@ func TestDBCheckerPingsMastersAndSlaves(t *testing.T) {
 }
 
 func TestDBCheckerReturnsTimeoutCause(t *testing.T) {
-	driverName := registerPingDriver(t)
-	db, errs := sql.ConnectMasterSlaves(driverName, []string{"timeout"}, nil)
-	require.Empty(t, errs)
-	defer func() {
-		require.NoError(t, db.Destroy())
-	}()
+	db := newPingDB(t, []string{"timeout"}, nil)
 
 	check := checker.NewDBChecker(db, time.Millisecond)
 	require.ErrorIs(t, check.Check(t.Context()), checker.ErrPingTimeout)
@@ -69,6 +59,19 @@ var (
 	errSlavePing  = errors.New("slave ping")
 	pingDriverID  sync.Uint64
 )
+
+func newPingDB(t *testing.T, masters, slaves []string) *sql.DBs {
+	t.Helper()
+
+	driverName := registerPingDriver(t)
+	db, errs := sql.ConnectMasterSlaves(driverName, masters, slaves)
+	require.Empty(t, errs)
+	t.Cleanup(func() {
+		require.NoError(t, db.Destroy())
+	})
+
+	return db
+}
 
 func registerPingDriver(t *testing.T) string {
 	t.Helper()
