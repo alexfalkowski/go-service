@@ -146,14 +146,14 @@ func (l *Limiter) Close(ctx context.Context) error {
 }
 
 func key(value meta.Value) string {
-	key := value.Value()
-	if strings.IsEmpty(key) {
+	rawKey := value.Value()
+	if strings.IsEmpty(rawKey) {
 		return "<empty>"
 	}
-	if len(key) <= maxKeySize {
-		return key
+	if len(rawKey) <= maxKeySize {
+		return rawKey
 	}
 
-	sum := sha256.Sum256([]byte(key))
+	sum := sha256.Sum256([]byte(rawKey))
 	return strings.Concat("sha256:", hex.EncodeToString(sum[:]))
 }

@@ -203,7 +203,7 @@ func TestWatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, health.Serving, resp.GetStatus())
-	requireWatchStaysOpen(t, cancel, wc)
+	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
 func TestWatchServerLimiter(t *testing.T) {
@@ -258,7 +258,7 @@ func TestInvalidWatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, health.NotServing, resp.GetStatus())
-	requireWatchStaysOpen(t, cancel, wc)
+	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
 func TestOverallWatch(t *testing.T) {
@@ -279,7 +279,7 @@ func TestOverallWatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, health.Serving, resp.GetStatus())
-	requireWatchStaysOpen(t, cancel, wc)
+	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
 func TestInvalidOverallWatch(t *testing.T) {
@@ -301,7 +301,7 @@ func TestInvalidOverallWatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, health.NotServing, resp.GetStatus())
-	requireWatchStaysOpen(t, cancel, wc)
+	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
 func TestNotFoundWatch(t *testing.T) {
@@ -323,7 +323,7 @@ func TestNotFoundWatch(t *testing.T) {
 	resp, err := wc.Recv()
 	require.NoError(t, err)
 	require.Equal(t, health.ServiceUnknown, resp.GetStatus())
-	requireWatchStaysOpen(t, cancel, wc)
+	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
 func TestIgnoreAuthWatch(t *testing.T) {
@@ -349,7 +349,7 @@ func TestIgnoreAuthWatch(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, health.Serving, resp.GetStatus())
-	requireWatchStaysOpen(t, cancel, wc)
+	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
 func TestWatchStatusChanges(t *testing.T) {
@@ -401,7 +401,7 @@ func TestWatchStatusChanges(t *testing.T) {
 	}
 }
 
-func requireWatchStaysOpen(t *testing.T, cancel context.CancelFunc, wc health.WatchClient) {
+func requireWatchStaysOpenUntilCancel(t *testing.T, cancel context.CancelFunc, wc health.WatchClient) {
 	t.Helper()
 
 	errCh := make(chan error, 1)

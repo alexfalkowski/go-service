@@ -9,7 +9,7 @@ type responseError struct {
 	resp *http.Response
 }
 
-// Error is just used to satisfy the error interface. We don't want to expose the response details.
+// Error satisfies the error interface without exposing response details.
 func (e responseError) Error() string {
 	return strings.Empty
 }

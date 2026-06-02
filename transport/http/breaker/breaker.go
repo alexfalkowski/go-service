@@ -89,7 +89,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool) {
 	cb := r.get(req)
-	v, err := cb.Execute(func() (any, error) {
+	result, err := cb.Execute(func() (any, error) {
 		resp, err := r.RoundTripper.RoundTrip(req)
 		if err != nil {
 			return nil, err
@@ -109,7 +109,7 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 		return nil, err, errors.Is(err, breaker.ErrOpenState) || errors.Is(err, breaker.ErrTooManyRequests)
 	}
 
-	return v.(*http.Response), nil, false
+	return result.(*http.Response), nil, false
 }
 
 func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
@@ -118,10 +118,10 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 		return cb
 	}
 
-	s := r.opts.settings
-	s.Name = key
-	isSuccessful := s.IsSuccessful
-	s.IsSuccessful = func(err error) bool {
+	settings := r.opts.settings
+	settings.Name = key
+	isSuccessful := settings.IsSuccessful
+	settings.IsSuccessful = func(err error) bool {
 		if err == nil {
 			return true
 		}
@@ -135,7 +135,7 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 		return false
 	}
 
-	cb := breaker.NewCircuitBreaker(s)
+	cb := breaker.NewCircuitBreaker(settings)
 	actual, _ := r.breakers.LoadOrStore(key, cb)
 	return actual
 }

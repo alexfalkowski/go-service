@@ -212,38 +212,38 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 //   - Token injection remains inside retry so a fresh token is generated for each retry attempt.
 //   - The limiter stays outside the breaker so local quota denials are not counted as upstream failures.
 func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
-	os := options(opts...)
+	resolved := options(opts...)
 
-	hrt, err := roundTripper(os)
+	hrt, err := roundTripper(resolved)
 	if err != nil {
 		return nil, err
 	}
 
-	if os.compression {
+	if resolved.compression {
 		hrt = gzhttp.Transport(hrt, gzhttp.TransportEnableGzip(true))
 	}
 
-	if os.gen != nil {
-		hrt = token.NewRoundTripper(os.id, os.gen, hrt)
+	if resolved.gen != nil {
+		hrt = token.NewRoundTripper(resolved.id, resolved.gen, hrt)
 	}
 
-	if os.retry != nil {
-		hrt = retry.NewRoundTripper(os.retry, hrt, os.retryPolicies...)
+	if resolved.retry != nil {
+		hrt = retry.NewRoundTripper(resolved.retry, hrt, resolved.retryPolicies...)
 	}
 
-	if os.breaker {
-		hrt = breaker.NewRoundTripper(hrt, os.breakerOptions...)
+	if resolved.breaker {
+		hrt = breaker.NewRoundTripper(hrt, resolved.breakerOptions...)
 	}
 
-	if os.limiter != nil {
-		hrt = limiter.NewRoundTripper(os.limiter, hrt)
+	if resolved.limiter != nil {
+		hrt = limiter.NewRoundTripper(resolved.limiter, hrt)
 	}
 
-	if os.logger != nil {
-		hrt = logger.NewRoundTripper(os.logger, hrt)
+	if resolved.logger != nil {
+		hrt = logger.NewRoundTripper(resolved.logger, hrt)
 	}
 
-	hrt = meta.NewRoundTripper(os.userAgent, os.generator, hrt)
+	hrt = meta.NewRoundTripper(resolved.userAgent, resolved.generator, hrt)
 
 	return hrt, nil
 }
@@ -257,32 +257,32 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 // Note: `http.NewClient` wraps the provided transport with OpenTelemetry instrumentation when tracing
 // or metrics are enabled.
 func NewClient(opts ...ClientOption) (*http.Client, error) {
-	os := options(opts...)
+	resolved := options(opts...)
 
 	transport, err := NewRoundTripper(opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	client := http.NewClient(transport, os.timeout)
-	if os.gen != nil {
+	client := http.NewClient(transport, resolved.timeout)
+	if resolved.gen != nil {
 		client.CheckRedirect = http.SameOriginRedirect
 	}
 
 	return client, nil
 }
 
-func roundTripper(os *clientOpts) (http.RoundTripper, error) {
-	hrt := os.roundTripper
+func roundTripper(resolved *clientOpts) (http.RoundTripper, error) {
+	hrt := resolved.roundTripper
 	if hrt != nil {
 		return hrt, nil
 	}
 
-	if !os.tls.IsEnabled() {
+	if !resolved.tls.IsEnabled() {
 		return http.Transport(nil), nil
 	}
 
-	conf, err := client.NewConfig(fs, os.tls)
+	conf, err := client.NewConfig(fs, resolved.tls)
 	if err != nil {
 		return nil, err
 	}
@@ -291,18 +291,18 @@ func roundTripper(os *clientOpts) (http.RoundTripper, error) {
 }
 
 func options(opts ...ClientOption) *clientOpts {
-	os := &clientOpts{}
+	resolved := &clientOpts{}
 	for _, o := range opts {
-		o.apply(os)
+		o.apply(resolved)
 	}
 
-	if os.timeout <= 0 {
-		os.timeout = time.DefaultTimeout
+	if resolved.timeout <= 0 {
+		resolved.timeout = time.DefaultTimeout
 	}
 
-	if os.generator == nil {
-		os.generator = uuid.NewGenerator()
+	if resolved.generator == nil {
+		resolved.generator = uuid.NewGenerator()
 	}
 
-	return os
+	return resolved
 }

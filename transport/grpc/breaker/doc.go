@@ -12,7 +12,7 @@
 //
 // The interceptor classifies whether an invocation is successful based on the gRPC status code
 // of the returned error. The set of status codes treated as failures is configurable via options
-// (see `WithFailureCodes` and the package defaults in `defaultOpts`).
+// (see `WithFailureCodes` and the package defaults).
 //
 // # Rejections
 //

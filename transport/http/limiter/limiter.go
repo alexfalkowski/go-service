@@ -26,12 +26,12 @@ func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Serve
 		return nil, nil
 	}
 
-	limiter, err := limiter.NewLimiter(lc, keys, cfg)
+	rateLimiter, err := limiter.NewLimiter(lc, keys, cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Server{limiter}, nil
+	return &Server{rateLimiter}, nil
 }
 
 // Server wraps `*limiter.Limiter` for HTTP server integration.
@@ -96,12 +96,12 @@ func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Clien
 		return nil, nil
 	}
 
-	limiter, err := limiter.NewLimiter(lc, keys, cfg)
+	rateLimiter, err := limiter.NewLimiter(lc, keys, cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Client{limiter}, nil
+	return &Client{rateLimiter}, nil
 }
 
 // Client wraps `*limiter.Limiter` for HTTP client integration.

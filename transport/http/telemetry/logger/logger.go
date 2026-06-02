@@ -60,7 +60,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 	attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
-	message := logger.NewText(message(strings.Join(strings.Space, method, service)))
+	message := logger.NewText(httpMessage(strings.Join(strings.Space, method, service)))
 
 	h.logger.LogAttrs(ctx, codeToLevel(m.Code), message, attrs...)
 }
@@ -110,7 +110,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		attrs = append(attrs, logger.Int(meta.CodeKey, resp.StatusCode))
 	}
 
-	message := logger.NewMessage(message(strings.Join(strings.Space, method, service)), err)
+	message := logger.NewMessage(httpMessage(strings.Join(strings.Space, method, service)), err)
 
 	r.logger.LogAttrs(ctx, respToLevel(resp), message, attrs...)
 	return resp, err
@@ -139,6 +139,6 @@ func codeToLevel(code int) logger.Level {
 	return logger.LevelInfo
 }
 
-func message(msg string) string {
+func httpMessage(msg string) string {
 	return "http: " + msg
 }

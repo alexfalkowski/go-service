@@ -165,7 +165,7 @@ func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *
 	attemptCtx, cancel := r.withAttemptTimeout(ctx)
 	defer cancel()
 
-	attemptReq, err := attempt.request(req, attemptCtx)
+	attemptReq, err := request(req, attemptCtx, attempt.attempt)
 	if err != nil {
 		return nil, err
 	}
@@ -203,15 +203,6 @@ func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Requ
 
 type roundTripAttempt struct {
 	attempt uint64
-}
-
-func (a *roundTripAttempt) request(req *http.Request, ctx context.Context) (*http.Request, error) {
-	attemptReq, err := request(req, ctx, a.attempt)
-	if err != nil {
-		return nil, err
-	}
-
-	return attemptReq, nil
 }
 
 func (a *roundTripAttempt) retry(ctx, attemptCtx context.Context, req *http.Request, res *http.Response, err error, maxRetries uint64) error {
