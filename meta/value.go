@@ -20,10 +20,10 @@ const (
 // Ignored constructs a Value that preserves the underlying value in-context but renders as an empty string.
 //
 // This is useful when you want to keep the raw value available for in-process logic, but you do not want it
-// to be exported via `meta.Strings` / `meta.SnakeStrings` / `meta.CamelStrings` (for example into logs or
+// to be exported via [Strings], [SnakeStrings], or [CamelStrings] (for example into logs or
 // transport headers).
 //
-// Note: export helpers skip attributes whose rendered string is empty, so Ignored values will not appear
+// Note: export helpers skip attributes whose rendered string is empty, so [Ignored] values will not appear
 // in exported maps.
 func Ignored(value string) Value {
 	return Value{kind: ignored, value: value}
@@ -34,7 +34,7 @@ func Ignored(value string) Value {
 // The rendered value uses one '*' per UTF-8 rune in the underlying value, which can be useful to
 // preserve the shape of data without revealing the contents.
 //
-// Note: the underlying value is still stored in-context and can be retrieved via Value.Value(). Use this
+// Note: the underlying value is still stored in-context and can be retrieved via [Value.Value]. Use this
 // only when it is acceptable for in-process code to access the raw value.
 func Redacted(value string) Value {
 	return Value{kind: redacted, value: value}
@@ -44,7 +44,7 @@ func Redacted(value string) Value {
 //
 // Blank values render as empty strings and are skipped by export helpers.
 //
-// Use Blank when you want to explicitly represent "no value" rather than "an ignored value that still exists".
+// Use [Blank] when you want to explicitly represent "no value" rather than "an ignored value that still exists".
 func Blank() Value {
 	return Value{kind: blank, value: strings.Empty}
 }
@@ -56,7 +56,7 @@ func String(value string) Value {
 
 // Error converts err to a normal Value using err.Error().
 //
-// If err is nil, Error returns Blank.
+// If err is nil, Error returns [Blank].
 func Error(err error) Value {
 	if reflect.IsNil(err) {
 		return Blank()
@@ -67,7 +67,7 @@ func Error(err error) Value {
 
 // ToString converts st to a normal Value using st.String().
 //
-// If st is nil, ToString returns Blank.
+// If st is nil, ToString returns [Blank].
 func ToString(st fmt.Stringer) Value {
 	if reflect.IsNil(st) {
 		return Blank()
@@ -78,8 +78,8 @@ func ToString(st fmt.Stringer) Value {
 
 // ToRedacted converts st to a redacted Value using st.String().
 //
-// If st is nil, ToRedacted returns Blank.
-// The underlying (unredacted) string is still stored in-context and can be retrieved via Value.Value().
+// If st is nil, ToRedacted returns [Blank].
+// The underlying (unredacted) string is still stored in-context and can be retrieved via [Value.Value].
 func ToRedacted(st fmt.Stringer) Value {
 	if reflect.IsNil(st) {
 		return Blank()
@@ -90,8 +90,8 @@ func ToRedacted(st fmt.Stringer) Value {
 
 // ToIgnored converts st to an ignored Value using st.String().
 //
-// If st is nil, ToIgnored returns Blank.
-// The underlying string is still stored in-context and can be retrieved via Value.Value().
+// If st is nil, ToIgnored returns [Blank].
+// The underlying string is still stored in-context and can be retrieved via [Value.Value].
 func ToIgnored(st fmt.Stringer) Value {
 	if reflect.IsNil(st) {
 		return Blank()
@@ -104,8 +104,8 @@ func ToIgnored(st fmt.Stringer) Value {
 //
 // Value is designed to support two related use-cases:
 //
-//  1. In-process access: retrieve the underlying value with Value.Value() for business logic.
-//  2. Export: render the value with Value.String() when exporting metadata (logs/headers/etc.).
+//  1. In-process access: retrieve the underlying value with [Value.Value] for business logic.
+//  2. Export: render the value with [Value.String] when exporting metadata (logs/headers/etc.).
 //
 // Rendering is controlled by kind:
 //   - normal: renders the underlying value as-is
@@ -113,7 +113,7 @@ func ToIgnored(st fmt.Stringer) Value {
 //   - ignored: renders as empty (while still retaining the underlying value in-context)
 //   - redacted: renders as asterisks with one '*' per UTF-8 rune in the underlying value
 //
-// Note: Value.String intentionally does not distinguish between blank and ignored during rendering; both
+// Note: [Value.String] intentionally does not distinguish between blank and ignored during rendering; both
 // render as empty. The difference is semantic at construction time.
 type Value struct {
 	value string

@@ -15,7 +15,7 @@ type Converter func(string) string
 // Storage stores meta values keyed by attribute name.
 //
 // Storage is the internal backing map used by this package to hold context-scoped attributes.
-// It is typically treated as immutable by callers. WithAttributes uses copy-on-write updates so
+// It is typically treated as immutable by callers. [WithAttributes] uses copy-on-write updates so
 // derived contexts do not mutate parent storage.
 type Storage map[string]Value
 
@@ -44,17 +44,17 @@ func (s Storage) Get(key string) Value {
 // Strings exports stored attributes as a string map.
 //
 // Each key is transformed using converter and then prefixed with prefix (if non-empty).
-// Each value is rendered using Value.String().
+// Each value is rendered using [Value.String].
 //
 // Export behavior:
 //   - Attributes whose rendered value is an empty string are skipped.
-//     (This includes Blank and Ignored values, and any Value whose rendered String() is empty.)
+//     (This includes [Blank] and [Ignored] values, and any [Value] whose rendered [Value.String] is empty.)
 //   - Keys are included only if they have a non-empty rendered value.
 func (s Storage) Strings(prefix string, converter Converter) Map {
 	attributes := make(Map, len(s))
-	for k, v := range s {
-		if v := v.String(); !strings.IsEmpty(v) {
-			attributes[s.key(prefix, converter(k))] = v
+	for key, value := range s {
+		if rendered := value.String(); !strings.IsEmpty(rendered) {
+			attributes[s.key(prefix, converter(key))] = rendered
 		}
 	}
 	return attributes
@@ -62,7 +62,7 @@ func (s Storage) Strings(prefix string, converter Converter) Map {
 
 // Clone returns a shallow copy of the storage.
 //
-// Values are copied by assignment, which is sufficient because Value is immutable.
+// Values are copied by assignment, which is sufficient because [Value] is immutable.
 func (s Storage) Clone() Storage {
 	cloned := make(Storage, len(s))
 	maps.Copy(cloned, s)

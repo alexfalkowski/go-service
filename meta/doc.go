@@ -1,19 +1,19 @@
 // Package meta provides context-scoped metadata storage and helpers for go-service.
 //
 // This package implements a small attribute store backed by context.Context. Attributes are stored as
-// key→meta.Value pairs, where Value carries both the underlying string and rendering semantics.
+// key→[Value] pairs, where Value carries both the underlying string and rendering semantics.
 //
 // # Storage model
 //
-// Attributes are stored on the context under a single internal key as a map-like Storage. WithAttributes
+// Attributes are stored on the context under a single internal key as a map-like [Storage]. [WithAttributes]
 // updates that storage using copy-on-write semantics so derived contexts do not mutate parent or sibling
-// context metadata. Callers provide updates as Pair values so multiple attributes can be stored with one
-// storage clone. Use NewPair for arbitrary keys, or the typed With* helpers such as WithRequestID and
-// WithUserID for standard metadata keys.
+// context metadata. Callers provide updates as [Pair] values so multiple attributes can be stored with one
+// storage clone. Use [NewPair] for arbitrary keys, or the typed With* helpers such as [WithRequestID] and
+// [WithUserID] for standard metadata keys.
 //
 // # Value rendering semantics
 //
-// Values are stored as meta.Value so callers can control how attributes are rendered when exporting them:
+// Values are stored as [Value] so callers can control how attributes are rendered when exporting them:
 //   - normal: renders the underlying value as-is
 //   - blank: represents "no value" and renders as empty
 //   - ignored: stores the underlying value but renders as empty (useful to keep the value in-context while
@@ -23,13 +23,13 @@
 // # Export helpers
 //
 // Stored attributes can be exported to plain string maps for logging and transport propagation using:
-//   - Strings: keys unchanged
-//   - SnakeStrings: keys converted to snake_case
-//   - CamelStrings: keys converted to lowerCamelCase
+//   - [Strings]: keys unchanged
+//   - [SnakeStrings]: keys converted to snake_case
+//   - [CamelStrings]: keys converted to lowerCamelCase
 //
 // Export helpers skip attributes whose rendered string is empty. A prefix may be prepended to each exported key.
 //
-// Start with `WithAttributes`, `NewPair`, the typed With* pair helpers, and `Attribute` for arbitrary
-// attributes. Use `Value` constructors (String/Blank/Ignored/Redacted) for controlling rendering, and
-// `Strings` / `SnakeStrings` / `CamelStrings` for exporting attributes.
+// Start with [WithAttributes], [NewPair], the typed With* pair helpers, and [Attribute] for arbitrary
+// attributes. Use [Value] constructors ([String], [Blank], [Ignored], [Redacted]) for controlling rendering,
+// and [Strings], [SnakeStrings], or [CamelStrings] for exporting attributes.
 package meta

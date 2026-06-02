@@ -29,15 +29,15 @@ func WithAttributes(ctx context.Context, pairs ...Pair) context.Context {
 
 // Attribute returns the stored attribute value for key.
 //
-// If no attribute is present for key, Attribute returns the zero-value Value. Callers can use
-// Value.IsEmpty to distinguish empty values.
+// If no attribute is present for key, Attribute returns the zero-value [Value]. Callers can use
+// [Value.IsEmpty] to distinguish empty values.
 func Attribute(ctx context.Context, key string) Value {
 	return attributes(ctx).Get(key)
 }
 
 // Map is a string key-value map of exported attributes.
 //
-// Export helpers return this type after rendering Values and applying key conversion and prefixing.
+// Export helpers return this type after rendering [Value] entries and applying key conversion and prefixing.
 type Map map[string]string
 
 // SnakeStrings returns all stored attributes as a string map with snake_cased keys.
@@ -61,5 +61,9 @@ func CamelStrings(ctx context.Context, prefix string) Map {
 // The prefix parameter is prepended to each exported key (if non-empty).
 // Attributes whose rendered value is empty are skipped.
 func Strings(ctx context.Context, prefix string) Map {
-	return attributes(ctx).Strings(prefix, func(s string) string { return s })
+	return attributes(ctx).Strings(prefix, identity)
+}
+
+func identity(s string) string {
+	return s
 }
