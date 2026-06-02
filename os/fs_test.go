@@ -10,21 +10,19 @@ import (
 )
 
 func TestReadFile(t *testing.T) {
-	for _, path := range []string{"none"} {
-		t.Run(path, func(t *testing.T) {
-			_, err := test.FS.ReadFile(path)
-			require.Error(t, err)
+	path := "none"
 
-			require.True(t, test.FS.IsNotExist(err))
-			require.False(t, test.FS.PathExists(path))
-		})
-	}
+	_, err := test.FS.ReadFile(path)
+	require.Error(t, err)
+
+	require.True(t, test.FS.IsNotExist(err))
+	require.False(t, test.FS.PathExists(path))
 }
 
 func TestPathExtension(t *testing.T) {
-	for _, f := range []string{"file.yaml", "file.test.yaml", "test/.config/existing.client.yaml"} {
-		t.Run(f, func(t *testing.T) {
-			require.Equal(t, "yaml", test.FS.PathExtension(f))
+	for _, path := range []string{"file.yaml", "file.test.yaml", "test/.config/existing.client.yaml"} {
+		t.Run(path, func(t *testing.T) {
+			require.Equal(t, "yaml", test.FS.PathExtension(path))
 		})
 	}
 
