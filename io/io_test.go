@@ -12,8 +12,9 @@ func TestWriteString(t *testing.T) {
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
-	n, err := io.WriteString(buffer, "hello")
+	value := "hello"
+	written, err := io.WriteString(buffer, value)
 	require.NoError(t, err)
-	require.Equal(t, 5, n)
-	require.Equal(t, "hello", buffer.String())
+	require.Equal(t, len(value), written)
+	require.Equal(t, value, buffer.String())
 }
