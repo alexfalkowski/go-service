@@ -11,33 +11,33 @@
 //
 // # Conditional append helpers
 //
-// AppendNotZero appends elements to a slice while skipping elements that are nil
-// or the zero value of the element type.
+// [AppendNotZero] appends elements to a slice while skipping elements that are
+// nil or the zero value of the element type.
 //
 // This is useful when building option lists, attribute sets, or filter lists where
-// zero values should be treated as “not provided”.
+// zero values should be treated as "not provided".
 // The helper preserves the relative order of the elements it appends and returns
 // the resulting slice.
 //
 // # Searching helpers
 //
-// ElemFunc returns the first pointer element in a slice that matches a predicate,
-// along with a boolean indicating whether a match was found.
+// [ElemFunc] returns the first pointer element in a slice that matches a
+// predicate, along with a boolean indicating whether a match was found.
 //
 // It is a convenience wrapper around `slices.IndexFunc` that returns the element
 // directly instead of an index.
 //
 // # Capacity helpers
 //
-// Clip removes unused capacity from a slice. Use it when returning a slice that
-// may share a backing array with neighboring values and future appends should not
-// mutate that shared backing array.
+// [Clip] removes unused capacity from a slice. Use it when returning a slice
+// that may share a backing array with neighboring values and future appends
+// should not mutate that shared backing array.
 //
 // # Notes
 //
 // These helpers are designed to be predictable and side-effect free aside from
 // modifying the returned slice as normal for append-style operations. They do not
-// mutate elements beyond appending them. “Zero” is defined by reflect.IsZero, so
+// mutate elements beyond appending them. "Zero" is defined by reflect.IsZero, so
 // nil slices and maps are skipped, while non-nil empty slices and maps are
 // appended.
 package slices

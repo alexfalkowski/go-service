@@ -10,60 +10,47 @@ import (
 )
 
 func TestAppendEmpty(t *testing.T) {
-	for _, elem := range []*int{nil} {
-		t.Run("nil pointer", func(t *testing.T) {
-			require.Empty(t, slices.AppendNotZero([]*int{}, elem))
-		})
+	var writer *test.ErrWriter
+	var elem io.Writer = writer
+	var nilSlice []string
+
+	tests := []struct {
+		append func() any
+		name   string
+	}{
+		{name: "nil pointer", append: func() any { return slices.AppendNotZero([]*int{}, nil) }},
+		{name: "zero value", append: func() any { return slices.AppendNotZero([]int{}, 0) }},
+		{name: "typed nil interface", append: func() any { return slices.AppendNotZero([]io.Writer{}, elem) }},
+		{name: "nil slice", append: func() any { return slices.AppendNotZero([][]string{}, nilSlice) }},
+		{name: "zero non-comparable struct", append: func() any { return slices.AppendNotZero([]test.Page{}, test.Page{}) }},
 	}
 
-	for _, elem := range []int{0} {
-		t.Run("zero value", func(t *testing.T) {
-			require.Empty(t, slices.AppendNotZero([]int{}, elem))
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Empty(t, test.append())
 		})
 	}
-
-	t.Run("typed nil interface", func(t *testing.T) {
-		var writer *test.ErrWriter
-		var elem io.Writer = writer
-
-		require.Empty(t, slices.AppendNotZero([]io.Writer{}, elem))
-	})
-
-	t.Run("nil slice", func(t *testing.T) {
-		var elem []string
-
-		require.Empty(t, slices.AppendNotZero([][]string{}, elem))
-	})
-
-	t.Run("zero non-comparable struct", func(t *testing.T) {
-		require.Empty(t, slices.AppendNotZero([]test.Page{}, test.Page{}))
-	})
 }
 
 func TestAppendNotZero(t *testing.T) {
 	integer := 2
 
-	for _, elem := range []*int{&integer} {
-		t.Run("non-zero pointer", func(t *testing.T) {
-			require.NotEmpty(t, slices.AppendNotZero([]*int{}, elem))
-		})
+	tests := []struct {
+		append func() any
+		name   string
+	}{
+		{name: "non-zero pointer", append: func() any { return slices.AppendNotZero([]*int{}, &integer) }},
+		{name: "empty slice", append: func() any { return slices.AppendNotZero([][]string{}, []string{}) }},
+		{name: "non-zero non-comparable struct", append: func() any {
+			return slices.AppendNotZero([]test.Page{}, test.Page{Title: "test"})
+		}},
 	}
 
-	for _, elem := range []*int{&integer} {
-		t.Run("non-nil pointer", func(t *testing.T) {
-			require.NotEmpty(t, slices.AppendNotZero([]*int{}, elem))
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.NotEmpty(t, test.append())
 		})
 	}
-
-	t.Run("empty slice", func(t *testing.T) {
-		require.NotEmpty(t, slices.AppendNotZero([][]string{}, []string{}))
-	})
-
-	t.Run("non-zero non-comparable struct", func(t *testing.T) {
-		value := test.Page{Title: "test"}
-
-		require.NotEmpty(t, slices.AppendNotZero([]test.Page{}, value))
-	})
 }
 
 func TestBackward(t *testing.T) {
@@ -78,13 +65,29 @@ func TestBackward(t *testing.T) {
 func TestElemFunc(t *testing.T) {
 	elems := []*string{new("test")}
 
-	elem, ok := slices.ElemFunc(elems, func(t *string) bool { return *t == "test" })
-	require.NotNil(t, elem)
-	require.True(t, ok)
+	tests := []struct {
+		name  string
+		value string
+		found bool
+	}{
+		{name: "match", value: "test", found: true},
+		{name: "missing", value: "bob"},
+	}
 
-	elem, ok = slices.ElemFunc(elems, func(t *string) bool { return *t == "bob" })
-	require.Nil(t, elem)
-	require.False(t, ok)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			elem, ok := slices.ElemFunc(elems, func(value *string) bool { return *value == test.value })
+
+			require.Equal(t, test.found, ok)
+			if !test.found {
+				require.Nil(t, elem)
+				return
+			}
+
+			require.NotNil(t, elem)
+			require.Equal(t, test.value, *elem)
+		})
+	}
 }
 
 func TestClip(t *testing.T) {
