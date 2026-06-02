@@ -24,6 +24,9 @@ func TestVersionString(t *testing.T) {
 	}{
 		{name: "semver prefix", version: "v1.0.0", expected: "1.0.0"},
 		{name: "plain value", version: "what", expected: "what"},
+		{name: "plain value starting with v", version: "version", expected: "version"},
+		{name: "plain value starting with v and dash", version: "ver-1", expected: "ver-1"},
+		{name: "only v", version: "v", expected: "v"},
 		{name: "empty", version: env.Version(strings.Empty), expected: strings.Empty},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
