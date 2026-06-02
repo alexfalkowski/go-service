@@ -10,13 +10,13 @@
 //
 // # Common patterns
 //
-//   - Define parameter structs embedding `di.In` to declare injected dependencies.
-//   - Use `di.Module` to compose multiple `di.Option` values into a single module.
-//   - Use `di.Constructor` to provide constructors (Fx Provide).
-//   - Use `di.Decorate` to wrap/modify provided values (Fx Decorate).
-//   - Use `di.Register` to run registration/invocation hooks at startup (Fx Invoke).
-//   - Use `di.Recover` to recover constructor, decorator, and invocation panics.
-//   - Use `di.RootCause` to unwrap Fx/Dig errors to the underlying cause for reporting.
+//   - Define parameter structs embedding [In] to declare injected dependencies.
+//   - Use [Module] to compose multiple [Option] values into a single module.
+//   - Use [Constructor] to provide constructors (Fx Provide).
+//   - Use [Decorate] to wrap/modify provided values (Fx Decorate).
+//   - Use [Register] to run registration/invocation hooks at startup (Fx Invoke).
+//   - Use [Recover] to recover constructor, decorator, and invocation panics.
+//   - Use [RootCause] to unwrap Fx/Dig errors to the underlying cause for reporting.
 //
-// Start with `Module`, `Constructor`, `Register`, `Decorate`, `Recover`, and `RootCause`.
+// Start with [Module], [Constructor], [Register], [Decorate], [Recover], and [RootCause].
 package di
