@@ -5,44 +5,44 @@ import (
 	"io"
 )
 
-// EOF aliases io.EOF.
+// EOF aliases [io.EOF].
 var EOF = io.EOF
 
-// ErrUnexpectedEOF aliases io.ErrUnexpectedEOF.
+// ErrUnexpectedEOF aliases [io.ErrUnexpectedEOF].
 var ErrUnexpectedEOF = io.ErrUnexpectedEOF
 
-// Discard aliases io.Discard.
+// Discard aliases [io.Discard].
 var Discard = io.Discard
 
-// WriterTo is an alias for io.WriterTo.
-//
-// It is provided so go-service code can depend on a consistent import path while
-// preserving standard library semantics.
-type WriterTo = io.WriterTo
-
-// Writer is an alias for io.Writer.
-//
-// It is provided so go-service code can depend on a consistent import path while
-// preserving standard library semantics.
-type Writer = io.Writer
-
-// ReaderFrom is an alias for io.ReaderFrom.
-//
-// It is provided so go-service code can depend on a consistent import path while
-// preserving standard library semantics.
-type ReaderFrom = io.ReaderFrom
-
-// Reader is an alias for io.Reader.
+// Reader is an alias for [io.Reader].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Reader = io.Reader
 
-// ReadCloser is an alias for io.ReadCloser.
+// ReaderFrom is an alias for [io.ReaderFrom].
+//
+// It is provided so go-service code can depend on a consistent import path while
+// preserving standard library semantics.
+type ReaderFrom = io.ReaderFrom
+
+// ReadCloser is an alias for [io.ReadCloser].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type ReadCloser = io.ReadCloser
+
+// Writer is an alias for [io.Writer].
+//
+// It is provided so go-service code can depend on a consistent import path while
+// standard library semantics.
+type Writer = io.Writer
+
+// WriterTo is an alias for [io.WriterTo].
+//
+// It is provided so go-service code can depend on a consistent import path while
+// preserving standard library semantics.
+type WriterTo = io.WriterTo
 
 // Resetter is implemented by values that can reset themselves to an empty state.
 //
@@ -54,35 +54,35 @@ type Resetter interface {
 
 // NopCloser returns a ReadCloser with a no-op Close method wrapping r.
 //
-// This is a thin wrapper around io.NopCloser.
+// This is a thin wrapper around [io.NopCloser].
 func NopCloser(r Reader) ReadCloser {
 	return io.NopCloser(r)
 }
 
-// LimitReader returns a Reader that reads from r but stops with EOF after n bytes.
+// LimitReader returns a [Reader] that reads from r but stops with [EOF] after n bytes.
 //
-// This is a thin wrapper around io.LimitReader.
+// This is a thin wrapper around [io.LimitReader].
 func LimitReader(r Reader, n int64) Reader {
 	return io.LimitReader(r, n)
 }
 
-// Copy copies from src to dst until either EOF is reached on src or an error occurs.
+// Copy copies from src to dst until either [EOF] is reached on src or an error occurs.
 //
-// This is a thin wrapper around io.Copy.
+// This is a thin wrapper around [io.Copy].
 func Copy(dst Writer, src Reader) (int64, error) {
 	return io.Copy(dst, src)
 }
 
 // ReadFull reads exactly len(buf) bytes from r into buf.
 //
-// This is a thin wrapper around io.ReadFull.
+// This is a thin wrapper around [io.ReadFull].
 func ReadFull(r Reader, buf []byte) (int, error) {
 	return io.ReadFull(r, buf)
 }
 
 // WriteString writes the contents of s to w.
 //
-// This is a thin wrapper around io.WriteString.
+// This is a thin wrapper around [io.WriteString].
 func WriteString(w Writer, s string) (int, error) {
 	return io.WriteString(w, s)
 }
@@ -90,7 +90,7 @@ func WriteString(w Writer, s string) (int, error) {
 // ReadAll reads all remaining bytes from r and returns:
 //
 //   - the captured bytes, and
-//   - a fresh ReadCloser that reads from those captured bytes.
+//   - a fresh [ReadCloser] that reads from those captured bytes.
 //
 // This is useful when you need to consume a stream but also need to re-read the same content later
 // (for example for logging, retries, signatures, or decoding twice).
