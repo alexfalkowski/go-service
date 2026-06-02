@@ -43,8 +43,7 @@ func (f *FlagSet) AddConfig(value string) {
 
 // GetConfig returns the configured config flag ("-config" / "-c") value.
 //
-// This method is nil-safe with respect to AddConfig: if AddConfig was not called, GetConfig returns an empty
-// string. This allows callers to depend on GetConfig unconditionally.
+// GetConfig is safe to call before [FlagSet.AddConfig]; in that case it returns an empty string.
 func (f *FlagSet) GetConfig() string {
 	if f.config != nil {
 		return *f.config

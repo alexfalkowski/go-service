@@ -14,7 +14,7 @@ func TestGetConfigWithoutAddConfig(t *testing.T) {
 }
 
 func TestAddConfig(t *testing.T) {
-	tests := []struct {
+	cases := []struct {
 		name string
 		want string
 		args []string
@@ -24,7 +24,7 @@ func TestAddConfig(t *testing.T) {
 		{name: "short flag", args: []string{"-c", "env:CONFIG"}, want: "env:CONFIG"},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			set := flag.NewFlagSet("test")
 			set.AddConfig("file:config.yml")
