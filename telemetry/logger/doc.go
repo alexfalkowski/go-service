@@ -43,7 +43,7 @@
 // Some kinds (notably "otlp") support outbound request headers for authentication or
 // routing. These are configured in Config.Headers.
 //
-// Header values may be configured using go-service “source strings” (for example
+// Header values may be configured using go-service "source strings" (for example
 // "env:NAME", "file:/path", or a literal value). Those values are resolved by
 // telemetry/header.Map.Secrets or telemetry/header.Map.MustSecrets by the consumer
 // that projects configuration before constructing exporters.

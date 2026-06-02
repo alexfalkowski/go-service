@@ -6,7 +6,7 @@ import "github.com/alexfalkowski/go-service/v2/telemetry/header"
 //
 // This package is responsible for constructing the logger based on Config.
 // However, note that this type intentionally does not resolve header secrets by
-// itself. If Headers contains go-service “source strings” (for example "env:NAME"
+// itself. If Headers contains go-service "source strings" (for example "env:NAME"
 // or "file:/path"), callers are expected to resolve them before constructing
 // exporters/handlers (for example via header.Map.Secrets or header.Map.MustSecrets).
 //
@@ -17,7 +17,7 @@ type Config struct {
 	// These headers are primarily used by exporter-backed logger kinds (for example
 	// "otlp") to pass authentication and/or routing metadata to a collector.
 	//
-	// Values may be configured as go-service “source strings” (for example "env:NAME",
+	// Values may be configured as go-service "source strings" (for example "env:NAME",
 	// "file:/path", or a literal value). Resolution is performed by the consumer that
 	// prepares configuration for use by the logger/exporter.
 	Headers header.Map `yaml:"headers,omitempty" json:"headers,omitempty" toml:"headers,omitempty"`

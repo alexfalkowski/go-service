@@ -14,7 +14,7 @@
 // # Source string convention and secret resolution
 //
 // Header values are often sensitive and should not be committed to configuration
-// files. go-service supports a “source string” convention that allows a configured
+// files. go-service supports a "source string" convention that allows a configured
 // value to be read from an alternate source at runtime.
 //
 // Map.Secrets traverses the map and resolves each value using os.FS.ReadSource,

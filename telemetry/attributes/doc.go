@@ -13,10 +13,10 @@
 // service instance. This package exposes helper constructors for common resource
 // fields, such as:
 //
-//   - HostID
-//   - ServiceName
-//   - ServiceVersion
-//   - DeploymentEnvironmentName
+//   - [HostID]
+//   - [ServiceName]
+//   - [ServiceVersion]
+//   - [DeploymentEnvironmentName]
 //
 // These helpers return attribute.KeyValue values that can be passed to
 // resource.NewWithAttributes.

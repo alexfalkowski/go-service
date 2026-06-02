@@ -12,12 +12,12 @@ import (
 //
 // The map keys are header names and the map values are header values.
 //
-// Values are often configured as go-service “source strings” so that secrets can be
+// Values are often configured as go-service "source strings" so that secrets can be
 // supplied at runtime rather than embedded directly in config files. See Secrets
 // for the supported forms and resolution behavior.
 type Map map[string]string
 
-// Secrets resolves configured header values using the go-service “source string” convention.
+// Secrets resolves configured header values using the go-service "source string" convention.
 //
 // It traverses m and resolves each value by reading it through fs.ReadSource.
 // fs.ReadSource supports these forms:

@@ -41,7 +41,7 @@
 // ErrNotFound.
 //
 // The exporter request headers are provided by Config.Headers. Header values may be
-// configured as go-service “source strings” (for example "env:NAME", "file:/path", or a
+// configured as go-service "source strings" (for example "env:NAME", "file:/path", or a
 // literal value) and are resolved by telemetry/header.Map.Secrets or
 // telemetry/header.Map.MustSecrets by the consumer that projects configuration before
 // constructing exporters.

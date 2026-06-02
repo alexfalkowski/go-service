@@ -20,14 +20,12 @@ const maxMetaValueLength = 1024
 // The returned attributes are intended to be appended to log records to provide
 // consistent request/service context across log lines.
 func Meta(ctx context.Context) []slog.Attr {
-	strings := meta.CamelStrings(ctx, meta.NoPrefix)
-	fields := make([]slog.Attr, len(strings))
-	index := 0
-	for k, v := range strings {
-		fields[index] = slog.String(k, truncateMetaValue(v))
-		index++
+	metadata := meta.CamelStrings(ctx, meta.NoPrefix)
+	fields := make([]slog.Attr, 0, len(metadata))
+	for k, v := range metadata {
+		fields = append(fields, slog.String(k, truncateMetaValue(v)))
 	}
-	return fields[:index]
+	return fields
 }
 
 func truncateMetaValue(value string) string {
