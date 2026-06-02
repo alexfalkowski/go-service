@@ -53,10 +53,11 @@ func Clone(b []byte) []byte {
 //
 // # Safety and lifetime
 //
-// The returned string aliases the memory backing b. That means:
+// This function uses unsafe to create a string view over b's backing storage. As a result:
 //
-//   - You MUST NOT modify the contents of b after calling String(b).
-//   - The returned string is only valid while b remains alive (reachable) and its backing array is not reused.
+//   - The returned string aliases the same memory as b.
+//   - The contents of b must be treated as read-only after calling String(b).
+//   - Do not retain the returned string beyond the lifetime of b or after b's backing array may be reused.
 //
 // Violating these constraints can lead to surprising behavior, data races, or memory safety issues.
 // Use this helper only when you control the lifecycle of b and need to avoid an allocation.

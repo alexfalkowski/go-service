@@ -7,32 +7,36 @@ import (
 	units "github.com/docker/go-units"
 )
 
-// KB is the decimal kilobyte size constant: 1,000 bytes.
-const KB Size = Size(units.KB)
+const (
+	// KB is the decimal kilobyte size constant: 1,000 bytes.
+	KB Size = Size(units.KB)
 
-// MB is the decimal megabyte size constant: 1,000,000 bytes.
-const MB Size = Size(units.MB)
+	// MB is the decimal megabyte size constant: 1,000,000 bytes.
+	MB Size = Size(units.MB)
 
-// DefaultSize is the shared default size used by config surfaces that need a conservative byte limit.
-//
-// Its value is 4 megabytes.
-const DefaultSize Size = 4 * MB
+	// GB is the decimal gigabyte size constant: 1,000,000,000 bytes.
+	GB Size = Size(units.GB)
 
-// MaxConfigSize is the largest byte size accepted by configuration surfaces.
-//
-// Configured sizes protect in-memory buffering paths such as cache values, HTTP request bodies,
-// HTTP client response bodies, and gRPC messages. Keep this comfortably below integer and allocator
-// edge cases while still allowing unusually large service payloads.
-const MaxConfigSize Size = 256 * MB
+	// TB is the decimal terabyte size constant: 1,000,000,000,000 bytes.
+	TB Size = Size(units.TB)
 
-// GB is the decimal gigabyte size constant: 1,000,000,000 bytes.
-const GB Size = Size(units.GB)
+	// PB is the decimal petabyte size constant: 1,000,000,000,000,000 bytes.
+	PB Size = Size(units.PB)
+)
 
-// TB is the decimal terabyte size constant: 1,000,000,000,000 bytes.
-const TB Size = Size(units.TB)
+const (
+	// DefaultSize is the shared default size used by config surfaces that need a conservative byte limit.
+	//
+	// Its value is 4 megabytes.
+	DefaultSize Size = 4 * MB
 
-// PB is the decimal petabyte size constant: 1,000,000,000,000,000 bytes.
-const PB Size = Size(units.PB)
+	// MaxConfigSize is the largest byte size accepted by configuration surfaces.
+	//
+	// Configured sizes protect in-memory buffering paths such as cache values, HTTP request bodies,
+	// HTTP client response bodies, and gRPC messages. Keep this comfortably below integer and allocator
+	// edge cases while still allowing unusually large service payloads.
+	MaxConfigSize Size = 256 * MB
+)
 
 // Size is the go-service decimal byte-size type used across the repository.
 //
