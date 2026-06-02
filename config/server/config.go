@@ -83,34 +83,34 @@ func (c *Config) GetTimeout() time.Duration {
 // Any configured TLS material requires a complete server certificate/key pair.
 // A CA-only configuration returns ErrMissingKeyPair.
 func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
-	config := &tls.Config{
+	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12,
 	}
 
 	if !cfg.HasKeyMaterial() && !cfg.HasCA() {
-		return config, nil
+		return tlsConfig, nil
 	}
 
 	if !cfg.HasKeyPair() {
-		return config, ErrMissingKeyPair
+		return tlsConfig, ErrMissingKeyPair
 	}
 
 	pair, err := tlsconfig.NewKeyPair(fs, cfg)
 	if err != nil {
-		return config, err
+		return tlsConfig, err
 	}
 
-	config.Certificates = []tls.Certificate{pair}
+	tlsConfig.Certificates = []tls.Certificate{pair}
 
 	if cfg.HasCA() {
 		pool, err := tlsconfig.NewCertPool(fs, cfg)
 		if err != nil {
-			return config, err
+			return tlsConfig, err
 		}
 
-		config.ClientCAs = pool
-		config.ClientAuth = tls.RequireAndVerifyClientCert
+		tlsConfig.ClientCAs = pool
+		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
 	}
 
-	return config, nil
+	return tlsConfig, nil
 }
