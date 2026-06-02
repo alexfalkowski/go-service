@@ -28,7 +28,7 @@ type Context = context.Context
 // Key is a typed helper for storing values in a context.
 //
 // Using a distinct key type reduces accidental collisions when multiple packages store values in the
-// same context. Prefer defining keys as unexported package variables, e.g.:
+// same context. Prefer defining keys as unexported package variables, for example:
 //
 //	var userIDKey context.Key = "user_id"
 //
