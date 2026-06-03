@@ -31,7 +31,7 @@ type RoundTripper struct {
 // RoundTrip injects request metadata into the outbound request.
 //
 // It sets the "User-Agent" and "Request-Id" headers, preferring values already present in the context or
-// request headers, and stores the chosen values back into the request context.
+// request headers, and stores the chosen values plus transport metadata back into the request context.
 //
 // Precedence rules:
 //   - If the context already contains a value ([meta.UserAgent]/[meta.RequestID]), that value is used.
@@ -44,6 +44,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	requestID := clientRequestID(ctx, r.generator, req)
 
 	ctx = meta.WithAttributes(ctx,
+		meta.WithTransport(meta.Ignored("http")),
 		meta.WithUserAgent(userAgent),
 		meta.WithRequestID(requestID),
 		meta.WithServiceMethod(meta.Ignored(req.URL.Path)),

@@ -19,6 +19,34 @@ import (
 // request metadata from being retained verbatim as in-memory bucket names.
 const maxKeySize = 256
 
+// ErrMissingKey is returned when the configured key kind is not present in the KeyMap.
+var ErrMissingKey = errors.New("limiter: missing key")
+
+// NewKeyMap returns the default KeyMap used by the limiter.
+//
+// Supported default kinds, in the usual order of preference, are:
+//   - "user-id": rate limit per verified user/principal identifier ([meta.UserID])
+//   - "transport-service-method": rate limit per transport-prefixed service method
+//     ([meta.TransportServiceMethod])
+//   - "service-method": rate limit per HTTP route/path or gRPC full method ([meta.ServiceMethod])
+//   - "ip": rate limit per client IP address ([meta.IPAddr])
+//   - "user-agent": rate limit per User-Agent header ([meta.UserAgent])
+//
+// These defaults are intended for controlled service-to-service traffic where user agents,
+// forwarded IP headers, and authorization metadata are supplied by trusted clients or platform
+// infrastructure. They are not sufficient as public-edge anti-abuse controls when clients can
+// freely spoof headers; use trusted ingress, gateway, service-mesh, or post-auth identity limits
+// for those boundaries.
+func NewKeyMap() KeyMap {
+	return KeyMap{
+		"user-id":                  meta.UserID,
+		"transport-service-method": meta.TransportServiceMethod,
+		"service-method":           meta.ServiceMethod,
+		"ip":                       meta.IPAddr,
+		"user-agent":               meta.UserAgent,
+	}
+}
+
 // KeyFunc derives the metadata value used to key rate limits for ctx.
 //
 // The returned [meta.Value] is expected to yield a stable string via Value() that can be used as a
@@ -30,31 +58,6 @@ type KeyFunc func(context.Context) meta.Value
 //
 // It is typically constructed via NewKeyMap and passed to NewLimiter along with [Config.Kind].
 type KeyMap map[string]KeyFunc
-
-// NewKeyMap returns the default KeyMap used by the limiter.
-//
-// Supported default kinds are:
-//   - "user-agent": rate limit per User-Agent header ([meta.UserAgent])
-//   - "ip": rate limit per client IP address ([meta.IPAddr])
-//   - "user-id": rate limit per verified user/principal identifier ([meta.UserID])
-//   - "service-method": rate limit per HTTP route/path or gRPC full method ([meta.ServiceMethod])
-//
-// These defaults are intended for controlled service-to-service traffic where user agents,
-// forwarded IP headers, and authorization metadata are supplied by trusted clients or platform
-// infrastructure. They are not sufficient as public-edge anti-abuse controls when clients can
-// freely spoof headers; use trusted ingress, gateway, service-mesh, or post-auth identity limits
-// for those boundaries.
-func NewKeyMap() KeyMap {
-	return KeyMap{
-		"user-agent":     meta.UserAgent,
-		"ip":             meta.IPAddr,
-		"service-method": meta.ServiceMethod,
-		"user-id":        meta.UserID,
-	}
-}
-
-// ErrMissingKey is returned when the configured key kind is not present in the KeyMap.
-var ErrMissingKey = errors.New("limiter: missing key")
 
 // NewLimiter constructs a Limiter using the configured key kind and interval/tokens settings.
 //

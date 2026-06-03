@@ -1,6 +1,9 @@
 package meta
 
-import "github.com/alexfalkowski/go-service/v2/context"
+import (
+	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/strings"
+)
 
 const (
 	// RequestIDKey is the attribute key used for request IDs.
@@ -22,6 +25,11 @@ const (
 	//
 	// For example: an HTTP method name, an RPC method name, or a logical operation name.
 	MethodKey = "method"
+
+	// TransportKey is the attribute key used for transport names.
+	//
+	// For example: "http" or "grpc".
+	TransportKey = "transport"
 
 	// ServiceMethodKey is the attribute key used for transport service-method names.
 	//
@@ -103,6 +111,20 @@ func WithMethod(value Value) Pair {
 	return NewPair(MethodKey, value)
 }
 
+// WithTransport creates a transport pair for [WithAttributes].
+//
+// The pair stores value under [TransportKey].
+func WithTransport(value Value) Pair {
+	return NewPair(TransportKey, value)
+}
+
+// Transport returns the stored transport attribute from ctx.
+//
+// If no value is present, this returns the zero-value [Value].
+func Transport(ctx context.Context) Value {
+	return Attribute(ctx, TransportKey)
+}
+
 // WithServiceMethod creates a service-method pair for [WithAttributes].
 //
 // The pair stores value under [ServiceMethodKey].
@@ -115,6 +137,13 @@ func WithServiceMethod(value Value) Pair {
 // If no value is present, this returns the zero-value [Value].
 func ServiceMethod(ctx context.Context) Value {
 	return Attribute(ctx, ServiceMethodKey)
+}
+
+// TransportServiceMethod returns the transport and service-method attributes as one value.
+//
+// The returned ignored value is formatted as "<transport>:<service-method>".
+func TransportServiceMethod(ctx context.Context) Value {
+	return Ignored(strings.Concat(Transport(ctx).Value(), ":", ServiceMethod(ctx).Value()))
 }
 
 // WithCode creates a status code pair for [WithAttributes].

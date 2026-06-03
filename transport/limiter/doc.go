@@ -10,33 +10,41 @@
 // are provided by [NewKeyMap], mapping a configured kind to a function that extracts a value from context
 // metadata:
 //
-//   - "user-agent": [meta.UserAgent]
-//   - "ip": [meta.IPAddr]
 //   - "user-id": [meta.UserID]
+//   - "transport-service-method": [meta.TransportServiceMethod]
 //   - "service-method": [meta.ServiceMethod]
+//   - "ip": [meta.IPAddr]
+//   - "user-agent": [meta.UserAgent]
 //
 // The configured kind is typically provided via [Config.Kind]. If the kind is not present in the KeyMap,
 // limiter construction fails with ErrMissingKey.
+//
+// The "user-id" key uses the verified principal stored in metadata. For
+// JWT/PASETO tokens this is the subject claim; for SSH tokens this is the
+// verified key name returned by the token verifier. Prefer it for per-principal
+// quotas when authenticated identity is available.
+//
+// The "transport-service-method" key prefixes that service-method value with
+// the transport name, such as "http:GET /users/{id}" or
+// "grpc:/users.v1.Users/Get". Use it when HTTP and gRPC operations should have
+// independent limiter buckets even if their service-method values overlap.
+//
+// The "service-method" key uses transport metadata populated by the HTTP and
+// gRPC metadata layers. HTTP stores the matched request pattern when available
+// and otherwise the URL path; gRPC stores the full method name. Prefer
+// "transport-service-method" unless cross-transport operations intentionally
+// share quota.
 //
 // The "ip" key uses IP metadata populated by transport metadata middleware. That
 // middleware intentionally trusts common forwarding headers such as
 // X-Forwarded-For and CF-Connecting-IP. The limiter does not validate CDN or
 // proxy source ranges itself; it consumes the metadata provided by the transport
-// stack.
-//
-// Use the "ip" key when the service is only reachable through trusted edge
+// stack. Use it only when the service is reachable through trusted edge
 // infrastructure that strips or overwrites client-supplied forwarding headers.
-// If direct origin access is possible, prefer a verified identity key such as
-// "user-id" or add application-specific trusted proxy validation before relying
-// on IP-based limits.
 //
-// The "user-id" key uses the verified principal stored in metadata. For
-// JWT/PASETO tokens this is the subject claim; for SSH tokens this is the
-// verified key name returned by the token verifier.
-//
-// The "service-method" key uses transport metadata populated by the HTTP and
-// gRPC metadata layers. HTTP stores the matched request pattern when available
-// and otherwise the URL path; gRPC stores the full method name.
+// The "user-agent" key uses caller-supplied User-Agent metadata. Treat it as a
+// coarse development or service-to-service convenience key, not as a public-edge
+// abuse-control identity.
 //
 // # In-memory behavior and lifecycle
 //
