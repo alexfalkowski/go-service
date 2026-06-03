@@ -188,6 +188,11 @@ matching skill for the task.
   external edge, gateway, ingress, load balancer, or service mesh limiter when
   those attempts need quota enforcement.
 - The built-in transport limiter is intentionally in-memory and per-process. Treat it as a last-resort local safeguard; prefer external edge/gateway/ingress/load-balancer/service-mesh limiting for production abuse protection.
+- gRPC stream limiters intentionally consume one token when a stream opens and
+  one token for each `RecvMsg` and `SendMsg` operation. Do not flag this as
+  accidental double-counting; report only concrete bugs such as missing message
+  limiting, ignored explicit limiter config, or incorrect status/header
+  behavior.
 - HTTP telemetry logger service/method derivation may include request URL path
   segments for non-canonical HTTP routes. This is intentional for client and
   server debugging because HTTP clients can call arbitrary paths and route

@@ -15,6 +15,9 @@
 // gateway, ingress, load balancer, or service-mesh limiter when those attempts
 // need quota enforcement.
 //
+// Streaming interceptors take one token when a stream opens and also meter
+// each RecvMsg and SendMsg operation. Unary interceptors take one token per RPC.
+//
 // Start with [UnaryServerInterceptor] or [StreamServerInterceptor] for server-side limiting and
 // [UnaryClientInterceptor] or [StreamClientInterceptor] for client-side limiting.
 package limiter

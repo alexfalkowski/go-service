@@ -219,8 +219,8 @@ func WithClientID(generator id.Generator) ClientOption {
 
 // WithClientLimiter enables client-side rate limiting interceptors.
 //
-// When configured, unary client calls and streams are rate-limited before being sent. If limiter is nil,
-// rate limiting is not enabled.
+// When configured, unary client calls are rate-limited before being sent. Client streams are rate-limited
+// when opened and while sending or receiving messages. If limiter is nil, rate limiting is not enabled.
 func WithClientLimiter(limiter *limiter.Client) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.limiter = limiter

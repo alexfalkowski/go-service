@@ -209,7 +209,9 @@ func TestWatch(t *testing.T) {
 func TestWatchServerLimiter(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"),
 		test.WithWorldTelemetry("otlp"),
-		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)),
+		// Watch consumes one token for stream admission, one for the request RecvMsg,
+		// and one for the initial status SendMsg.
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 3)),
 	)
 	requireGRPCReady(t, world)
 
