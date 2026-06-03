@@ -15,7 +15,7 @@ import (
 //
 // It ensures "user-agent" and "request-id" are present in outgoing metadata,
 // preferring values already present in the context or outgoing metadata, and
-// stores the chosen values back into the context.
+// stores the chosen values plus transport metadata back into the context.
 //
 // Existing outgoing metadata values for these keys are replaced so repeated
 // interceptor invocation does not accumulate duplicates or preserve stale
@@ -25,6 +25,7 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 		md, ua, requestID := clientMetadata(ctx, userAgent, generator)
 
 		ctx = meta.WithAttributes(ctx,
+			meta.WithTransport(meta.Ignored("grpc")),
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(requestID),
 			meta.WithServiceMethod(meta.Ignored(fullMethod)),
@@ -38,7 +39,7 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 //
 // It ensures "user-agent" and "request-id" are present in outgoing metadata,
 // preferring values already present in the context or outgoing metadata, and
-// stores the chosen values back into the context.
+// stores the chosen values plus transport metadata back into the context.
 //
 // Existing outgoing metadata values for these keys are replaced so repeated
 // interceptor invocation does not accumulate duplicates or preserve stale
@@ -48,6 +49,7 @@ func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) gr
 		md, ua, requestID := clientMetadata(ctx, userAgent, generator)
 
 		ctx = meta.WithAttributes(ctx,
+			meta.WithTransport(meta.Ignored("grpc")),
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(requestID),
 			meta.WithServiceMethod(meta.Ignored(fullMethod)),

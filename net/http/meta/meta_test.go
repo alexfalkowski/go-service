@@ -82,6 +82,7 @@ func TestRoundTripperStoresServiceMethod(t *testing.T) {
 		env.UserAgent("agent"),
 		test.StaticIDGenerator("request-id"),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			require.Equal(t, meta.Ignored("http"), meta.Transport(req.Context()))
 			require.Equal(t, meta.Ignored("/users/123"), meta.ServiceMethod(req.Context()))
 			require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
 
@@ -117,6 +118,7 @@ func TestHandlerStoresServiceMethodFromPath(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
+		require.Equal(t, meta.Ignored("http"), meta.Transport(req.Context()))
 		require.Equal(t, meta.Ignored("/users/123"), meta.ServiceMethod(req.Context()))
 		require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
 	})
@@ -130,6 +132,7 @@ func TestHandlerStoresServiceMethodFromPattern(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
+		require.Equal(t, meta.Ignored("http"), meta.Transport(req.Context()))
 		require.Equal(t, meta.Ignored("GET /users/{id}"), meta.ServiceMethod(req.Context()))
 		require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
 	})

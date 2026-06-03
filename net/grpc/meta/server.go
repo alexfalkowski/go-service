@@ -24,6 +24,7 @@ import (
 // For non-ignored methods, the interceptor:
 //
 //   - copies incoming metadata from the request context
+//   - stores "grpc" as the ignored transport attribute
 //   - resolves "user-agent" and "request-id", preferring existing context
 //     attributes and then incoming metadata values
 //   - stores the RPC full method name as the ignored service-method attribute
@@ -55,6 +56,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 			return nil, status.SafeError(codes.InvalidArgument, err)
 		}
 		ctx = meta.WithAttributes(ctx,
+			meta.WithTransport(meta.Ignored("grpc")),
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(id),
 			meta.WithServiceMethod(meta.Ignored(info.FullMethod)),
@@ -76,7 +78,8 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 // visible to downstream stream interceptors that need request metadata for resource controls.
 //
 // The interceptor performs the same metadata-to-context projection as [UnaryServerInterceptor], but applies it to
-// the wrapped stream context and emits response headers through the stream API.
+// the wrapped stream context, stores "grpc" as the ignored transport attribute, and emits response headers
+// through the stream API.
 func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.StreamServerInterceptor {
 	serviceVersion := version.String()
 
@@ -102,6 +105,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 			auth = a
 		}
 		ctx = meta.WithAttributes(ctx,
+			meta.WithTransport(meta.Ignored("grpc")),
 			meta.WithUserAgent(ua),
 			meta.WithRequestID(id),
 			meta.WithServiceMethod(meta.Ignored(info.FullMethod)),

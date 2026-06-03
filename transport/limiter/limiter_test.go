@@ -219,6 +219,14 @@ func TestNewKeyMap(t *testing.T) {
 			ctx:  meta.WithAttributes(t.Context(), meta.WithServiceMethod(meta.String("GET /users/{id}"))),
 			want: meta.String("GET /users/{id}"),
 		},
+		{
+			name: "transport-service-method",
+			ctx: meta.WithAttributes(t.Context(),
+				meta.WithTransport(meta.String("http")),
+				meta.WithServiceMethod(meta.String("GET /users/{id}")),
+			),
+			want: meta.Ignored("http:GET /users/{id}"),
+		},
 	}
 
 	for _, tt := range tests {

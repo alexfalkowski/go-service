@@ -59,6 +59,7 @@ func TestPairHelpers(t *testing.T) {
 		{name: "system", key: meta.SystemKey, value: "system", pair: meta.WithSystem},
 		{name: "service", key: meta.ServiceKey, value: "service", pair: meta.WithService},
 		{name: "method", key: meta.MethodKey, value: "method", pair: meta.WithMethod},
+		{name: "transport", key: meta.TransportKey, value: "transport", pair: meta.WithTransport},
 		{name: "service method", key: meta.ServiceMethodKey, value: "service-method", pair: meta.WithServiceMethod},
 		{name: "code", key: meta.CodeKey, value: "code", pair: meta.WithCode},
 		{name: "duration", key: meta.DurationKey, value: "duration", pair: meta.WithDuration},
@@ -109,6 +110,7 @@ func TestWithAttributesKeepsParentContextIsolated(t *testing.T) {
 func TestAccessors(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(),
 		meta.WithRequestID(meta.String("request-id")),
+		meta.WithTransport(meta.String("transport")),
 		meta.WithServiceMethod(meta.String("service-method")),
 		meta.WithUserAgent(meta.String("user-agent")),
 		meta.WithUserID(meta.String("user-id")),
@@ -123,7 +125,9 @@ func TestAccessors(t *testing.T) {
 		want meta.Value
 	}{
 		{name: "request id", got: meta.RequestID(ctx), want: meta.String("request-id")},
+		{name: "transport", got: meta.Transport(ctx), want: meta.String("transport")},
 		{name: "service method", got: meta.ServiceMethod(ctx), want: meta.String("service-method")},
+		{name: "transport service method", got: meta.TransportServiceMethod(ctx), want: meta.Ignored("transport:service-method")},
 		{name: "user agent", got: meta.UserAgent(ctx), want: meta.String("user-agent")},
 		{name: "user id", got: meta.UserID(ctx), want: meta.String("user-id")},
 		{name: "ip addr", got: meta.IPAddr(ctx), want: meta.String("ip-addr")},
@@ -136,6 +140,15 @@ func TestAccessors(t *testing.T) {
 			require.Equal(t, test.want, test.got)
 		})
 	}
+}
+
+func TestTransportServiceMethod(t *testing.T) {
+	ctx := meta.WithAttributes(t.Context(),
+		meta.WithTransport(meta.Ignored("http")),
+		meta.WithServiceMethod(meta.Ignored("GET /users/{id}")),
+	)
+
+	require.Equal(t, meta.Ignored("http:GET /users/{id}"), meta.TransportServiceMethod(ctx))
 }
 
 func assertStrings(t *testing.T, ctx context.Context, name string, want meta.Map, export func(context.Context) meta.Map) {

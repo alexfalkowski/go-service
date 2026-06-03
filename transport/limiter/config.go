@@ -7,7 +7,8 @@ import "github.com/alexfalkowski/go-service/v2/time"
 // The limiter is typically constructed by [NewLimiter], which interprets these fields as:
 //
 //   - Kind: selects how request keys are derived from context metadata (see NewKeyMap for default kinds).
-//     Examples: "user-agent", "ip", "user-id", "service-method".
+//     Prefer "user-id" when authenticated identity is available, or "transport-service-method" for
+//     per-operation quotas. Other examples include "service-method", "ip", and "user-agent".
 //
 //   - Interval: a typed duration encoded as a Go duration string (e.g. "1s", "1m")
 //     defining the refill/measurement window used by the underlying token bucket store.
