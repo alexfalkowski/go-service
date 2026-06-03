@@ -44,7 +44,7 @@ func TestServerLimiterUnary(t *testing.T) {
 }
 
 func TestServerLimiterStream(t *testing.T) {
-	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 3)), test.WithWorldGRPC())
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -128,7 +128,7 @@ func TestClientLimiterDenialDoesNotOpenBreaker(t *testing.T) {
 }
 
 func TestClientLimiterStream(t *testing.T) {
-	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 3)), test.WithWorldGRPC())
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -166,7 +166,7 @@ func TestServerLimiterUsesVerifiedUserIDUnary(t *testing.T) {
 func TestServerLimiterUsesVerifiedUserIDStream(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
-		test.WithWorldServerLimiter(test.NewLimiterConfig("user-id", "1s", 0)),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-id", "1s", 3)),
 		test.WithWorldToken(&test.SequenceGenerator{}, test.AcceptingVerifier{}),
 		test.WithWorldGRPC(),
 	)
