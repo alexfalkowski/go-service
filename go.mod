@@ -9,7 +9,7 @@ require (
 	github.com/KimMachineGun/automemlimit v0.7.5
 	github.com/XSAM/otelsql v0.42.0
 	github.com/alexfalkowski/go-health/v2 v2.24.0
-	github.com/alexfalkowski/go-sync v1.21.0
+	github.com/alexfalkowski/go-sync v1.22.0
 	github.com/arl/statsviz v0.8.0
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
