@@ -42,10 +42,11 @@ type Default struct {
 //
 // The first match is opened and decoded using the encoder keyed by the discovered kind/extension.
 // If no configuration file is found, Decode returns ErrLocationMissing.
-// If default lookup reaches the user config directory candidate, the runtime is
-// expected to provide HOME or XDG_CONFIG_HOME so [os.UserConfigDir] can resolve.
-// Missing both is treated as a misconfigured runtime; use an explicit
-// "file:<path>" or "env:<ENV_VAR>" source to avoid the default lookup contract.
+// Default lookup may resolve the user config directory before probing file
+// candidates. The runtime is expected to provide HOME or XDG_CONFIG_HOME so
+// [os.UserConfigDir] can resolve. Missing both is treated as a misconfigured
+// runtime; use an explicit "file:<path>" or "env:<ENV_VAR>" source to avoid the
+// default lookup contract.
 //
 // Note: this decoder assumes the [encoding.Map] contains decoders for the supported kinds. In the standard
 // go-service module graph, those encoders are registered for you (for example via [encoding.Module] in

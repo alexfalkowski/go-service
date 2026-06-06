@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/body"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -57,7 +58,8 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
-	httpServer := http.NewServer(params.Config.Options, params.Config.GetTimeout(), params.Mux)
+	handler := body.NewHandler(params.Mux, params.Config.GetMaxReceiveSize().Bytes())
+	httpServer := http.NewServer(params.Config.Options, params.Config.GetTimeout(), handler)
 
 	cfg, err := newConfig(params.FS, params.Config)
 	if err != nil {

@@ -15,10 +15,10 @@
 //   - otherwise: uses the default lookup, searching for "<serviceName>.{yaml,yml,hjson,toml,json}" in common
 //     locations (executable directory, user config dir, and /etc).
 //
-// Default lookup intentionally requires a valid user configuration directory environment when it reaches
-// the user config directory candidate. Runtimes using default lookup should provide HOME or
-// XDG_CONFIG_HOME. Services that do not want that environment contract should pass an explicit source
-// with "file:<path>" or "env:<ENV_VAR>".
+// Default lookup intentionally requires a valid user configuration directory environment before lookup starts.
+// It may resolve the user config directory before probing file candidates, so runtimes using default lookup
+// should provide HOME or XDG_CONFIG_HOME. Services that do not want that environment contract should pass an
+// explicit source with "file:<path>" or "env:<ENV_VAR>".
 //
 // # Decoding and validation
 //
