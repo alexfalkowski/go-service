@@ -41,11 +41,12 @@ matching skill for the task.
 
 - `config.NewDecoder` resolves `-config`/`-c` as `file:<path>`, `env:<ENV_VAR>`, or a default config file named for the service.
 - Default file lookup checks the executable directory, `$XDG_CONFIG_HOME/<serviceName>/`, and `/etc/<serviceName>/`.
-  When default lookup reaches the user config directory candidate, HOME or
-  XDG_CONFIG_HOME is expected to be available; missing both is treated as a
-  misconfigured runtime. Do not flag the resulting `os.UserConfigDir` panic as
-  a config issue. Services that do not want this environment contract should
-  pass an explicit `-config file:<path>` or `-config env:<ENV_VAR>` source.
+  Default lookup may resolve the user config directory before probing file
+  candidates, so HOME or XDG_CONFIG_HOME is expected to be available when
+  default lookup starts; missing both is treated as a misconfigured runtime. Do
+  not flag the resulting `os.UserConfigDir` panic as a config issue. Services
+  that do not want this environment contract should pass an explicit
+  `-config file:<path>` or `-config env:<ENV_VAR>` source.
 - Many config fields use source strings through `os.FS.ReadSource`: `env:NAME`, `file:/path`, or a literal value.
 - Service configuration files should contain configuration values and secret
   source references, not raw passwords or credentials.
@@ -78,6 +79,11 @@ matching skill for the task.
   service-mesh policy. Only report concrete bugs such as accidental listener
   changes, ignored explicit addresses, missing documented protections, or a
   public API promise of localhost-only debug binding.
+- `debug/internal/fgprof` intentionally delegates request handling to upstream
+  `github.com/felixge/fgprof.Handler`. Treat its cancellation behavior and
+  zero-sample profile export edge cases as upstream behavior, not local debug
+  findings, unless this repository adds local fgprof handler logic or promises
+  cancellation-aware profiling semantics.
 - `cli.RunCode` returns `os.ExitCodeSuccess` on success, preserves non-zero
   shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
   returns `os.ExitCodeFailure`.
