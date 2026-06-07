@@ -67,6 +67,10 @@ type Token struct {
 //     is ignored. The SSH token kind typically identifies a key rather than a subject.
 //
 // If the configured kind is unknown, Generate returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
+//
+// The returned bytes should be treated as read-only. Generate may return a
+// zero-allocation byte view over the generated token string. Callers that need
+// to mutate the bytes should clone the returned slice first.
 func (t *Token) Generate(aud, sub string) ([]byte, error) {
 	switch t.cfg.Kind {
 	case "jwt":

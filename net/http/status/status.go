@@ -99,6 +99,10 @@ func IsError(err error) bool {
 //
 // Unknown codes fall back to StatusInternalServerError.
 func DefaultMessage(code int) string {
+	if code == http.StatusClientClosedRequest {
+		return "http: client closed request"
+	}
+
 	if msg := http.StatusText(code); msg != "" {
 		return "http: " + strings.ToLower(msg)
 	}

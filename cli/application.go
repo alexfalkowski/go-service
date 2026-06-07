@@ -196,7 +196,7 @@ func (a *Application) prefix(name string, err error) error {
 }
 
 func (a *Application) shutdownError(name string, err error, code int) error {
-	if code > 0 {
+	if code != os.ExitCodeSuccess {
 		err = errors.Join(err, shutdownError(code))
 	}
 
@@ -204,7 +204,7 @@ func (a *Application) shutdownError(name string, err error, code int) error {
 }
 
 func (a *Application) code(err error) int {
-	if codeErr, ok := errors.AsType[shutdownError](err); ok && codeErr.code() > 0 {
+	if codeErr, ok := errors.AsType[shutdownError](err); ok && codeErr.code() != os.ExitCodeSuccess {
 		return codeErr.code()
 	}
 

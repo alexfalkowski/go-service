@@ -67,6 +67,7 @@ func TestWriteErrorUsesSafeMessage(t *testing.T) {
 
 func TestDefaultMessage(t *testing.T) {
 	require.Equal(t, "http: bad request", httpstatus.DefaultMessage(http.StatusBadRequest))
+	require.Equal(t, "http: client closed request", httpstatus.DefaultMessage(http.StatusClientClosedRequest))
 	require.Equal(t, "http: internal server error", httpstatus.DefaultMessage(999))
 }
 
@@ -100,6 +101,18 @@ func TestWriteErrorUsesDefaultSafeMessageForUnknownStatusCode(t *testing.T) {
 	require.Equal(t, "http: internal server error", strings.TrimSpace(res.Body.String()))
 }
 
+func TestWriteErrorUsesClientClosedRequestMessageForCanceledGRPCStatus(t *testing.T) {
+	res := httptest.NewRecorder()
+	status, ok := grpcstatus.FromError(grpcstatus.Error(codes.Canceled, "client canceled"))
+	require.True(t, ok)
+
+	err := httpstatus.WriteError(res, status.Err())
+
+	require.NoError(t, err)
+	require.Equal(t, http.StatusClientClosedRequest, res.Code)
+	require.Equal(t, "http: client closed request", strings.TrimSpace(res.Body.String()))
+}
+
 func TestCodeRecognizesMaxBytesError(t *testing.T) {
 	err := &http.MaxBytesError{Limit: 1}
 
@@ -127,7 +140,7 @@ func TestCodeMapsGRPCStatusCodes(t *testing.T) {
 		want int
 	}{
 		{name: "ok", code: codes.OK, want: http.StatusOK},
-		{name: "canceled", code: codes.Canceled, want: 499},
+		{name: "canceled", code: codes.Canceled, want: http.StatusClientClosedRequest},
 		{name: "unknown", code: codes.Unknown, want: http.StatusInternalServerError},
 		{name: "invalid argument", code: codes.InvalidArgument, want: http.StatusBadRequest},
 		{name: "deadline exceeded", code: codes.DeadlineExceeded, want: http.StatusGatewayTimeout},

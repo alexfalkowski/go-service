@@ -137,6 +137,34 @@ func TestInvalidGenerateExpirationConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 
+func TestInvalidGenerateIssuerConfig(t *testing.T) {
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	token := paseto.NewToken(&paseto.Config{Expiration: time.Hour}, signer, verifier, uuid.NewGenerator())
+
+	tkn, err := token.Generate("hello", test.UserID.String())
+	require.Empty(t, tkn)
+	require.ErrorIs(t, err, errors.ErrInvalidConfig)
+}
+
+func TestInvalidVerifyIssuerConfig(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	generator := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
+	verifierToken := paseto.NewToken(&paseto.Config{Expiration: time.Hour}, signer, verifier, gen)
+
+	tkn, err := generator.Generate("hello", test.UserID.String())
+	require.NoError(t, err)
+
+	sub, err := verifierToken.Verify(tkn, "hello")
+	require.Empty(t, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidConfig)
+}
+
 func TestInvalid(t *testing.T) {
 	ec := test.NewEd25519()
 	signer, _ := ed25519.NewSigner(test.PEM, ec)

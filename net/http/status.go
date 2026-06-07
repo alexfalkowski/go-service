@@ -26,6 +26,9 @@ const StatusAlreadyReported = http.StatusAlreadyReported
 // StatusBadGateway is an alias of [http.StatusBadGateway].
 const StatusBadGateway = http.StatusBadGateway
 
+// StatusClientClosedRequest is the non-standard HTTP status code 499 used when the client closes the request.
+const StatusClientClosedRequest = 499
+
 // StatusConflict is an alias of [http.StatusConflict].
 const StatusConflict = http.StatusConflict
 

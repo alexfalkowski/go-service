@@ -15,11 +15,11 @@ import (
 // https://github.com/grpc-ecosystem/grpc-gateway/blob/main/runtime/errors.go
 //
 // Notes:
-//   - gRPC Canceled is mapped to 499 (Client Closed Request), which is a non-standard but commonly used
-//     code to represent client cancellations in HTTP environments.
+//   - gRPC Canceled is mapped to StatusClientClosedRequest (499), which is a non-standard but commonly
+//     used code to represent client cancellations in HTTP environments.
 var statusCodes = map[codes.Code]int{
 	codes.OK:                 http.StatusOK,
-	codes.Canceled:           499,
+	codes.Canceled:           http.StatusClientClosedRequest,
 	codes.Unknown:            http.StatusInternalServerError,
 	codes.InvalidArgument:    http.StatusBadRequest,
 	codes.DeadlineExceeded:   http.StatusGatewayTimeout,
