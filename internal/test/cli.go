@@ -3,11 +3,20 @@ package test
 import (
 	"log/slog"
 
+	"github.com/alexfalkowski/go-service/v2/cli"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/server"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
+
+// SetupCLI configures process arguments and CLI identity for tests.
+func SetupCLI(args ...string) {
+	os.Args = append([]string{Name.String()}, args...)
+	cli.Name = Name
+	cli.Version = Version
+}
 
 // LifecycleOption returns a DI option that reports lifecycle start and stop events.
 func LifecycleOption(started chan<- struct{}, stopped chan<- error) di.Option {
@@ -46,6 +55,24 @@ func ShutdownExitCodeOption(code int) di.Option {
 						_ = sh.Shutdown(di.ExitCode(code))
 					}()
 					return nil
+				},
+			})
+		}),
+	)
+}
+
+// ShutdownExitCodeAndStopErrorOption returns a DI option that requests shutdown with code and fails on stop.
+func ShutdownExitCodeAndStopErrorOption(code int) di.Option {
+	return di.Module(
+		di.NoLogger,
+		di.Constructor(slog.Default),
+		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
+			lc.Append(di.Hook{
+				OnStart: func(context.Context) error {
+					return sh.Shutdown(di.ExitCode(code))
+				},
+				OnStop: func(context.Context) error {
+					return ErrFailed
 				},
 			})
 		}),

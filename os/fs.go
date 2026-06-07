@@ -184,6 +184,11 @@ func (fs *FS) ExecutableDir() string {
 //
 // Note: "env:" values are not trimmed; they are returned exactly as provided by
 // the environment.
+//
+// The returned bytes should be treated as read-only. For env and literal
+// sources, ReadSource may return a zero-allocation byte view over string
+// storage. Callers that need to mutate the bytes should clone the returned
+// slice first.
 func (fs *FS) ReadSource(source string) ([]byte, error) {
 	kind, path := strings.CutColon(source)
 	switch kind {

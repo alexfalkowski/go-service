@@ -105,6 +105,12 @@ matching skill for the task.
   path that demonstrates `Serve` is invoked after `Stop`/`GracefulStop` and
   causes an incorrect exit code.
 - `telemetry.Register()` installs the global OpenTelemetry propagator.
+- Telemetry logger, metrics, and tracer setup installs process-global
+  OpenTelemetry providers. Do not flag provider globals leaking after DI startup
+  failure solely because lifecycle `OnStop` does not run; supported service
+  startup failure exits the process. Report only concrete same-process reuse bugs
+  in supported tests/tools, ignored successful shutdown cleanup, or an API
+  promise that failed startup is recoverable in the same process.
 - `cache.Register(...)` sets the package-level cache used by generic cache helpers.
   It is intentionally called by the supported wiring path during startup/test
   setup, not as a concurrent runtime reconfiguration API. Do not flag
@@ -298,6 +304,12 @@ matching skill for the task.
   issue unless this repository adds local feature trace attribute construction,
   logs/exports those values independently, or starts promising sanitized feature
   trace events by default.
+- OpenFeature registration uses process-global SDK state. Do not flag hooks or
+  provider globals leaking after DI startup failure solely because `OnStop` does
+  not run; supported service startup failure exits the process. Report only
+  concrete same-process reuse bugs in supported tests/tools, ignored successful
+  shutdown cleanup, or an API promise that failed startup is recoverable in the
+  same process.
 - The UUIDv7 generator intentionally calls `google/uuid.EnableRandPool` at
   package init time. UUID is the default ID generator and sits on request
   metadata hot paths; the process-wide heap-backed random pool tradeoff is

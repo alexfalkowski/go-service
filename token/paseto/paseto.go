@@ -51,7 +51,7 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 	if t.signer == nil || len(t.signer.PrivateKey) == 0 || t.generator == nil {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
-	if t.cfg.Expiration <= 0 {
+	if strings.IsEmpty(t.cfg.Issuer) || t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
 
@@ -92,7 +92,7 @@ func (t *Token) Verify(token, aud string) (string, error) {
 	if t.verifier == nil || len(t.verifier.PublicKey) == 0 {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
-	if t.cfg.Expiration <= 0 {
+	if strings.IsEmpty(t.cfg.Issuer) || t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
 
