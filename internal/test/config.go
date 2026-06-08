@@ -23,6 +23,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	"github.com/alexfalkowski/go-service/v2/token/keys"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/alexfalkowski/go-service/v2/transport"
@@ -73,21 +74,28 @@ func NewToken(kind string) *token.Config {
 		JWT: &jwt.Config{
 			Issuer:     "iss",
 			Expiration: time.Hour,
-			KeyID:      "1234567890",
+			Key:        "1234567890",
+			Keys: keys.Map{
+				"1234567890": {
+					Config: NewEd25519(),
+				},
+			},
 		},
 		Paseto: &paseto.Config{
 			Issuer:     "iss",
 			Expiration: time.Hour,
+			Key:        "1234567890",
+			Keys: keys.Map{
+				"1234567890": {
+					Config: NewEd25519(),
+				},
+			},
 		},
 		SSH: &ssh.Config{
 			Expiration: time.Hour,
-			Key: &ssh.Key{
-				Name:   UserID.String(),
-				Config: NewSSH("secrets/ssh_public", "secrets/ssh_private"),
-			},
+			Key:        UserID.String(),
 			Keys: ssh.Keys{
-				&ssh.Key{
-					Name:   UserID.String(),
+				UserID.String(): {
 					Config: NewSSH("secrets/ssh_public", "secrets/ssh_private"),
 				},
 			},

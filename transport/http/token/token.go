@@ -2,7 +2,6 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/meta"
@@ -39,11 +38,11 @@ type AccessController access.Controller
 // JWT/PASETO/SSH token kinds as configured by the underlying token package).
 //
 // If cfg is disabled, it returns nil so callers can treat token auth as not configured.
-func NewToken(name env.Name, cfg *token.Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
+func NewToken(name env.Name, cfg *token.Config, fs *os.FS, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
 	}
-	return &Token{Token: token.NewToken(name, cfg, fs, sig, ver, gen)}
+	return &Token{Token: token.NewToken(name, cfg, fs, gen)}
 }
 
 // Token wraps *[github.com/alexfalkowski/go-service/v2/token.Token] for HTTP transport integration.

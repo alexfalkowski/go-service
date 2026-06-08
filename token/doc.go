@@ -32,9 +32,9 @@
 //     configured Expiration.
 //
 // For JWT and PASETO, the returned identity is the non-empty subject claim
-// ("sub"). For SSH-style tokens, the returned identity is the non-empty key id
-// ("kid"), because that format authenticates a signing key name rather than a
-// subject claim.
+// ("sub"). For SSH-style tokens, the returned identity is also "sub"; SSH
+// requires that "sub" match the signed key id ("kid") because that format
+// authenticates a trusted peer key.
 //
 // # Facade behavior and unknown kinds
 //

@@ -2,8 +2,9 @@ package paseto
 
 import (
 	"aidanwoods.dev/go-paseto"
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
@@ -11,16 +12,16 @@ import (
 
 // NewToken constructs a Token that issues and validates PASETO v4 public (asymmetric) tokens.
 //
-// The resulting Token uses Ed25519 keys for signing and verification and an [id.Generator]
-// for producing unique token IDs (jti). The keys are provided by the caller (typically
-// via DI wiring).
+// The resulting Token uses configured Ed25519 keys for signing and verification and an
+// [id.Generator] for producing unique token IDs (jti).
 //
 // Enablement is modeled by presence: if cfg is nil, NewToken returns nil.
-func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
+func NewToken(cfg *Config, fs *os.FS, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
 	}
-	return &Token{cfg: cfg, signer: sig, verifier: ver, generator: gen}
+
+	return &Token{cfg: cfg, decoder: pem.NewDecoder(fs), generator: gen}
 }
 
 // Token generates and verifies PASETO v4 public tokens.
@@ -30,8 +31,7 @@ func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Ge
 // Missing generation or verification dependencies are reported as [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 type Token struct {
 	cfg       *Config
-	signer    *ed25519.Signer
-	verifier  *ed25519.Verifier
+	decoder   *pem.Decoder
 	generator id.Generator
 }
 
@@ -47,12 +47,18 @@ type Token struct {
 //   - iss: from cfg.Issuer
 //   - aud: set to the provided aud
 //   - sub: set to the provided sub
+//   - footer kid: from cfg.Key
 func (t *Token) Generate(aud, sub string) (string, error) {
-	if t.signer == nil || len(t.signer.PrivateKey) == 0 || t.generator == nil {
+	if t.generator == nil {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
-	if strings.IsEmpty(t.cfg.Issuer) || t.cfg.Expiration <= 0 {
+	if strings.IsEmpty(t.cfg.Issuer) || strings.IsEmpty(t.cfg.Key) || t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
+	}
+
+	key, err := t.cfg.Keys.Get(t.cfg.Key).Signer(t.decoder)
+	if err != nil {
+		return strings.Empty, err
 	}
 
 	now := time.Now()
@@ -65,7 +71,13 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 	token.SetAudience(aud)
 	token.SetSubject(sub)
 
-	s, err := paseto.NewV4AsymmetricSecretKeyFromBytes(t.signer.PrivateKey)
+	rawFooter, err := encodeFooter(&footer{KeyID: t.cfg.Key})
+	if err != nil {
+		return strings.Empty, err
+	}
+	token.SetFooter(rawFooter)
+
+	s, err := paseto.NewV4AsymmetricSecretKeyFromBytes(key.PrivateKey)
 	if err != nil {
 		return strings.Empty, err
 	}
@@ -89,9 +101,6 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 // the upstream PASETO library. Local config, subject, and signed-lifetime checks
 // return shared sentinel errors from token/errors.
 func (t *Token) Verify(token, aud string) (string, error) {
-	if t.verifier == nil || len(t.verifier.PublicKey) == 0 {
-		return strings.Empty, errors.ErrInvalidConfig
-	}
 	if strings.IsEmpty(t.cfg.Issuer) || t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
@@ -102,7 +111,12 @@ func (t *Token) Verify(token, aud string) (string, error) {
 	parser.AddRule(paseto.ValidAt(time.Now()))
 	parser.AddRule(paseto.ForAudience(aud))
 
-	s, err := paseto.NewV4AsymmetricPublicKeyFromBytes(t.verifier.PublicKey)
+	key, err := t.publicKey(token, parser)
+	if err != nil {
+		return strings.Empty, err
+	}
+
+	s, err := paseto.NewV4AsymmetricPublicKeyFromBytes(key)
 	if err != nil {
 		return strings.Empty, err
 	}
@@ -117,6 +131,30 @@ func (t *Token) Verify(token, aud string) (string, error) {
 	}
 
 	return subject(parsed)
+}
+
+func (t *Token) publicKey(token string, parser paseto.Parser) ([]byte, error) {
+	raw, err := parser.UnsafeParseFooter(paseto.V4Public, token)
+	if err != nil {
+		return nil, err
+	}
+
+	footer, err := parseFooter(raw)
+	if err != nil {
+		return nil, err
+	}
+
+	key := t.cfg.Keys.Get(footer.KeyID)
+	if key == nil {
+		return nil, errors.ErrInvalidKeyID
+	}
+
+	verifier, err := key.Verifier(t.decoder)
+	if err != nil {
+		return nil, err
+	}
+
+	return verifier.PublicKey, nil
 }
 
 func subject(token *paseto.Token) (string, error) {

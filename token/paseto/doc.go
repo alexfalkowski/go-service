@@ -16,13 +16,15 @@
 // public-key signatures.
 //
 // The implementation expects:
-//   - an Ed25519 signing key for issuance, and
-//   - an Ed25519 verification key for validation.
+//   - an active key id for issuance, and
+//   - a named Ed25519 key set for issuance and validation.
 //
-// These keys are provided to NewToken by the caller (typically via DI wiring)
-// using go-service crypto/ed25519 helpers.
+// Key material is loaded from [Config.Keys] using the *[os.FS] passed to NewToken.
+// Generate signs with [Config.Key], writes that id to the PASETO footer as
+// "kid", and Verify selects the matching configured public key before signature
+// verification.
 //
-// # Claims
+// # Claims and footer
 //
 // Tokens are issued with common PASETO claims and standard identity fields.
 // Issued tokens set:
@@ -34,6 +36,10 @@
 //   - iss (issuer): from [Config.Issuer]
 //   - aud (audience): from the Generate aud argument
 //   - sub (subject): from the Generate sub argument
+//
+// Issued tokens also carry a footer:
+//
+//   - kid (key id): from [Config.Key]
 //
 // # Verification semantics and errors
 //
@@ -49,7 +55,8 @@
 //     upstream library),
 //   - for the expected audience (aud).
 //
-// The signature is verified using the configured Ed25519 public key.
+// The signature is verified using the Ed25519 public key selected by the footer
+// "kid" value.
 //
 // On failure, parser, rule, signature, and key-construction errors may come
 // from the upstream PASETO library. Local config, subject, and signed-lifetime
@@ -57,25 +64,12 @@
 //
 // # Configuration and enablement
 //
-// Config provides issuer and expiration settings. A nil *[Config] is treated as
-// disabled: NewToken returns nil.
+// Config provides issuer, active key id, named key set, and expiration settings.
+// A nil *[Config] is treated as disabled: NewToken returns nil.
 //
 // Expiration is a typed duration. In config files it is encoded using the standard
 // Go duration string format (such as "15m" or "24h"), so invalid values fail during
 // decoding rather than during token issuance.
-//
-// # Secret field note
-//
-// Config contains a Secret field described as PASETO key material using the
-// go-service "source string" convention (env:/file:/literal). However, the
-// current implementation constructs PASETO v4 public tokens using Ed25519 key
-// material supplied via crypto/ed25519.Signer and crypto/ed25519.Verifier passed
-// to NewToken. The Secret field is therefore not consumed directly by this
-// package's Token implementation.
-//
-// If your service wants to source key material from config, resolve [Config.Secret]
-// (using [os.FS.ReadSource]) and construct the Ed25519 signer/verifier accordingly
-// in your wiring layer.
 //
 // # Relationship to the top-level token facade
 //

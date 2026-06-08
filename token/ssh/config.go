@@ -2,7 +2,7 @@ package ssh
 
 import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
-	"github.com/alexfalkowski/go-service/v2/slices"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
@@ -15,43 +15,40 @@ import (
 //
 // Config separates those concerns:
 //
-//   - Key is the single signing key used by [Token.Generate].
-//   - Keys is the set of verification keys that [Token.Verify] may use.
+//   - Key is the active signing key id used by [Token.Generate].
+//   - Keys is the named key set that [Token.Generate] and [Token.Verify] may use.
 //   - Expiration is how long newly generated tokens are valid.
 //
 // # Key rotation and multi-key verification
 //
-// Verification is name-based: the signed token claims embed a key id, and
-// verification selects a matching public key config from Keys (via [Keys.Get](name)).
+// Verification is id-based: the signed token claims embed a key id, and
+// verification selects a matching public key config from Keys (via [Keys.Get]).
 // This design supports key rotation by allowing you to:
 //
-//   - mint new tokens with the active signing key name, and
+//   - mint new tokens with the active signing key id, and
 //   - continue verifying older tokens by keeping historical public keys in Keys.
 //
-// Note: This package does not enforce that [Key.Name] exists in Keys. If you want tokens
-// minted by Key to be verifiable by this same Config, include the corresponding public
-// key entry in Keys under the same name.
+// The active Key entry must exist in Keys and include private key material when
+// generating tokens.
 //
 // # Enablement
 //
 // Enablement is modeled by presence and content: a nil *[Config] is disabled, and a config
 // with neither Key nor Keys is disabled (see IsEnabled).
 type Config struct {
-	// Key is the signing key configuration used to mint SSH-style tokens.
+	// Keys is the named key set used to mint and verify SSH-style tokens.
 	//
-	// This should include the private key material (via the embedded crypto/ssh.Config
-	// fields) and a logical Name that will be embedded in minted tokens.
-	//
-	// If Key is nil, Token.Generate will not be usable.
-	Key *Key `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
-
-	// Keys is the set of verification keys that may be used to validate SSH-style tokens.
-	//
-	// Verification uses the token's embedded key id to select a key from this set. If Keys
-	// is empty or does not contain the token's key id, verification fails.
+	// Generation uses Key to select private key material. Verification uses the
+	// token's embedded key id to select public key material.
 	//
 	// If Keys is nil/empty, Token.Verify will not be usable.
 	Keys Keys `yaml:"keys,omitempty" json:"keys,omitempty" toml:"keys,omitempty"`
+
+	// Key is the active signing key id used to mint SSH-style tokens.
+	//
+	// The selected key id is embedded in minted tokens as both the "kid" and "sub"
+	// claims because SSH tokens authenticate the trusted peer key itself.
+	Key string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
 
 	// Expiration is the duration used to set token expiration.
 	//
@@ -63,38 +60,28 @@ type Config struct {
 //
 // It returns true when the receiver is non-nil and at least one of Key or Keys is present.
 func (c *Config) IsEnabled() bool {
-	return c != nil && (c.Key != nil || c.Keys != nil)
+	return c != nil && (!strings.IsEmpty(c.Key) || len(c.Keys) > 0)
 }
 
-// Key describes SSH key material configuration along with its logical name.
+// Key describes SSH key material configuration.
 //
 // The embedded [github.com/alexfalkowski/go-service/v2/crypto/ssh.Config] provides the public/private key source configuration
 // used by go-service crypto/ssh helpers (typically via an [os.FS]).
-//
-// The Name identifies the key logically and is used to select keys during verification.
 type Key struct {
 	// Config contains the SSH key material configuration (public/private key sources).
 	*ssh.Config `yaml:",inline" json:",inline" toml:",inline"`
-
-	// Name is the logical key name used to select a key (for example via [Keys.Get]).
-	//
-	// For signing, this name is embedded into the signed token claims as the key id.
-	// For verification, this name is used as the lookup key into Keys.
-	Name string `yaml:"name,omitempty" json:"name,omitempty" toml:"name,omitempty"`
 }
 
-// Keys is a list of named SSH keys.
+// Keys maps key ids to SSH key material.
 //
-// This is used for verification key selection. Names are expected (but not required)
-// to be unique; Get returns the first match.
-type Keys []*Key
+// This is used for signing and verification key selection.
+type Keys map[string]*Key
 
-// Get returns the key with the given name, or nil if no matching key exists.
-//
-// If multiple keys share the same Name, Get returns the first match.
-// Nil entries in the slice are ignored.
-func (c Keys) Get(name string) *Key {
-	key, _ := slices.ElemFunc(c, func(k *Key) bool { return k != nil && k.Name == name })
+// Get returns the key with the given id, or nil if no matching key exists.
+func (c Keys) Get(id string) *Key {
+	if c == nil {
+		return nil
+	}
 
-	return key
+	return c[id]
 }

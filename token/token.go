@@ -2,7 +2,6 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -31,15 +30,15 @@ import (
 //
 // Unknown kinds are treated as invalid configuration by the facade methods: Generate and Verify
 // return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
-func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
+func NewToken(name env.Name, cfg *Config, fs *os.FS, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
 	}
 
 	return &Token{
 		name: name, cfg: cfg,
-		jwt:    jwt.NewToken(cfg.JWT, sig, ver, gen),
-		paseto: paseto.NewToken(cfg.Paseto, sig, ver, gen),
+		jwt:    jwt.NewToken(cfg.JWT, fs, gen),
+		paseto: paseto.NewToken(cfg.Paseto, fs, gen),
 		ssh:    ssh.NewToken(cfg.SSH, fs),
 	}
 }
@@ -64,7 +63,7 @@ type Token struct {
 //     subject (sub).
 //
 //   - "ssh": the token is minted for the provided audience (aud), while subject
-//     is ignored. The SSH token kind typically identifies a key rather than a subject.
+//     is derived from the active trusted key id.
 //
 // If the configured kind is unknown, Generate returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 //
@@ -104,7 +103,7 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 //     returns the subject ("sub") claim.
 //
 //   - "ssh": verifies the token for the provided audience (aud), and the
-//     returned string is the selected key name (not a JWT/PASETO "sub" claim).
+//     returned string is the "sub" claim, which must match the signed key id.
 //
 // If the configured kind is unknown, Verify returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 func (t *Token) Verify(tkn []byte, aud string) (string, error) {

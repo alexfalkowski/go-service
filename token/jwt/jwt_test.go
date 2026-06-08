@@ -10,10 +10,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	"github.com/alexfalkowski/go-service/v2/token/keys"
 	"github.com/stretchr/testify/require"
 )
 
 func TestConfigRejectsInvalidValues(t *testing.T) {
+	valid := test.NewToken("jwt").JWT
 	tests := []struct {
 		config *jwt.Config
 		name   string
@@ -21,14 +23,24 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 		{
 			name: "missing issuer",
 			config: &jwt.Config{
-				KeyID:      "1234567890",
+				Key:        valid.Key,
+				Keys:       valid.Keys,
 				Expiration: time.Hour,
 			},
 		},
 		{
-			name: "missing key id",
+			name: "missing key",
 			config: &jwt.Config{
 				Issuer:     "iss",
+				Keys:       valid.Keys,
+				Expiration: time.Hour,
+			},
+		},
+		{
+			name: "missing keys",
+			config: &jwt.Config{
+				Issuer:     "iss",
+				Key:        valid.Key,
 				Expiration: time.Hour,
 			},
 		},
@@ -36,14 +48,16 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 			name: "zero expiration",
 			config: &jwt.Config{
 				Issuer: "iss",
-				KeyID:  "1234567890",
+				Key:    valid.Key,
+				Keys:   valid.Keys,
 			},
 		},
 		{
 			name: "negative expiration",
 			config: &jwt.Config{
 				Issuer:     "iss",
-				KeyID:      "1234567890",
+				Key:        valid.Key,
+				Keys:       valid.Keys,
 				Expiration: -time.Second,
 			},
 		},
@@ -55,17 +69,12 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 		})
 	}
 
-	cfg := &jwt.Config{Issuer: "iss", KeyID: "1234567890", Expiration: time.Hour}
-	require.NoError(t, test.Validator.Struct(cfg))
+	require.NoError(t, test.Validator.Struct(valid))
 }
 
 func TestValid(t *testing.T) {
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-
 	cfg := test.NewToken("jwt")
-	token := jwt.NewToken(cfg.JWT, signer, verifier, uuid.NewGenerator())
+	token := jwt.NewToken(cfg.JWT, test.FS, uuid.NewGenerator())
 
 	tkn, err := token.Generate("hello", test.UserID.String())
 	require.NoError(t, err)
@@ -78,11 +87,8 @@ func TestValid(t *testing.T) {
 
 func TestInvalid(t *testing.T) {
 	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	gen := uuid.NewGenerator()
-	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
+	token := jwt.NewToken(cfg.JWT, test.FS, gen)
 
 	tests := []struct {
 		name  string
@@ -116,7 +122,9 @@ func TestInvalid(t *testing.T) {
 	})
 
 	t.Run("invalid issuer", func(t *testing.T) {
-		issuerToken := jwt.NewToken(&jwt.Config{Issuer: "test", Expiration: time.Hour, KeyID: "1234567890"}, signer, verifier, gen)
+		issuerCfg := cloneConfig(cfg.JWT)
+		issuerCfg.Issuer = "test"
+		issuerToken := jwt.NewToken(issuerCfg, test.FS, gen)
 
 		tkn, err := issuerToken.Generate("hello", test.UserID.String())
 		require.NoError(t, err)
@@ -128,26 +136,29 @@ func TestInvalid(t *testing.T) {
 	})
 
 	t.Run("disabled config", func(t *testing.T) {
-		token := jwt.NewToken(nil, signer, verifier, gen)
+		token := jwt.NewToken(nil, test.FS, gen)
 		require.Nil(t, token)
 	})
 }
 
 func TestInvalidSignature(t *testing.T) {
 	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-	gen := uuid.NewGenerator()
-	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
+	token := jwt.NewToken(cfg.JWT, test.FS, uuid.NewGenerator())
 
-	_, wrongPrivate, err := ed25519.NewGenerator(rand.NewGenerator(rand.NewReader())).Generate()
+	_, private, err := ed25519.NewGenerator(rand.NewGenerator(rand.NewReader())).Generate()
 	require.NoError(t, err)
 
-	wrongSigner, err := ed25519.NewSigner(test.PEM, &ed25519.Config{Private: wrongPrivate})
-	require.NoError(t, err)
+	wrongCfg := cloneConfig(cfg.JWT)
+	wrongCfg.Keys = keys.Map{
+		wrongCfg.Key: {
+			Config: &ed25519.Config{
+				Public:  test.NewEd25519().Public,
+				Private: private,
+			},
+		},
+	}
+	wrong := jwt.NewToken(wrongCfg, test.FS, uuid.NewGenerator())
 
-	wrong := jwt.NewToken(cfg.JWT, wrongSigner, verifier, gen)
 	tkn, err := wrong.Generate("hello", test.UserID.String())
 	require.NoError(t, err)
 
@@ -158,14 +169,16 @@ func TestInvalidSignature(t *testing.T) {
 
 func TestInvalidKeyID(t *testing.T) {
 	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	gen := uuid.NewGenerator()
-	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
+	token := jwt.NewToken(cfg.JWT, test.FS, gen)
 
 	t.Run("unexpected key id", func(t *testing.T) {
-		wrong := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: time.Hour, KeyID: "test"}, signer, verifier, gen)
+		wrongCfg := cloneConfig(cfg.JWT)
+		wrongCfg.Key = "test"
+		wrongCfg.Keys = keys.Map{
+			"test": cfg.JWT.Keys.Get(cfg.JWT.Key),
+		}
+		wrong := jwt.NewToken(wrongCfg, test.FS, gen)
 
 		tkn, err := wrong.Generate("hello", test.UserID.String())
 		require.NoError(t, err)
@@ -177,7 +190,7 @@ func TestInvalidKeyID(t *testing.T) {
 	})
 
 	t.Run("missing key id", func(t *testing.T) {
-		tkn := signedJWT(t, cfg.JWT, signer, func(header map[string]any) {
+		tkn := signedJWT(t, cfg.JWT, func(header map[string]any) {
 			delete(header, "kid")
 		}, nil)
 
@@ -187,7 +200,7 @@ func TestInvalidKeyID(t *testing.T) {
 	})
 
 	t.Run("empty key id", func(t *testing.T) {
-		tkn := signedJWT(t, cfg.JWT, signer, func(header map[string]any) {
+		tkn := signedJWT(t, cfg.JWT, func(header map[string]any) {
 			header["kid"] = ""
 		}, nil)
 
@@ -197,7 +210,7 @@ func TestInvalidKeyID(t *testing.T) {
 	})
 
 	t.Run("non string key id", func(t *testing.T) {
-		tkn := signedJWT(t, cfg.JWT, signer, func(header map[string]any) {
+		tkn := signedJWT(t, cfg.JWT, func(header map[string]any) {
 			header["kid"] = 123
 		}, nil)
 
@@ -209,10 +222,7 @@ func TestInvalidKeyID(t *testing.T) {
 
 func TestInvalidRequiredClaims(t *testing.T) {
 	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-	token := jwt.NewToken(cfg.JWT, signer, verifier, uuid.NewGenerator())
+	token := jwt.NewToken(cfg.JWT, test.FS, uuid.NewGenerator())
 
 	tests := []struct {
 		claims func(*jwt.RegisteredClaims)
@@ -240,7 +250,7 @@ func TestInvalidRequiredClaims(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tkn := signedJWT(t, cfg.JWT, signer, nil, tt.claims)
+			tkn := signedJWT(t, cfg.JWT, nil, tt.claims)
 
 			sub, err := token.Verify(tkn, "hello")
 			require.Empty(t, sub)
@@ -251,12 +261,13 @@ func TestInvalidRequiredClaims(t *testing.T) {
 
 func TestInvalidLifetimeExceedsConfig(t *testing.T) {
 	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	gen := uuid.NewGenerator()
-	generator := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: time.Hour, KeyID: cfg.JWT.KeyID}, signer, verifier, gen)
-	verifierToken := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: time.Minute, KeyID: cfg.JWT.KeyID}, signer, verifier, gen)
+	generatorCfg := cloneConfig(cfg.JWT)
+	generatorCfg.Expiration = time.Hour
+	verifierCfg := cloneConfig(cfg.JWT)
+	verifierCfg.Expiration = time.Minute
+	generator := jwt.NewToken(generatorCfg, test.FS, gen)
+	verifierToken := jwt.NewToken(verifierCfg, test.FS, gen)
 
 	tkn, err := generator.Generate("hello", test.UserID.String())
 	require.NoError(t, err)
@@ -268,12 +279,11 @@ func TestInvalidLifetimeExceedsConfig(t *testing.T) {
 
 func TestInvalidVerifyExpirationConfig(t *testing.T) {
 	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	gen := uuid.NewGenerator()
-	generator := jwt.NewToken(cfg.JWT, signer, verifier, gen)
-	verifierToken := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, KeyID: cfg.JWT.KeyID}, signer, verifier, gen)
+	generator := jwt.NewToken(cfg.JWT, test.FS, gen)
+	verifierCfg := cloneConfig(cfg.JWT)
+	verifierCfg.Expiration = 0
+	verifierToken := jwt.NewToken(verifierCfg, test.FS, gen)
 
 	tkn, err := generator.Generate("hello", test.UserID.String())
 	require.NoError(t, err)
@@ -285,65 +295,47 @@ func TestInvalidVerifyExpirationConfig(t *testing.T) {
 
 func TestInvalidConfigDoesNotPanic(t *testing.T) {
 	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	gen := uuid.NewGenerator()
 
-	t.Run("generate without signer", func(t *testing.T) {
-		token := jwt.NewToken(cfg.JWT, nil, verifier, gen)
-
-		tkn, err := token.Generate("hello", test.UserID.String())
-		require.Empty(t, tkn)
-		require.ErrorIs(t, err, errors.ErrInvalidConfig)
-	})
-
 	t.Run("generate without private key", func(t *testing.T) {
-		token := jwt.NewToken(cfg.JWT, &ed25519.Signer{}, verifier, gen)
+		noPrivate := cloneConfig(cfg.JWT)
+		noPrivate.Keys = keys.Map{
+			noPrivate.Key: &keys.Config{Config: &ed25519.Config{Public: test.NewEd25519().Public}},
+		}
+		token := jwt.NewToken(noPrivate, test.FS, gen)
 
 		tkn, err := token.Generate("hello", test.UserID.String())
 		require.Empty(t, tkn)
-		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+		require.Error(t, err)
 	})
 
 	t.Run("generate without generator", func(t *testing.T) {
-		token := jwt.NewToken(cfg.JWT, signer, verifier, nil)
+		token := jwt.NewToken(cfg.JWT, test.FS, nil)
 
 		tkn, err := token.Generate("hello", test.UserID.String())
 		require.Empty(t, tkn)
-		require.ErrorIs(t, err, errors.ErrInvalidConfig)
-	})
-
-	t.Run("verify without verifier", func(t *testing.T) {
-		valid := jwt.NewToken(cfg.JWT, signer, verifier, gen)
-		tkn, err := valid.Generate("hello", test.UserID.String())
-		require.NoError(t, err)
-
-		token := jwt.NewToken(cfg.JWT, signer, nil, gen)
-
-		sub, err := token.Verify(tkn, "hello")
-		require.Empty(t, sub)
 		require.ErrorIs(t, err, errors.ErrInvalidConfig)
 	})
 
 	t.Run("verify without public key", func(t *testing.T) {
-		valid := jwt.NewToken(cfg.JWT, signer, verifier, gen)
+		valid := jwt.NewToken(cfg.JWT, test.FS, gen)
 		tkn, err := valid.Generate("hello", test.UserID.String())
 		require.NoError(t, err)
 
-		token := jwt.NewToken(cfg.JWT, signer, &ed25519.Verifier{}, gen)
+		noPublic := cloneConfig(cfg.JWT)
+		noPublic.Keys = keys.Map{
+			noPublic.Key: &keys.Config{Config: &ed25519.Config{Private: test.NewEd25519().Private}},
+		}
+		token := jwt.NewToken(noPublic, test.FS, gen)
 
 		sub, err := token.Verify(tkn, "hello")
 		require.Empty(t, sub)
-		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+		require.Error(t, err)
 	})
 }
 
 func TestInvalidGenerateConfigDoesNotPanic(t *testing.T) {
 	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(test.PEM, ec)
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	gen := uuid.NewGenerator()
 
 	for _, tt := range []struct {
@@ -353,14 +345,16 @@ func TestInvalidGenerateConfigDoesNotPanic(t *testing.T) {
 		{
 			name: "generate without issuer",
 			config: &jwt.Config{
-				KeyID:      cfg.JWT.KeyID,
+				Key:        cfg.JWT.Key,
+				Keys:       cfg.JWT.Keys,
 				Expiration: cfg.JWT.Expiration,
 			},
 		},
 		{
-			name: "generate without key id",
+			name: "generate without key",
 			config: &jwt.Config{
 				Issuer:     cfg.JWT.Issuer,
+				Keys:       cfg.JWT.Keys,
 				Expiration: cfg.JWT.Expiration,
 			},
 		},
@@ -368,20 +362,22 @@ func TestInvalidGenerateConfigDoesNotPanic(t *testing.T) {
 			name: "generate without expiration",
 			config: &jwt.Config{
 				Issuer: cfg.JWT.Issuer,
-				KeyID:  cfg.JWT.KeyID,
+				Key:    cfg.JWT.Key,
+				Keys:   cfg.JWT.Keys,
 			},
 		},
 		{
 			name: "generate with negative expiration",
 			config: &jwt.Config{
 				Issuer:     cfg.JWT.Issuer,
-				KeyID:      cfg.JWT.KeyID,
+				Key:        cfg.JWT.Key,
+				Keys:       cfg.JWT.Keys,
 				Expiration: -time.Second,
 			},
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			token := jwt.NewToken(tt.config, signer, verifier, gen)
+			token := jwt.NewToken(tt.config, test.FS, gen)
 
 			tkn, err := token.Generate("hello", test.UserID.String())
 			require.Empty(t, tkn)
@@ -392,23 +388,30 @@ func TestInvalidGenerateConfigDoesNotPanic(t *testing.T) {
 
 func TestInvalidPrivateKeyDoesNotPanic(t *testing.T) {
 	cfg := test.NewToken("jwt")
-	ec := test.NewEd25519()
-	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-	token := jwt.NewToken(cfg.JWT, &ed25519.Signer{PrivateKey: []byte("short")}, verifier, uuid.NewGenerator())
+	badPrivate := cloneConfig(cfg.JWT)
+	badPrivate.Keys = keys.Map{
+		badPrivate.Key: &keys.Config{Config: &ed25519.Config{
+			Public:  test.NewEd25519().Public,
+			Private: "short",
+		}},
+	}
+	token := jwt.NewToken(badPrivate, test.FS, uuid.NewGenerator())
 
 	tkn, err := token.Generate("hello", test.UserID.String())
 	require.Empty(t, tkn)
-	require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	require.Error(t, err)
 }
 
 func signedJWT(
 	t *testing.T,
 	cfg *jwt.Config,
-	signer *ed25519.Signer,
 	header func(map[string]any),
 	claimsFunc func(*jwt.RegisteredClaims),
 ) string {
 	t.Helper()
+
+	signer, err := cfg.Keys.Get(cfg.Key).Signer(test.PEM)
+	require.NoError(t, err)
 
 	now := time.Now()
 	claims := &jwt.RegisteredClaims{
@@ -425,7 +428,7 @@ func signedJWT(
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
-	token.Header["kid"] = cfg.KeyID
+	token.Header["kid"] = cfg.Key
 	if header != nil {
 		header(token.Header)
 	}
@@ -434,4 +437,13 @@ func signedJWT(
 	require.NoError(t, err)
 
 	return tkn
+}
+
+func cloneConfig(cfg *jwt.Config) *jwt.Config {
+	return &jwt.Config{
+		Issuer:     cfg.Issuer,
+		Key:        cfg.Key,
+		Keys:       cfg.Keys,
+		Expiration: cfg.Expiration,
+	}
 }

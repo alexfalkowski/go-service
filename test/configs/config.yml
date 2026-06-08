@@ -80,7 +80,11 @@ transport:
       jwt:
         iss: "iss"
         exp: "1h"
-        kid: "1234567890"
+        key: "1234567890"
+        keys:
+          "1234567890":
+            public: file:../test/secrets/ed25519_public
+            private: file:../test/secrets/ed25519_private
   grpc:
     address: tcp://localhost:12000
     max_receive_size: 3MB
@@ -109,4 +113,8 @@ transport:
       jwt:
         iss: "iss"
         exp: "1h"
-        kid: "1234567890"
+        key: "1234567890"
+        keys:
+          "1234567890":
+            public: file:../test/secrets/ed25519_public
+            private: file:../test/secrets/ed25519_private

@@ -3,7 +3,6 @@ package http_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
@@ -30,21 +29,16 @@ func TestNewControllerWithTokenConfig(t *testing.T) {
 }
 
 func TestNewTokenWithoutTokenConfig(t *testing.T) {
-	tkn := http.NewToken(test.Name, test.NewHTTPTransportConfig(), nil, nil, nil, nil)
+	tkn := http.NewToken(test.Name, test.NewHTTPTransportConfig(), nil, nil)
 	require.Nil(t, tkn)
 }
 
 func TestNewTokenWithTokenConfig(t *testing.T) {
 	cfg := test.NewHTTPTransportConfig()
 	cfg.Token = test.NewToken("jwt")
-	ec := test.NewEd25519()
-	signer, err := ed25519.NewSigner(test.PEM, ec)
-	require.NoError(t, err)
-	verifier, err := ed25519.NewVerifier(test.PEM, ec)
-	require.NoError(t, err)
 	gen := uuid.NewGenerator()
 
-	tkn := http.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
+	tkn := http.NewToken(test.Name, cfg, test.FS, gen)
 
 	require.NotNil(t, tkn)
 	require.NotNil(t, token.NewGenerator(tkn))

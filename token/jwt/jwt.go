@@ -1,8 +1,9 @@
 package jwt
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
@@ -29,15 +30,16 @@ var SigningMethodEdDSA = jwt.SigningMethodEdDSA
 
 // NewToken constructs a Token that issues and validates JWTs according to cfg.
 //
-// The resulting Token uses Ed25519 keys for signing and verification and an [id.Generator]
-// for producing unique JWT IDs (jti). The keys are provided by the caller (typically via DI).
+// The resulting Token uses configured Ed25519 keys for signing and verification and an
+// [id.Generator] for producing unique JWT IDs (jti).
 //
 // Enablement is modeled by presence: if cfg is nil, NewToken returns nil.
-func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
+func NewToken(cfg *Config, fs *os.FS, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
 	}
-	return &Token{cfg: cfg, signer: sig, verifier: ver, generator: gen}
+
+	return &Token{cfg: cfg, decoder: pem.NewDecoder(fs), generator: gen}
 }
 
 // Token generates and verifies JWTs signed using Ed25519 (EdDSA).
@@ -48,8 +50,7 @@ func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Ge
 // Missing generation or verification dependencies are reported as [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 type Token struct {
 	cfg       *Config
-	signer    *ed25519.Signer
-	verifier  *ed25519.Verifier
+	decoder   *pem.Decoder
 	generator id.Generator
 }
 
@@ -68,16 +69,20 @@ type Token struct {
 //
 // In addition, it sets the JWT header:
 //
-//   - kid: from cfg.KeyID
+//   - kid: from cfg.Key
 func (t *Token) Generate(aud, sub string) (string, error) {
-	if t.signer == nil || len(t.signer.PrivateKey) != ed25519.PrivateKeySize || t.generator == nil {
+	if t.generator == nil {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
-	if strings.IsEmpty(t.cfg.Issuer) || strings.IsEmpty(t.cfg.KeyID) || t.cfg.Expiration <= 0 {
+	if strings.IsEmpty(t.cfg.Issuer) || strings.IsEmpty(t.cfg.Key) || t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
 
-	key := t.signer.PrivateKey
+	key, err := t.cfg.Keys.Get(t.cfg.Key).Signer(t.decoder)
+	if err != nil {
+		return strings.Empty, err
+	}
+
 	now := time.Now()
 	claims := &RegisteredClaims{
 		ExpiresAt: &NumericDate{Time: now.Add(t.cfg.Expiration.Duration())},
@@ -89,9 +94,9 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 		Subject:   sub,
 	}
 	token := NewWithClaims(SigningMethodEdDSA, claims)
-	token.Header["kid"] = t.cfg.KeyID
+	token.Header["kid"] = t.cfg.Key
 
-	return token.SignedString(key)
+	return token.SignedString(key.PrivateKey)
 }
 
 // Verify validates token and returns the subject (sub) if it is valid for the given audience.
@@ -99,7 +104,7 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 // Verification enforces the following checks:
 //
 //   - The token's signature algorithm is EdDSA (Ed25519).
-//   - The JWT header "kid" exists, is non-empty, and matches cfg.KeyID exactly.
+//   - The JWT header "kid" exists, is non-empty, and selects a configured verification key.
 //   - The issuer claim ("iss") matches cfg.Issuer.
 //   - The audience claim ("aud") contains the expected aud.
 //   - Registered claim time validity using [github.com/golang-jwt/jwt/v4.RegisteredClaims.Valid] (exp/nbf/iat).
@@ -109,10 +114,7 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 // failures (issuer/audience mismatches and validate-time algorithm/kid mismatches).
 // Parse/validation errors produced by the upstream JWT library may be returned as-is.
 func (t *Token) Verify(token, aud string) (string, error) {
-	if t.verifier == nil || len(t.verifier.PublicKey) == 0 {
-		return strings.Empty, errors.ErrInvalidConfig
-	}
-	if t.cfg.Expiration <= 0 {
+	if strings.IsEmpty(t.cfg.Issuer) || t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
 
@@ -155,11 +157,17 @@ func (t *Token) validate(token *jwt.Token) (any, error) {
 		return nil, errors.ErrInvalidKeyID
 	}
 
-	if kid != t.cfg.KeyID {
+	key := t.cfg.Keys.Get(kid)
+	if key == nil {
 		return nil, errors.ErrInvalidKeyID
 	}
 
-	return t.verifier.PublicKey, nil
+	verifier, err := key.Verifier(t.decoder)
+	if err != nil {
+		return nil, err
+	}
+
+	return verifier.PublicKey, nil
 }
 
 func validateRequiredClaims(claims *RegisteredClaims) error {
