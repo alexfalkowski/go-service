@@ -239,6 +239,29 @@ func TestWatchServerLimiter(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
+func TestWatchServerLimiterStatusSend(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("200"),
+		test.WithWorldTelemetry("otlp"),
+		// Watch consumes one token for stream admission and one for the request
+		// RecvMsg, leaving none for the initial status SendMsg.
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 2)),
+	)
+	requireGRPCReady(t, world)
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
+
+	wc, err := client.Watch(t.Context(), req)
+	require.NoError(t, err)
+
+	_, err = wc.Recv()
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
 func TestInvalidWatch(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)

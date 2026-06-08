@@ -97,6 +97,10 @@ func (s *Server) Watch(req *health.Request, w health.WatchServer) error {
 		if next != current {
 			current = next
 			if err := w.Send(&health.Response{Status: current}); err != nil {
+				if _, ok := status.FromError(err); ok {
+					return err
+				}
+
 				return status.Error(codes.Canceled, "stream has ended")
 			}
 		}
