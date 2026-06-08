@@ -1,6 +1,9 @@
 package jwt
 
-import "github.com/alexfalkowski/go-service/v2/time"
+import (
+	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/token/keys"
+)
 
 // Config configures JWT issuance and verification for the go-service JWT token kind.
 //
@@ -12,21 +15,21 @@ import "github.com/alexfalkowski/go-service/v2/time"
 //
 //   - Issuer is written to and verified against the `iss` claim.
 //   - Expiration is a typed duration and is used to set/validate the `exp` claim.
-//   - KeyID is written to and verified against the JWT header `kid`.
+//   - Key is written to the JWT header `kid`.
 //
 // # Key ID (kid) enforcement
 //
 // Verification in this repository is intentionally strict about the `kid` header:
 //
 //   - The header must exist and be non-empty.
-//   - The value must match KeyID exactly.
+//   - The value must select a configured entry from Keys.
 //
 // This is part of the verification contract and helps prevent accepting tokens minted for a
 // different key identity.
 //
 // # Validation
 //
-// Issuer and KeyID are required because generated tokens must be verifiable by
+// Issuer, Key, and Keys are required because generated tokens must be verifiable by
 // this package. Expiration must be greater than zero because zero-duration tokens
 // are immediately expired.
 //
@@ -35,14 +38,19 @@ import "github.com/alexfalkowski/go-service/v2/time"
 // Enablement is modeled by presence: a nil *[Config] disables the JWT implementation and
 // NewToken returns nil.
 type Config struct {
+	// Keys contains all named Ed25519 keys trusted for JWT verification.
+	//
+	// The key selected by Key is used for signing. Verification reads the token's `kid`
+	// header and selects the matching entry from Keys.
+	Keys keys.Map `yaml:"keys,omitempty" json:"keys,omitempty" toml:"keys,omitempty" validate:"required"`
+
 	// Issuer is written to and verified against the `iss` claim.
 	Issuer string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty" validate:"required"`
 
-	// KeyID is written to and verified against the JWT header `kid`.
+	// Key is the active signing key id written to the JWT header `kid`.
 	//
-	// Note: this repository's JWT verification expects the `kid` header to be set and
-	// to match this value exactly.
-	KeyID string `yaml:"kid,omitempty" json:"kid,omitempty" toml:"kid,omitempty" validate:"required"`
+	// The corresponding entry in Keys must include private key material for generation.
+	Key string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty" validate:"required"`
 
 	// Expiration is the duration used to set and validate the `exp` claim.
 	//

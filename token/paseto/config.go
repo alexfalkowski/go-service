@@ -1,25 +1,18 @@
 package paseto
 
-import "github.com/alexfalkowski/go-service/v2/time"
+import (
+	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/token/keys"
+)
 
 // Config configures PASETO issuance and verification for the go-service PASETO token kind.
 //
 // This configuration is intended to capture the common knobs for token issuance:
 //
-//   - Secret: key material configuration (often sourced from env/files)
+//   - Key: active signing key id
+//   - Keys: named key material configuration (often sourced from env/files)
 //   - Issuer: the expected issuer ("iss") value
 //   - Expiration: how long issued tokens should be valid
-//
-// # Secret field note
-//
-// Although this type includes Secret, the current PASETO implementation in this repository
-// (see Token in paseto.go) issues PASETO v4 public tokens using Ed25519 key material supplied
-// via crypto/ed25519.Signer and crypto/ed25519.Verifier passed to NewToken. As a result, Secret
-// is not consumed directly by that implementation.
-//
-// If you want to source Ed25519 key material from configuration, resolve Secret using the
-// go-service "source string" convention (for example via [os.FS.ReadSource]) and build the
-// Ed25519 signer/verifier in your wiring layer.
 //
 // # Expiration parsing and panics
 //
@@ -32,16 +25,16 @@ import "github.com/alexfalkowski/go-service/v2/time"
 // Enablement is modeled by presence: a nil *[Config] disables the PASETO implementation and
 // NewToken returns nil.
 type Config struct {
-	// Secret is a "source string" intended to provide PASETO key material.
+	// Key is the active signing key id written to the PASETO footer.
 	//
-	// It supports the go-service "source string" pattern:
-	// - "env:NAME" to read from an environment variable
-	// - "file:/path" to read from a file
-	// - otherwise treated as the literal value
+	// The corresponding entry in Keys must include private key material for generation.
+	Key string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty" validate:"required"`
+
+	// Keys contains all named Ed25519 keys trusted for PASETO verification.
 	//
-	// Note: the current PASETO token implementation in this repository does not read
-	// Secret directly; it uses Ed25519 key material provided to NewToken.
-	Secret string `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
+	// The key selected by Key is used for signing. Verification reads the token's footer
+	// and selects the matching entry from Keys.
+	Keys keys.Map `yaml:"keys,omitempty" json:"keys,omitempty" toml:"keys,omitempty" validate:"required"`
 
 	// Issuer is written to and verified against the `iss` claim.
 	Issuer string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty" validate:"required"`

@@ -33,7 +33,7 @@
 //   - ErrInvalidSubject: missing or invalid subject ("sub") claim.
 //   - ErrInvalidAlgorithm: algorithm mismatch (token signed/encrypted with an unexpected
 //     algorithm).
-//   - ErrInvalidKeyID: missing or unexpected key identifier (for example JWT "kid").
+//   - ErrInvalidKeyID: missing or unexpected key identifier (for example JWT/PASETO "kid").
 //   - ErrInvalidTime: time validity failure (expired, not-before in the future, etc.).
 //
 // # Notes

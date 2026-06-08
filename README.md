@@ -572,16 +572,22 @@ transport:
       jwt:
         iss: my-service
         exp: 1h
-        kid: my-key-id
+        key: active
+        keys:
+          active:
+            public: file:/keys/ed25519.pub
+            private: file:/keys/ed25519
+          old:
+            public: file:/keys/ed25519-old.pub
 ```
 
 Important behavior:
 
-- JWT verification requires the `kid` header to exist and match `kid` in config exactly.
+- JWT generation signs with `jwt.key`; verification requires the token `kid` header to select an entry in `jwt.keys`.
 - `exp` is parsed as a Go duration string; invalid values can fail fast.
 
 > [!IMPORTANT]
-> JWT generation and verification use Ed25519 signing and verification key material supplied through DI, typically from the crypto subsystem and standard module wiring.
+> JWT generation and verification use Ed25519 key material from `jwt.keys`. Keep private key material only on services that mint tokens; verifiers only need public keys.
 
 ### Paseto
 
@@ -595,14 +601,21 @@ transport:
       paseto:
         iss: my-service
         exp: 1h
+        key: active
+        keys:
+          active:
+            public: file:/keys/ed25519.pub
+            private: file:/keys/ed25519
+          old:
+            public: file:/keys/ed25519-old.pub
 ```
 
 > [!NOTE]
-> The current PASETO implementation issues **v4 public** tokens using Ed25519 key material provided via wiring (not directly from `paseto.secret`). If you want config-driven key material, load it via the crypto subsystem and wire signer/verifier appropriately.
+> The PASETO implementation issues **v4 public** tokens. Generation signs with `paseto.key`, writes that id as footer `kid`, and verification selects the public key from `paseto.keys`.
 
 ### SSH tokens
 
-SSH token verification keys are name-addressable and support rotation.
+SSH token verification keys are id-addressable and support rotation.
 
 Verification-only example:
 
@@ -614,7 +627,7 @@ transport:
       ssh:
         exp: 5m
         keys:
-          - name: active
+          active:
             public: file:/keys/active.pub
 ```
 
@@ -627,21 +640,20 @@ transport:
       kind: ssh
       ssh:
         exp: 5m
-        key:
-          name: active
-          private: file:/keys/active
+        key: active
         keys:
-          - name: active
+          active:
             public: file:/keys/active.pub
-          - name: old
+            private: file:/keys/active
+          old:
             public: file:/keys/old.pub
 ```
 
 > [!NOTE]
-> - `ssh.key` is used for minting tokens (requires private key).
-> - `ssh.keys` is used for verification (public keys).
+> - `ssh.key` is the active key id used for minting tokens (the matching `ssh.keys` entry requires private key material).
+> - `ssh.keys` is the trusted key map used for verification (public keys).
 > - `ssh.exp` sets the token validity window; SSH keys remain long-lived, while generated tokens are short-lived.
-> - The config does not enforce that the signing key name exists in the verification set; include it if you want round-trip.
+> - SSH tokens carry `sub` equal to `kid`, so the verified subject is the trusted peer key id.
 
 ---
 

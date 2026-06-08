@@ -9,11 +9,12 @@
 // Tokens are signed using Ed25519 with the JWT "EdDSA" signing method
 // ([github.com/golang-jwt/jwt/v4.SigningMethodEdDSA]). The implementation expects:
 //
-//   - an Ed25519 signing key for issuance, and
-//   - an Ed25519 verification key for validation.
+//   - an active key id for issuance, and
+//   - a named Ed25519 key set for issuance and validation.
 //
-// The signing and verification keys are provided to NewToken by the caller (typically
-// via DI wiring) using go-service crypto/ed25519 helpers.
+// Key material is loaded from [Config.Keys] using the *[os.FS] passed to NewToken.
+// Generate signs with [Config.Key], while Verify reads the token's "kid" header
+// and selects the matching configured public key.
 //
 // # Claims and headers
 //
@@ -29,19 +30,19 @@
 //
 // In addition, issued tokens set the JWT header:
 //
-//   - kid (key id): from [Config.KeyID]
+//   - kid (key id): from [Config.Key]
 //
 // # Key ID (kid) enforcement
 //
 // Verification is intentionally strict about the "kid" header:
 //
 //   - The header must be present and non-empty.
-//   - The value must exactly match [Config.KeyID].
+//   - The value must select a configured entry from [Config.Keys].
 //
 // This repository uses "kid" as part of the verification contract to prevent
-// accepting tokens minted for a different key identity. If you mint test tokens
-// using a third-party JWT library directly, ensure you set "kid" or verification
-// will fail.
+// accepting tokens minted for an untrusted key identity. If you mint test tokens
+// using a third-party JWT library directly, ensure you set "kid" and configure
+// the corresponding public key or verification will fail.
 //
 // # Verification semantics and errors
 //
@@ -49,7 +50,7 @@
 // Verification enforces, in order:
 //
 //   - The signature algorithm is EdDSA.
-//   - The "kid" header exists and matches the configured KeyID.
+//   - The "kid" header exists and selects a configured verification key.
 //   - The issuer claim matches the configured Issuer.
 //   - The audience claim contains the expected audience.
 //   - Registered claim validity (exp/nbf/iat) using [github.com/golang-jwt/jwt/v4.RegisteredClaims.Valid].
@@ -64,8 +65,9 @@
 //
 // # Configuration and enablement
 //
-// Config provides the issuer, expiration, and key id settings used for issuance and
-// verification. A nil *[Config] is treated as disabled: NewToken returns nil.
+// Config provides the issuer, active key id, named key set, and expiration settings
+// used for issuance and verification. A nil *[Config] is treated as disabled:
+// NewToken returns nil.
 //
 // Expiration is a typed duration. In config files it is encoded using the standard
 // Go duration string format (such as "15m" or "24h"), so invalid values fail during

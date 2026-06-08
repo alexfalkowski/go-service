@@ -1,7 +1,6 @@
 package http
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -28,9 +27,9 @@ func NewController(cfg *Config, fs *os.FS) (token.AccessController, error) {
 //
 // If cfg is disabled or cfg.Token is omitted, it returns nil so downstream wiring can treat token auth
 // as not configured.
-func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *token.Token {
+func NewToken(name env.Name, cfg *Config, fs *os.FS, gen id.Generator) *token.Token {
 	if !cfg.IsEnabled() || !cfg.Token.IsEnabled() {
 		return nil
 	}
-	return token.NewToken(name, cfg.Token, fs, sig, ver, gen)
+	return token.NewToken(name, cfg.Token, fs, gen)
 }

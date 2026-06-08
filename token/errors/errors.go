@@ -41,8 +41,8 @@ var (
 
 	// ErrInvalidKeyID is a sentinel error indicating a key identifier is missing or unexpected.
 	//
-	// This is commonly used for JWT verification when the "kid" header is missing or
-	// does not match the expected configured key ID.
+	// This is commonly used when a JWT header or PASETO footer "kid" is missing
+	// or does not select a configured key id.
 	ErrInvalidKeyID = errors.New("token: invalid key id")
 
 	// ErrInvalidTime is a sentinel error indicating a token is not valid for the current time.

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -21,11 +20,8 @@ func TestTokenAuthUnary(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "ssh"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
-			ec := test.NewEd25519()
-			signer, _ := ed25519.NewSigner(test.PEM, ec)
-			verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 			gen := uuid.NewGenerator()
-			tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
+			tkn := token.NewToken(test.Name, cfg, test.FS, gen)
 
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldHTTP())
 
@@ -49,7 +45,7 @@ func TestTokenAuthUnary(t *testing.T) {
 
 func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	cfg := test.NewToken("none")
-	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
+	tkn := token.NewToken(test.Name, cfg, test.FS, nil)
 
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldHTTP())
 

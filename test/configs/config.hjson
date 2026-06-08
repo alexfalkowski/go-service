@@ -112,7 +112,13 @@
         jwt: {
           iss: iss
           exp: "1h"
-          kid: "1234567890"
+          key: "1234567890"
+          keys: {
+            "1234567890": {
+              public: "file:../test/secrets/ed25519_public"
+              private: "file:../test/secrets/ed25519_private"
+            }
+          }
         }
       }
     }
@@ -147,7 +153,13 @@
         jwt: {
           iss: iss
           exp: "1h"
-          kid: "1234567890"
+          key: "1234567890"
+          keys: {
+            "1234567890": {
+              public: "file:../test/secrets/ed25519_public"
+              private: "file:../test/secrets/ed25519_private"
+            }
+          }
         }
       }
     }

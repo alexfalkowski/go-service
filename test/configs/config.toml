@@ -110,7 +110,11 @@ policy = "file:../test/configs/rbac.csv"
 [transport.http.token.jwt]
 iss = "iss"
 exp = "1h"
-kid = "1234567890"
+key = "1234567890"
+
+[transport.http.token.jwt.keys."1234567890"]
+public = "file:../test/secrets/ed25519_public"
+private = "file:../test/secrets/ed25519_private"
 
 [transport.grpc]
 address = "tcp://localhost:12000"
@@ -151,4 +155,8 @@ policy = "file:../test/configs/rbac.csv"
 [transport.grpc.token.jwt]
 iss = "iss"
 exp = "1h"
-kid = "1234567890"
+key = "1234567890"
+
+[transport.grpc.token.jwt.keys."1234567890"]
+public = "file:../test/secrets/ed25519_public"
+private = "file:../test/secrets/ed25519_private"
