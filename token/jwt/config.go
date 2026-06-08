@@ -30,8 +30,8 @@ import (
 // # Validation
 //
 // Issuer, Key, and Keys are required because generated tokens must be verifiable by
-// this package. Expiration must be greater than zero because zero-duration tokens
-// are immediately expired.
+// this package. Expiration must be greater than zero and use whole-second
+// precision because JWT NumericDate values are encoded at second precision.
 //
 // # Enablement
 //
@@ -55,7 +55,7 @@ type Config struct {
 	// Expiration is the duration used to set and validate the `exp` claim.
 	//
 	// In config files it is encoded as a Go duration string, for example "15m" or "24h".
-	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"gt=0"`
+	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"duration_second_precision"`
 }
 
 // IsEnabled reports whether JWT configuration is present.

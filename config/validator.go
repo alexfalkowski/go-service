@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -16,6 +17,7 @@ import (
 func NewValidator() *Validator {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	runtime.Must(validate.RegisterValidation("config_size", validateConfigSize))
+	runtime.Must(validate.RegisterValidation("duration_second_precision", validateDurationSecondPrecision))
 
 	return &Validator{validate}
 }
@@ -28,6 +30,16 @@ func validateConfigSize(fl validator.FieldLevel) bool {
 
 	size := bytes.Size(field.Int())
 	return size >= 0 && size <= bytes.MaxConfigSize
+}
+
+func validateDurationSecondPrecision(fl validator.FieldLevel) bool {
+	field := fl.Field()
+	if !field.CanInt() {
+		return false
+	}
+
+	duration := time.Duration(field.Int())
+	return duration > 0 && duration%time.Second == 0
 }
 
 // Validator wraps a go-playground validator instance.

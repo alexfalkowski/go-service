@@ -53,7 +53,8 @@ type Config struct {
 	// Expiration is the duration used to set token expiration.
 	//
 	// In config files it is encoded as a Go duration string, for example "15m" or "1h".
-	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"gt=0"`
+	// It must use whole-second precision.
+	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"duration_second_precision"`
 }
 
 // IsEnabled reports whether SSH token configuration is enabled.

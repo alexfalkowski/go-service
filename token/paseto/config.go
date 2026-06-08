@@ -17,8 +17,9 @@ import (
 // # Expiration parsing and panics
 //
 // Token issuance uses Expiration directly. In config files it is encoded using the standard
-// Go duration string format, so invalid values fail during decoding. Apply additional
-// validation earlier if you need stricter startup policy.
+// Go duration string format, so invalid values fail during decoding. Expiration
+// must use whole-second precision because PASETO time claims are encoded at
+// second precision.
 //
 // # Enablement
 //
@@ -42,7 +43,7 @@ type Config struct {
 	// Expiration is the duration used to set token expiration.
 	//
 	// In config files it is encoded as a Go duration string, for example "15m" or "24h".
-	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"gt=0"`
+	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"duration_second_precision"`
 }
 
 // IsEnabled reports whether PASETO configuration is present.

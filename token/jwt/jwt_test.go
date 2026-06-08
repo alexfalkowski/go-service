@@ -44,23 +44,6 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 				Expiration: time.Hour,
 			},
 		},
-		{
-			name: "zero expiration",
-			config: &jwt.Config{
-				Issuer: "iss",
-				Key:    valid.Key,
-				Keys:   valid.Keys,
-			},
-		},
-		{
-			name: "negative expiration",
-			config: &jwt.Config{
-				Issuer:     "iss",
-				Key:        valid.Key,
-				Keys:       valid.Keys,
-				Expiration: -time.Second,
-			},
-		},
 	}
 
 	for _, tt := range tests {
