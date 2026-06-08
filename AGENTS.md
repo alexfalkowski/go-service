@@ -52,6 +52,11 @@ matching skill for the task.
   source references, not raw passwords or credentials.
 - Nil pointer sub-configs usually mean "disabled".
 - Standard module wiring is the supported path. Do not flag hypothetical failures that require hand-wiring an incomplete DI graph unless the public API explicitly promises that custom construction mode.
+- `*os.FS` dependencies are provided by the supported DI wiring path and are
+  expected to be non-nil there. Do not flag nil-`*os.FS` panics in token,
+  crypto, config, or source-string loading paths based solely on manually
+  calling constructors with nil filesystem dependencies unless a public API
+  explicitly promises nil-FS tolerance or a supported path can provide nil.
 
 ## Gotchas
 

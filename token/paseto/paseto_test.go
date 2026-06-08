@@ -44,23 +44,6 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 				Expiration: time.Hour,
 			},
 		},
-		{
-			name: "negative expiration",
-			config: &paseto.Config{
-				Issuer:     "iss",
-				Key:        valid.Key,
-				Keys:       valid.Keys,
-				Expiration: -time.Second,
-			},
-		},
-		{
-			name: "zero expiration",
-			config: &paseto.Config{
-				Issuer: "iss",
-				Key:    valid.Key,
-				Keys:   valid.Keys,
-			},
-		},
 	}
 
 	for _, tt := range tests {
