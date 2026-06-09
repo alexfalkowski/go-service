@@ -376,9 +376,11 @@ func options(opts ...ClientOption) *clientOpts {
 	for _, o := range opts {
 		o.apply(resolved)
 	}
+
 	if resolved.timeout <= 0 {
 		resolved.timeout = time.DefaultTimeout
 	}
+
 	if resolved.generator == nil {
 		resolved.generator = uuid.NewGenerator()
 	}

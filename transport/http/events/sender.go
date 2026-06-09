@@ -11,34 +11,6 @@ import (
 	transport "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
 
-// SenderOption configures a CloudEvents HTTP sender.
-//
-// Sender options control how the CloudEvents client is constructed, primarily by selecting the underlying
-// HTTP transport used to send events.
-type SenderOption interface {
-	apply(opts *senderOptions)
-}
-
-type senderOptions struct {
-	roundTripper http.RoundTripper
-}
-
-type senderOptionFunc func(*senderOptions)
-
-func (f senderOptionFunc) apply(o *senderOptions) {
-	f(o)
-}
-
-// WithSenderRoundTripper configures the underlying HTTP RoundTripper used to send CloudEvents.
-//
-// This is an escape hatch for providing a custom transport (for example, one that is instrumented,
-// uses a custom proxy, or is a test double).
-func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
-	return senderOptionFunc(func(o *senderOptions) {
-		o.roundTripper = rt
-	})
-}
-
 // NewSender constructs a CloudEvents HTTP client that can sign outbound requests with the webhook hook.
 //
 // The constructed client uses the CloudEvents SDK HTTP transport. Outbound requests are wrapped with the
@@ -53,7 +25,7 @@ func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) *Sender {
 	resolved := options(opts...)
 	rt := hooks.NewRoundTripper(hook, resolved.roundTripper)
-	httpClient := http.Client{Transport: rt, CheckRedirect: http.SameOriginRedirect}
+	httpClient := http.Client{Transport: rt, CheckRedirect: http.SameOriginRedirect, Timeout: resolved.timeout.Duration()}
 
 	sender, _ := events.NewClientHTTP(transport.WithClient(httpClient))
 	return &Sender{client: sender}
@@ -67,15 +39,4 @@ type Sender struct {
 // Send transmits event using structured CloudEvents encoding.
 func (s *Sender) Send(ctx context.Context, event events.Event) protocol.Result {
 	return s.client.Send(binding.WithForceStructured(ctx), event)
-}
-
-func options(opts ...SenderOption) *senderOptions {
-	resolved := &senderOptions{}
-	for _, o := range opts {
-		o.apply(resolved)
-	}
-	if resolved.roundTripper == nil {
-		resolved.roundTripper = http.Transport(nil)
-	}
-	return resolved
 }
