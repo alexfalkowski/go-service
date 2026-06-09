@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	transportevents "github.com/alexfalkowski/go-service/v2/transport/http/events"
 	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	events "github.com/cloudevents/sdk-go/v2"
@@ -145,6 +146,22 @@ func TestSenderUsesStructuredEncoding(t *testing.T) {
 	require.Contains(t, body, `"type":"example.type"`)
 }
 
+func TestSenderUsesDefaultTimeout(t *testing.T) {
+	start, deadline := sendWithDeadline(t)
+	remaining := time.Duration(deadline.Sub(start))
+
+	require.LessOrEqual(t, remaining, time.DefaultTimeout+time.Second)
+	require.Greater(t, remaining, 29*time.Second)
+}
+
+func TestSenderUsesConfiguredTimeout(t *testing.T) {
+	start, deadline := sendWithDeadline(t, transportevents.WithSenderTimeout(time.Second))
+	remaining := time.Duration(deadline.Sub(start))
+
+	require.LessOrEqual(t, remaining, time.Second+100*time.Millisecond)
+	require.Greater(t, remaining, 900*time.Millisecond)
+}
+
 func TestReceiveUsesServerMaxReceiveSizeBeforeWebhookVerification(t *testing.T) {
 	cfg := test.NewInsecureTransportConfig()
 	cfg.HTTP.MaxReceiveSize = 64
@@ -168,6 +185,32 @@ func TestReceiveUsesServerMaxReceiveSizeBeforeWebhookVerification(t *testing.T) 
 
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
 	require.Nil(t, world.Event)
+}
+
+func sendWithDeadline(t *testing.T, opts ...transportevents.SenderOption) (time.Time, time.Time) {
+	t.Helper()
+
+	deadlines := make(chan time.Time, 1)
+	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		deadline, ok := req.Context().Deadline()
+		require.True(t, ok)
+		deadlines <- deadline
+
+		return &http.Response{StatusCode: http.StatusNoContent, Body: http.NoBody, Header: http.Header{}}, nil
+	})
+	opts = append(opts, transportevents.WithSenderRoundTripper(rt))
+	sender := transportevents.NewSender(nil, opts...)
+
+	e := events.NewEvent()
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
+
+	start := time.Now()
+	result := sender.Send(events.ContextWithTarget(t.Context(), "http://example.com/events"), e)
+	requireACK(t, result)
+
+	return start, <-deadlines
 }
 
 func requireACK(t *testing.T, result protocol.Result) {
