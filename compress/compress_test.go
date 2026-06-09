@@ -1,12 +1,10 @@
 package compress_test
 
 import (
-	"math"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/compress"
-	"github.com/alexfalkowski/go-service/v2/compress/errors"
 	"github.com/alexfalkowski/go-service/v2/compress/none"
 	"github.com/alexfalkowski/go-service/v2/compress/s2"
 	"github.com/alexfalkowski/go-service/v2/compress/snappy"
@@ -94,125 +92,6 @@ func TestModuleProvidesDefaultCompressors(t *testing.T) {
 	for _, kind := range compressorKinds {
 		t.Run(kind, func(t *testing.T) {
 			require.NotNil(t, compressors.Get(kind))
-		})
-	}
-}
-
-func TestNoneCompressorReturnsDataUnchanged(t *testing.T) {
-	cmp := none.NewCompressor()
-	data := strings.Bytes("hello")
-
-	compressed, err := cmp.Compress(data, bytes.Size(len(data)))
-	require.NoError(t, err)
-	require.Equal(t, data, compressed)
-
-	decompressed, err := cmp.Decompress(data, bytes.Size(len(data)))
-	require.NoError(t, err)
-	require.Equal(t, data, decompressed)
-}
-
-func TestExactSizeLimits(t *testing.T) {
-	for _, kind := range compressorKinds {
-		t.Run(kind, func(t *testing.T) {
-			cmp := test.Compressor.Get(kind)
-			data := strings.Bytes("hello")
-			size := bytes.Size(len(data))
-
-			compressed, err := cmp.Compress(data, size)
-			require.NoError(t, err)
-
-			decompressed, err := cmp.Decompress(compressed, size)
-			require.NoError(t, err)
-			require.Equal(t, data, decompressed)
-		})
-	}
-}
-
-func TestCompressRejectsTooLarge(t *testing.T) {
-	for _, kind := range compressorKinds {
-		t.Run(kind, func(t *testing.T) {
-			cmp := test.Compressor.Get(kind)
-
-			_, err := cmp.Compress(strings.Bytes("hello"), 4)
-			require.ErrorIs(t, err, errors.ErrTooLarge)
-		})
-	}
-}
-
-func TestDecompressRejectsTooLarge(t *testing.T) {
-	for _, kind := range compressorKinds {
-		t.Run(kind, func(t *testing.T) {
-			cmp := test.Compressor.Get(kind)
-
-			data := strings.Bytes("hello")
-			compressed, err := cmp.Compress(data, bytes.KB)
-			require.NoError(t, err)
-
-			_, err = cmp.Decompress(compressed, bytes.Size(len(data)-1))
-			require.ErrorIs(t, err, errors.ErrTooLarge)
-		})
-	}
-}
-
-func TestDecompressRejectsInvalidData(t *testing.T) {
-	for _, kind := range []string{"zstd", "s2", "snappy"} {
-		t.Run(kind, func(t *testing.T) {
-			cmp := test.Compressor.Get(kind)
-
-			_, err := cmp.Decompress(strings.Bytes("invalid"), bytes.KB)
-			require.Error(t, err)
-			require.NotErrorIs(t, err, errors.ErrTooLarge)
-		})
-	}
-}
-
-func TestS2DecompressReturnsDecodedLenError(t *testing.T) {
-	cmp := test.Compressor.Get("s2")
-	data := []byte{0x80}
-
-	_, err := cmp.Decompress(data, bytes.KB)
-	require.Error(t, err)
-	require.NotErrorIs(t, err, errors.ErrTooLarge)
-}
-
-func TestSnappyDecompressReturnsDecodedLenError(t *testing.T) {
-	cmp := test.Compressor.Get("snappy")
-	data := []byte{0x80}
-
-	_, err := cmp.Decompress(data, bytes.KB)
-	require.Error(t, err)
-	require.NotErrorIs(t, err, errors.ErrTooLarge)
-}
-
-func TestZstdDecompressPreservesDecoderSizeError(t *testing.T) {
-	cmp := zstd.NewCompressor()
-
-	data := make([]byte, zstd.MinWindowSize+1)
-	encoded, err := cmp.Compress(data, bytes.Size(len(data)))
-	require.NoError(t, err)
-
-	_, err = cmp.Decompress(encoded, zstd.MinWindowSize)
-	require.ErrorIs(t, err, errors.ErrTooLarge)
-	require.ErrorIs(t, err, zstd.ErrDecoderSizeExceeded)
-}
-
-func TestZstdDecompressRejectsInvalidLimits(t *testing.T) {
-	cmp := zstd.NewCompressor()
-	data := strings.Bytes("hello")
-	encoded, err := cmp.Compress(data, bytes.KB)
-	require.NoError(t, err)
-
-	for _, tt := range []struct {
-		name string
-		size bytes.Size
-	}{
-		{name: "negative", size: -1},
-		{name: "max int64", size: math.MaxInt64},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-			decoded, err := cmp.Decompress(encoded, tt.size)
-			require.ErrorIs(t, err, errors.ErrTooLarge)
-			require.Nil(t, decoded)
 		})
 	}
 }

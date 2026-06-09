@@ -14,6 +14,8 @@ import (
 // MinWindowSize is the minimum decoder window size used by the underlying Zstandard implementation.
 const MinWindowSize = zstd.MinWindowSize
 
+const decoderMaxMemory = bytes.MaxConfigSize
+
 // ErrDecoderSizeExceeded is returned by the underlying Zstandard decoder when decoded size exceeds its limit.
 var ErrDecoderSizeExceeded = zstd.ErrDecoderSizeExceeded
 
@@ -57,10 +59,9 @@ func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {
 		return nil, compress.ErrTooLarge
 	}
 
-	maxMemory := uint64(max(limit, int64(MinWindowSize)))
 	decoder, err := zstd.NewReader(
 		bytes.NewReader(data),
-		zstd.WithDecoderMaxMemory(maxMemory),
+		zstd.WithDecoderMaxMemory(uint64(decoderMaxMemory)),
 	)
 	if err != nil {
 		return nil, err
@@ -69,14 +70,14 @@ func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {
 
 	decoded, _, err := io.ReadAll(io.LimitReader(decoder, limit+1))
 	if err != nil {
-		if errors.Is(err, ErrDecoderSizeExceeded) {
+		if errors.Is(err, ErrDecoderSizeExceeded) || errors.Is(err, zstd.ErrWindowSizeExceeded) {
 			return nil, fmt.Errorf("%w: %w", compress.ErrTooLarge, err)
 		}
 
 		return nil, err
 	}
 	if int64(len(decoded)) > limit {
-		return nil, compress.ErrTooLarge
+		return nil, fmt.Errorf("%w: %w", compress.ErrTooLarge, ErrDecoderSizeExceeded)
 	}
 
 	return decoded, nil
