@@ -67,8 +67,7 @@ type MeterProviderParams struct {
 // If metrics are disabled or Reader is nil, it installs and returns the package noop provider.
 func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	if !params.Config.IsEnabled() || params.Reader == nil {
-		enabled.Store(false)
-		SetMeterProvider(noopProvider)
+		setMeterProvider(noopProvider, false)
 		return noopProvider
 	}
 
@@ -80,8 +79,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		attributes.DeploymentEnvironmentName(params.Environment.String()),
 	)
 	provider := sdk.NewMeterProvider(sdk.WithReader(params.Reader), sdk.WithResource(attrs))
-	SetMeterProvider(provider)
-	enabled.Store(true)
+	setMeterProvider(provider, true)
 
 	params.Lifecycle.Append(di.Hook{
 		OnStart: func(_ context.Context) error {
@@ -92,8 +90,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		OnStop: func(ctx context.Context) error {
 			// Do not return error as this will stop all others.
 			_ = provider.Shutdown(ctx)
-			SetMeterProvider(noopProvider)
-			enabled.Store(false)
+			setMeterProvider(noopProvider, false)
 
 			return nil
 		},

@@ -19,6 +19,17 @@ func TestIsEnabled(t *testing.T) {
 	tracer.SetProvider(tracer.NewNoopProvider())
 	require.False(t, tracer.IsEnabled())
 
+	tracer.SetProvider(nil)
+	require.False(t, tracer.IsEnabled())
+
+	provider := tracer.NewProvider()
+	tracer.SetProvider(provider)
+	require.True(t, tracer.IsEnabled())
+	require.NoError(t, provider.Shutdown(t.Context()))
+
+	tracer.SetProvider(tracer.NewNoopProvider())
+	require.False(t, tracer.IsEnabled())
+
 	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	require.False(t, tracer.IsEnabled())
 
