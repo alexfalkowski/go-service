@@ -17,6 +17,7 @@ func TestDeploymentEnvironmentName(t *testing.T) {
 	}{
 		{name: "prod alias", value: "prod", expected: "production"},
 		{name: "production", value: "production", expected: "production"},
+		{name: "stage alias", value: "stage", expected: "staging"},
 		{name: "staging", value: "staging", expected: "staging"},
 		{name: "qa alias", value: "qa", expected: "test"},
 		{name: "test", value: "test", expected: "test"},

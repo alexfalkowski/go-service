@@ -86,9 +86,10 @@ func ServiceVersion(version string) attribute.KeyValue {
 // DeploymentEnvironmentName returns a deployment.environment.name attribute for env.
 //
 // It maps common environment names onto the stable OpenTelemetry enum values:
-// "prod" and "production" become "production"; "staging" remains "staging";
-// "qa", "test", and "testing" become "test"; "dev" and "development" become
-// "development". Unknown or empty values default to "development".
+// "prod" and "production" become "production"; "stage" and "staging" become
+// "staging"; "qa", "test", and "testing" become "test"; "dev" and
+// "development" become "development". Unknown or empty values default to
+// "development".
 //
 // It is typically used when constructing a Resource to describe the deployment
 // environment.
@@ -99,7 +100,7 @@ func DeploymentEnvironmentName(env string) attribute.KeyValue {
 	switch env {
 	case "prod", "production":
 		return semconv.DeploymentEnvironmentNameProduction
-	case "staging":
+	case "stage", "staging":
 		return semconv.DeploymentEnvironmentNameStaging
 	case "qa", "test", "testing":
 		return semconv.DeploymentEnvironmentNameTest

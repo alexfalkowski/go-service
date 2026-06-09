@@ -18,6 +18,29 @@ func TestIsEnabled(t *testing.T) {
 	metrics.SetMeterProvider(metrics.NewNoopMeterProvider())
 	require.False(t, metrics.IsEnabled())
 
+	metrics.SetMeterProvider(nil)
+	require.False(t, metrics.IsEnabled())
+
+	manualProvider := metrics.NewMeterProvider(metrics.MeterProviderParams{
+		Lifecycle:   fxtest.NewLifecycle(t),
+		Config:      &metrics.Config{},
+		Reader:      metrics.NewManualReader(),
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+	require.True(t, metrics.IsEnabled())
+
+	metrics.SetMeterProvider(metrics.NewNoopMeterProvider())
+	require.False(t, metrics.IsEnabled())
+
+	metrics.SetMeterProvider(manualProvider)
+	require.True(t, metrics.IsEnabled())
+
+	metrics.SetMeterProvider(metrics.NewNoopMeterProvider())
+	require.False(t, metrics.IsEnabled())
+
 	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
 	require.False(t, metrics.IsEnabled())
 

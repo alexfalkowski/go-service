@@ -156,5 +156,19 @@ func GetMeterProvider() MeterProvider {
 
 // SetMeterProvider installs the global OpenTelemetry meter provider.
 func SetMeterProvider(provider MeterProvider) {
+	setMeterProvider(provider, isEnabledProvider(provider))
+}
+
+func setMeterProvider(provider MeterProvider, isEnabled bool) {
 	otel.SetMeterProvider(provider)
+	enabled.Store(isEnabled)
+}
+
+func isEnabledProvider(provider MeterProvider) bool {
+	if provider == nil {
+		return false
+	}
+
+	_, ok := provider.(noop.MeterProvider)
+	return !ok
 }

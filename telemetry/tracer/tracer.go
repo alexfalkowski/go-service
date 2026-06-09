@@ -94,8 +94,7 @@ type TracerParams struct {
 // Shutdown errors are intentionally ignored to avoid blocking other stop hooks.
 func Register(params TracerParams) error {
 	if !params.Config.IsEnabled() {
-		enabled.Store(false)
-		SetProvider(noopProvider)
+		setProvider(noopProvider, false)
 		return nil
 	}
 
@@ -121,8 +120,7 @@ func Register(params TracerParams) error {
 		)
 
 		provider := sdk.NewTracerProvider(sdk.WithResource(attrs), sdk.WithBatcher(exporter))
-		SetProvider(provider)
-		enabled.Store(true)
+		setProvider(provider, true)
 
 		params.Lifecycle.Append(di.Hook{
 			OnStart: func(ctx context.Context) error {
@@ -132,8 +130,7 @@ func Register(params TracerParams) error {
 				// Do not return error as this will stop all others.
 				_ = provider.Shutdown(ctx)
 				_ = exporter.Shutdown(ctx)
-				SetProvider(noopProvider)
-				enabled.Store(false)
+				setProvider(noopProvider, false)
 
 				return nil
 			},
