@@ -1,6 +1,8 @@
 package limiter_test
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -160,6 +162,11 @@ func TestTakeUsesSingleBucketForEmptyKeys(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, ok)
 	require.Equal(t, "limit=1, remaining=0", header)
+
+	ok, header, err = limiter.Take(meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("<empty>"))))
+	require.NoError(t, err)
+	require.True(t, ok, "raw reserved empty literal should use its own bucket")
+	require.Equal(t, "limit=1, remaining=0", header)
 }
 
 func TestTakeSupportsOversizedKeys(t *testing.T) {
@@ -190,6 +197,35 @@ func TestTakeSupportsOversizedKeys(t *testing.T) {
 	ok, header, err = limiter.Take(second)
 	require.NoError(t, err)
 	require.True(t, ok)
+	require.Equal(t, "limit=1, remaining=0", header)
+}
+
+func TestTakeDoesNotCollideOversizedKeysWithRawHashKeys(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
+
+	limiter, err := limiter.NewLimiter(lc, m, config)
+	require.NoError(t, err)
+	require.NotNil(t, limiter)
+	defer func() {
+		require.NoError(t, limiter.Close(t.Context()))
+	}()
+
+	oversized := strings.Repeat("a", 1024)
+	sum := sha256.Sum256([]byte(oversized))
+	rawHash := strings.Concat("sha256:", hex.EncodeToString(sum[:]))
+	oversizedCtx := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String(oversized)))
+	rawHashCtx := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String(rawHash)))
+
+	ok, header, err := limiter.Take(oversizedCtx)
+	require.NoError(t, err)
+	require.True(t, ok, "oversized key should take its own bucket")
+	require.Equal(t, "limit=1, remaining=0", header)
+
+	ok, header, err = limiter.Take(rawHashCtx)
+	require.NoError(t, err)
+	require.True(t, ok, "raw hash-looking key should use its own bucket")
 	require.Equal(t, "limit=1, remaining=0", header)
 }
 
