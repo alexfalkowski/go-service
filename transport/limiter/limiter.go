@@ -150,13 +150,15 @@ func (l *Limiter) Close(ctx context.Context) error {
 
 func key(value meta.Value) string {
 	rawKey := value.Value()
+	// Namespace every store key representation so caller-controlled raw values
+	// cannot collide with internal empty sentinels or oversized-key hashes.
 	if strings.IsEmpty(rawKey) {
-		return "<empty>"
+		return "empty:"
 	}
 	if len(rawKey) <= maxKeySize {
-		return rawKey
+		return strings.Concat("raw:", strconv.Itoa(len(rawKey)), ":", rawKey)
 	}
 
 	sum := sha256.Sum256([]byte(rawKey))
-	return strings.Concat("sha256:", hex.EncodeToString(sum[:]))
+	return strings.Concat("hash:sha256:", hex.EncodeToString(sum[:]))
 }

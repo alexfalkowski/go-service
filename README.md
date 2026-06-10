@@ -853,7 +853,7 @@ on clients when the dial address differs from the certificate DNS name.
 > [!IMPORTANT]
 > If you are using `go-service-template` or composing server transport bundles such as `module.Server` or `transport.Module`, the required transport registration is handled for you by DI.
 >
-> `module.Client` does not wire transports by default. Add `transport.Module`, the relevant transport submodule, or call the transport-level `Register(...)` functions when a client process constructs HTTP or gRPC TLS config from source strings such as `file:`.
+> `module.Client` does not wire transports by default. When a client process constructs HTTP or gRPC TLS config from source strings such as `file:`, call the relevant transport-level `Register(...)` functions, such as `transport/http.Register(...)` or `transport/grpc.Register(...)`.
 >
 > You only need to call transport-level `Register(...)` functions yourself when you intentionally wire transports manually or compose lower-level packages outside the transport module graph.
 >
