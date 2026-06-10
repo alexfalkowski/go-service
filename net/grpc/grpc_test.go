@@ -36,6 +36,10 @@ func TestParseServiceMethod(t *testing.T) {
 	}
 }
 
+func TestSetTrailer(t *testing.T) {
+	require.NoError(t, grpc.SetTrailer(t.Context(), nil))
+}
+
 func TestNewServerWithAdvancedOptions(t *testing.T) {
 	opts := options.Map{
 		"max_concurrent_streams":   "7",

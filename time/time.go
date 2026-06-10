@@ -63,6 +63,13 @@ func Since(t Time) Duration {
 	return Duration(time.Since(t))
 }
 
+// Until returns the duration until t.
+//
+// This is a thin wrapper around [time.Until] and does not change semantics.
+func Until(t Time) Duration {
+	return Duration(time.Until(t))
+}
+
 // Sleep pauses the current goroutine for at least the duration d.
 //
 // This is a thin wrapper around [time.Sleep] and does not change semantics.

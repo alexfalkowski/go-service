@@ -19,3 +19,12 @@ func TestNewTimer(t *testing.T) {
 		require.FailNow(t, "timed out waiting for timer")
 	}
 }
+
+func TestUntil(t *testing.T) {
+	future := time.Now().Add(time.Hour.Duration())
+
+	duration := time.Until(future)
+
+	require.Positive(t, duration)
+	require.LessOrEqual(t, duration, time.Hour)
+}
