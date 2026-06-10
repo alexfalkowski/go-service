@@ -8,8 +8,8 @@ require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/KimMachineGun/automemlimit v0.7.5
 	github.com/XSAM/otelsql v0.42.0
-	github.com/alexfalkowski/go-health/v2 v2.26.0
-	github.com/alexfalkowski/go-sync v1.23.0
+	github.com/alexfalkowski/go-health/v2 v2.27.0
+	github.com/alexfalkowski/go-sync v1.24.0
 	github.com/arl/statsviz v0.8.0
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0

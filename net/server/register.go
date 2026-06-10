@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-sync"
 )
@@ -28,16 +27,14 @@ func Register(lc di.Lifecycle, services []*Service) {
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			errs := make([]error, len(services))
-			var wg sync.WaitGroup
-			for i, s := range services {
-				wg.Go(func() {
-					errs[i] = s.Stop(ctx)
+			var group sync.ErrorsGroup
+			for _, s := range services {
+				group.Go(func() error {
+					return s.Stop(ctx)
 				})
 			}
-			wg.Wait()
 
-			return errors.Join(errs...)
+			return group.Wait()
 		},
 	})
 }
