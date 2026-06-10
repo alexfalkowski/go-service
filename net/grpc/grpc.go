@@ -240,6 +240,14 @@ func SetHeader(ctx context.Context, md meta.Map) error {
 	return grpc.SetHeader(ctx, md)
 }
 
+// SetTrailer sets the trailer metadata that will be sent back to the client.
+//
+// This forwards to [grpc.SetTrailer]. It is typically called by a handler to add
+// response trailers.
+func SetTrailer(ctx context.Context, md meta.Map) error {
+	return grpc.SetTrailer(ctx, md)
+}
+
 // Header returns a call option that captures response header metadata.
 //
 // This forwards to [grpc.Header]. The provided map is populated by the client
