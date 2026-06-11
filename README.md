@@ -253,6 +253,7 @@ cache:
   compressor: zstd
   encoder: json
   max_size: 4MB
+  max_entries: 1024
   options:
     url: env:CACHE_URL
 ```
@@ -264,6 +265,7 @@ cache:
 > - For normal values, unknown or empty `encoder` values fall back to `json`.
 > - Cache operations use `plain` for `io.WriterTo`/`io.ReaderFrom` stream values and `proto` for protobuf messages, regardless of the configured `encoder`.
 > - `max_size` limits encoded cache values before compression, after compression, and after decompression. A zero value uses the default `4MB`.
+> - `max_entries` limits entries retained by bounded in-memory cache drivers and must be greater than zero.
 > - `options` is backend-specific and decoded as `map[string]any`.
 
 ---
@@ -360,7 +362,7 @@ Server commands created through `cli.Application.AddServer` include `runtime.Mod
 
 SQL root config is `database/sql.Config`, with Postgres under `sql.pg`.
 
-Postgres config embeds common pool + DSN config (`database/sql/config.Config`), including master/slave DSNs and pool sizes.
+Postgres config embeds common pool + DSN config (`database/sql/config.Config`), including master/slave DSNs and pool sizes. Enabled SQL configs must set positive `max_open_conns` and `max_idle_conns`; `max_idle_conns` must not exceed `max_open_conns`.
 
 `module.Server` and `module.Client` both include `sql.Module`, which currently wires PostgreSQL support via `database/sql/pg.Module`.
 

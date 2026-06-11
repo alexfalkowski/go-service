@@ -24,7 +24,7 @@ func TestNewDriver(t *testing.T) {
 		wantNil bool
 	}{
 		{name: "disabled", wantNil: true},
-		{name: "sync", config: &config.Config{Kind: "sync"}},
+		{name: "sync", config: &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}},
 		{name: "unknown", config: &config.Config{Kind: "unknown"}, err: driver.ErrNotFound, wantNil: true},
 	}
 
@@ -43,7 +43,7 @@ func TestNewDriver(t *testing.T) {
 }
 
 func TestIsMissingError(t *testing.T) {
-	cfg := &config.Config{Kind: "sync"}
+	cfg := &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}
 
 	d, err := driver.NewDriver(driver.DriverParams{Config: cfg})
 	require.NoError(t, err)
@@ -129,7 +129,7 @@ func TestSyncDriverHonorsCanceledContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 
-	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync"}})
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}})
 	require.NoError(t, err)
 	require.ErrorIs(t, d.Save(ctx, "key", "value", 0), context.Canceled)
 	_, err = d.Fetch(ctx, "key")
@@ -139,7 +139,7 @@ func TestSyncDriverHonorsCanceledContext(t *testing.T) {
 }
 
 func TestSyncDriverExpiresEntries(t *testing.T) {
-	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync"}})
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}})
 	require.NoError(t, err)
 
 	require.NoError(t, d.Save(t.Context(), "key", "value", time.Nanosecond))
@@ -153,6 +153,46 @@ func TestSyncDriverExpiresEntries(t *testing.T) {
 
 	_, err = d.Fetch(t.Context(), "key")
 	require.ErrorIs(t, err, driver.ErrMissing)
+}
+
+func TestSyncDriverEvictsEntryAtCapacity(t *testing.T) {
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync", MaxEntries: 2}})
+	require.NoError(t, err)
+
+	require.NoError(t, d.Save(t.Context(), "first", "1", 0))
+	require.NoError(t, d.Save(t.Context(), "second", "2", 0))
+
+	require.NoError(t, d.Save(t.Context(), "third", "3", 0))
+
+	value, err := d.Fetch(t.Context(), "third")
+	require.NoError(t, err)
+	require.Equal(t, "3", value)
+
+	var misses int
+	for _, key := range []string{"first", "second"} {
+		_, err = d.Fetch(t.Context(), key)
+		if driver.IsMissingError(err) {
+			misses++
+		}
+	}
+	require.Equal(t, 1, misses)
+}
+
+func TestSyncDriverCleansExpiredEntriesOnSave(t *testing.T) {
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync", MaxEntries: 1}})
+	require.NoError(t, err)
+
+	require.NoError(t, d.Save(t.Context(), "expired", "old", time.Nanosecond))
+	require.Eventually(t, func() bool {
+		require.NoError(t, d.Save(t.Context(), "new", "value", 0))
+
+		_, err = d.Fetch(t.Context(), "expired")
+		return errors.Is(err, driver.ErrMissing)
+	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
+
+	value, err := d.Fetch(t.Context(), "new")
+	require.NoError(t, err)
+	require.Equal(t, "value", value)
 }
 
 func redisMetricCount(t *testing.T, reader metrics.Reader) int {

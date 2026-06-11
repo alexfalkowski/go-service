@@ -20,6 +20,6 @@
 // # TTL resolution
 //
 // TTL handling depends on the selected driver. The built-in in-memory "sync"
-// driver stores values in process memory and expires entries lazily when they
-// are read.
+// driver stores a bounded number of values in process memory, expires entries
+// when they are read, and removes expired entries before saving new values.
 package cache

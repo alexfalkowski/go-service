@@ -1,7 +1,7 @@
 // Package grpc contains gRPC transport wiring for services built with go-service.
 //
 // It provides constructors, interceptors, and Fx module wiring for:
-//   - gRPC servers ([NewServer]) with standardized interceptors (metadata, logging, auth, rate limiting, etc.).
+//   - gRPC servers ([NewServer]) with standardized interceptors (metadata, unary timeout, logging, auth, rate limiting, etc.).
 //   - gRPC clients ([NewClient]) with standardized dial options and client interceptors (metadata, auth,
 //     logging, unary timeout/retry/breaker policy, etc.).
 //

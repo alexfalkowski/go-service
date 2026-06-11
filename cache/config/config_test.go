@@ -10,36 +10,83 @@ import (
 )
 
 func TestGetMaxSize(t *testing.T) {
-	t.Run("nil", func(t *testing.T) {
-		var cfg *config.Config
-		require.Equal(t, bytes.DefaultSize, cfg.GetMaxSize())
-	})
+	tests := []struct {
+		cfg  *config.Config
+		name string
+		size bytes.Size
+	}{
+		{
+			name: "nil",
+			size: bytes.DefaultSize,
+		},
+		{
+			name: "zero",
+			cfg:  &config.Config{},
+			size: bytes.DefaultSize,
+		},
+		{
+			name: "explicit",
+			cfg:  &config.Config{MaxSize: 64},
+			size: bytes.Size(64),
+		},
+	}
 
-	t.Run("zero", func(t *testing.T) {
-		cfg := &config.Config{}
-		require.Equal(t, bytes.DefaultSize, cfg.GetMaxSize())
-	})
-
-	t.Run("explicit", func(t *testing.T) {
-		cfg := &config.Config{MaxSize: 64}
-		require.Equal(t, bytes.Size(64), cfg.GetMaxSize())
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.size, tt.cfg.GetMaxSize())
+		})
+	}
 }
 
-func TestConfigRejectsNegativeMaxSize(t *testing.T) {
-	cfg := &config.Config{MaxSize: -1}
+func TestConfigValidation(t *testing.T) {
+	tests := []struct {
+		cfg  *config.Config
+		name string
+		err  bool
+	}{
+		{
+			name: "valid",
+			cfg:  &config.Config{MaxEntries: config.DefaultMaxEntries},
+		},
+		{
+			name: "valid max size",
+			cfg:  &config.Config{MaxSize: bytes.MaxConfigSize, MaxEntries: config.DefaultMaxEntries},
+		},
+		{
+			name: "valid max entries",
+			cfg:  &config.Config{MaxEntries: 1},
+		},
+		{
+			name: "negative max size",
+			cfg:  &config.Config{MaxSize: -1, MaxEntries: config.DefaultMaxEntries},
+			err:  true,
+		},
+		{
+			name: "oversized max size",
+			cfg:  &config.Config{MaxSize: bytes.MaxConfigSize + 1, MaxEntries: config.DefaultMaxEntries},
+			err:  true,
+		},
+		{
+			name: "zero max entries",
+			cfg:  &config.Config{MaxEntries: 0},
+			err:  true,
+		},
+		{
+			name: "negative max entries",
+			cfg:  &config.Config{MaxEntries: -1},
+			err:  true,
+		},
+	}
 
-	require.Error(t, test.Validator.Struct(cfg))
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := test.Validator.Struct(tt.cfg)
+			if tt.err {
+				require.Error(t, err)
+				return
+			}
 
-func TestConfigAcceptsMaxSize(t *testing.T) {
-	cfg := &config.Config{MaxSize: bytes.MaxConfigSize}
-
-	require.NoError(t, test.Validator.Struct(cfg))
-}
-
-func TestConfigRejectsOversizedMaxSize(t *testing.T) {
-	cfg := &config.Config{MaxSize: bytes.MaxConfigSize + 1}
-
-	require.Error(t, test.Validator.Struct(cfg))
+			require.NoError(t, err)
+		})
+	}
 }

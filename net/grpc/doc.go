@@ -37,7 +37,9 @@
 //   - initial_conn_window_size: SI size string such as 4MB
 //   - max_send_msg_size: SI size string such as 16MB
 //
-// The timeout argument is also used as the keepalive ping Timeout.
+// The timeout argument is also used as the keepalive ping Timeout. Request
+// handler timeouts are applied by higher-level transport wiring, not by
+// NewServer itself.
 //
 // NewServer always enables server reflection via reflection.Register.
 //

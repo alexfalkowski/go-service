@@ -206,6 +206,34 @@ func TestWatch(t *testing.T) {
 	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
+func TestWatchStaysOpenPastServerTimeout(t *testing.T) {
+	cfg := test.NewInsecureTransportConfig()
+	cfg.GRPC.Timeout = 500 * time.Millisecond
+	world := newGRPCHealthWorld(t, test.StatusURL("200"),
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldTransportConfig(cfg),
+	)
+	requireGRPCReady(t, world)
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
+
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	wc, err := client.Watch(ctx, req)
+	require.NoError(t, err)
+
+	resp, err := wc.Recv()
+	require.NoError(t, err)
+
+	require.Equal(t, health.Serving, resp.GetStatus())
+	requireWatchStaysOpenUntilCancelAfter(t, cancel, wc, 2*time.Second)
+}
+
 func TestWatchServerLimiter(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"),
 		test.WithWorldTelemetry("otlp"),
@@ -429,6 +457,12 @@ func TestWatchStatusChanges(t *testing.T) {
 func requireWatchStaysOpenUntilCancel(t *testing.T, cancel context.CancelFunc, wc health.WatchClient) {
 	t.Helper()
 
+	requireWatchStaysOpenUntilCancelAfter(t, cancel, wc, 150*time.Millisecond)
+}
+
+func requireWatchStaysOpenUntilCancelAfter(t *testing.T, cancel context.CancelFunc, wc health.WatchClient, d time.Duration) {
+	t.Helper()
+
 	errCh := make(chan error, 1)
 	go func() {
 		_, err := wc.Recv()
@@ -438,7 +472,7 @@ func requireWatchStaysOpenUntilCancel(t *testing.T, cancel context.CancelFunc, w
 	select {
 	case err := <-errCh:
 		require.FailNow(t, "watch stream closed unexpectedly", err.Error())
-	case <-time.After(150 * time.Millisecond):
+	case <-time.After(d):
 	}
 
 	cancel()

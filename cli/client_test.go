@@ -9,7 +9,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/fx"
 )
 
 func TestApplicationClientRunCodeOnSuccess(t *testing.T) {
@@ -82,6 +84,32 @@ func TestApplicationClientRecoversFromPanic(t *testing.T) {
 	err := app.Run(t.Context())
 	require.Error(t, err)
 	require.ErrorContains(t, err, `panic: "bad client"`)
+}
+
+func TestApplicationClientStartUsesFxTimeout(t *testing.T) {
+	test.SetupCLI("client")
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			c.AddClient(
+				"client",
+				"Start the client.",
+				di.NoLogger,
+				fx.StartTimeout((10 * time.Millisecond).Duration()),
+				di.Register(func(lc di.Lifecycle) {
+					lc.Append(di.Hook{
+						OnStart: func(ctx context.Context) error {
+							<-ctx.Done()
+
+							return ctx.Err()
+						},
+					})
+				}),
+			)
+		},
+	)
+
+	require.ErrorIs(t, app.Run(t.Context()), context.DeadlineExceeded)
 }
 
 func TestApplicationClientShutdownExitCodeIsReturned(t *testing.T) {

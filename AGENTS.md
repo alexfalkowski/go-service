@@ -116,6 +116,13 @@ matching skill for the task.
   startup failure exits the process. Report only concrete same-process reuse bugs
   in supported tests/tools, ignored successful shutdown cleanup, or an API
   promise that failed startup is recoverable in the same process.
+- Telemetry logger, metrics, and tracer shutdown hooks intentionally ignore
+  provider/exporter shutdown errors so one telemetry flush failure does not stop
+  later lifecycle shutdown hooks. Do not flag swallowed telemetry shutdown
+  export errors as reliability gaps solely because operators will not see those
+  final flush failures; report only concrete bugs such as shutdown hooks not
+  running, globals not resetting after successful shutdown, or a public API
+  promise to surface telemetry shutdown errors.
 - `cache.Register(...)` sets the package-level cache used by generic cache helpers.
   It is intentionally called by the supported wiring path during startup/test
   setup, not as a concurrent runtime reconfiguration API. Do not flag
@@ -344,3 +351,16 @@ matching skill for the task.
 
 - CI initializes submodules, prepares certs/services, then runs dependency, lint, security, spec, benchmark, and coverage targets.
 - Check CI config for exact service images, ports, and command order.
+- CircleCI intentionally uses floating `latest` tags for selected dependency
+  sidecars, such as `alexfalkowski/status:latest` and `grafana/mimir:latest`,
+  so upstream sidecar breakage is caught by CI. Do not flag those floating CI
+  sidecar tags as reliability, release-safety, or reproducibility gaps solely
+  because they can change; report only concrete breakage such as CI no longer
+  starting the required service, waiting on the wrong port, or using an image
+  that no longer satisfies the documented test dependency.
+- CircleCI `store_artifacts` and `store_test_results` steps run after earlier
+  failed steps by default. Do not flag missing `when: always` on those steps as
+  a reliability or diagnostics gap solely because earlier validation commands
+  can fail; report only concrete artifact/report collection breakage, such as
+  wrong paths, missing generated reports, cancellation/runtime-timeout cases
+  that the repo claims to preserve, or unsupported CircleCI behavior changes.
