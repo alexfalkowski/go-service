@@ -21,8 +21,8 @@
 // The standard config fixtures provide that shape; callers that build config manually should validate it
 // before calling [NewDriver].
 //
-// The built-in "sync" driver uses an in-process [github.com/alexfalkowski/go-sync.Map] and lazily expires
-// entries when they are read.
+// The built-in "sync" driver uses a bounded in-process cache and expires entries
+// when they are read or before new values are saved.
 //
 // If the configured kind is unknown, [NewDriver] returns [ErrNotFound].
 //

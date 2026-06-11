@@ -264,6 +264,20 @@ func TimeoutUnaryClientInterceptor(d time.Duration) grpc.UnaryClientInterceptor 
 	return timeout.UnaryClientInterceptor(d.Duration())
 }
 
+// TimeoutUnaryServerInterceptor returns a unary server interceptor that applies a per-RPC timeout.
+//
+// The interceptor wraps the incoming context with d before invoking the next handler.
+// Existing earlier deadlines are preserved because the derived context cannot extend
+// the parent context's deadline.
+func TimeoutUnaryServerInterceptor(d time.Duration) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		timedCtx, cancel := context.WithTimeout(ctx, d)
+		defer cancel()
+
+		return handler(timedCtx, req)
+	}
+}
+
 // UseCompressor returns a CallOption that requests message compression by name.
 //
 // This forwards to [grpc.UseCompressor]. The compressor must be registered with
@@ -336,15 +350,14 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 // NewServer constructs a *[grpc.Server] with standard keepalive configuration and reflection enabled.
 //
 // Keepalive enforcement, connection establishment timeout, and server parameters are
-// populated from options using the following duration keys (falling back to timeout
-// when a key is not present):
+// populated from options using the following duration keys:
 //
-//   - keepalive_enforcement_policy_ping_min_time
-//   - keepalive_max_connection_idle
-//   - keepalive_max_connection_age
-//   - keepalive_max_connection_age_grace
-//   - keepalive_ping_time
-//   - connection_timeout
+//   - keepalive_enforcement_policy_ping_min_time (falls back to timeout)
+//   - keepalive_max_connection_idle (falls back to timeout)
+//   - keepalive_max_connection_age (falls back to the gRPC default)
+//   - keepalive_max_connection_age_grace (falls back to the gRPC default)
+//   - keepalive_ping_time (falls back to timeout)
+//   - connection_timeout (falls back to timeout)
 //
 // In addition, the provided timeout is used as the keepalive ping Timeout.
 //
@@ -371,8 +384,8 @@ func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption)
 	}))
 	serverOptions = append(serverOptions, grpc.KeepaliveParams(keepalive.ServerParameters{
 		MaxConnectionIdle:     options.NonNegativeDuration("keepalive_max_connection_idle", timeout).Duration(),
-		MaxConnectionAge:      options.NonNegativeDuration("keepalive_max_connection_age", timeout).Duration(),
-		MaxConnectionAgeGrace: options.NonNegativeDuration("keepalive_max_connection_age_grace", timeout).Duration(),
+		MaxConnectionAge:      options.NonNegativeDuration("keepalive_max_connection_age", 0).Duration(),
+		MaxConnectionAgeGrace: options.NonNegativeDuration("keepalive_max_connection_age_grace", 0).Duration(),
 		Time:                  options.NonNegativeDuration("keepalive_ping_time", timeout).Duration(),
 		Timeout:               timeout.Duration(),
 	}))

@@ -86,7 +86,7 @@ func NewDriver(params DriverParams) (Driver, error) {
 	case "redis":
 		return newRedisDriver(params)
 	case "sync":
-		return &syncDriver{}, nil
+		return newSyncDriver(cfg.GetMaxEntries()), nil
 	default:
 		return nil, ErrNotFound
 	}

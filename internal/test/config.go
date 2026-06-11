@@ -330,6 +330,7 @@ func NewCacheConfig(kind, compressor, encoder, secret string) *cache.Config {
 	return &cache.Config{
 		Kind:       kind,
 		Compressor: compressor, Encoder: encoder,
+		MaxEntries: cache.DefaultMaxEntries,
 		Options: map[string]any{
 			"url": FilePath("secrets/" + secret),
 		},

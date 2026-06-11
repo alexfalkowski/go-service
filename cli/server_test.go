@@ -1,15 +1,18 @@
 package cli_test
 
 import (
+	"log/slog"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/cli"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/fx"
 )
 
 func TestApplicationServerRun(t *testing.T) {
@@ -141,6 +144,60 @@ func TestApplicationServerHonorsContextCancellation(t *testing.T) {
 		require.NoError(t, err)
 	case <-time.After(time.Second):
 		require.FailNow(t, "timed out waiting for server stop hook")
+	}
+}
+
+func TestApplicationServerStopAfterCancellationUsesFxTimeout(t *testing.T) {
+	test.SetupCLI("server")
+
+	started := make(chan struct{})
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			c.AddServer(
+				"server",
+				"Start the server.",
+				di.NoLogger,
+				di.Constructor(slog.Default),
+				fx.StopTimeout((10 * time.Millisecond).Duration()),
+				di.Register(func(lc di.Lifecycle) {
+					lc.Append(di.Hook{
+						OnStart: func(context.Context) error {
+							close(started)
+
+							return nil
+						},
+						OnStop: func(ctx context.Context) error {
+							<-ctx.Done()
+
+							return ctx.Err()
+						},
+					})
+				}),
+			)
+		},
+	)
+
+	ctx, cancel := context.WithCancel(t.Context())
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- app.Run(ctx)
+	}()
+
+	select {
+	case <-started:
+	case err := <-errCh:
+		require.FailNow(t, "server exited before startup completed", err.Error())
+	case <-time.After(time.Second):
+		require.FailNow(t, "timed out waiting for server startup")
+	}
+
+	cancel()
+
+	select {
+	case err := <-errCh:
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+	case <-time.After(time.Second):
+		require.FailNow(t, "timed out waiting for server shutdown after cancellation")
 	}
 }
 

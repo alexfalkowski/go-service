@@ -2,6 +2,9 @@ package config
 
 import "github.com/alexfalkowski/go-service/v2/bytes"
 
+// DefaultMaxEntries is the default maximum number of entries for bounded in-memory cache drivers.
+const DefaultMaxEntries = 1024
+
 // Config configures the cache subsystem.
 type Config struct {
 	// Options contains implementation-specific configuration for the selected Kind.
@@ -28,7 +31,10 @@ type Config struct {
 	// In config files it is encoded as a human-readable SI size string (for example "64B", "2MB", "4GB").
 	//
 	// A zero value applies [bytes.DefaultSize]. Values must be between 0 and [bytes.MaxConfigSize].
-	MaxSize bytes.Size `yaml:"max_size,omitempty" json:"max_size,omitempty" toml:"max_size,omitempty" validate:"config_size"`
+	MaxSize bytes.Size `yaml:"max_size" json:"max_size" toml:"max_size" validate:"config_size"`
+
+	// MaxEntries limits the number of entries retained by bounded in-memory cache drivers.
+	MaxEntries int `yaml:"max_entries" json:"max_entries" toml:"max_entries" validate:"gt=0"`
 }
 
 // IsEnabled reports whether caching is enabled.
@@ -45,4 +51,15 @@ func (c *Config) GetMaxSize() bytes.Size {
 	}
 
 	return c.MaxSize
+}
+
+// GetMaxEntries returns the configured cache entry limit.
+//
+// A nil receiver or a zero value falls back to [DefaultMaxEntries].
+func (c *Config) GetMaxEntries() int {
+	if c == nil || c.MaxEntries == 0 {
+		return DefaultMaxEntries
+	}
+
+	return c.MaxEntries
 }

@@ -77,8 +77,9 @@ type ServerParams struct {
 //
 // The constructed server includes:
 //   - OpenTelemetry stats handling when tracing or metrics are enabled.
-//   - A unary interceptor chain that performs metadata extraction/injection, and optionally logging,
-//     token verification, and rate limiting, followed by any user-provided interceptors.
+//   - A unary interceptor chain that performs metadata extraction/injection, applies the configured
+//     server timeout, and optionally logging, token verification, and rate limiting, followed by any
+//     user-provided interceptors.
 //   - A stream interceptor chain that performs metadata extraction/injection, and optionally logging,
 //     token verification, and rate limiting, followed by any user-provided interceptors.
 //
@@ -158,7 +159,10 @@ func (s *Server) GetService() *grpcserver.Service {
 }
 
 func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
-	uis := []grpc.UnaryServerInterceptor{meta.UnaryServerInterceptor(params.UserAgent, params.Version, params.ID)}
+	uis := []grpc.UnaryServerInterceptor{
+		meta.UnaryServerInterceptor(params.UserAgent, params.Version, params.ID),
+		grpc.TimeoutUnaryServerInterceptor(params.Config.GetTimeout()),
+	}
 
 	if params.Logger != nil {
 		uis = append(uis, logger.UnaryServerInterceptor(params.Logger))

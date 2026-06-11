@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/cristalhq/acmd"
 )
 
@@ -74,7 +75,7 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 			opts := append(slices.Clone(opts), server.module(), runtime.Module)
 			app := di.New(opts...)
 
-			if err := app.Start(ctx); err != nil {
+			if err := a.start(ctx, app); err != nil {
 				return a.prefix(name, err)
 			}
 
@@ -85,7 +86,7 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 			case <-ctx.Done():
 			}
 
-			return a.shutdownError(name, app.Stop(a.stopContext(ctx)), code)
+			return a.shutdownError(name, a.stop(ctx, app), code)
 		},
 	}
 	runtime.Must(a.register(command))
@@ -121,7 +122,7 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 			opts := append(slices.Clone(opts), client.module())
 			app := di.New(opts...)
 
-			if err := app.Start(ctx); err != nil {
+			if err := a.start(ctx, app); err != nil {
 				return a.prefix(name, err)
 			}
 
@@ -132,7 +133,7 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 			default:
 			}
 
-			return a.shutdownError(name, app.Stop(a.stopContext(ctx)), code)
+			return a.shutdownError(name, a.stop(ctx, app), code)
 		},
 	}
 	runtime.Must(a.register(command))
@@ -211,10 +212,24 @@ func (a *Application) code(err error) int {
 	return os.ExitCodeFailure
 }
 
-func (a *Application) stopContext(ctx context.Context) context.Context {
+func (a *Application) start(ctx context.Context, app *di.App) error {
+	startCtx, cancel := context.WithTimeout(ctx, time.Duration(app.StartTimeout()))
+	defer cancel()
+
+	return app.Start(startCtx)
+}
+
+func (a *Application) stop(ctx context.Context, app *di.App) error {
+	stopCtx, cancel := a.stopContext(ctx, app)
+	defer cancel()
+
+	return app.Stop(stopCtx)
+}
+
+func (a *Application) stopContext(ctx context.Context, app *di.App) (context.Context, context.CancelFunc) {
 	if ctx.Err() != nil {
-		return context.WithoutCancel(ctx)
+		ctx = context.WithoutCancel(ctx)
 	}
 
-	return ctx
+	return context.WithTimeout(ctx, time.Duration(app.StopTimeout()))
 }

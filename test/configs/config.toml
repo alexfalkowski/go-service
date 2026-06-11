@@ -9,6 +9,7 @@ kind = "redis"
 encoder = "proto"
 compressor = "snappy"
 max_size = "4MB"
+max_entries = 1024
 [cache.options]
 url = "file:../test/secrets/redis"
 

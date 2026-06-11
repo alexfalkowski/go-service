@@ -260,7 +260,7 @@ func TestWriteToOnlyUsesConfiguredEncoderOnGet(t *testing.T) {
 
 func TestMissingCache(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
-	cfg := &config.Config{Kind: "sync"}
+	cfg := &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}
 
 	d, err := driver.NewDriver(driver.DriverParams{
 		Lifecycle: lc,
@@ -287,7 +287,7 @@ func TestMissingCache(t *testing.T) {
 }
 
 func TestExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
-	cfg := &config.Config{Kind: "sync"}
+	cfg := &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}
 	c := cache.NewCache(cache.CacheParams{
 		Config:     cfg,
 		Compressor: test.Compressor,
