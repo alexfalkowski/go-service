@@ -20,8 +20,12 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// maxBase64EncodedLenInput is the largest decoded-size limit whose padded base64 length fits in int.
-const maxBase64EncodedLenInput = math.MaxInt / 4 * 3
+const (
+	// maxBase64EncodedLenInput is the largest decoded-size limit whose padded base64 length fits in int.
+	maxBase64EncodedLenInput = math.MaxInt / 4 * 3
+
+	cacheKeyNamespace = "cache:v1"
+)
 
 // CacheParams defines dependencies for constructing a [Cache].
 //
@@ -95,7 +99,7 @@ func (c *Cache) Flush(ctx context.Context) error {
 //
 // If the key does not exist, driver behavior is implementation-specific.
 func (c *Cache) Remove(ctx context.Context, key string) error {
-	return c.driver.Delete(ctx, key)
+	return c.driver.Delete(ctx, c.driverKey(key))
 }
 
 // Get loads a cached value for key into value.
@@ -105,7 +109,7 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 //
 // The value parameter should be a pointer to the destination value (for example *MyStruct).
 func (c *Cache) Get(ctx context.Context, key string, value any) error {
-	val, err := c.driver.Fetch(ctx, key)
+	val, err := c.driver.Fetch(ctx, c.driverKey(key))
 	if err != nil {
 		if drivererrors.IsMissingError(err) || drivererrors.IsExpiredError(err) {
 			return nil
@@ -130,7 +134,11 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 		return err
 	}
 
-	return c.driver.Save(ctx, key, enc, ttl)
+	return c.driver.Save(ctx, c.driverKey(key), enc, ttl)
+}
+
+func (c *Cache) driverKey(key string) string {
+	return strings.Join(":", cacheKeyNamespace, c.compressorKind(), c.encoderKind(), key)
 }
 
 func (c *Cache) encode(value any) (string, error) {
@@ -176,11 +184,15 @@ func (c *Cache) decode(value string, field any) error {
 }
 
 func (c *Cache) compressor() compress.Compressor {
+	return c.cm.Get(c.compressorKind())
+}
+
+func (c *Cache) compressorKind() string {
 	if cmp := c.cm.Get(c.cfg.Compressor); cmp != nil {
-		return cmp
+		return c.cfg.Compressor
 	}
 
-	return c.cm.Get("none")
+	return "none"
 }
 
 func (c *Cache) readEncoder(value any) encoding.Encoder {
@@ -206,9 +218,13 @@ func (c *Cache) writeEncoder(value any) encoding.Encoder {
 }
 
 func (c *Cache) configuredEncoder() encoding.Encoder {
+	return c.em.Get(c.encoderKind())
+}
+
+func (c *Cache) encoderKind() string {
 	if enc := c.em.Get(c.cfg.Encoder); enc != nil {
-		return enc
+		return c.cfg.Encoder
 	}
 
-	return c.em.Get("json")
+	return "json"
 }

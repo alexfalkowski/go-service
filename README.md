@@ -263,6 +263,7 @@ cache:
 > - Unknown `kind` values return `cache/driver/errors.ErrNotFound`.
 > - Unknown or empty `compressor` values fall back to `none`.
 > - For normal values, unknown or empty `encoder` values fall back to `json`.
+> - Configured `compressor` and `encoder` values are part of the cache driver key namespace, so changing either setting creates cache misses for values written with the previous format.
 > - Cache operations use `plain` for `io.WriterTo`/`io.ReaderFrom` stream values and `proto` for protobuf messages, regardless of the configured `encoder`.
 > - `max_size` limits encoded cache values before compression, after compression, and after decompression. A zero value uses the default `4MB`.
 > - `max_entries` limits entries retained by bounded in-memory cache drivers and must be greater than zero.
@@ -410,6 +411,9 @@ The framework provides Kubernetes-style endpoints:
 
 Successful health responses return HTTP 200 with the plain-text body `SERVING`.
 Missing or failing observers return HTTP 503 with the standard go-service error response.
+
+Built-in checker helpers under `health/checker` include DB connectivity checks and
+cache connectivity checks for pingable cache drivers such as Redis and ttlcache.
 
 These are modeled after [Kubernetes API health endpoints](https://kubernetes.io/docs/reference/using-api/health-checks/).
 

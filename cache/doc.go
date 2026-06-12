@@ -16,6 +16,8 @@
 //
 // [Cache] persists arbitrary values by encoding (and optionally compressing) them before passing them to
 // the configured driver. The encoder/compressor used is selected by configuration with sensible defaults.
+// The configured encoder and compressor are also included in the driver key namespace so format changes
+// create cache misses instead of decoding values written by an incompatible format.
 //
 // # TTL resolution
 //
