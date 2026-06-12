@@ -19,7 +19,11 @@ import (
 // FunctionMapParams defines dependencies used to build a [sprout.FunctionMap].
 type FunctionMapParams struct {
 	di.In
-	Logger     *slog.Logger
+
+	// Logger records sprout function map events.
+	Logger *slog.Logger
+
+	// Registries adds optional sprout registries to the function map.
 	Registries []sprout.Registry `optional:"true"`
 }
 

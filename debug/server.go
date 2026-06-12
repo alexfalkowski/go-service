@@ -20,20 +20,23 @@ import (
 //
 // It is intended for dependency injection (Fx/Dig). [NewServer] uses these dependencies to build an
 // HTTP debug service and register lifecycle/shutdown behavior.
-//
-// Fields:
-//   - Shutdowner: used by the underlying service wiring to coordinate process shutdown.
-//   - Mux: the debug HTTP mux where debug endpoints (pprof/fgprof/statsviz/psutil/etc.) are registered.
-//   - Config: enables and configures the debug server (address/timeout/TLS/options).
-//   - Logger: used by the underlying HTTP service wrapper.
-//   - FS: filesystem used to resolve TLS source strings when TLS is enabled.
 type ServerParams struct {
 	di.In
+
+	// Shutdowner coordinates process shutdown from the debug service.
 	Shutdowner di.Shutdowner
-	Mux        *debug.ServeMux
-	Config     *Config
-	Logger     *logger.Logger
-	FS         *os.FS
+
+	// Mux registers debug HTTP endpoints.
+	Mux *debug.ServeMux
+
+	// Config enables and configures the debug server.
+	Config *Config
+
+	// Logger records debug HTTP service events.
+	Logger *logger.Logger
+
+	// FS resolves TLS source strings when TLS is enabled.
+	FS *os.FS
 }
 
 // NewServer constructs the debug Server when enabled.

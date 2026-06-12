@@ -2,39 +2,30 @@ package driver
 
 import (
 	"github.com/alexfalkowski/go-service/v2/cache/config"
+	"github.com/alexfalkowski/go-service/v2/cache/driver/errors"
+	"github.com/alexfalkowski/go-service/v2/cache/driver/internal/redis"
+	"github.com/alexfalkowski/go-service/v2/cache/driver/internal/ttlcache"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/redis/go-redis/v9"
 )
-
-// ErrExpired is returned when a cache entry exists but is expired.
-//
-// Drivers may wrap this error; use [IsExpiredError] to classify this condition.
-var ErrExpired = errors.New("cache: expired")
-
-// ErrMissing is returned when a cache entry does not exist.
-//
-// Drivers may wrap this error; use [IsMissingError] to classify this condition.
-var ErrMissing = errors.New("cache: missing")
-
-// ErrNotFound is returned when the configured cache driver kind is unknown.
-var ErrNotFound = errors.New("cache: driver not found")
-
-// ErrInvalidURL is returned when a cache backend URL cannot be parsed.
-var ErrInvalidURL = errors.New("cache: invalid driver url")
 
 // DriverParams defines dependencies for constructing a [Driver].
 type DriverParams struct {
 	di.In
-	Lifecycle di.Lifecycle
-	FS        *os.FS
-	Config    *config.Config
 
-	// Logger routes Redis client logs through the go-service logger when configured.
+	// Lifecycle registers backend shutdown hooks.
+	Lifecycle di.Lifecycle
+
+	// FS resolves backend source-string options.
+	FS *os.FS
+
+	// Config selects and configures the cache backend.
+	Config *config.Config
+
+	// Logger routes backend logs through the go-service logger when configured.
 	Logger *logger.Logger
 }
 
@@ -51,8 +42,8 @@ type DriverParams struct {
 //
 //   - options["url"] to be a string "source string" (e.g. "env:REDIS_URL" or "file:/path/to/url" or a literal URL)
 //
-// The URL is read via [os.FS.ReadSource], parsed using [redis.ParseURL], and
-// then the client is instrumented for tracing and metrics via
+// The URL is read via [os.FS.ReadSource], parsed using
+// [github.com/redis/go-redis/v9.ParseURL], and then the client is instrumented for tracing and metrics via
 // [github.com/alexfalkowski/go-service/v2/cache/telemetry]
 // when those telemetry providers are enabled.
 //
@@ -70,7 +61,8 @@ type DriverParams struct {
 //
 // The built-in "ttlcache" backend stores values in process memory and expires entries lazily on access.
 //
-// If [config.Config.Kind] is unknown, [NewDriver] returns [ErrNotFound].
+// If [config.Config.Kind] is unknown, [NewDriver] returns
+// [github.com/alexfalkowski/go-service/v2/cache/driver/errors.ErrNotFound].
 func NewDriver(params DriverParams) (Driver, error) {
 	cfg := params.Config
 	if !cfg.IsEnabled() {
@@ -79,11 +71,11 @@ func NewDriver(params DriverParams) (Driver, error) {
 
 	switch cfg.Kind {
 	case "redis":
-		return newRedisDriver(params)
+		return redis.NewDriver(params.Lifecycle, params.FS, params.Config, params.Logger)
 	case "ttlcache":
-		return newTTLCacheDriver(cfg.GetMaxEntries()), nil
+		return ttlcache.NewDriver(cfg.GetMaxEntries()), nil
 	default:
-		return nil, ErrNotFound
+		return nil, errors.ErrNotFound
 	}
 }
 
@@ -102,24 +94,4 @@ type Driver interface {
 
 	// Save stores value under key for the provided lifetime.
 	Save(ctx context.Context, key, value string, lifetime time.Duration) error
-}
-
-// IsExpiredError reports whether err represents an expired cache entry.
-//
-// This helper exists so higher-level code can treat expired entries as cache misses regardless of the
-// underlying backend implementation.
-func IsExpiredError(err error) bool {
-	return errors.Is(err, ErrExpired)
-}
-
-// IsMissingError reports whether err represents a missing cache entry.
-//
-// This helper normalizes the miss semantics of the backends currently supported by this package,
-// including Redis nil replies ([redis.Nil]).
-func IsMissingError(err error) bool {
-	if errors.Is(err, redis.Nil) {
-		return true
-	}
-
-	return errors.Is(err, ErrMissing)
 }
