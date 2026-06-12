@@ -6,5 +6,5 @@
 // The checkers in this package are intended to be composed by services depending on which subsystems they use
 // (database, caches, upstream dependencies, etc.).
 //
-// Start with [DBChecker] and [NewDBChecker].
+// Start with [CacheChecker], [NewCacheChecker], [DBChecker], and [NewDBChecker].
 package checker

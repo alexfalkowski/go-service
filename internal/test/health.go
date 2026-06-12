@@ -75,6 +75,11 @@ func (w *World) HealthServer(name, url string) *server.Server {
 		dr := server.NewRegistration("db", (10 * time.Millisecond).Duration(), dc)
 		regs = append(regs, dr)
 	}
+	if w.CachePinger != nil {
+		cc := healthchecker.NewCacheChecker(w.CachePinger, 1*time.Second)
+		cr := server.NewRegistration("cache", (10 * time.Millisecond).Duration(), cc)
+		regs = append(regs, cr)
+	}
 
 	server := health.NewServer(w.Lifecycle)
 	server.Register(name, regs...)

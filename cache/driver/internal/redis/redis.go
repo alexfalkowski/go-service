@@ -87,6 +87,11 @@ func (d *Driver) Flush(ctx context.Context) error {
 	return d.client.FlushDB(ctx).Err()
 }
 
+// Ping verifies Redis connectivity.
+func (d *Driver) Ping(ctx context.Context) error {
+	return d.client.Ping(ctx).Err()
+}
+
 // Save stores value under key for the provided lifetime.
 func (d *Driver) Save(ctx context.Context, key, value string, lifetime time.Duration) error {
 	return d.client.Set(ctx, key, value, lifetime.Duration()).Err()

@@ -155,6 +155,46 @@ func TestMaxSizeOnGetAllowsHugeConfiguredLimit(t *testing.T) {
 	require.Equal(t, "ok", *value)
 }
 
+func TestGetMissesAfterCacheFormatChange(t *testing.T) {
+	tests := []struct {
+		persist   *config.Config
+		retrieval *config.Config
+		name      string
+	}{
+		{
+			persist:   test.NewCacheConfig("ttlcache", "none", "json", "redis"),
+			retrieval: test.NewCacheConfig("ttlcache", "snappy", "json", "redis"),
+			name:      "compressor",
+		},
+		{
+			persist:   test.NewCacheConfig("ttlcache", "none", "json", "redis"),
+			retrieval: test.NewCacheConfig("ttlcache", "none", "gob", "redis"),
+			name:      "encoder",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			drv, err := driver.NewDriver(driver.DriverParams{Config: tt.persist})
+			require.NoError(t, err)
+
+			writer := test.NewStartedWorld(t,
+				test.WithWorldCacheConfig(tt.persist),
+				test.WithWorldCacheDriver(drv),
+			)
+			require.NoError(t, writer.Persist(t.Context(), "test", new("hello?"), time.Minute))
+
+			reader := test.NewStartedWorld(t,
+				test.WithWorldCacheConfig(tt.retrieval),
+				test.WithWorldCacheDriver(drv),
+			)
+			value := "unchanged"
+			require.NoError(t, reader.Get(t.Context(), "test", &value))
+			require.Equal(t, "unchanged", value)
+		})
+	}
+}
+
 func TestExpiredCache(t *testing.T) {
 	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())

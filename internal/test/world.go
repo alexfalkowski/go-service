@@ -102,6 +102,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	receiver, sender, err := NewEvents(mux, os.rt, generator)
 	require.NoError(tb, err)
 
+	cacheKind, cachePinger := newWorldCache(tb, lc, os)
 	world := &World{
 		t:      tb,
 		Logger: logger, Tracer: tracer,
@@ -109,7 +110,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 		Server: server, Client: client,
 		Rest:     restClient(httpClient, os),
 		Receiver: receiver, Sender: sender,
-		Cache: newWorldCache(tb, lc, os), PG: os.pg,
+		Cache: cacheKind, CachePinger: cachePinger, PG: os.pg,
 		httpClient: httpClient,
 	}
 
@@ -152,8 +153,9 @@ type World struct {
 	*events.Event
 	*transportevents.Receiver
 	*cache.Cache
-	Sender *transportevents.Sender
-	Rest   *rest.Client
+	CachePinger cache.Pinger
+	Sender      *transportevents.Sender
+	Rest        *rest.Client
 
 	DB         *sql.DBs
 	HTTPHealth *health.Server

@@ -17,6 +17,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/health"
+	healthchecker "github.com/alexfalkowski/go-service/v2/health/checker"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/module"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
@@ -58,7 +59,7 @@ func Options() []di.Option {
 	}
 }
 
-func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, _ env.Version) (health.Registrations, error) {
+func registrations(logger *logger.Logger, cfg *http.Config, pinger cache.Pinger, ua env.UserAgent, _ env.Version) (health.Registrations, error) {
 	if cfg == nil {
 		return nil, nil
 	}
@@ -74,7 +75,13 @@ func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, _ 
 	hc := checker.NewHTTPChecker(StatusURL("200"), timeout.Duration(), checker.WithRoundTripper(rt))
 	hr := server.NewRegistration("http", timeout.Duration(), hc)
 
-	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout.Duration(), timeout.Duration())}, nil
+	regs := health.Registrations{nr, hr, server.NewOnlineRegistration(timeout.Duration(), timeout.Duration())}
+	if pinger != nil {
+		cc := healthchecker.NewCacheChecker(pinger, timeout)
+		regs = append(regs, server.NewRegistration("cache", timeout.Duration(), cc))
+	}
+
+	return regs, nil
 }
 
 func healthRegister(cfg *http.Config, name env.Name, server *server.Server, regs health.Registrations) {
@@ -101,9 +108,13 @@ func livenessObserver(cfg *http.Config, name env.Name, server *server.Server) er
 	return server.Observe(name.String(), "livez", "noop")
 }
 
-func readinessObserver(cfg *http.Config, name env.Name, server *server.Server) error {
+func readinessObserver(cfg *http.Config, pinger cache.Pinger, name env.Name, server *server.Server) error {
 	if cfg == nil {
 		return nil
+	}
+
+	if pinger != nil {
+		return server.Observe(name.String(), "readyz", "http", "online", "cache")
 	}
 
 	return server.Observe(name.String(), "readyz", "http", "online")

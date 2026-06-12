@@ -59,6 +59,11 @@ func (d *Driver) Flush(ctx context.Context) error {
 	return nil
 }
 
+// Ping verifies ttlcache is usable.
+func (d *Driver) Ping(ctx context.Context) error {
+	return ctx.Err()
+}
+
 // Save stores value under key for the provided lifetime.
 func (d *Driver) Save(ctx context.Context, key, value string, lifetime time.Duration) error {
 	if err := ctx.Err(); err != nil {

@@ -58,6 +58,22 @@ func TestReadinessNoop(t *testing.T) {
 	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get(content.TypeKey))
 }
 
+func TestReadinessCache(t *testing.T) {
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("500"), test.HealthObserve("readyz", "cache")),
+	)
+
+	header := http.Header{}
+	url := world.NamedServerURL("http", "readyz")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, "SERVING", body)
+}
+
 func TestInvalidHealth(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),

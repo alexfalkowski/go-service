@@ -116,16 +116,16 @@ func (*WriteToOnly) WriteTo(io.Writer) (int64, error) {
 	return 0, nil
 }
 
-func redisCache(lc di.Lifecycle) (*cache.Cache, error) {
+func redisCache(lc di.Lifecycle) (*cache.Cache, cache.Pinger, error) {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
-	driver, err := driver.NewDriver(driver.DriverParams{
+	drv, err := driver.NewDriver(driver.DriverParams{
 		Lifecycle: lc,
 		FS:        FS,
 		Config:    cfg,
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	params := cache.CacheParams{
@@ -133,22 +133,23 @@ func redisCache(lc di.Lifecycle) (*cache.Cache, error) {
 		Compressor: Compressor,
 		Encoder:    Encoder,
 		Pool:       Pool,
-		Driver:     driver,
+		Driver:     drv,
 	}
 
-	return cache.NewCache(params), nil
+	return cache.NewCache(params), cache.NewPinger(drv), nil
 }
 
-func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldOpts) *cache.Cache {
+func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldOpts) (*cache.Cache, cache.Pinger) {
 	tb.Helper()
 
 	var kind *cache.Cache
+	var pinger cache.Pinger
 	if opts.cache == nil {
 		var err error
-		kind, err = redisCache(lc)
+		kind, pinger, err = redisCache(lc)
 		require.NoError(tb, err)
 	} else {
-		kind = createWorldCache(tb, lc, opts.cache)
+		kind, pinger = createWorldCache(tb, lc, opts.cache)
 	}
 
 	if opts.registerCache {
@@ -158,10 +159,10 @@ func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldOpts) *cache.Cache
 		})
 	}
 
-	return kind
+	return kind, pinger
 }
 
-func createWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldCacheOpts) *cache.Cache {
+func createWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldCacheOpts) (*cache.Cache, cache.Pinger) {
 	tb.Helper()
 
 	drv := opts.driver
@@ -183,5 +184,5 @@ func createWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldCacheOpts) *cac
 		Driver:     drv,
 	}
 
-	return cache.NewCache(params)
+	return cache.NewCache(params), cache.NewPinger(drv)
 }
