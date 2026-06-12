@@ -212,6 +212,11 @@ matching skill for the task.
   external edge, gateway, ingress, load balancer, or service mesh limiter when
   those attempts need quota enforcement.
 - The built-in transport limiter is intentionally in-memory and per-process. Treat it as a last-resort local safeguard; prefer external edge/gateway/ingress/load-balancer/service-mesh limiting for production abuse protection.
+- Transport limiter `max_keys` intentionally caps the number of
+  caller-derived keys that get independent in-memory buckets. Additional
+  distinct keys share one overflow bucket; do not flag this as accidental key
+  collision unless explicit limiter config is ignored, the overflow bucket is
+  bypassed, or documented status/header behavior is wrong.
 - gRPC stream limiters intentionally consume one token when a stream opens and
   one token for each `RecvMsg` and `SendMsg` operation. Do not flag this as
   accidental double-counting; report only concrete bugs such as missing message

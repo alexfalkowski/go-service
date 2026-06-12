@@ -20,6 +20,11 @@ func NewConstant(duration time.Duration) Backoff {
 	return retry.NewConstant(duration.Duration())
 }
 
+// WithJitterPercent wraps next and adds +/- percent jitter to each backoff duration.
+func WithJitterPercent(percent uint64, next Backoff) Backoff {
+	return retry.WithJitterPercent(percent, next)
+}
+
 // RetryableError marks err as retryable.
 func RetryableError(err error) error {
 	return retry.RetryableError(err)

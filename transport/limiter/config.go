@@ -2,6 +2,9 @@ package limiter
 
 import "github.com/alexfalkowski/go-service/v2/time"
 
+// DefaultMaxKeys is the default maximum number of caller-derived keys with independent limiter buckets.
+const DefaultMaxKeys uint64 = 4096
+
 // Config configures the in-memory rate limiter.
 //
 // The limiter is typically constructed by [NewLimiter], which interprets these fields as:
@@ -14,6 +17,9 @@ import "github.com/alexfalkowski/go-service/v2/time"
 //     defining the refill/measurement window used by the underlying token bucket store.
 //
 //   - Tokens: the maximum number of tokens available per Interval for a given key.
+//
+//   - MaxKeys: the maximum number of caller-derived keys that get independent buckets.
+//     Additional distinct keys share one overflow bucket.
 //
 // # Optional pointers and "enabled" semantics
 //
@@ -35,6 +41,12 @@ type Config struct {
 	// When Tokens is 0, the underlying store behavior is implementation-defined (it may reject all
 	// requests or behave as an always-empty bucket). Prefer configuring a positive value.
 	Tokens uint64 `yaml:"tokens,omitempty" json:"tokens,omitempty" toml:"tokens,omitempty"`
+
+	// MaxKeys is the maximum number of caller-derived keys that get independent buckets.
+	//
+	// Additional distinct keys share one overflow bucket so high-cardinality key floods cannot create
+	// unbounded store entries. A zero value applies [DefaultMaxKeys].
+	MaxKeys uint64 `yaml:"max_keys,omitempty" json:"max_keys,omitempty" toml:"max_keys,omitempty"`
 }
 
 // IsEnabled reports whether limiter configuration is present.
@@ -42,4 +54,15 @@ type Config struct {
 // By convention, a nil *[Config] is treated as "disabled".
 func (c *Config) IsEnabled() bool {
 	return c != nil
+}
+
+// GetMaxKeys returns the configured active key cap.
+//
+// A nil receiver or a zero value falls back to [DefaultMaxKeys].
+func (c *Config) GetMaxKeys() uint64 {
+	if c == nil || c.MaxKeys == 0 {
+		return DefaultMaxKeys
+	}
+
+	return c.MaxKeys
 }

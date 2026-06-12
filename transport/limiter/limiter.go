@@ -1,8 +1,6 @@
 package limiter
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -14,10 +12,6 @@ import (
 	"github.com/sethvargo/go-limiter"
 	"github.com/sethvargo/go-limiter/memorystore"
 )
-
-// maxKeySize keeps normal limiter keys readable while preventing oversized
-// request metadata from being retained verbatim as in-memory bucket names.
-const maxKeySize = 256
 
 // ErrMissingKey is returned when the configured key kind is not present in the KeyMap.
 var ErrMissingKey = errors.New("limiter: missing key")
@@ -73,26 +67,36 @@ type KeyMap map[string]KeyFunc
 // Notes:
 //   - cfg.Interval is used directly as a typed duration decoded from config.
 //   - The underlying store constructor currently does not return an error (it is ignored).
-func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
+func NewLimiter(lc di.Lifecycle, keyMap KeyMap, cfg *Config) (*Limiter, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 
-	k, ok := keys[cfg.Kind]
+	k, ok := keyMap[cfg.Kind]
 	if !ok || k == nil {
 		return nil, ErrMissingKey
 	}
 
+	sweepMinTTL := max(time.Hour.Duration(), cfg.Interval.Duration())
+	sweepInterval := time.Hour.Duration()
 	config := &memorystore.Config{
 		Tokens:   cfg.Tokens,
 		Interval: cfg.Interval.Duration(),
 		// Keep buckets at least as long as the configured limiter window so long
 		// intervals are not purged and reset before the window completes.
-		SweepMinTTL:   max(time.Hour.Duration(), cfg.Interval.Duration()),
-		SweepInterval: time.Hour.Duration(),
+		SweepMinTTL:   sweepMinTTL,
+		SweepInterval: sweepInterval,
 	}
 	store, _ := memorystore.New(config)
-	limiter := &Limiter{store: store, key: k}
+	limiter := &Limiter{
+		store: store,
+		key:   k,
+		keys: &keys{
+			values:  map[string]time.Time{},
+			ttl:     time.Duration(sweepMinTTL + sweepInterval),
+			maxKeys: cfg.GetMaxKeys(),
+		},
+	}
 
 	lc.Append(di.Hook{
 		OnStop: func(ctx context.Context) error {
@@ -110,6 +114,7 @@ func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 type Limiter struct {
 	store limiter.Store
 	key   KeyFunc
+	keys  *keys
 }
 
 // Take attempts to take a token for the key derived from ctx.
@@ -127,7 +132,7 @@ type Limiter struct {
 //
 // Note: callers are responsible for deciding how to surface the header value (e.g. in HTTP response headers).
 func (l *Limiter) Take(ctx context.Context) (bool, string, error) {
-	tokens, remaining, _, ok, err := l.store.Take(ctx, key(l.key(ctx)))
+	tokens, remaining, _, ok, err := l.store.Take(ctx, l.keys.storeKey(l.key(ctx)))
 	if err != nil {
 		return false, strings.Empty, err
 	}
@@ -146,19 +151,4 @@ func (l *Limiter) Take(ctx context.Context) (bool, string, error) {
 // This is typically invoked automatically via the lifecycle hook installed by NewLimiter.
 func (l *Limiter) Close(ctx context.Context) error {
 	return l.store.Close(ctx)
-}
-
-func key(value meta.Value) string {
-	rawKey := value.Value()
-	// Namespace every store key representation so caller-controlled raw values
-	// cannot collide with internal empty sentinels or oversized-key hashes.
-	if strings.IsEmpty(rawKey) {
-		return "empty:"
-	}
-	if len(rawKey) <= maxKeySize {
-		return strings.Concat("raw:", strconv.Itoa(len(rawKey)), ":", rawKey)
-	}
-
-	sum := sha256.Sum256([]byte(rawKey))
-	return strings.Concat("hash:sha256:", hex.EncodeToString(sum[:]))
 }

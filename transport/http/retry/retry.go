@@ -20,7 +20,7 @@ import (
 // It describes the retry policy used by NewRoundTripper:
 //   - `Attempts`: maximum number of attempts including the initial attempt.
 //   - `Timeout`: per-attempt timeout duration.
-//   - `Backoff`: constant delay between retries.
+//   - `Backoff`: base delay between retries.
 type Config = config.Config
 
 // Policy decides whether req is eligible for retry.
@@ -72,12 +72,12 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 //   - applies a per-attempt timeout derived from `cfg.GetTimeout()`, and
 //   - retries responses and status errors with retryable HTTP status codes, and
 //   - retries recoverable transport errors using `retryablehttp.DefaultRetryPolicy`, and
-//   - waits a constant backoff derived from `cfg.GetBackoff()` between attempts.
+//   - waits a jittered backoff derived from `cfg.GetBackoff()` between attempts.
 //
 // Attempts/backoff:
 // `cfg.Attempts` is interpreted as the total attempt count (initial attempt + retries). Since
 // the shared retry helper expects a retry count, NewRoundTripper converts it via `cfg.MaxRetries()`
-// before wrapping the constant backoff in `WithMaxRetries`.
+// before wrapping the jittered backoff in `WithMaxRetries`.
 //
 // Policy behavior:
 // When no policy is provided, only side-effect-safe requests are eligible for retry: safe HTTP methods, or
@@ -156,7 +156,8 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 		return r.attempt(ctx, req, attempt)
 	}
 
-	backoff := retry.WithMaxRetries(r.maxRetries, retry.NewConstant(r.backoff))
+	backoff := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewConstant(r.backoff))
+	backoff = retry.WithMaxRetries(r.maxRetries, backoff)
 	res, err := retry.DoValue(req.Context(), backoff, operation)
 	return res, err, false
 }

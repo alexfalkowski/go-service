@@ -55,7 +55,7 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 //   - It uses the typed per-attempt timeout from cfg.GetTimeout() and the backoff duration from cfg.
 //   - It retries up to `cfg.MaxAttempts()` total attempts (including the initial attempt).
 //   - It applies a per-attempt timeout so each attempt is bounded.
-//   - It uses a constant backoff duration derived from `cfg.GetBackoff()`.
+//   - It uses a jittered backoff duration derived from `cfg.GetBackoff()`.
 //
 // Failure classification:
 // Retries are only attempted for selected gRPC status codes. This implementation currently retries on
@@ -94,7 +94,8 @@ func invokeWithRetries(ctx context.Context, maxAttempts uint64, backoffDuration 
 		return attempt(ctx)
 	}
 
-	retries := retry.WithMaxRetries(maxAttempts-1, retry.NewConstant(backoffDuration))
+	retries := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewConstant(backoffDuration))
+	retries = retry.WithMaxRetries(maxAttempts-1, retries)
 	return retry.Do(ctx, retries, func(ctx context.Context) error {
 		err := attempt(ctx)
 		if err == nil || status.Code(err) != codes.Unavailable {

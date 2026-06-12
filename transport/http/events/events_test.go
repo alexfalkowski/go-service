@@ -5,17 +5,17 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/events"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	transportevents "github.com/alexfalkowski/go-service/v2/transport/http/events"
 	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
-	events "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/protocol"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"github.com/stretchr/testify/require"
 )
@@ -67,6 +67,24 @@ func TestSendNotReceive(t *testing.T) {
 	)
 
 	world.RegisterEvents(t.Context())
+
+	ctx := world.EventsContext(t.Context())
+
+	e := events.NewEvent()
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
+
+	result := world.Sender.Send(ctx, e)
+	requireNACK(t, result)
+	require.Nil(t, world.Event)
+}
+
+func TestReceiveCanReportProcessingFailure(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+	world.Receiver.Register(t.Context(), "/events", func(_ context.Context, _ events.Event) events.Result {
+		return events.NewHTTPResult(http.StatusServiceUnavailable, "processor unavailable")
+	})
 
 	ctx := world.EventsContext(t.Context())
 
@@ -213,14 +231,14 @@ func sendWithDeadline(t *testing.T, opts ...transportevents.SenderOption) (time.
 	return start, <-deadlines
 }
 
-func requireACK(t *testing.T, result protocol.Result) {
+func requireACK(t *testing.T, result events.Result) {
 	t.Helper()
 
-	require.True(t, protocol.IsACK(result), "expected CloudEvents ACK: %v", result)
+	require.True(t, events.IsACK(result), "expected CloudEvents ACK: %v", result)
 }
 
-func requireNACK(t *testing.T, result protocol.Result) {
+func requireNACK(t *testing.T, result events.Result) {
 	t.Helper()
 
-	require.True(t, protocol.IsNACK(result), "expected CloudEvents NACK: %v", result)
+	require.True(t, events.IsNACK(result), "expected CloudEvents NACK: %v", result)
 }

@@ -20,6 +20,24 @@ func TestConfigRejectsNegativeInterval(t *testing.T) {
 	require.Error(t, test.Validator.Struct(cfg))
 }
 
+func TestConfigGetMaxKeys(t *testing.T) {
+	tests := []struct {
+		cfg  *limiter.Config
+		name string
+		want uint64
+	}{
+		{name: "nil", want: limiter.DefaultMaxKeys},
+		{name: "zero", cfg: &limiter.Config{}, want: limiter.DefaultMaxKeys},
+		{name: "explicit", cfg: &limiter.Config{MaxKeys: 2}, want: 2},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, tt.cfg.GetMaxKeys())
+		})
+	}
+}
+
 func TestValidLimiter(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
@@ -62,6 +80,49 @@ func TestTake(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, ok)
 	require.Equal(t, "limit=1, remaining=0", header)
+}
+
+func TestTakeCapsActiveKeys(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 2, Interval: time.Second, MaxKeys: 1}
+
+	limiter, err := limiter.NewLimiter(lc, m, config)
+	require.NoError(t, err)
+	require.NotNil(t, limiter)
+	defer func() {
+		require.NoError(t, limiter.Close(t.Context()))
+	}()
+
+	first := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("first-agent")))
+	second := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("second-agent")))
+	third := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("third-agent")))
+	fourth := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("fourth-agent")))
+
+	ok, header, err := limiter.Take(first)
+	require.NoError(t, err)
+	require.True(t, ok, "first key should get an admitted bucket")
+	require.Equal(t, "limit=2, remaining=1", header)
+
+	ok, header, err = limiter.Take(second)
+	require.NoError(t, err)
+	require.True(t, ok, "second key should take from the overflow bucket")
+	require.Equal(t, "limit=2, remaining=1", header)
+
+	ok, header, err = limiter.Take(third)
+	require.NoError(t, err)
+	require.True(t, ok, "third key should share the overflow bucket")
+	require.Equal(t, "limit=2, remaining=0", header)
+
+	ok, header, err = limiter.Take(fourth)
+	require.NoError(t, err)
+	require.False(t, ok, "fourth key should be denied by the exhausted overflow bucket")
+	require.Equal(t, "limit=2, remaining=0", header)
+
+	ok, header, err = limiter.Take(first)
+	require.NoError(t, err)
+	require.True(t, ok, "admitted key should keep its independent bucket")
+	require.Equal(t, "limit=2, remaining=0", header)
 }
 
 func TestTakeSupportsCustomKeyKind(t *testing.T) {
