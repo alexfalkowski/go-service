@@ -81,9 +81,9 @@ func testNotFoundHandler(t *testing.T, tt notFoundHandlerTest) {
 
 	require.Equal(t, tt.code, res.Code)
 	if tt.body != "" {
-		require.Equal(t, tt.body, res.Body.String())
+		test.RequireResponseBody(t, res, tt.body)
 	}
 	if tt.contains != "" {
-		require.Contains(t, res.Body.String(), tt.contains)
+		test.RequireResponseBodyContains(t, res, tt.contains)
 	}
 }

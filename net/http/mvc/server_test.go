@@ -186,7 +186,7 @@ func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Contains(t, res.Body.String(), "400 http: bad request invalid argument")
+	test.RequireResponseBodyContains(t, res, "400 http: bad request invalid argument")
 }
 
 func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
@@ -214,7 +214,7 @@ func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
-	require.Empty(t, res.Body.String())
+	test.RequireEmptyResponseBody(t, res)
 }
 
 func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
@@ -246,7 +246,7 @@ func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
-	require.Empty(t, res.Body.String())
+	test.RequireEmptyResponseBody(t, res)
 	require.Equal(t, "text/html; charset=utf-8", res.Header().Get(content.TypeKey))
 }
 
@@ -275,7 +275,7 @@ func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
-	require.Empty(t, res.Body.String())
+	test.RequireEmptyResponseBody(t, res)
 }
 
 func TestNotFoundHandlesNotFound(t *testing.T) {
@@ -306,7 +306,7 @@ func TestNotFoundHandlesNotFound(t *testing.T) {
 
 	require.Equal(t, http.StatusNotFound, res.Code)
 	require.Equal(t, "text/html; charset=utf-8", res.Header().Get(content.TypeKey))
-	require.Contains(t, res.Body.String(), "404 Not Found")
+	test.RequireResponseBodyContains(t, res, "404 Not Found")
 }
 
 func TestNotFoundIncludesRequestMeta(t *testing.T) {
@@ -337,7 +337,7 @@ func TestNotFoundIncludesRequestMeta(t *testing.T) {
 	mvc.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusNotFound, res.Code)
-	require.Contains(t, res.Body.String(), "PUT /missing")
+	test.RequireResponseBodyContains(t, res, "PUT /missing")
 }
 
 func TestNotFoundUsesDefaultWhenControllerMissing(t *testing.T) {
@@ -356,7 +356,7 @@ func TestNotFoundUsesDefaultWhenControllerMissing(t *testing.T) {
 	mvc.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusNotFound, res.Code)
-	require.Contains(t, res.Body.String(), "404 page not found")
+	test.RequireResponseBodyContains(t, res, "404 page not found")
 }
 
 func TestFallback(t *testing.T) {
@@ -404,7 +404,7 @@ func TestFallback(t *testing.T) {
 
 			require.Equal(t, http.StatusNotFound, res.Code)
 			require.Equal(t, "text/html; charset=utf-8", res.Header().Get(content.TypeKey))
-			require.Contains(t, res.Body.String(), "404 Not Found")
+			test.RequireResponseBodyContains(t, res, "404 Not Found")
 		})
 	}
 }
@@ -429,7 +429,7 @@ func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 	mvc.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
-	require.Empty(t, res.Body.String())
+	test.RequireEmptyResponseBody(t, res)
 }
 
 func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
@@ -460,7 +460,7 @@ func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
 	mvc.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusMethodNotAllowed, res.Code)
-	require.NotContains(t, res.Body.String(), "custom")
+	test.RequireResponseBodyNotContains(t, res, "custom")
 }
 
 func TestStaticFileSetsContentLength(t *testing.T) {
@@ -482,7 +482,7 @@ func TestStaticFileSetsContentLength(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, "6", res.Header().Get("Content-Length"))
-	require.Equal(t, "hello", res.Body.String())
+	test.RequireResponseBody(t, res, "hello")
 }
 
 type requestModel struct {

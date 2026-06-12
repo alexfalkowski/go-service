@@ -3,6 +3,8 @@ package test
 import (
 	"fmt"
 	"io/fs"
+	"net/http/httptest"
+	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/io"
@@ -10,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/stretchr/testify/require"
 )
 
 // MessageMediaType describes an HTTP content type and its corresponding encoder kind.
@@ -354,6 +357,41 @@ func ResponseWithStatus(code int) *http.Response {
 // StatusLine formats an HTTP status line fragment for code.
 func StatusLine(code int) string {
 	return fmt.Sprintf("%d %s", code, http.StatusText(code))
+}
+
+// RequireResponseBody requires the response recorder body to equal body.
+func RequireResponseBody(tb testing.TB, res *httptest.ResponseRecorder, body string) {
+	tb.Helper()
+
+	require.Equal(tb, body, res.Body.String())
+}
+
+// RequireTrimmedResponseBody requires the trimmed response recorder body to equal body.
+func RequireTrimmedResponseBody(tb testing.TB, res *httptest.ResponseRecorder, body string) {
+	tb.Helper()
+
+	require.Equal(tb, body, strings.TrimSpace(res.Body.String()))
+}
+
+// RequireResponseBodyContains requires the response recorder body to contain body.
+func RequireResponseBodyContains(tb testing.TB, res *httptest.ResponseRecorder, body string) {
+	tb.Helper()
+
+	require.Contains(tb, res.Body.String(), body)
+}
+
+// RequireResponseBodyNotContains requires the response recorder body not to contain body.
+func RequireResponseBodyNotContains(tb testing.TB, res *httptest.ResponseRecorder, body string) {
+	tb.Helper()
+
+	require.NotContains(tb, res.Body.String(), body)
+}
+
+// RequireEmptyResponseBody requires the response recorder body to be empty.
+func RequireEmptyResponseBody(tb testing.TB, res *httptest.ResponseRecorder) {
+	tb.Helper()
+
+	require.Empty(tb, res.Body.String())
 }
 
 func defaultStatus(status, fallback int) int {

@@ -24,7 +24,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -41,7 +41,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -54,7 +54,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 func TestMissingClientAuthUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -75,7 +75,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 	ctx = meta.AppendToOutgoingContext(ctx, "x-forwarded-for", "127.0.0.1")
 	ctx = meta.AppendToOutgoingContext(ctx, "geolocation", "geo:47,11")
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -91,7 +91,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	ctx := t.Context()
 	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -107,7 +107,7 @@ func TestAuthStreamWithAppend(t *testing.T) {
 	ctx := t.Context()
 	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -115,7 +115,7 @@ func TestAuthStreamWithAppend(t *testing.T) {
 	stream, err := client.SayStreamHello(ctx)
 	require.NoError(t, err)
 
-	_, err = sendStreamHello(t, stream, "test")
+	_, err = test.SendStreamHello(t, stream, "test")
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
 }
 
@@ -125,7 +125,7 @@ func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
 	ctx := t.Context()
 	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "bearer test")
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -145,7 +145,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldGRPC())
 
-			conn := requireGRPCConn(t, world)
+			conn := test.RequireGRPCConn(t, world)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -164,7 +164,7 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldGRPC())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -183,7 +183,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world,
+	conn := test.RequireGRPCConn(t, world,
 		breaker.WithSettings(breaker.Settings{}),
 		breaker.WithFailureCodes(codes.Unauthenticated),
 	)
@@ -209,7 +209,7 @@ func TestValidAuthStream(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -217,7 +217,7 @@ func TestValidAuthStream(t *testing.T) {
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	resp, err := sendStreamHello(t, stream, "test")
+	resp, err := test.SendStreamHello(t, stream, "test")
 	require.NoError(t, err)
 
 	require.Equal(t, "Hello test", resp.GetMessage())
@@ -230,7 +230,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -238,7 +238,7 @@ func TestInvalidAuthStream(t *testing.T) {
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	_, err = sendStreamHello(t, stream, "test")
+	_, err = test.SendStreamHello(t, stream, "test")
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 }
 
@@ -249,7 +249,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -265,7 +265,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -273,7 +273,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	_, err = sendStreamHello(t, stream, "test")
+	_, err = test.SendStreamHello(t, stream, "test")
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 }
 
@@ -284,7 +284,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)

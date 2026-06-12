@@ -6,7 +6,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/http/body"
 	"github.com/stretchr/testify/require"
 )
@@ -36,5 +35,5 @@ func TestHandlerWritesBadRequestWhenBodyReadFails(t *testing.T) {
 	})
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, "http: bad request", strings.TrimSpace(res.Body.String()))
+	test.RequireTrimmedResponseBody(t, res, "http: bad request")
 }

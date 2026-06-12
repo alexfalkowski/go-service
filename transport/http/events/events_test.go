@@ -33,7 +33,7 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
 	result := world.Sender.Send(ctx, e)
-	requireACK(t, result)
+	test.RequireACK(t, result)
 	require.NotNil(t, world.Event)
 	require.Equal(t, "test", bytes.String(e.Data()))
 }
@@ -51,7 +51,7 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
 	result := world.Sender.Send(ctx, e)
-	requireACK(t, result)
+	test.RequireACK(t, result)
 	require.NotNil(t, world.Event)
 	require.Equal(t, "test", bytes.String(e.Data()))
 }
@@ -76,7 +76,7 @@ func TestSendNotReceive(t *testing.T) {
 	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
 	result := world.Sender.Send(ctx, e)
-	requireNACK(t, result)
+	test.RequireNACK(t, result)
 	require.Nil(t, world.Event)
 }
 
@@ -94,7 +94,7 @@ func TestReceiveCanReportProcessingFailure(t *testing.T) {
 	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
 	result := world.Sender.Send(ctx, e)
-	requireNACK(t, result)
+	test.RequireNACK(t, result)
 	require.Nil(t, world.Event)
 }
 
@@ -124,7 +124,7 @@ func TestSenderWithWebhookDoesNotFollowCrossOriginRedirect(t *testing.T) {
 	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
 	result := sender.Send(events.ContextWithTarget(t.Context(), trusted.URL+"/events"), e)
-	requireNACK(t, result)
+	test.RequireNACK(t, result)
 	require.NotEmpty(t, trustedSignature)
 	require.Empty(t, attackerSignature)
 }
@@ -156,7 +156,7 @@ func TestSenderUsesStructuredEncoding(t *testing.T) {
 
 	result := sender.Send(events.ContextWithTarget(t.Context(), server.URL+"/events"), e)
 	require.NoError(t, <-readErrors)
-	requireACK(t, result)
+	test.RequireACK(t, result)
 	require.Equal(t, "application/cloudevents+json", <-contentTypes)
 	require.Empty(t, <-specVersions)
 	body := <-bodies
@@ -226,19 +226,7 @@ func sendWithDeadline(t *testing.T, opts ...transportevents.SenderOption) (time.
 
 	start := time.Now()
 	result := sender.Send(events.ContextWithTarget(t.Context(), "http://example.com/events"), e)
-	requireACK(t, result)
+	test.RequireACK(t, result)
 
 	return start, <-deadlines
-}
-
-func requireACK(t *testing.T, result events.Result) {
-	t.Helper()
-
-	require.True(t, events.IsACK(result), "expected CloudEvents ACK: %v", result)
-}
-
-func requireNACK(t *testing.T, result events.Result) {
-	t.Helper()
-
-	require.True(t, events.IsNACK(result), "expected CloudEvents NACK: %v", result)
 }

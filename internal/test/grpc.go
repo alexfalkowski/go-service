@@ -1,11 +1,43 @@
 package test
 
 import (
+	"testing"
+
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/errors"
+	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
+	"github.com/stretchr/testify/require"
 )
+
+// RequireGRPCConn returns a gRPC client connection from world or fails the test.
+func RequireGRPCConn(tb testing.TB, world *World, opts ...breaker.Option) *grpc.ClientConn {
+	tb.Helper()
+
+	conn, err := world.NewGRPC(opts...)
+	require.NoError(tb, err)
+
+	return conn
+}
+
+// SendStreamHello sends a SayStreamHello request and returns the next response.
+func SendStreamHello(tb testing.TB, stream v1.GreeterService_SayStreamHelloClient, name string) (*v1.SayStreamHelloResponse, error) {
+	tb.Helper()
+
+	if err := stream.Send(&v1.SayStreamHelloRequest{Name: name}); err != nil {
+		if errors.Is(err, io.EOF) {
+			return stream.Recv()
+		}
+
+		return nil, err
+	}
+
+	return stream.Recv()
+}
 
 // MetaServerStream is a [grpc.ServerStream] test double that records response headers.
 type MetaServerStream struct {
