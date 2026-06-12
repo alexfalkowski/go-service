@@ -71,22 +71,17 @@ func TestInvalidCipherConfig(t *testing.T) {
 		require.ErrorContains(t, err, "env:AES_MISSING")
 		require.Nil(t, cipher)
 	})
-}
 
-func TestInvalidCipher(t *testing.T) {
 	t.Run("invalid key", func(t *testing.T) {
 		gen := rand.NewGenerator(rand.NewReader())
 
 		cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
-		require.NoError(t, err)
-
-		_, err = cipher.Encrypt(strings.Bytes("test"))
-		require.Error(t, err)
-
-		_, err = cipher.Decrypt(strings.Bytes("test"))
-		require.Error(t, err)
+		require.ErrorIs(t, err, errors.ErrInvalidKeySize)
+		require.Nil(t, cipher)
 	})
+}
 
+func TestInvalidCipher(t *testing.T) {
 	t.Run("nonce generation error", func(t *testing.T) {
 		gen := rand.NewGenerator(&test.ErrReaderCloser{})
 

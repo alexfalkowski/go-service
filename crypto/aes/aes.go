@@ -3,6 +3,7 @@ package aes
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"fmt"
 
 	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
@@ -28,10 +29,7 @@ const maxGCMPlaintextSize = ((1 << 32) - 2) * aes.BlockSize
 // Disabled behavior: if cfg is nil (disabled), NewCipher returns (nil, nil).
 //
 // Enabled behavior: the key material is loaded via cfg.GetKey(fs). Any error encountered while reading
-// key material is returned.
-//
-// Note: this constructor does not validate the key length eagerly; key length validation occurs when
-// Encrypt/Decrypt attempts to construct the underlying AES block cipher.
+// key material or constructing the AES-GCM cipher is returned.
 func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -48,7 +46,12 @@ func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 		return nil, crypto.ErrMissingKey
 	}
 
-	return &Cipher{gen: gen, key: k}, nil
+	aead, err := newAEAD(k)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Cipher{gen: gen, aead: aead}, nil
 }
 
 // Cipher provides AES-GCM encryption and decryption using a configured key.
@@ -59,8 +62,8 @@ func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 //
 // Where nonce is generated fresh per encryption and is required to decrypt.
 type Cipher struct {
-	gen *rand.Generator
-	key []byte
+	gen  *rand.Generator
+	aead cipher.AEAD
 }
 
 // Encrypt encrypts msg using AES-GCM and returns nonce||ciphertext.
@@ -68,24 +71,18 @@ type Cipher struct {
 // A fresh nonce is generated for each call and is prefixed to the returned byte slice so Decrypt can recover it.
 // The returned slice includes the GCM authentication tag as produced by [cipher.AEAD.Seal].
 //
-// Errors are returned if plaintext exceeds AES-GCM's per-nonce maximum, nonce generation fails,
-// or the configured key is invalid for AES.
+// Errors are returned if plaintext exceeds AES-GCM's per-nonce maximum or nonce generation fails.
 func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
 	if int64(len(msg)) > maxGCMPlaintextSize {
 		return nil, ErrInvalidPlaintextLength
 	}
 
-	aead, err := c.aead()
+	nonce, err := c.gen.GenerateBytes(c.aead.NonceSize())
 	if err != nil {
 		return nil, err
 	}
 
-	nonce, err := c.gen.GenerateBytes(aead.NonceSize())
-	if err != nil {
-		return nil, err
-	}
-
-	return aead.Seal(nonce, nonce, msg, nil), nil
+	return c.aead.Seal(nonce, nonce, msg, nil), nil
 }
 
 // Decrypt decrypts a value produced by Encrypt.
@@ -96,26 +93,20 @@ func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
 // Errors:
 //   - ErrInvalidLength if msg is shorter than the required nonce size.
 //   - Any error returned by the underlying AEAD if authentication fails or if msg is malformed.
-//   - Any error returned if the configured key is invalid for AES.
 func (c *Cipher) Decrypt(msg []byte) ([]byte, error) {
-	aead, err := c.aead()
-	if err != nil {
-		return nil, err
-	}
-
-	size := aead.NonceSize()
+	size := c.aead.NonceSize()
 	if len(msg) < size {
 		return nil, ErrInvalidLength
 	}
 
 	nonce, text := msg[:size], msg[size:]
-	return aead.Open(nil, nonce, text, nil)
+	return c.aead.Open(nil, nonce, text, nil)
 }
 
-func (c *Cipher) aead() (cipher.AEAD, error) {
-	b, err := aes.NewCipher(c.key)
+func newAEAD(key []byte) (cipher.AEAD, error) {
+	b, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("aes: invalid key size %d: %w", len(key), crypto.ErrInvalidKeySize)
 	}
 
 	return cipher.NewGCM(b)
