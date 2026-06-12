@@ -13,9 +13,6 @@ max_entries = 1024
 [cache.options]
 url = "file:../test/secrets/redis"
 
-[cache.redis.addresses]
-server = "localhost:6379"
-
 [crypto.aes]
 key = "file:../test/secrets/aes"
 
@@ -81,7 +78,6 @@ address = "time.cloudflare.com"
 [transport.http]
 address = "tcp://localhost:11000"
 max_receive_size = "2MB"
-user_agent = "Service http/1.0"
 timeout = "10s"
 
 [transport.http.limiter]
@@ -95,11 +91,6 @@ write_timeout = "10s"
 idle_timeout = "10s"
 read_header_timeout = "10s"
 max_header_bytes = "32KB"
-
-[transport.http.retry]
-backoff = "100ms"
-timeout = "1s"
-attempts = 3
 
 [transport.http.token]
 kind = "jwt"
@@ -120,7 +111,6 @@ private = "file:../test/secrets/ed25519_private"
 [transport.grpc]
 address = "tcp://localhost:12000"
 max_receive_size = "3MB"
-user_agent = "Service grpc/1.0"
 timeout = "10s"
 
 [transport.grpc.limiter]
@@ -140,11 +130,6 @@ max_header_list_size = "16MB"
 initial_window_size = "1MB"
 initial_conn_window_size = "2MB"
 max_send_msg_size = "8MB"
-
-[transport.grpc.retry]
-backoff = "100ms"
-timeout = "1s"
-attempts = 3
 
 [transport.grpc.token]
 kind = "jwt"

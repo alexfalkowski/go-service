@@ -55,6 +55,16 @@ func TestDecode(t *testing.T) {
 	require.Equal(t, "test", msg.Test)
 }
 
+func TestDecodeRejectsUnknownFields(t *testing.T) {
+	encoder := hjson.NewEncoder()
+	msg := &message{}
+
+	err := encoder.Decode(bytes.NewBufferString("{\n  test: test\n  extra: ignored\n}\n"), msg)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "extra")
+}
+
 func TestDecodeReturnsReadError(t *testing.T) {
 	encoder := hjson.NewEncoder()
 	msg := &message{}

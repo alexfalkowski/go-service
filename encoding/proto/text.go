@@ -47,7 +47,7 @@ func (e *Text) Encode(w io.Writer, v any) error {
 // Decode otherwise reads all remaining bytes from r (via [io.ReadAll]) before
 // unmarshaling.
 //
-// Any read error from [io.ReadAll] and any unmarshal error from [prototext.Unmarshal] is returned.
+// Any read error from [io.ReadAll] and any unmarshal error from [prototext.UnmarshalOptions.Unmarshal] is returned.
 func (e *Text) Decode(r io.Reader, v any) error {
 	msg, err := message(v)
 	if err != nil {
@@ -59,5 +59,5 @@ func (e *Text) Decode(r io.Reader, v any) error {
 		return err
 	}
 
-	return prototext.Unmarshal(bytes, msg)
+	return prototext.UnmarshalOptions{DiscardUnknown: true}.Unmarshal(bytes, msg)
 }

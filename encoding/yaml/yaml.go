@@ -41,6 +41,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode reads one YAML document and rejects additional documents in the same stream.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	decoder := yaml.NewDecoder(r)
+	decoder.KnownFields(true)
 	if err := decoder.Decode(v); err != nil {
 		return err
 	}
