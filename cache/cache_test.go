@@ -32,7 +32,7 @@ func TestValidCache(t *testing.T) {
 }
 
 func TestGenericValidCache(t *testing.T) {
-	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
 	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
@@ -55,7 +55,7 @@ func TestModuleRegistersGenericCache(t *testing.T) {
 		cache.Module,
 		di.Constructor(func() *logger.Logger { return nil }),
 		fx.Supply(
-			test.NewCacheConfig("sync", "none", "json", "redis"),
+			test.NewCacheConfig("ttlcache", "none", "json", "redis"),
 			test.FS,
 			test.Encoder,
 			test.Pool,
@@ -87,7 +87,7 @@ func TestGenericDisabledCache(t *testing.T) {
 }
 
 func TestMaxSizeOnPersist(t *testing.T) {
-	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	cfg.MaxSize = 4
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
@@ -96,7 +96,7 @@ func TestMaxSizeOnPersist(t *testing.T) {
 }
 
 func TestMaxSizeOnPersistCompressedValue(t *testing.T) {
-	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	cfg.MaxSize = 4
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
@@ -105,7 +105,7 @@ func TestMaxSizeOnPersistCompressedValue(t *testing.T) {
 }
 
 func TestMaxSizeOnGet(t *testing.T) {
-	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
 	require.NoError(t, world.Persist(t.Context(), "test", new("hello?"), time.Minute))
@@ -117,7 +117,7 @@ func TestMaxSizeOnGet(t *testing.T) {
 }
 
 func TestMaxSizeOnGetAllowsEncodedValueLargerThanLimit(t *testing.T) {
-	cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
 	cfg.MaxSize = 4
 	world := test.NewStartedWorld(t,
 		test.WithWorldCacheConfig(cfg),
@@ -130,7 +130,7 @@ func TestMaxSizeOnGetAllowsEncodedValueLargerThanLimit(t *testing.T) {
 }
 
 func TestMaxSizeOnGetRejectsEncodedValueTooLarge(t *testing.T) {
-	cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
 	cfg.MaxSize = 4
 	world := test.NewStartedWorld(t,
 		test.WithWorldCacheConfig(cfg),
@@ -142,7 +142,7 @@ func TestMaxSizeOnGetRejectsEncodedValueTooLarge(t *testing.T) {
 }
 
 func TestMaxSizeOnGetAllowsHugeConfiguredLimit(t *testing.T) {
-	cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
 	cfg.MaxSize = bytes.Size(math.MaxInt64)
 	world := test.NewStartedWorld(t,
 		test.WithWorldCacheConfig(cfg),
@@ -155,7 +155,7 @@ func TestMaxSizeOnGetAllowsHugeConfiguredLimit(t *testing.T) {
 }
 
 func TestExpiredCache(t *testing.T) {
-	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Nanosecond))
 
@@ -208,13 +208,13 @@ func TestDisabledCache(t *testing.T) {
 
 func TestErroneousSave(t *testing.T) {
 	t.Run("invalid encoder", func(t *testing.T) {
-		cfg := test.NewCacheConfig("sync", "snappy", "error", "redis")
+		cfg := test.NewCacheConfig("ttlcache", "snappy", "error", "redis")
 		test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 		require.Error(t, cache.Persist(t.Context(), "test", new("test"), time.Minute))
 	})
 
 	t.Run("read from only falls back to configured encoder", func(t *testing.T) {
-		cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+		cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
 		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
 		require.NoError(t, world.Persist(t.Context(), "test", &test.ReadFromOnly{Name: "hello?"}, time.Minute))
 
@@ -230,10 +230,10 @@ func TestErroneousGet(t *testing.T) {
 		config *config.Config
 		name   string
 	}{
-		{name: "decode error", config: test.NewCacheConfig("sync", "snappy", "error", "redis"), driver: &test.Cache{Value: "d2hhdD8="}},
-		{name: "decompress error", config: test.NewCacheConfig("sync", "error", "json", "redis"), driver: &test.Cache{Value: "d2hhdD8="}},
-		{name: "unmarshal error", config: test.NewCacheConfig("sync", "snappy", "json", "redis"), driver: &test.Cache{Value: "what?"}},
-		{name: "driver error", config: test.NewCacheConfig("sync", "snappy", "json", "redis"), driver: &test.ErrCache{}},
+		{name: "decode error", config: test.NewCacheConfig("ttlcache", "snappy", "error", "redis"), driver: &test.Cache{Value: "d2hhdD8="}},
+		{name: "decompress error", config: test.NewCacheConfig("ttlcache", "error", "json", "redis"), driver: &test.Cache{Value: "d2hhdD8="}},
+		{name: "unmarshal error", config: test.NewCacheConfig("ttlcache", "snappy", "json", "redis"), driver: &test.Cache{Value: "what?"}},
+		{name: "driver error", config: test.NewCacheConfig("ttlcache", "snappy", "json", "redis"), driver: &test.ErrCache{}},
 	}
 
 	for _, tt := range tests {
@@ -249,7 +249,7 @@ func TestErroneousGet(t *testing.T) {
 }
 
 func TestWriteToOnlyUsesConfiguredEncoderOnGet(t *testing.T) {
-	cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
 	require.NoError(t, world.Persist(t.Context(), "test", &test.Request{Name: "hello?"}, time.Minute))
 
@@ -260,7 +260,7 @@ func TestWriteToOnlyUsesConfiguredEncoderOnGet(t *testing.T) {
 
 func TestMissingCache(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
-	cfg := &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}
+	cfg := &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}
 
 	d, err := driver.NewDriver(driver.DriverParams{
 		Lifecycle: lc,
@@ -287,7 +287,7 @@ func TestMissingCache(t *testing.T) {
 }
 
 func TestExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
-	cfg := &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}
+	cfg := &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}
 	c := cache.NewCache(cache.CacheParams{
 		Config:     cfg,
 		Compressor: test.Compressor,
@@ -312,26 +312,26 @@ func cacheRoundTripCases() []cacheRoundTripCase {
 			get:     func() any { return &test.Request{} },
 		},
 		{
-			name:    "sync/default/string",
-			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
+			name:    "ttlcache/default/string",
+			config:  test.NewCacheConfig("ttlcache", strings.Empty, strings.Empty, "redis"),
 			persist: func() any { return new("hello?") },
 			get:     func() any { return ptr.Zero[string]() },
 		},
 		{
-			name:    "sync/default/buffer",
-			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
+			name:    "ttlcache/default/buffer",
+			config:  test.NewCacheConfig("ttlcache", strings.Empty, strings.Empty, "redis"),
 			persist: func() any { return bytes.NewBufferString("hello?") },
 			get:     func() any { return &bytes.Buffer{} },
 		},
 		{
-			name:    "sync/default/protobuf",
-			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
+			name:    "ttlcache/default/protobuf",
+			config:  test.NewCacheConfig("ttlcache", strings.Empty, strings.Empty, "redis"),
 			persist: func() any { return &v1.SayHelloRequest{Name: "hello?"} },
 			get:     func() any { return &v1.SayHelloRequest{} },
 		},
 		{
-			name:    "sync/unknown/unknown/request",
-			config:  test.NewCacheConfig("sync", "unknown", "unknown", "redis"),
+			name:    "ttlcache/unknown/unknown/request",
+			config:  test.NewCacheConfig("ttlcache", "unknown", "unknown", "redis"),
 			persist: func() any { return &test.Request{Name: "hello?"} },
 			get:     func() any { return &test.Request{} },
 		},
@@ -343,8 +343,8 @@ func cacheRoundTripCases() []cacheRoundTripCase {
 	for _, compressor := range compressors {
 		for _, encoder := range encoders {
 			tests = append(tests, cacheRoundTripCase{
-				name:    "sync/" + compressor + "/" + encoder + "/request",
-				config:  test.NewCacheConfig("sync", compressor, encoder, "redis"),
+				name:    "ttlcache/" + compressor + "/" + encoder + "/request",
+				config:  test.NewCacheConfig("ttlcache", compressor, encoder, "redis"),
 				persist: func() any { return &test.Request{Name: "hello?"} },
 				get:     func() any { return &test.Request{} },
 			})

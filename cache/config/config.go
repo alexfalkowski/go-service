@@ -14,7 +14,7 @@ type Config struct {
 
 	// Kind selects the cache backend implementation.
 	//
-	// The built-in driver kinds are "redis" and "sync". Unknown kinds cause
+	// The built-in driver kinds are "redis" and "ttlcache". Unknown kinds cause
 	// [github.com/alexfalkowski/go-service/v2/cache/driver.NewDriver] to return
 	// [github.com/alexfalkowski/go-service/v2/cache/driver.ErrNotFound].
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`

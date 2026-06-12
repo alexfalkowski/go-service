@@ -11,7 +11,7 @@
 //
 // The driver kind is selected by [github.com/alexfalkowski/go-service/v2/cache/config.Config.Kind].
 // Supported values are implementation-dependent, but this package currently includes built-in constructors
-// for common backends (for example Redis and an in-memory sync driver).
+// for common backends (for example Redis and an in-memory ttlcache driver).
 //
 // The built-in Redis backend resolves its URL from a go-service "source
 // string", constructs a [github.com/redis/go-redis/v9] client, and instruments that client via
@@ -21,7 +21,7 @@
 // The standard config fixtures provide that shape; callers that build config manually should validate it
 // before calling [NewDriver].
 //
-// The built-in "sync" driver uses a bounded in-process cache and expires entries
+// The built-in "ttlcache" driver uses a bounded in-process cache and expires entries
 // when they are read or before new values are saved.
 //
 // If the configured kind is unknown, [NewDriver] returns [ErrNotFound].
