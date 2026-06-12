@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/net/http/events"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -21,8 +22,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
-	"github.com/alexfalkowski/go-service/v2/transport/http/events"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
+	transportevents "github.com/alexfalkowski/go-service/v2/transport/http/events"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -149,10 +149,10 @@ type World struct {
 	PG     *pg.Config
 	*Server
 	*Client
-	*cloudevents.Event
-	*events.Receiver
+	*events.Event
+	*transportevents.Receiver
 	*cache.Cache
-	Sender *events.Sender
+	Sender *transportevents.Sender
 	Rest   *rest.Client
 
 	DB         *sql.DBs

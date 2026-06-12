@@ -52,6 +52,10 @@
 // This makes it suitable for single-instance deployments, development environments, or as a last-resort
 // local safeguard, but not as a global distributed rate limit.
 //
+// The limiter caps the number of caller-derived keys that receive independent in-memory buckets. Once
+// [Config.MaxKeys] is reached, additional distinct keys share one overflow bucket so high-cardinality
+// key floods cannot grow store memory without bound.
+//
 // For primary production abuse protection, prefer an external rate limiter at
 // the edge, gateway, ingress, load balancer, or service-mesh boundary. Those
 // layers can enforce limits consistently across replicas and before requests

@@ -5,6 +5,9 @@ import "github.com/alexfalkowski/go-service/v2/time"
 // DefaultBackoff is the shared retry backoff used when [Config.Backoff] is unset.
 const DefaultBackoff time.Duration = 100 * time.Millisecond
 
+// DefaultJitterPercent is the shared retry jitter applied around the configured base backoff.
+const DefaultJitterPercent uint64 = 20
+
 // Config configures retry behavior for an operation.
 //
 // This package defines configuration only; concrete retry behavior is implemented

@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
@@ -120,6 +121,57 @@ func TestStreamClientInterceptorLogs(t *testing.T) {
 	require.Contains(t, logs.String(), `"error":"rpc error: code = InvalidArgument desc = invalid"`)
 }
 
+func TestStreamClientInterceptorLogsStreamOperationError(t *testing.T) {
+	t.Run("recv", func(t *testing.T) {
+		requireStreamClientOperationError(t,
+			&grpc.StreamDesc{ServerStreams: true},
+			&clientStream{recvErr: status.Error(codes.Unavailable, "recv unavailable")},
+			func(stream grpc.ClientStream) error { return stream.RecvMsg(nil) },
+			"ERROR",
+			"recv",
+			"Unavailable",
+			"rpc error: code = Unavailable desc = recv unavailable",
+		)
+	})
+
+	t.Run("send", func(t *testing.T) {
+		requireStreamClientOperationError(t,
+			&grpc.StreamDesc{ClientStreams: true},
+			&clientStream{sendErr: status.Error(codes.ResourceExhausted, "send exhausted")},
+			func(stream grpc.ClientStream) error { return stream.SendMsg(nil) },
+			"WARN",
+			"send",
+			"ResourceExhausted",
+			"rpc error: code = ResourceExhausted desc = send exhausted",
+		)
+	})
+}
+
+func TestStreamClientInterceptorDoesNotLogRecvMsgEOF(t *testing.T) {
+	var logs bytes.Buffer
+	interceptor := grpclogger.StreamClientInterceptor(newLogger(&logs))
+	conn, err := grpc.NewClient("passthrough:///backend", grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, conn.Close())
+	}()
+
+	streamer := func(context.Context, *grpc.StreamDesc, *grpc.ClientConn, string, ...grpc.CallOption) (grpc.ClientStream, error) {
+		return &clientStream{recvErr: io.EOF}, nil
+	}
+
+	stream, err := interceptor(t.Context(), &grpc.StreamDesc{ServerStreams: true}, conn, "/greet.v1.GreeterService/SayStreamHello", streamer)
+	require.NoError(t, err)
+	require.NotNil(t, stream)
+
+	err = stream.RecvMsg(nil)
+
+	require.ErrorIs(t, err, io.EOF)
+	require.Contains(t, logs.String(), `"code":"OK"`)
+	require.NotContains(t, logs.String(), `"operation":"recv"`)
+	require.NotContains(t, logs.String(), `"error"`)
+}
+
 func TestCodeToLevel(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -140,4 +192,58 @@ func TestCodeToLevel(t *testing.T) {
 
 func newLogger(logs *bytes.Buffer) *grpclogger.Logger {
 	return &grpclogger.Logger{Logger: slog.New(slog.NewJSONHandler(logs, &slog.HandlerOptions{}))}
+}
+
+func requireStreamClientOperationError(t *testing.T, desc *grpc.StreamDesc, clientStream *clientStream, call func(grpc.ClientStream) error, level, op, code, msg string) {
+	t.Helper()
+
+	var logs bytes.Buffer
+	interceptor := grpclogger.StreamClientInterceptor(newLogger(&logs))
+	conn, err := grpc.NewClient("passthrough:///backend", grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, conn.Close())
+	}()
+
+	streamer := func(context.Context, *grpc.StreamDesc, *grpc.ClientConn, string, ...grpc.CallOption) (grpc.ClientStream, error) {
+		return clientStream, nil
+	}
+
+	stream, err := interceptor(t.Context(), desc, conn, "/greet.v1.GreeterService/SayStreamHello", streamer)
+	require.NoError(t, err)
+	require.NotNil(t, stream)
+
+	err = call(stream)
+
+	require.ErrorIs(t, err, clientStream.err())
+	require.Contains(t, logs.String(), `"level":"`+level+`"`)
+	require.Contains(t, logs.String(), `"msg":"grpc: passthrough:///backend/greet.v1.GreeterService/SayStreamHello"`)
+	require.Contains(t, logs.String(), `"system":"grpc"`)
+	require.Contains(t, logs.String(), `"service":"greet.v1.GreeterService"`)
+	require.Contains(t, logs.String(), `"method":"SayStreamHello"`)
+	require.Contains(t, logs.String(), `"operation":"`+op+`"`)
+	require.Contains(t, logs.String(), `"code":"`+code+`"`)
+	require.Contains(t, logs.String(), `"error":"`+msg+`"`)
+}
+
+type clientStream struct {
+	grpc.ClientStream
+	recvErr error
+	sendErr error
+}
+
+func (s *clientStream) RecvMsg(any) error {
+	return s.recvErr
+}
+
+func (s *clientStream) SendMsg(any) error {
+	return s.sendErr
+}
+
+func (s *clientStream) err() error {
+	if s.recvErr != nil {
+		return s.recvErr
+	}
+
+	return s.sendErr
 }
