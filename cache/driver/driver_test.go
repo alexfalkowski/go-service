@@ -24,7 +24,7 @@ func TestNewDriver(t *testing.T) {
 		wantNil bool
 	}{
 		{name: "disabled", wantNil: true},
-		{name: "sync", config: &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}},
+		{name: "ttlcache", config: &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}},
 		{name: "unknown", config: &config.Config{Kind: "unknown"}, err: driver.ErrNotFound, wantNil: true},
 	}
 
@@ -43,7 +43,7 @@ func TestNewDriver(t *testing.T) {
 }
 
 func TestIsMissingError(t *testing.T) {
-	cfg := &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}
+	cfg := &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}
 
 	d, err := driver.NewDriver(driver.DriverParams{Config: cfg})
 	require.NoError(t, err)
@@ -125,11 +125,11 @@ func TestRedisMetricsUnregisterOnStop(t *testing.T) {
 	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
 }
 
-func TestSyncDriverHonorsCanceledContext(t *testing.T) {
+func TestTTLCacheDriverHonorsCanceledContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 
-	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}})
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}})
 	require.NoError(t, err)
 	require.ErrorIs(t, d.Save(ctx, "key", "value", 0), context.Canceled)
 	_, err = d.Fetch(ctx, "key")
@@ -138,25 +138,22 @@ func TestSyncDriverHonorsCanceledContext(t *testing.T) {
 	require.ErrorIs(t, d.Flush(ctx), context.Canceled)
 }
 
-func TestSyncDriverExpiresEntries(t *testing.T) {
-	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync", MaxEntries: config.DefaultMaxEntries}})
+func TestTTLCacheDriverExpiresEntries(t *testing.T) {
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}})
 	require.NoError(t, err)
 
 	require.NoError(t, d.Save(t.Context(), "key", "value", time.Nanosecond))
 
-	var expired error
+	var missing error
 	require.Eventually(t, func() bool {
-		_, expired = d.Fetch(t.Context(), "key")
-		return driver.IsExpiredError(expired)
+		_, missing = d.Fetch(t.Context(), "key")
+		return driver.IsMissingError(missing)
 	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
-	require.ErrorIs(t, expired, driver.ErrExpired)
-
-	_, err = d.Fetch(t.Context(), "key")
-	require.ErrorIs(t, err, driver.ErrMissing)
+	require.ErrorIs(t, missing, driver.ErrMissing)
 }
 
-func TestSyncDriverEvictsEntryAtCapacity(t *testing.T) {
-	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync", MaxEntries: 2}})
+func TestTTLCacheDriverEvictsEntryAtCapacity(t *testing.T) {
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "ttlcache", MaxEntries: 2}})
 	require.NoError(t, err)
 
 	require.NoError(t, d.Save(t.Context(), "first", "1", 0))
@@ -178,8 +175,8 @@ func TestSyncDriverEvictsEntryAtCapacity(t *testing.T) {
 	require.Equal(t, 1, misses)
 }
 
-func TestSyncDriverCleansExpiredEntriesOnSave(t *testing.T) {
-	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync", MaxEntries: 1}})
+func TestTTLCacheDriverCleansExpiredEntriesOnSave(t *testing.T) {
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "ttlcache", MaxEntries: 1}})
 	require.NoError(t, err)
 
 	require.NoError(t, d.Save(t.Context(), "expired", "old", time.Nanosecond))

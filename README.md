@@ -259,7 +259,7 @@ cache:
 ```
 
 > [!NOTE]
-> - Built-in driver kinds in this repo are `redis` and `sync`.
+> - Built-in driver kinds in this repo are `redis` and `ttlcache`.
 > - Unknown `kind` values return `cache/driver.ErrNotFound`.
 > - Unknown or empty `compressor` values fall back to `none`.
 > - For normal values, unknown or empty `encoder` values fall back to `json`.
