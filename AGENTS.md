@@ -48,6 +48,15 @@ matching skill for the task.
   that do not want this environment contract should pass an explicit
   `-config file:<path>` or `-config env:<ENV_VAR>` source.
 - Many config fields use source strings through `os.FS.ReadSource`: `env:NAME`, `file:/path`, or a literal value.
+- Source strings are administrator-supplied configuration. This repository
+  accepts that admins must point file/env/literal sources at appropriate
+  material, including reasonably sized secrets, keys, certificates, access
+  models, policies, DSNs, and service config files. Do not flag unbounded
+  `ReadSource`/`ReadFile` behavior solely because a misconfigured admin could
+  point a source string at an unexpectedly large file, env var, or literal.
+  Report only concrete bugs where untrusted runtime input controls the source,
+  documented size limits are ignored, or a public API promises bounded source
+  reads.
 - Service configuration files should contain configuration values and secret
   source references, not raw passwords or credentials.
 - Nil pointer sub-configs usually mean "disabled".
