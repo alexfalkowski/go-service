@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
@@ -31,7 +30,7 @@ func TestCheck(t *testing.T) {
 		meta.WithUserAgent(meta.String("test-user-agent")),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -50,7 +49,7 @@ func TestCheckBypassesServerLimiter(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -70,7 +69,7 @@ func TestInvalidCheck(t *testing.T) {
 	requireGRPCReady(t, world)
 	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -89,7 +88,7 @@ func TestOverallCheck(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -105,7 +104,7 @@ func TestInvalidOverallCheck(t *testing.T) {
 	requireGRPCReady(t, world)
 	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -120,7 +119,7 @@ func TestNotFoundCheck(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -141,7 +140,7 @@ func TestIgnoreAuthCheck(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -165,7 +164,7 @@ func TestList(t *testing.T) {
 		meta.WithUserAgent(meta.String("test-user-agent")),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -187,7 +186,7 @@ func TestWatch(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -215,7 +214,7 @@ func TestWatchStaysOpenPastServerTimeout(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -243,7 +242,7 @@ func TestWatchServerLimiter(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -276,7 +275,7 @@ func TestWatchServerLimiterStatusSend(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -295,7 +294,7 @@ func TestInvalidWatch(t *testing.T) {
 	requireGRPCReady(t, world)
 	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -318,7 +317,7 @@ func TestOverallWatch(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -340,7 +339,7 @@ func TestInvalidOverallWatch(t *testing.T) {
 	requireGRPCReady(t, world)
 	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -361,7 +360,7 @@ func TestNotFoundWatch(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -386,7 +385,7 @@ func TestIgnoreAuthWatch(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := health.NewClient(conn)
@@ -492,15 +491,6 @@ func requireGRPCReady(t *testing.T, world *test.World) {
 	conn, err := test.Connect(t.Context(), world.TransportConfig.GRPC.Address)
 	require.NoError(t, err)
 	require.NoError(t, conn.Close())
-}
-
-func requireGRPCConn(t *testing.T, world *test.World) *grpc.ClientConn {
-	t.Helper()
-
-	conn, err := world.NewGRPC()
-	require.NoError(t, err)
-
-	return conn
 }
 
 func requireUnhealthyObservedHealth(t *testing.T, server *server.Server, service string) {

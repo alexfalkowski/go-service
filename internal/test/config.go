@@ -293,10 +293,18 @@ func NewOTLPTracerConfig() *tracer.Config {
 
 // NewPGConfig returns the Postgres config used by database-backed integration tests.
 func NewPGConfig() *pg.Config {
+	return NewPGConfigWithDSNs(
+		[]sql.DSN{{URL: FilePath("secrets/pg")}},
+		[]sql.DSN{{URL: FilePath("secrets/pg")}},
+	)
+}
+
+// NewPGConfigWithDSNs returns the Postgres config used by database-backed integration tests with explicit DSNs.
+func NewPGConfigWithDSNs(masters, slaves []sql.DSN) *pg.Config {
 	return &pg.Config{
 		Config: &sql.Config{
-			Masters:         []sql.DSN{{URL: FilePath("secrets/pg")}},
-			Slaves:          []sql.DSN{{URL: FilePath("secrets/pg")}},
+			Masters:         masters,
+			Slaves:          slaves,
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,
 			ConnMaxLifetime: time.Hour,

@@ -1,7 +1,6 @@
 package checker_test
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -11,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/health/checker"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 )
 
@@ -57,7 +55,6 @@ func TestDBCheckerReturnsTimeoutCause(t *testing.T) {
 var (
 	errMasterPing = errors.New("master ping")
 	errSlavePing  = errors.New("slave ping")
-	pingDriverID  sync.Uint64
 )
 
 func newPingDB(t *testing.T, masters, slaves []string) *sql.DBs {
@@ -76,9 +73,7 @@ func newPingDB(t *testing.T, masters, slaves []string) *sql.DBs {
 func registerPingDriver(t *testing.T) string {
 	t.Helper()
 
-	name := "health-checker-" + strconv.FormatUint(pingDriverID.Add(1), 10)
-	require.NoError(t, driver.Register(name, pingDriver{}))
-	return name
+	return test.RegisterSQLDriver(t, "health-checker-", pingDriver{})
 }
 
 type pingDriver struct{}

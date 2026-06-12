@@ -57,7 +57,7 @@ func TestNewRequestHandlerRejectsUnsafeBinaryRequestBody(t *testing.T) {
 			require.False(t, called)
 			require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
 			require.Equal(t, "text/error; charset=utf-8", res.Header().Get(content.TypeKey))
-			require.Equal(t, "http: unsupported media type", strings.TrimSpace(res.Body.String()))
+			test.RequireTrimmedResponseBody(t, res, "http: unsupported media type")
 		})
 	}
 }
@@ -75,7 +75,7 @@ func TestNewRequestHandlerTreatsInternalErrorContentTypeAsText(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, "text/plain; charset=utf-8", res.Header().Get(content.TypeKey))
-	require.Equal(t, "Hello Bob", res.Body.String())
+	test.RequireResponseBody(t, res, "Hello Bob")
 }
 
 func TestNewHandlerTreatsInternalErrorAcceptAsText(t *testing.T) {
@@ -91,7 +91,7 @@ func TestNewHandlerTreatsInternalErrorAcceptAsText(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, "text/plain; charset=utf-8", res.Header().Get(content.TypeKey))
-	require.Equal(t, "Hello Bob", res.Body.String())
+	test.RequireResponseBody(t, res, "Hello Bob")
 }
 
 func TestNewHandlerReplacesExistingContentType(t *testing.T) {
@@ -108,7 +108,7 @@ func TestNewHandlerReplacesExistingContentType(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, []string{"text/plain; charset=utf-8"}, res.Header().Values(content.TypeKey))
-	require.Equal(t, "Hello Bob", res.Body.String())
+	test.RequireResponseBody(t, res, "Hello Bob")
 }
 
 func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
@@ -128,8 +128,8 @@ func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	require.Equal(t, "text/error; charset=utf-8", res.Header().Get(content.TypeKey))
-	require.Equal(t, "http: internal server error", strings.TrimSpace(res.Body.String()))
-	require.NotContains(t, res.Body.String(), "partial")
+	test.RequireTrimmedResponseBody(t, res, "http: internal server error")
+	test.RequireResponseBodyNotContains(t, res, "partial")
 }
 
 func TestNotFoundHandlerWritesStatusError(t *testing.T) {
@@ -139,5 +139,5 @@ func TestNotFoundHandlerWritesStatusError(t *testing.T) {
 	require.True(t, content.NotFoundHandler()(res, req))
 	require.Equal(t, http.StatusNotFound, res.Code)
 	require.Equal(t, "text/error; charset=utf-8", res.Header().Get(content.TypeKey))
-	require.Equal(t, "http: not found", strings.TrimSpace(res.Body.String()))
+	test.RequireTrimmedResponseBody(t, res, "http: not found")
 }

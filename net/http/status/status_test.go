@@ -10,7 +10,6 @@ import (
 	grpcstatus "github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	httpstatus "github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,7 +51,7 @@ func TestWriteErrorUsesSafeMessageForFromError(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, "http: bad request", strings.TrimSpace(res.Body.String()))
+	test.RequireTrimmedResponseBody(t, res, "http: bad request")
 }
 
 func TestWriteErrorUsesSafeMessage(t *testing.T) {
@@ -62,7 +61,7 @@ func TestWriteErrorUsesSafeMessage(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.Code)
-	require.Equal(t, "http: unauthorized", strings.TrimSpace(res.Body.String()))
+	test.RequireTrimmedResponseBody(t, res, "http: unauthorized")
 }
 
 func TestDefaultMessage(t *testing.T) {
@@ -98,7 +97,7 @@ func TestWriteErrorUsesDefaultSafeMessageForUnknownStatusCode(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 999, res.Code)
-	require.Equal(t, "http: internal server error", strings.TrimSpace(res.Body.String()))
+	test.RequireTrimmedResponseBody(t, res, "http: internal server error")
 }
 
 func TestWriteErrorUsesClientClosedRequestMessageForCanceledGRPCStatus(t *testing.T) {
@@ -110,7 +109,7 @@ func TestWriteErrorUsesClientClosedRequestMessageForCanceledGRPCStatus(t *testin
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusClientClosedRequest, res.Code)
-	require.Equal(t, "http: client closed request", strings.TrimSpace(res.Body.String()))
+	test.RequireTrimmedResponseBody(t, res, "http: client closed request")
 }
 
 func TestCodeRecognizesMaxBytesError(t *testing.T) {

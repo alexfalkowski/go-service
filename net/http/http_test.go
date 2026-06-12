@@ -227,7 +227,7 @@ func TestHandleWhenTelemetryDisabled(t *testing.T) {
 
 	require.True(t, called)
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, "hello", res.Body.String())
+	test.RequireResponseBody(t, res, "hello")
 }
 
 func TestHandleWhenMetricsEnabled(t *testing.T) {
@@ -255,5 +255,5 @@ func TestHandleWhenMetricsEnabled(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, "hello", res.Body.String())
+	test.RequireResponseBody(t, res, "hello")
 }

@@ -162,7 +162,10 @@ func TestApplicationServerStopAfterCancellationUsesFxTimeout(t *testing.T) {
 				di.Register(func(lc di.Lifecycle) {
 					lc.Append(di.Hook{
 						OnStart: func(context.Context) error {
-							close(started)
+							go func() {
+								time.Sleep(10 * time.Millisecond)
+								close(started)
+							}()
 
 							return nil
 						},

@@ -25,7 +25,7 @@ func TestInsecureUnary(t *testing.T) {
 		meta.NewPair("redacted-ip", meta.ToRedacted(net.ParseIP("192.168.8.0"))),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -46,7 +46,7 @@ func TestSecureUnary(t *testing.T) {
 
 	ctx := meta.WithAttributes(t.Context(), meta.NewPair("ip", meta.ToIgnored(net.ParseIP("192.168.8.0"))))
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -62,7 +62,7 @@ func TestStream(t *testing.T) {
 
 	ctx := meta.WithAttributes(t.Context(), test.WithTest(meta.Redacted("test")))
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -73,14 +73,14 @@ func TestStream(t *testing.T) {
 	stream, err := client.SayStreamHello(ctx)
 	require.NoError(t, err)
 
-	resp, err := sendStreamHello(t, stream, "test")
+	resp, err := test.SendStreamHello(t, stream, "test")
 	require.NoError(t, err)
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
 func TestUnaryMaxReceiveSize(t *testing.T) {
 	world := newStartedGRPCWorld(t, 64)
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -92,21 +92,21 @@ func TestUnaryMaxReceiveSize(t *testing.T) {
 
 func TestStreamMaxReceiveSize(t *testing.T) {
 	world := newStartedGRPCWorld(t, 64)
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	_, err = sendStreamHello(t, stream, strings.Repeat("a", 256))
+	_, err = test.SendStreamHello(t, stream, strings.Repeat("a", 256))
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
 func TestUnaryMaxSendSize(t *testing.T) {
 	world := newStartedGRPCWorldWithOptions(t, 0, map[string]string{"max_send_msg_size": "64B"})
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -118,14 +118,14 @@ func TestUnaryMaxSendSize(t *testing.T) {
 
 func TestStreamMaxSendSize(t *testing.T) {
 	world := newStartedGRPCWorldWithOptions(t, 0, map[string]string{"max_send_msg_size": "64B"})
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
 	stream, err := client.SayStreamHello(t.Context())
 	require.NoError(t, err)
 
-	_, err = sendStreamHello(t, stream, strings.Repeat("a", 256))
+	_, err = test.SendStreamHello(t, stream, strings.Repeat("a", 256))
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }

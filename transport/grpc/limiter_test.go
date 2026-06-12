@@ -25,7 +25,7 @@ import (
 func TestServerLimiterUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -46,7 +46,7 @@ func TestServerLimiterUnary(t *testing.T) {
 func TestServerLimiterStream(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 3)), test.WithWorldGRPC())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -82,7 +82,7 @@ func TestServerLimiterStreamHeader(t *testing.T) {
 func TestClientLimiterUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -130,7 +130,7 @@ func TestClientLimiterDenialDoesNotOpenBreaker(t *testing.T) {
 func TestClientLimiterStream(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 3)), test.WithWorldGRPC())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -149,7 +149,7 @@ func TestServerLimiterUsesVerifiedUserIDUnary(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -171,7 +171,7 @@ func TestServerLimiterUsesVerifiedUserIDStream(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -191,7 +191,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -209,7 +209,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -229,7 +229,7 @@ func TestServerClosedLimiterUnary(t *testing.T) {
 
 	require.NoError(t, world.Server.GRPCLimiter.Close(t.Context()))
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -243,7 +243,7 @@ func TestServerClosedLimiterUnary(t *testing.T) {
 func TestClientClosedLimiterUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 
-	conn := requireGRPCConn(t, world)
+	conn := test.RequireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -276,6 +276,6 @@ func sayStreamHello(t *testing.T, client v1.GreeterServiceClient) error {
 		return err
 	}
 
-	_, err = sendStreamHello(t, stream, "test")
+	_, err = test.SendStreamHello(t, stream, "test")
 	return err
 }
