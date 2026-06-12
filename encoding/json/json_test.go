@@ -46,6 +46,16 @@ func TestDecodeAcceptsTrailingWhitespace(t *testing.T) {
 	require.Equal(t, map[string]string{"test": "test"}, msg)
 }
 
+func TestDecodeRejectsUnknownFields(t *testing.T) {
+	encoder := json.NewEncoder()
+	msg := &message{}
+
+	err := encoder.Decode(bytes.NewBufferString("{\"test\":\"test\",\"extra\":\"ignored\"}"), msg)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "extra")
+}
+
 func TestDecodeRejectsTrailingData(t *testing.T) {
 	for _, input := range []string{
 		`{"test":"test"} garbage`,
@@ -90,4 +100,8 @@ func TestUnmarshalRejectsTrailingData(t *testing.T) {
 	err := json.Unmarshal([]byte("{\"test\":\"test\"}{\"extra\":\"value\"}"), &msg)
 
 	require.ErrorIs(t, err, errors.ErrTrailingData)
+}
+
+type message struct {
+	Test string `json:"test"`
 }

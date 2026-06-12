@@ -1,6 +1,8 @@
 package toml
 
 import (
+	"fmt"
+
 	"github.com/BurntSushi/toml"
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/io"
@@ -32,11 +34,18 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
 //
-// This method intentionally discards metadata returned by BurntSushi/toml and returns only the
-// decode/unmarshal error (if any).
+// This method rejects keys that do not decode into v.
 func (e *Encoder) Decode(r io.Reader, v any) error {
-	_, err := toml.NewDecoder(r).Decode(v)
-	return err
+	meta, err := toml.NewDecoder(r).Decode(v)
+	if err != nil {
+		return err
+	}
+
+	if undecoded := meta.Undecoded(); len(undecoded) > 0 {
+		return fmt.Errorf("toml: undecoded key %s", undecoded[0])
+	}
+
+	return nil
 }
 
 // Marshal encodes v as TOML.

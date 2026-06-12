@@ -73,6 +73,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Duplicate JSON object keys keep the standard library's last-wins behavior.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	decoder := json.NewDecoder(r)
+	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(v); err != nil {
 		return err
 	}

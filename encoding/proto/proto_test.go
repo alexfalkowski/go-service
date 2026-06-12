@@ -109,6 +109,24 @@ func TestEncodersUseExpectedWireFormats(t *testing.T) {
 	})
 }
 
+func TestDecodeDiscardsUnknownFields(t *testing.T) {
+	t.Run("json", func(t *testing.T) {
+		encoder := proto.NewJSON()
+
+		var decode health.Response
+		require.NoError(t, encoder.Decode(bytes.NewBufferString(`{"status":"SERVING","futureField":"ignored"}`), &decode))
+		require.Equal(t, health.Serving, decode.GetStatus())
+	})
+
+	t.Run("text", func(t *testing.T) {
+		encoder := proto.NewText()
+
+		var decode health.Response
+		require.NoError(t, encoder.Decode(bytes.NewBufferString("status: SERVING\nfuture_field: \"ignored\""), &decode))
+		require.Equal(t, health.Serving, decode.GetStatus())
+	})
+}
+
 func TestEncodeReturnsWriteError(t *testing.T) {
 	for _, tt := range protoEncoders() {
 		t.Run(tt.name, func(t *testing.T) {

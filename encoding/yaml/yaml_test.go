@@ -54,6 +54,16 @@ func TestDecode(t *testing.T) {
 	require.Equal(t, map[string]string{"test": "test"}, msg)
 }
 
+func TestDecodeRejectsUnknownFields(t *testing.T) {
+	encoder := yaml.NewEncoder()
+	msg := &message{}
+
+	err := encoder.Decode(bytes.NewBufferString("test: test\nextra: ignored"), msg)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "extra")
+}
+
 func TestDecodeRejectsTrailingDocument(t *testing.T) {
 	for _, input := range []string{
 		"test: test\n---\ntest: other",
@@ -82,4 +92,8 @@ type marshalError struct{}
 
 func (m marshalError) MarshalYAML() (any, error) {
 	return nil, test.ErrFailed
+}
+
+type message struct {
+	Test string `yaml:"test"`
 }
