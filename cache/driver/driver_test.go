@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
+	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -25,7 +26,7 @@ func TestNewDriver(t *testing.T) {
 	}{
 		{name: "disabled", wantNil: true},
 		{name: "ttlcache", config: &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}},
-		{name: "unknown", config: &config.Config{Kind: "unknown"}, err: driver.ErrNotFound, wantNil: true},
+		{name: "unknown", config: &config.Config{Kind: "unknown"}, err: drivererrors.ErrNotFound, wantNil: true},
 	}
 
 	for _, tt := range tests {
@@ -40,20 +41,6 @@ func TestNewDriver(t *testing.T) {
 			require.NotNil(t, d)
 		})
 	}
-}
-
-func TestIsMissingError(t *testing.T) {
-	cfg := &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}
-
-	d, err := driver.NewDriver(driver.DriverParams{Config: cfg})
-	require.NoError(t, err)
-
-	_, err = d.Fetch(t.Context(), "missing")
-	require.True(t, driver.IsMissingError(err))
-	require.True(t, driver.IsMissingError(redis.Nil))
-	require.True(t, driver.IsMissingError(errors.Prefix("wrapped", redis.Nil)))
-	require.False(t, driver.IsMissingError(driver.ErrExpired))
-	require.False(t, driver.IsMissingError(nil))
 }
 
 func TestRedisClientClosesOnStop(t *testing.T) {
@@ -94,7 +81,7 @@ func TestRedisParseURLDoesNotLeakCredentials(t *testing.T) {
 		Config:    cfg,
 	})
 
-	require.ErrorIs(t, err, driver.ErrInvalidURL)
+	require.ErrorIs(t, err, drivererrors.ErrInvalidURL)
 	require.NotContains(t, err.Error(), "secret")
 	require.NotContains(t, err.Error(), "redis://user")
 }
@@ -147,9 +134,9 @@ func TestTTLCacheDriverExpiresEntries(t *testing.T) {
 	var missing error
 	require.Eventually(t, func() bool {
 		_, missing = d.Fetch(t.Context(), "key")
-		return driver.IsMissingError(missing)
+		return drivererrors.IsMissingError(missing)
 	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
-	require.ErrorIs(t, missing, driver.ErrMissing)
+	require.ErrorIs(t, missing, drivererrors.ErrMissing)
 }
 
 func TestTTLCacheDriverEvictsEntryAtCapacity(t *testing.T) {
@@ -168,7 +155,7 @@ func TestTTLCacheDriverEvictsEntryAtCapacity(t *testing.T) {
 	var misses int
 	for _, key := range []string{"first", "second"} {
 		_, err = d.Fetch(t.Context(), key)
-		if driver.IsMissingError(err) {
+		if drivererrors.IsMissingError(err) {
 			misses++
 		}
 	}
@@ -184,7 +171,7 @@ func TestTTLCacheDriverCleansExpiredEntriesOnSave(t *testing.T) {
 		require.NoError(t, d.Save(t.Context(), "new", "value", 0))
 
 		_, err = d.Fetch(t.Context(), "expired")
-		return errors.Is(err, driver.ErrMissing)
+		return errors.Is(err, drivererrors.ErrMissing)
 	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
 
 	value, err := d.Fetch(t.Context(), "new")

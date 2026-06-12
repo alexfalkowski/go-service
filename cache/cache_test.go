@@ -8,7 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	"github.com/alexfalkowski/go-service/v2/compress/errors"
+	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
+	compresserrors "github.com/alexfalkowski/go-service/v2/compress/errors"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
@@ -92,7 +93,7 @@ func TestMaxSizeOnPersist(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
 	err := world.Persist(t.Context(), "test", new("hello?"), time.Minute)
-	require.ErrorIs(t, err, errors.ErrTooLarge)
+	require.ErrorIs(t, err, compresserrors.ErrTooLarge)
 }
 
 func TestMaxSizeOnPersistCompressedValue(t *testing.T) {
@@ -101,7 +102,7 @@ func TestMaxSizeOnPersistCompressedValue(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
 	err := world.Persist(t.Context(), "test", new("a"), time.Minute)
-	require.ErrorIs(t, err, errors.ErrTooLarge)
+	require.ErrorIs(t, err, compresserrors.ErrTooLarge)
 }
 
 func TestMaxSizeOnGet(t *testing.T) {
@@ -113,7 +114,7 @@ func TestMaxSizeOnGet(t *testing.T) {
 	cfg.MaxSize = 4
 
 	err := world.Get(t.Context(), "test", ptr.Zero[string]())
-	require.ErrorIs(t, err, errors.ErrTooLarge)
+	require.ErrorIs(t, err, compresserrors.ErrTooLarge)
 }
 
 func TestMaxSizeOnGetAllowsEncodedValueLargerThanLimit(t *testing.T) {
@@ -138,7 +139,7 @@ func TestMaxSizeOnGetRejectsEncodedValueTooLarge(t *testing.T) {
 	)
 
 	err := world.Get(t.Context(), "test", ptr.Zero[string]())
-	require.ErrorIs(t, err, errors.ErrTooLarge)
+	require.ErrorIs(t, err, compresserrors.ErrTooLarge)
 }
 
 func TestMaxSizeOnGetAllowsHugeConfiguredLimit(t *testing.T) {
@@ -368,7 +369,7 @@ func (expiredCacheDriver) Delete(context.Context, string) error {
 }
 
 func (expiredCacheDriver) Fetch(context.Context, string) (string, error) {
-	return strings.Empty, driver.ErrExpired
+	return strings.Empty, drivererrors.ErrExpired
 }
 
 func (expiredCacheDriver) Flush(context.Context) error {

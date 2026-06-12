@@ -6,8 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
+	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
 	"github.com/alexfalkowski/go-service/v2/compress"
-	"github.com/alexfalkowski/go-service/v2/compress/errors"
+	compresserrors "github.com/alexfalkowski/go-service/v2/compress/errors"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding"
@@ -27,11 +28,21 @@ const maxBase64EncodedLenInput = math.MaxInt / 4 * 3
 // It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The constructor will typically be wired via [Module].
 type CacheParams struct {
 	di.In
-	Config     *config.Config
-	Encoder    *encoding.Map
-	Pool       *sync.BufferPool
+
+	// Config configures cache encoding, compression, and limits.
+	Config *config.Config
+
+	// Encoder provides value encoders by name.
+	Encoder *encoding.Map
+
+	// Pool provides reusable buffers for cache encoding.
+	Pool *sync.BufferPool
+
+	// Compressor provides compression implementations by name.
 	Compressor *compress.Map
-	Driver     driver.Driver
+
+	// Driver stores encoded cache values.
+	Driver driver.Driver
 }
 
 // NewCache constructs a [Cache] from configuration.
@@ -96,7 +107,7 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 func (c *Cache) Get(ctx context.Context, key string, value any) error {
 	val, err := c.driver.Fetch(ctx, key)
 	if err != nil {
-		if driver.IsMissingError(err) || driver.IsExpiredError(err) {
+		if drivererrors.IsMissingError(err) || drivererrors.IsExpiredError(err) {
 			return nil
 		}
 
@@ -136,7 +147,7 @@ func (c *Cache) encode(value any) (string, error) {
 		return strings.Empty, err
 	}
 	if int64(len(compressed)) > c.cfg.GetMaxSize().Bytes() {
-		return strings.Empty, errors.ErrTooLarge
+		return strings.Empty, compresserrors.ErrTooLarge
 	}
 
 	encoded := base64.Encode(compressed)
@@ -147,7 +158,7 @@ func (c *Cache) encode(value any) (string, error) {
 func (c *Cache) decode(value string, field any) error {
 	maxSize := c.cfg.GetMaxSize()
 	if maxSize.Bytes() <= maxBase64EncodedLenInput && int64(len(value)) > base64.EncodedLen(maxSize) {
-		return errors.ErrTooLarge
+		return compresserrors.ErrTooLarge
 	}
 
 	decoded, err := base64.Decode(value)

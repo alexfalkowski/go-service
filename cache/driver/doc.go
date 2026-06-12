@@ -24,10 +24,12 @@
 // The built-in "ttlcache" driver uses a bounded in-process cache and expires entries
 // when they are read or before new values are saved.
 //
-// If the configured kind is unknown, [NewDriver] returns [ErrNotFound].
+// If the configured kind is unknown, [NewDriver] returns
+// [github.com/alexfalkowski/go-service/v2/cache/driver/errors.ErrNotFound].
 //
 // # Errors
 //
-// This package provides [ErrExpired], [ErrMissing], and helper functions to
-// classify backend-specific miss conditions in a backend-agnostic way.
+// Package [github.com/alexfalkowski/go-service/v2/cache/driver/errors] provides
+// shared sentinel errors and helper functions to classify backend-specific miss
+// conditions in a backend-agnostic way.
 package driver

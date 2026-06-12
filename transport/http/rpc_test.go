@@ -156,13 +156,13 @@ func TestErrorRPC(t *testing.T) {
 
 					b := test.Pool.Get()
 					defer test.Pool.Put(b)
-
 					err := enc.Encode(b, test.Request{Name: "Bob"})
 					require.NoError(t, err)
+					payload := bytes.Clone(b.Bytes())
 
 					url := world.PathServerURL("http", "hello")
 
-					res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, b)
+					res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewReader(payload))
 					require.NoError(t, err)
 					if handler.name == "mapped" {
 						require.Equal(t, "failed", body)

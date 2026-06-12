@@ -260,7 +260,7 @@ cache:
 
 > [!NOTE]
 > - Built-in driver kinds in this repo are `redis` and `ttlcache`.
-> - Unknown `kind` values return `cache/driver.ErrNotFound`.
+> - Unknown `kind` values return `cache/driver/errors.ErrNotFound`.
 > - Unknown or empty `compressor` values fall back to `none`.
 > - For normal values, unknown or empty `encoder` values fall back to `json`.
 > - Cache operations use `plain` for `io.WriterTo`/`io.ReaderFrom` stream values and `proto` for protobuf messages, regardless of the configured `encoder`.

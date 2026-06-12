@@ -16,7 +16,7 @@ type Config struct {
 	//
 	// The built-in driver kinds are "redis" and "ttlcache". Unknown kinds cause
 	// [github.com/alexfalkowski/go-service/v2/cache/driver.NewDriver] to return
-	// [github.com/alexfalkowski/go-service/v2/cache/driver.ErrNotFound].
+	// [github.com/alexfalkowski/go-service/v2/cache/driver/errors.ErrNotFound].
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 
 	// Compressor selects the compression algorithm used for cached values (if supported by the implementation).
