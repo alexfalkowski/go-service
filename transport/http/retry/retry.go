@@ -188,18 +188,18 @@ func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Requ
 		return req.WithContext(ctx), nil
 	}
 
-	cloned := req.Clone(ctx)
+	clonedReq := req.Clone(ctx)
 	if req.GetBody == nil {
-		return cloned, nil
+		return clonedReq, nil
 	}
 
-	body, err := req.GetBody()
+	retryBody, err := req.GetBody()
 	if err != nil {
 		return nil, err
 	}
 
-	cloned.Body = body
-	return cloned, nil
+	clonedReq.Body = retryBody
+	return clonedReq, nil
 }
 
 type roundTripAttempt struct {

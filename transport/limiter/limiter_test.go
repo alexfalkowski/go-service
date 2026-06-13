@@ -3,6 +3,7 @@ package limiter_test
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"math"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -48,6 +49,16 @@ func TestValidLimiter(t *testing.T) {
 	require.NotNil(t, limiter)
 
 	require.NoError(t, limiter.Close(t.Context()))
+}
+
+func TestNewLimiterRejectsTooLargeInterval(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Duration(math.MaxInt64)}
+
+	lim, err := limiter.NewLimiter(lc, m, config)
+	require.Nil(t, lim)
+	require.ErrorIs(t, err, limiter.ErrIntervalTooLarge)
 }
 
 func TestTake(t *testing.T) {

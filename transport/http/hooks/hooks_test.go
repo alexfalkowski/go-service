@@ -41,6 +41,34 @@ func TestSignOverwritesHeaders(t *testing.T) {
 	require.NoError(t, hook.Verify(req))
 }
 
+func TestSignClosesOriginalBody(t *testing.T) {
+	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	require.NoError(t, err)
+
+	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", body)
+
+	require.NoError(t, hook.Sign(req))
+	require.True(t, body.Closed)
+}
+
+func TestVerifyClosesOriginalBody(t *testing.T) {
+	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	require.NoError(t, err)
+
+	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	signReq := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", strings.NewReader("body"))
+	require.NoError(t, hook.Sign(signReq))
+
+	body := &test.TrackedBody{Reader: strings.NewReader("body")}
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", body)
+	req.Header = signReq.Header.Clone()
+
+	require.NoError(t, hook.Verify(req))
+	require.True(t, body.Closed)
+}
+
 func TestSignAndVerifyNilBody(t *testing.T) {
 	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
 	require.NoError(t, err)

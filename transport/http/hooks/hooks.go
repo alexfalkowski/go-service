@@ -4,8 +4,8 @@ import (
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/body"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/time"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
@@ -62,12 +62,14 @@ func (h *Webhook) Sign(req *http.Request) error {
 		return nil
 	}
 
-	payload, body, err := readBody(req)
+	originalBody := req.Body
+	payload, bufferedBody, err := body.ReadAll(req)
 	if err != nil {
 		return err
 	}
+	defer body.Close(originalBody)
 
-	req.Body = body
+	req.Body = bufferedBody
 	if req.Header == nil {
 		req.Header = http.Header{}
 	}
@@ -104,26 +106,20 @@ func (h *Webhook) Verify(req *http.Request) error {
 		return nil
 	}
 
-	payload, body, err := readBody(req)
+	originalBody := req.Body
+	payload, bufferedBody, err := body.ReadAll(req)
 	if err != nil {
 		return err
 	}
+	defer body.Close(originalBody)
 
-	req.Body = body
+	req.Body = bufferedBody
 
 	if err := h.hook.Verify(payload, req.Header); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func readBody(req *http.Request) ([]byte, io.ReadCloser, error) {
-	if req.Body == nil {
-		req.Body = http.NoBody
-	}
-
-	return io.ReadAll(req.Body)
 }
 
 // Handler verifies webhook signatures on inbound requests.
@@ -209,21 +205,14 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 		return nil, http.ErrUseLastResponse, true
 	}
 
-	cloned := req.Clone(req.Context())
-	body := cloned.Body
-	if err := r.hook.Sign(cloned); err != nil {
-		closeBody(body)
+	clonedReq := req.Clone(req.Context())
+	originalBody := clonedReq.Body
+	if err := r.hook.Sign(clonedReq); err != nil {
+		body.Close(originalBody)
 
 		return nil, err, false
 	}
-	closeBody(body)
 
-	res, err := r.RoundTripper.RoundTrip(cloned)
+	res, err := r.RoundTripper.RoundTrip(clonedReq)
 	return res, err, false
-}
-
-func closeBody(body io.ReadCloser) {
-	if body != nil && body != http.NoBody {
-		_ = body.Close()
-	}
 }

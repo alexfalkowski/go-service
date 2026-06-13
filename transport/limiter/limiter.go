@@ -1,6 +1,7 @@
 package limiter
 
 import (
+	"math"
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -15,6 +16,9 @@ import (
 
 // ErrMissingKey is returned when the configured key kind is not present in the KeyMap.
 var ErrMissingKey = errors.New("limiter: missing key")
+
+// ErrIntervalTooLarge is returned when the configured interval cannot be used safely.
+var ErrIntervalTooLarge = errors.New("limiter: interval too large")
 
 // NewKeyMap returns the default KeyMap used by the limiter.
 //
@@ -63,6 +67,7 @@ type KeyMap map[string]KeyFunc
 //
 // Errors:
 //   - Returns ErrMissingKey when cfg.Kind is not present in keys or maps to a nil KeyFunc.
+//   - Returns ErrIntervalTooLarge when cfg.Interval would overflow internal key tracking TTLs.
 //
 // Notes:
 //   - cfg.Interval is used directly as a typed duration decoded from config.
@@ -79,6 +84,10 @@ func NewLimiter(lc di.Lifecycle, keyMap KeyMap, cfg *Config) (*Limiter, error) {
 
 	sweepMinTTL := max(time.Hour.Duration(), cfg.Interval.Duration())
 	sweepInterval := time.Hour.Duration()
+	if sweepMinTTL > time.Duration(math.MaxInt64).Duration()-sweepInterval {
+		return nil, ErrIntervalTooLarge
+	}
+
 	config := &memorystore.Config{
 		Tokens:   cfg.Tokens,
 		Interval: cfg.Interval.Duration(),
