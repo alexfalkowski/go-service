@@ -50,13 +50,13 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		meta.WithServiceMethod(meta.Ignored(req.URL.Path)),
 	)
 
-	cloned := req.Clone(ctx)
-	if cloned.Header == nil {
-		cloned.Header = http.Header{}
+	clonedReq := req.Clone(ctx)
+	if clonedReq.Header == nil {
+		clonedReq.Header = http.Header{}
 	}
-	clientSetRequestHeaders(cloned.Header, userAgent.Value(), requestID.Value())
+	clientSetRequestHeaders(clonedReq.Header, userAgent.Value(), requestID.Value())
 
-	return r.RoundTripper.RoundTrip(cloned)
+	return r.RoundTripper.RoundTrip(clonedReq)
 }
 
 func clientSetRequestHeaders(header http.Header, userAgent, requestID string) {
