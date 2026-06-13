@@ -56,6 +56,16 @@ func TestProtocols(t *testing.T) {
 	require.True(t, protocols.UnencryptedHTTP2())
 }
 
+func TestParseTime(t *testing.T) {
+	now := time.Now().UTC()
+	value := now.Format(http.TimeFormat)
+
+	parsed, err := http.ParseTime(value)
+
+	require.NoError(t, err)
+	require.Equal(t, now.Truncate(time.Second.Duration()), parsed)
+}
+
 func TestTransport(t *testing.T) {
 	cfg := &tls.Config{}
 

@@ -21,6 +21,11 @@ import (
 // DefaultMaxHeaderBytes is an alias of [http.DefaultMaxHeaderBytes].
 const DefaultMaxHeaderBytes = http.DefaultMaxHeaderBytes
 
+// TimeFormat is the HTTP time format layout.
+//
+// It is an alias of [http.TimeFormat].
+const TimeFormat = http.TimeFormat
+
 // Client is an alias for [net/http.Client].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
@@ -247,6 +252,13 @@ func Handle(mux *ServeMux, pattern string, handler http.Handler) {
 // This is a thin wrapper around [net/http.StatusText].
 func StatusText(code int) string {
 	return http.StatusText(code)
+}
+
+// ParseTime parses an HTTP time value.
+//
+// This is a thin wrapper around [http.ParseTime] and does not change semantics.
+func ParseTime(value string) (time.Time, error) {
+	return http.ParseTime(value)
 }
 
 // NewServer constructs an HTTP server with common timeout defaults and supported protocol settings.

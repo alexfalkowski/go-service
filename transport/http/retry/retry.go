@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/body"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -172,7 +173,7 @@ func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *
 	}
 
 	res, err := r.RoundTripper.RoundTrip(attemptReq)
-	if retryErr := attempt.retry(ctx, attemptCtx, req, res, err, r.maxRetries); retryErr != nil {
+	if retryErr := attempt.retry(ctx, attemptCtx, req, res, err, r.backoff, r.maxRetries); retryErr != nil {
 		return nil, retryErr
 	}
 
@@ -181,6 +182,36 @@ func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *
 
 func (r *RoundTripper) withAttemptTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
 	return context.WithTimeoutCause(ctx, r.timeout, ErrAttemptTimeout)
+}
+
+type roundTripAttempt struct {
+	attempt uint64
+}
+
+func (a *roundTripAttempt) retry(ctx, attemptCtx context.Context, req *http.Request, res *http.Response, err error, backoff time.Duration, maxRetries uint64) error {
+	ok, retryErr := shouldRetryAttempt(ctx, attemptCtx, res, err)
+	if !ok {
+		return nil
+	}
+	if !canRetry(req) {
+		return nil
+	}
+
+	retryErr = statusError(retryErr, err)
+	if res == nil {
+		a.attempt++
+		return retry.RetryableError(retryErr)
+	}
+	if a.attempt >= maxRetries {
+		return nil
+	}
+	if retryAfterDelayExceedsBackoff(res, backoff) {
+		return nil
+	}
+
+	closeResponse(res)
+	a.attempt++
+	return retry.RetryableError(retryErr)
 }
 
 func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Request, error) {
@@ -200,33 +231,6 @@ func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Requ
 
 	clonedReq.Body = retryBody
 	return clonedReq, nil
-}
-
-type roundTripAttempt struct {
-	attempt uint64
-}
-
-func (a *roundTripAttempt) retry(ctx, attemptCtx context.Context, req *http.Request, res *http.Response, err error, maxRetries uint64) error {
-	ok, retryErr := shouldRetryAttempt(ctx, attemptCtx, res, err)
-	if !ok {
-		return nil
-	}
-	if !canRetry(req) {
-		return nil
-	}
-
-	retryErr = statusError(retryErr, err)
-	if res == nil {
-		a.attempt++
-		return retry.RetryableError(retryErr)
-	}
-	if a.attempt >= maxRetries {
-		return nil
-	}
-
-	closeResponse(res)
-	a.attempt++
-	return retry.RetryableError(retryErr)
 }
 
 func shouldRetryAttempt(ctx, attemptCtx context.Context, res *http.Response, err error) (bool, error) {
@@ -279,8 +283,8 @@ func statusError(retryErr, err error) error {
 }
 
 func closeResponse(res *http.Response) {
-	if res != nil && res.Body != nil {
-		_ = res.Body.Close()
+	if res != nil {
+		body.Close(res.Body)
 	}
 }
 

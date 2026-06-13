@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
+	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 )
@@ -69,6 +70,26 @@ func TestRoundTripperDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 	require.Equal(t, 1, rt.Calls)
 }
 
+func TestRoundTripperClampsAttemptsAboveMax(t *testing.T) {
+	calls := 0
+	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		calls++
+		return test.ResponseWithStatus(http.StatusTooManyRequests), nil
+	})
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: config.MaxAttempts + 1,
+		Timeout:  time.Second,
+		Backoff:  time.Nanosecond,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+	require.Equal(t, int(config.MaxAttempts), calls)
+}
+
 func TestRoundTripperDoesNotPanicWithOmittedBackoff(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
@@ -99,6 +120,97 @@ func TestRoundTripperRetriesWithDefaultBackoff(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, 2, rt.Calls)
+}
+
+func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsBackoff(t *testing.T) {
+	tests := []struct {
+		name       string
+		retryAfter string
+		code       int
+	}{
+		{name: "too many requests seconds", code: http.StatusTooManyRequests, retryAfter: "2"},
+		{name: "service unavailable date", code: http.StatusServiceUnavailable, retryAfter: time.Now().Add(5 * time.Second.Duration()).UTC().Format(http.TimeFormat)},
+		{name: "too many requests overflow", code: http.StatusTooManyRequests, retryAfter: "999999999999999999999999999999"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calls := 0
+			rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+				calls++
+				res := test.ResponseWithStatus(tt.code)
+				res.Header.Set("Retry-After", tt.retryAfter)
+
+				return res, nil
+			})
+			retrying := retry.NewRoundTripper(&retry.Config{
+				Attempts: 2,
+				Timeout:  time.Second,
+				Backoff:  time.Second,
+			}, rt)
+
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+			res, err := retrying.RoundTrip(req)
+			require.NoError(t, err)
+			require.Equal(t, tt.code, res.StatusCode)
+			require.Equal(t, 1, calls)
+		})
+	}
+}
+
+func TestRoundTripperRetriesWhenRetryAfterDoesNotExceedBackoff(t *testing.T) {
+	calls := 0
+	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		calls++
+		if calls == 1 {
+			res := test.ResponseWithStatus(http.StatusTooManyRequests)
+			res.Header.Set("Retry-After", "1")
+
+			return res, nil
+		}
+
+		return test.ResponseWithStatus(http.StatusOK), nil
+	})
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  2 * time.Second,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 2, calls)
+}
+
+func TestRoundTripperRetriesWhenRetryAfterIsInvalid(t *testing.T) {
+	calls := 0
+	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		calls++
+		if calls == 1 {
+			res := test.ResponseWithStatus(http.StatusTooManyRequests)
+			res.Header.Set("Retry-After", "invalid")
+
+			return res, nil
+		}
+
+		return test.ResponseWithStatus(http.StatusOK), nil
+	})
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 2, calls)
 }
 
 func TestRoundTripperUsesIndependentRetryBudgetPerRequest(t *testing.T) {

@@ -8,6 +8,11 @@ const DefaultBackoff time.Duration = 100 * time.Millisecond
 // DefaultJitterPercent is the shared retry jitter applied around the configured base backoff.
 const DefaultJitterPercent uint64 = 20
 
+// MaxAttempts is the maximum retry attempt count, including the initial attempt.
+//
+// Keep Config.Attempts validation in sync with this value.
+const MaxAttempts uint64 = 10
+
 // Config configures retry behavior for an operation.
 //
 // This package defines configuration only; concrete retry behavior is implemented
@@ -44,16 +49,22 @@ type Config struct {
 	//   - Attempts == 0 leaves retries disabled using the transport's zero-value behavior.
 	//   - Attempts == 1 disables retries (single attempt only).
 	//   - Attempts > 1 allows up to Attempts-1 retries after the initial attempt.
-	Attempts uint64 `yaml:"attempts,omitempty" json:"attempts,omitempty" toml:"attempts,omitempty"`
+	//
+	// Decoded configuration rejects values above MaxAttempts. Direct public API construction is
+	// clamped by MaxAttempts and MaxRetries so transport callers cannot bypass the repository cap.
+	Attempts uint64 `yaml:"attempts,omitempty" json:"attempts,omitempty" toml:"attempts,omitempty" validate:"lte=10"`
 }
 
 // MaxAttempts returns the configured total attempt count, including the initial attempt.
 //
 // It preserves the zero value so transports that treat zero specially can retain their
-// upstream behavior.
+// upstream behavior. Values above MaxAttempts are clamped to MaxAttempts.
 func (c *Config) MaxAttempts() uint64 {
 	if c == nil {
 		return 0
+	}
+	if c.Attempts > MaxAttempts {
+		return MaxAttempts
 	}
 
 	return c.Attempts
@@ -88,9 +99,10 @@ func (c *Config) GetBackoff() time.Duration {
 //   - Attempts == 2 returns 1 retry.
 //   - Attempts == 3 returns 2 retries.
 func (c *Config) MaxRetries() uint64 {
-	if c == nil || c.Attempts <= 1 {
+	attempts := c.MaxAttempts()
+	if attempts <= 1 {
 		return 0
 	}
 
-	return c.Attempts - 1
+	return attempts - 1
 }
