@@ -57,6 +57,16 @@ matching skill for the task.
   Report only concrete bugs where untrusted runtime input controls the source,
   documented size limits are ignored, or a public API promises bounded source
   reads.
+- Low-level `config/options.Map` values are administrator-supplied tuning
+  knobs. Do not flag size-valued options such as HTTP `max_header_bytes` or
+  gRPC `max_header_list_size`, `initial_window_size`,
+  `initial_conn_window_size`, or `max_send_msg_size` solely because an admin can
+  configure values above `bytes.MaxConfigSize`. `bytes.MaxConfigSize` applies
+  only where a typed config field or public API explicitly promises that
+  repository-owned cap, such as `MaxReceiveSize` validation. Report only
+  concrete bugs such as ignored typed validation, untrusted runtime input
+  controlling the option, destination-type overflow, or documented bounds being
+  bypassed.
 - Service configuration files should contain configuration values and secret
   source references, not raw passwords or credentials.
 - Nil pointer sub-configs usually mean "disabled".
@@ -93,6 +103,14 @@ matching skill for the task.
   service-mesh policy. Only report concrete bugs such as accidental listener
   changes, ignored explicit addresses, missing documented protections, or a
   public API promise of localhost-only debug binding.
+- Debug profiling endpoints are administrator/operator diagnostics. Do not flag
+  `net/http/pprof` or `fgprof` duration parameters solely because an authorized
+  debug caller can request a long profile. Long captures are an intentional
+  diagnostic capability; restrict debug exposure with bind addresses, TLS/mTLS,
+  ingress/firewall, NetworkPolicy, or service-mesh policy. Report only concrete
+  bugs such as ignored explicit debug server limits, accidental public exposure,
+  missing documented protections, or repository-owned profiling wrapper logic
+  that violates its own duration/admission contract.
 - `debug/internal/fgprof` intentionally delegates request handling to upstream
   `github.com/felixge/fgprof.Handler`. Treat its cancellation behavior and
   zero-sample profile export edge cases as upstream behavior, not local debug
