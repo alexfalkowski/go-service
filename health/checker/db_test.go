@@ -43,10 +43,29 @@ func TestDBCheckerPingsMastersAndSlaves(t *testing.T) {
 	err := check.Check(t.Context())
 	require.ErrorIs(t, err, errMasterPing)
 	require.ErrorIs(t, err, errSlavePing)
+	require.Contains(t, err.Error(), "db master[0]")
+	require.Contains(t, err.Error(), "db slave[0]")
 }
 
 func TestDBCheckerReturnsTimeoutCause(t *testing.T) {
 	db := newPingDB(t, []string{"timeout"}, nil)
+
+	check := checker.NewDBChecker(db, time.Millisecond)
+	require.ErrorIs(t, check.Check(t.Context()), checker.ErrPingTimeout)
+}
+
+func TestDBCheckerReturnsTimeoutCauseWhenWaitingForConnection(t *testing.T) {
+	db := newPingDB(t, []string{"master"}, nil)
+	masters, _ := db.GetAllMasters()
+	require.Len(t, masters, 1)
+
+	master := masters[0]
+	master.SetMaxOpenConns(1)
+	conn, err := master.Conn(t.Context())
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, conn.Close())
+	}()
 
 	check := checker.NewDBChecker(db, time.Millisecond)
 	require.ErrorIs(t, check.Check(t.Context()), checker.ErrPingTimeout)

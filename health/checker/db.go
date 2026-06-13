@@ -47,31 +47,49 @@ type DBChecker struct {
 // If no database pools are configured, Check returns ErrNoConnections.
 // If all pings succeed, Check returns nil.
 func (c *DBChecker) Check(ctx context.Context) error {
-	dbs := c.dbs()
-	if len(dbs) == 0 {
+	databases := c.databases()
+	if len(databases) == 0 {
 		return ErrNoConnections
 	}
 
-	errs := make([]error, 0, len(dbs))
-	for _, db := range dbs {
-		errs = append(errs, c.ping(ctx, db))
+	errs := make([]error, 0, len(databases))
+	for _, database := range databases {
+		err := c.ping(ctx, database.db)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("db %s[%d]: %w", database.role, database.index, err))
+		}
 	}
 	return errors.Join(errs...)
 }
 
-func (c *DBChecker) dbs() []*sqlx.DB {
+type database struct {
+	db    *sqlx.DB
+	role  string
+	index int
+}
+
+func (c *DBChecker) databases() []database {
 	masters, _ := c.db.GetAllMasters()
 	slaves, _ := c.db.GetAllSlaves()
 
-	dbs := make([]*sqlx.DB, 0, len(masters)+len(slaves))
-	dbs = append(dbs, masters...)
-	dbs = append(dbs, slaves...)
-	return dbs
+	databases := make([]database, 0, len(masters)+len(slaves))
+	for index, db := range masters {
+		databases = append(databases, database{role: "master", index: index, db: db})
+	}
+	for index, db := range slaves {
+		databases = append(databases, database{role: "slave", index: index, db: db})
+	}
+	return databases
 }
 
 func (c *DBChecker) ping(ctx context.Context, db *sqlx.DB) error {
 	ctx, cancel := context.WithTimeoutCause(ctx, c.timeout, ErrPingTimeout)
 	defer cancel()
 
-	return db.PingContext(ctx)
+	err := db.PingContext(ctx)
+	if err != nil && ctx.Err() != nil {
+		return context.Cause(ctx)
+	}
+
+	return err
 }
