@@ -25,6 +25,11 @@ func TestConfigRejectsNegativeDurations(t *testing.T) {
 	}
 }
 
+func TestConfigRejectsAttemptsAboveMax(t *testing.T) {
+	require.NoError(t, test.Validator.Struct(&retry.Config{Attempts: retry.MaxAttempts}))
+	require.Error(t, test.Validator.Struct(&retry.Config{Attempts: retry.MaxAttempts + 1}))
+}
+
 func TestConfigGetTimeout(t *testing.T) {
 	tests := []struct {
 		cfg  *retry.Config
@@ -74,6 +79,7 @@ func TestConfigMaxAttempts(t *testing.T) {
 		{name: "zero", want: 0},
 		{name: "one", attempts: 1, want: 1},
 		{name: "three", attempts: 3, want: 3},
+		{name: "above max", attempts: retry.MaxAttempts + 1, want: retry.MaxAttempts},
 	}
 
 	for _, tt := range tests {
@@ -100,6 +106,7 @@ func TestConfigMaxRetries(t *testing.T) {
 		{name: "one", attempts: 1, want: 0},
 		{name: "two", attempts: 2, want: 1},
 		{name: "three", attempts: 3, want: 2},
+		{name: "above max", attempts: retry.MaxAttempts + 1, want: retry.MaxAttempts - 1},
 	}
 
 	for _, tt := range tests {

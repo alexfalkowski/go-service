@@ -48,6 +48,23 @@ func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsZero(t *testing.T) {
 	require.Equal(t, 1, calls)
 }
 
+func TestUnaryClientInterceptorClampsAttemptsAboveMax(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(&config.Config{
+		Attempts: config.MaxAttempts + 1,
+		Timeout:  time.Second,
+		Backoff:  time.Nanosecond,
+	})
+
+	calls := 0
+	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.Unavailable, "unavailable")
+	})
+
+	require.Error(t, err)
+	require.Equal(t, int(config.MaxAttempts), calls)
+}
+
 func TestUnaryClientInterceptorRetriesSafeMethodWhenAttemptsIsTwo(t *testing.T) {
 	interceptor := retry.UnaryClientInterceptor(&config.Config{
 		Attempts: 2,
