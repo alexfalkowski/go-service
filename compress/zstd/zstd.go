@@ -70,7 +70,7 @@ func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {
 
 	decoded, _, err := io.ReadAll(io.LimitReader(decoder, limit+1))
 	if err != nil {
-		if errors.Is(err, ErrDecoderSizeExceeded) || errors.Is(err, zstd.ErrWindowSizeExceeded) {
+		if errors.Is(err, ErrDecoderSizeExceeded) {
 			return nil, fmt.Errorf("%w: %w", compress.ErrTooLarge, err)
 		}
 

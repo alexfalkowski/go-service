@@ -2,7 +2,8 @@ package s2
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/compress/errors"
+	compress "github.com/alexfalkowski/go-service/v2/compress/errors"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/klauspost/compress/s2"
 )
 
@@ -23,10 +24,10 @@ type Compressor struct{}
 // An error is returned if data exceeds size.
 func (c *Compressor) Compress(data []byte, size bytes.Size) ([]byte, error) {
 	if int64(len(data)) > size.Bytes() {
-		return nil, errors.ErrTooLarge
+		return nil, compress.ErrTooLarge
 	}
 	if s2.MaxEncodedLen(len(data)) < 0 {
-		return nil, errors.ErrTooLarge
+		return nil, compress.ErrTooLarge
 	}
 
 	return s2.Encode(nil, data), nil
@@ -38,10 +39,14 @@ func (c *Compressor) Compress(data []byte, size bytes.Size) ([]byte, error) {
 func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {
 	decodedLen, err := s2.DecodedLen(data)
 	if err != nil {
+		if errors.Is(err, s2.ErrTooLarge) {
+			return nil, compress.ErrTooLarge
+		}
+
 		return nil, err
 	}
 	if int64(decodedLen) > size.Bytes() {
-		return nil, errors.ErrTooLarge
+		return nil, compress.ErrTooLarge
 	}
 
 	return s2.Decode(nil, data)
