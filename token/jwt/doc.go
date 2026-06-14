@@ -47,13 +47,16 @@
 // # Verification semantics and errors
 //
 // Verify validates a token for a given audience and returns the subject (sub) on success.
-// Verification enforces, in order:
+// Verification enforces:
 //
 //   - The signature algorithm is EdDSA.
 //   - The "kid" header exists and selects a configured verification key.
 //   - The issuer claim matches the configured Issuer.
 //   - The audience claim contains the expected audience.
 //   - Registered claim validity (exp/nbf/iat) using [github.com/golang-jwt/jwt/v4.RegisteredClaims.Valid].
+//
+// Upstream parsing, signature validation, and registered-claim validation can fail before
+// later go-service issuer, audience, and lifetime checks run.
 //
 // On failures, this package may return sentinel errors from token/errors for common
 // classes of validation issues (for example ErrInvalidAlgorithm, ErrInvalidKeyID,

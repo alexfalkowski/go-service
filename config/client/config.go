@@ -46,6 +46,9 @@ func (c *Config) IsEnabled() bool {
 
 // NewConfig constructs a client-side runtime TLS config from cfg.
 //
+// If cfg is nil or empty, NewConfig returns a TLS 1.2-or-newer config without
+// configured certificates, root CAs, or server name override.
+//
 // It uses CA as RootCAs and uses any configured certificate/key pair as the
 // client certificate presented to servers that request one. If ServerName is
 // configured, it is copied into the runtime TLS config for server certificate

@@ -71,6 +71,7 @@ type KeyMap map[string]KeyFunc
 //
 // Notes:
 //   - cfg.Interval is used directly as a typed duration decoded from config.
+//     The underlying in-memory store applies its default 1s interval when cfg.Interval is 0.
 //   - The underlying store constructor currently does not return an error (it is ignored).
 func NewLimiter(lc di.Lifecycle, keyMap KeyMap, cfg *Config) (*Limiter, error) {
 	if !cfg.IsEnabled() {

@@ -67,6 +67,17 @@ func main() {
 }
 ```
 
+The `file:./config.yml` default above expects a non-empty config file. A minimal
+server config can start with the environment plus one enabled transport:
+
+```yaml
+environment: development
+transport:
+  http:
+    address: tcp://localhost:8000
+    timeout: 10s
+```
+
 Use `app.RunCode(context.Background())` from `main` when exiting the process. It
 returns `os.ExitCodeSuccess` on success, returns a requested non-zero shutdown
 exit code such as `os.ExitCodeServeFailure`, and returns `os.ExitCodeFailure`
@@ -313,7 +324,8 @@ feature:
 ```
 
 > [!NOTE]
-> - Presence enables the feature subsystem configuration-wise, but this repository does not construct a built-in OpenFeature provider from this config.
+> - `feature.Config` embeds client config; `IsEnabled` is true only when both the feature config and embedded client config are present. An empty `feature:` block is treated as disabled by feature config helpers.
+> - This repository does not construct a built-in OpenFeature provider from this config.
 > - Services that need a remote or custom provider should use `feature.Config` in their own provider constructor and provide the resulting `openfeature.FeatureProvider` in DI; `feature.Module` registers that supplied provider with the OpenFeature SDK lifecycle.
 
 ---
@@ -357,6 +369,9 @@ Config:
 id:
   kind: uuid
 ```
+
+> [!NOTE]
+> ID generators produce operational identifiers such as request ids, webhook ids, and token `jti` values. They are not a secret-material API and should not be used as passwords, bearer tokens, or other credentials. A nil `id` config selects `uuid`; sortable kinds such as `ksuid`, `ulid`, and `xid` expose ordering characteristics.
 
 ---
 
@@ -453,6 +468,9 @@ Supported built-in logger kinds:
 - `tint`
 - `otlp`
 
+Supported logger levels are `debug`, `info`, `warn`, and `error`. When `level`
+is unset, logging defaults to `info`; unknown values fail logger construction.
+
 #### JSON logger
 
 ```yaml
@@ -489,6 +507,8 @@ telemetry:
 
 > [!WARNING]
 > OTLP exporters reject non-loopback `http://` endpoints when headers are configured. Use HTTPS for remote collectors that require authorization headers; cleartext with headers is accepted only for local loopback endpoints.
+>
+> OTLP exporter endpoints must be set in go-service config fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and `telemetry.tracer.url`. Standard OpenTelemetry endpoint environment variables such as `OTEL_EXPORTER_OTLP_ENDPOINT` are not used as fallback sources.
 
 ### Metrics
 
@@ -701,6 +721,7 @@ transport:
 
 > [!NOTE]
 > - `interval` is parsed as a Go duration string. Invalid values can fail fast.
+> - `tokens` and `interval` use the underlying in-memory store defaults when set to zero: `1` token per `1s`. Configure positive values for explicit quotas.
 > - `max_keys` caps the number of caller-derived keys that receive independent in-memory buckets. A zero value uses the default `4096`; additional distinct keys share one overflow bucket.
 > - The built-in limiter is an in-memory, per-process safeguard. Use it as a last resort and prefer an external edge, gateway, ingress, load balancer, or service-mesh limiter for production abuse protection.
 > - The `user-id` key uses the verified principal stored in metadata. For JWT/PASETO tokens this is the subject claim; for SSH tokens this is the verified key name. Prefer it when authenticated identity is available.
@@ -870,6 +891,9 @@ Set `ca` on server TLS config to require and verify client certificates for mTLS
 config to verify server certificates issued by the same local or private CA. `server_name` is only needed
 on clients when the dial address differs from the certificate DNS name.
 
+Server-side TLS requires a complete `cert` and `key` pair whenever TLS material is configured. `ca` enables
+client-certificate verification for mTLS, but a CA-only server TLS config fails startup.
+
 > [!IMPORTANT]
 > If you are using `go-service-template` or composing server transport bundles such as `module.Server` or `transport.Module`, the required transport registration is handled for you by DI.
 >
@@ -905,6 +929,38 @@ The transport client wrappers include optional circuit breakers:
   - Scope is per `fullMethod`.
   - Default failure codes are `Unavailable`, `DeadlineExceeded`, `ResourceExhausted`, and `Internal`.
   - Errors with other gRPC codes are treated as successful for breaker accounting.
+
+### Client retries
+
+HTTP and gRPC client retry config uses the shared `transport/retry.Config` shape. Config types that embed
+`config/client.Config`, such as `feature.Config`, use the `retry` block under that client config:
+
+```yaml
+feature:
+  address: localhost:9000
+  retry:
+    timeout: 1s
+    backoff: 100ms
+    attempts: 3
+```
+
+When manually constructing HTTP or gRPC clients, pass the decoded retry config to
+`transport/http.WithClientRetry(...)` or `transport/grpc.WithClientRetry(...)`.
+
+`attempts` is the total number of attempts, including the initial call. A value
+of `0` or `1` means no retry beyond the first attempt; values above `10` are
+rejected during config validation.
+
+Default retry policy is intentionally conservative:
+
+- HTTP retries side-effect-safe methods (`GET`, `HEAD`, `OPTIONS`) or requests with a `Request-Id`.
+- HTTP retries response/status failures only for `429 Too Many Requests` and `503 Service Unavailable`, plus selected transport errors classified by `retryablehttp.DefaultRetryPolicy`.
+- gRPC retries AIP-style read methods named `Get*` or `List*`, or calls with a `Request-Id`.
+- gRPC retries only `Unavailable` by default.
+
+`Request-Id` identifies the logical request, not an individual wire attempt.
+Services that allow retried writes should treat it as the idempotency key and
+deduplicate repeated attempts when duplicate processing would be unsafe.
 
 ---
 
@@ -962,6 +1018,10 @@ debug:
     ca: file:test/certs/rootCA.pem
 ```
 
+Debug TLS uses the same server-side TLS contract as transports: `cert` and `key`
+are required whenever TLS material is configured, and `ca` adds client-certificate
+verification for mTLS.
+
 All debug endpoints are namespaced by service name: `/<name>/debug/...`.
 
 > [!WARNING]
@@ -1015,9 +1075,16 @@ Exported Go identifiers should have GoDoc comments, and each comment should star
 
 ### Development Dependencies
 
-For local TLS fixtures:
+Common repository targets expect these tools on `PATH`:
 
-- <https://github.com/FiloSottile/mkcert>
+- `make`
+- `gotestsum` for `make specs`
+- `fieldalignment` for `make lint`
+- `golangci-lint` for full `make lint` coverage (the wrapper no-ops when it is missing)
+- `govulncheck` and `trivy` for `make sec`
+- `mkcert` for local TLS fixtures and `make create-certs`
+- `buf` for `make generate`
+- `goda` and Graphviz `dot` for `make diagrams`
 
 ### Setup (repo)
 
@@ -1056,6 +1123,10 @@ make dep
 Tests are run with `-mod vendor`, so after dependency changes run `make dep` before `make specs`.
 
 ### Local integration dependencies
+
+`make start` uses the shared Docker-based environment from the sibling
+`../docker` repo. It requires Docker and may require GitHub SSH access if that
+sibling repo must be fetched.
 
 Start required services:
 

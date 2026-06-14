@@ -76,6 +76,9 @@ func (c *Config) GetTimeout() time.Duration {
 
 // NewConfig constructs a server-side runtime TLS config from cfg.
 //
+// If cfg is nil or empty, NewConfig returns a TLS 1.2-or-newer config that does
+// not request client certificates.
+//
 // If cfg has a CA configured, NewConfig uses it as ClientCAs and sets
 // ClientAuth to [tls.RequireAndVerifyClientCert]. Without CA, the server config
 // does not request client certificates.

@@ -26,7 +26,8 @@ type Client struct {
 	Lifecycle di.Lifecycle
 	// Logger logs client activity.
 	Logger *logger.Logger
-	// Tracer configures client tracing.
+	// Tracer is retained for world configuration symmetry. Client tracing follows
+	// the globally registered telemetry providers.
 	Tracer *tracer.Config
 	// Transport configures HTTP and gRPC client targets.
 	Transport *transport.Config
@@ -51,7 +52,7 @@ type Client struct {
 }
 
 // NewHTTP returns an HTTP client configured with the world's logger, retry policy,
-// token generator, limiter, tracing, and optional compression.
+// token generator, limiter, and optional compression.
 func (c *Client) NewHTTP(os ...httpbreaker.Option) (*http.Client, error) {
 	opts := []http.ClientOption{
 		http.WithClientLogger(c.Logger),
@@ -74,7 +75,7 @@ func (c *Client) NewHTTP(os ...httpbreaker.Option) (*http.Client, error) {
 }
 
 // NewGRPC returns a gRPC client connection configured with the world's interceptors,
-// retry policy, token generator, limiter, tracing, and optional compression.
+// retry policy, token generator, limiter, and optional compression.
 func (c *Client) NewGRPC(os ...grpcbreaker.Option) (*grpc.ClientConn, error) {
 	opts := []grpc.ClientOption{
 		grpc.WithClientUnaryInterceptors(),
