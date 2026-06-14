@@ -20,23 +20,40 @@ import (
 
 // Server bundles the dependencies required to build HTTP, gRPC, and debug servers for tests.
 type Server struct {
-	Lifecycle       di.Lifecycle
-	Meter           metrics.Meter
-	Verifier        token.Verifier
-	Mux             *http.ServeMux
-	HTTPServer      *http.Server
-	GRPCServer      *grpc.Server
-	DebugServer     *debug.Server
+	// Lifecycle receives server start and stop hooks.
+	Lifecycle di.Lifecycle
+	// Meter provides metrics instrumentation for servers.
+	Meter metrics.Meter
+	// Verifier verifies inbound transport tokens.
+	Verifier token.Verifier
+	// Mux holds HTTP routes registered by tests.
+	Mux *http.ServeMux
+	// HTTPServer is populated when RegisterHTTP is true.
+	HTTPServer *http.Server
+	// GRPCServer is populated when RegisterGRPC is true.
+	GRPCServer *grpc.Server
+	// DebugServer is populated when RegisterDebug is true.
+	DebugServer *debug.Server
+	// TransportConfig configures HTTP and gRPC servers.
 	TransportConfig *transport.Config
-	DebugConfig     *debug.Config
-	Tracer          *tracer.Config
-	GRPCLimiter     *grpclimiter.Server
-	HTTPLimiter     *httplimiter.Server
-	Logger          *logger.Logger
-	Generator       id.Generator
-	RegisterHTTP    bool
-	RegisterGRPC    bool
-	RegisterDebug   bool
+	// DebugConfig configures the debug server.
+	DebugConfig *debug.Config
+	// Tracer configures server tracing.
+	Tracer *tracer.Config
+	// GRPCLimiter limits inbound gRPC requests.
+	GRPCLimiter *grpclimiter.Server
+	// HTTPLimiter limits inbound HTTP requests.
+	HTTPLimiter *httplimiter.Server
+	// Logger logs server activity.
+	Logger *logger.Logger
+	// Generator generates request identifiers.
+	Generator id.Generator
+	// RegisterHTTP enables HTTP server construction.
+	RegisterHTTP bool
+	// RegisterGRPC enables gRPC server construction.
+	RegisterGRPC bool
+	// RegisterDebug enables debug server construction.
+	RegisterDebug bool
 }
 
 // Register constructs and registers the enabled servers with the lifecycle.

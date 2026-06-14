@@ -15,14 +15,14 @@ const (
 	tokenVersion   = "v1"
 )
 
-// Signer is an alias for [golang.org/x/crypto/ssh.Signer].
+// Signer is an alias for [github.com/alexfalkowski/go-service/v2/crypto/ssh.Signer].
 //
-// It represents an object capable of producing signatures using SSH key material.
+// It represents a go-service SSH signer capable of producing signatures using SSH key material.
 type Signer = ssh.Signer
 
-// Verifier is an alias for [golang.org/x/crypto/ssh.Verifier].
+// Verifier is an alias for [github.com/alexfalkowski/go-service/v2/crypto/ssh.Verifier].
 //
-// It represents an object capable of verifying signatures produced by an SSH signer.
+// It represents a go-service SSH verifier capable of verifying signatures produced by an SSH signer.
 type Verifier = ssh.Verifier
 
 // NewToken constructs a Token using cfg and fs.
@@ -145,7 +145,8 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //     class to avoid leaking whether a given key name exists.
 //   - If a matching key name exists but its verification config is missing/partial,
 //     Verify returns token/errors.ErrInvalidConfig.
-//   - Base64 decode errors and verifier loading errors are returned as-is.
+//   - Claim base64 decode errors are collapsed to crypto/errors.ErrInvalidMatch. Signature base64 decode
+//     errors and verifier loading errors are returned as-is.
 //
 // On success, Verify returns the extracted subject. For SSH tokens this subject
 // must match the signed key id. On failure, it always

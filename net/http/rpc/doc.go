@@ -13,10 +13,10 @@
 // "POST /greet.v1.Greeter/SayHello".
 //
 // Handlers are constructed using [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler], which:
-//   - selects an encoder based on the request Content-Type, falling back to the first Accept media type when
-//     Content-Type is absent,
-//   - decodes the request body into a request model, and
-//   - encodes the response model using the negotiated media type.
+//   - decodes the request body into a request model from Content-Type, falling back to JSON when
+//     Content-Type is absent or unknown, and
+//   - encodes the response model using the negotiated media type, falling back to the first Accept media type
+//     when Content-Type is absent.
 //
 // Errors are written using net/http/status helpers.
 //

@@ -31,9 +31,9 @@ func NewHandler(cont *content.Content) http.HandlerFunc {
 
 // Response is the response body returned by the psutil debug endpoint.
 //
-// All fields are optional and may be nil if collection failed or if the platform does not support the underlying
-// metric. Fields are tagged for common config/encoding formats (YAML/JSON/TOML) to support standard response
-// encoders used in go-service.
+// NewHandler always populates the top-level sections. Nested values may still be nil, empty, or partially
+// populated if collection failed or if the platform does not support the underlying metric. Fields are tagged
+// for common config/encoding formats (YAML/JSON/TOML) to support standard response encoders used in go-service.
 type Response struct {
 	// CPU contains CPU information and time statistics.
 	CPU *CPU `yaml:"cpu,omitempty" json:"cpu,omitempty" toml:"cpu,omitempty"`

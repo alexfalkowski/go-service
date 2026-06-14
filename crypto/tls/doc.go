@@ -4,7 +4,7 @@
 // This package is the low-level runtime TLS surface for the repository. It
 // intentionally preserves standard library semantics while allowing internal
 // packages to depend on a go-service import path instead of importing
-// [github.com/alexfalkowski/go-service/v2/crypto/tls] directly.
+// [crypto/tls] directly.
 //
 // Use this package when code needs runtime TLS values such as *[tls.Config],
 // parsed certificates, protocol-version constants, or helpers such as

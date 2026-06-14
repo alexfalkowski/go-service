@@ -24,7 +24,7 @@ import (
 // Library provides a baseline Fx module intended for reuse by both servers and clients.
 //
 // It wires common, transport-agnostic dependencies that many subsystems build upon:
-//   - [env.Module] (service identity values like name/version/id, user agent, etc.)
+//   - [env.Module] (ID/UserAgent/UserID constructors; Name and Version are supplied by CLI wiring or custom callers)
 //   - [compress.Module] (compression registry and default codecs)
 //   - [encoding.Module] (encoding registry and default encoders)
 //   - [crypto.Module] (crypto primitives and helpers)

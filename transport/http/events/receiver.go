@@ -37,7 +37,9 @@ func NewReceiver(mux *http.ServeMux, hook *hooks.Webhook) *Receiver {
 //
 // Middleware:
 // The receive handler is wrapped with the configured webhook hook handler, which typically verifies request
-// signatures before allowing events through.
+// signatures before allowing events through. When a webhook hook is configured, the handler supports
+// structured HTTP encoding only; binary-mode CloudEvents with ce-* headers are rejected before signature
+// verification.
 func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverFunc) {
 	handler := events.NewReceiveHandler(ctx, receiver)
 	handler = hooks.NewHandler(r.hook, handler)

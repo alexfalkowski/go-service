@@ -191,6 +191,10 @@ type RoundTripper struct {
 // Disabled behavior:
 // If the configured hook is nil, RoundTrip delegates directly to the underlying RoundTripper without
 // mutating the request.
+//
+// Redirect behavior:
+// If the request is a cross-origin redirect, RoundTrip returns [http.ErrUseLastResponse] without signing
+// the redirected request.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	return http.ClosingRoundTripper(r.roundTrip).RoundTrip(req)
 }

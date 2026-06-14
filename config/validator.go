@@ -12,6 +12,10 @@ import (
 // It enables required-struct validation ([validator.WithRequiredStructEnabled]), which causes validation
 // tags like `required` to be applied to nested struct fields in a more strict/consistent way.
 //
+// It also registers repository-owned validation tags:
+//   - `config_size`: accepts integer-like byte sizes between 0 and [bytes.MaxConfigSize].
+//   - `duration_second_precision`: accepts positive durations that are exact multiples of one second.
+//
 // This constructor is typically wired via [Module] and consumed by `NewConfig[T]` to validate
 // decoded configuration before returning it to the caller.
 func NewValidator() *Validator {

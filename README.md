@@ -735,7 +735,7 @@ Supported stacks include:
 
 ### HTTP content types
 
-The HTTP REST and RPC helpers resolve encoders from the request `Content-Type`, falling back to the first `Accept` media type when `Content-Type` is absent.
+The HTTP REST and RPC helpers decode request bodies from the request `Content-Type`, falling back to JSON when `Content-Type` is absent or unknown. Response encoding uses the negotiated media type, falling back to the first `Accept` media type when `Content-Type` is absent.
 
 Built-in text/object payload media types include:
 

@@ -88,6 +88,11 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 // Exhaustion behavior:
 //   - If retries are exhausted after retryable HTTP responses, the final retryable response is returned.
 //   - If retries are exhausted after retryable transport errors, the original transport error is returned.
+//
+// Retry-After behavior:
+// Valid Retry-After seconds values or HTTP-date values greater than the configured backoff suppress the
+// retry and return the current response to the caller. Invalid, absent, elapsed, or smaller Retry-After
+// values do not suppress a retry.
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *RoundTripper {
 	return &RoundTripper{
 		RoundTripper: hrt,

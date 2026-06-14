@@ -157,6 +157,8 @@ type RoundTripper struct {
 // Failure behavior:
 //   - If token generation fails, it returns an unauthorized status error.
 //   - If token generation returns an empty token, it returns an unauthorized status error with [header.ErrInvalidAuthorization].
+//   - If the request is a cross-origin redirect, it returns [http.ErrUseLastResponse] without forwarding
+//     credentials to the redirected origin.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	return http.ClosingRoundTripper(r.roundTrip).RoundTrip(req)
 }

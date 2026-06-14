@@ -25,6 +25,9 @@ type Webhook = hooks.Webhook
 // Replay protection is intentionally left to the wrapped handler; use the Webhook-Id or CloudEvent id to
 // deduplicate or process idempotently when duplicate valid deliveries would be unsafe.
 //
+// Webhook-protected CloudEvents must use structured HTTP encoding. Binary-mode CloudEvents that carry
+// ce-* headers are rejected with [ErrBinaryEncoding] before signature verification.
+//
 // If hook is nil, the returned handler behaves as a pass-through wrapper.
 func NewHandler(hook *Webhook, handler http.Handler) *Handler {
 	if hook == nil {
@@ -50,6 +53,10 @@ type Handler struct {
 // Replay protection:
 // The underlying middleware verifies the signature and timestamp but does not persist seen webhook ids. The
 // wrapped handler is responsible for idempotency or deduplication.
+//
+// Encoding:
+// Binary-mode CloudEvents that carry ce-* headers are rejected with [ErrBinaryEncoding] before signature
+// verification. Use structured HTTP encoding for webhook-protected CloudEvents.
 //
 // Disabled behavior:
 // If the inner webhook handler is nil, ServeHTTP delegates directly to the wrapped handler.

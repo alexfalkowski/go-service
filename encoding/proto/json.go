@@ -45,7 +45,7 @@ func (e *JSON) Encode(w io.Writer, v any) error {
 // [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType] without reading from r.
 //
 // Decode otherwise reads all remaining bytes from r (via [io.ReadAll]) before
-// unmarshaling.
+// unmarshaling. Unknown protobuf JSON fields are discarded during unmarshal.
 //
 // Any read error from [io.ReadAll] and any unmarshal error from [protojson.UnmarshalOptions.Unmarshal] is returned.
 func (e *JSON) Decode(r io.Reader, v any) error {

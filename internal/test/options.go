@@ -119,7 +119,10 @@ func WithWorldCompression() WorldOption {
 	})
 }
 
-// WithWorldTransportConfig enables the transport servers with an explicit config override.
+// WithWorldTransportConfig overrides the world's transport config.
+//
+// Pair this with [WithWorldHTTP] or [WithWorldGRPC] when the test needs the corresponding transport
+// server registered.
 func WithWorldTransportConfig(config *transport.Config) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.transport = config

@@ -22,19 +22,32 @@ import (
 
 // Client bundles the dependencies needed to construct instrumented HTTP and gRPC clients for tests.
 type Client struct {
-	Lifecycle    di.Lifecycle
-	Logger       *logger.Logger
-	Tracer       *tracer.Config
-	Transport    *transport.Config
-	TLS          *tls.Config
-	ID           id.Generator
+	// Lifecycle receives client-related lifecycle hooks.
+	Lifecycle di.Lifecycle
+	// Logger logs client activity.
+	Logger *logger.Logger
+	// Tracer configures client tracing.
+	Tracer *tracer.Config
+	// Transport configures HTTP and gRPC client targets.
+	Transport *transport.Config
+	// TLS configures client TLS.
+	TLS *tls.Config
+	// ID generates request identifiers.
+	ID id.Generator
+	// RoundTripper is the base HTTP transport for world clients.
 	RoundTripper http.RoundTripper
-	Meter        metrics.Meter
-	Generator    token.Generator
-	Retry        *retry.Config
-	HTTPLimiter  *httplimiter.Client
-	GRPCLimiter  *grpclimiter.Client
-	Compression  bool
+	// Meter provides metrics instrumentation for clients.
+	Meter metrics.Meter
+	// Generator generates outbound transport tokens.
+	Generator token.Generator
+	// Retry configures client retries.
+	Retry *retry.Config
+	// HTTPLimiter limits outbound HTTP requests.
+	HTTPLimiter *httplimiter.Client
+	// GRPCLimiter limits outbound gRPC requests.
+	GRPCLimiter *grpclimiter.Client
+	// Compression enables transport compression for world clients.
+	Compression bool
 }
 
 // NewHTTP returns an HTTP client configured with the world's logger, retry policy,

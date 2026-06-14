@@ -14,7 +14,7 @@ import (
 //   - Issuer: the expected issuer ("iss") value
 //   - Expiration: how long issued tokens should be valid
 //
-// # Expiration parsing and panics
+// # Expiration parsing and validation
 //
 // Token issuance uses Expiration directly. In config files it is encoded using the standard
 // Go duration string format, so invalid values fail during decoding. Expiration

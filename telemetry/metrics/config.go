@@ -29,7 +29,8 @@ type Config struct {
 	// URL is the destination endpoint for the selected Kind, when applicable.
 	//
 	// For "otlp", this is the required OTLP/HTTP metrics endpoint URL. It must be a
-	// valid HTTP URL.
+	// valid HTTP URL. Standard OpenTelemetry endpoint environment variables are not used as fallbacks;
+	// configure this value explicitly through go-service config.
 	//
 	// For "prometheus", URL is typically ignored by the exporter/reader implementation.
 	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty" validate:"omitempty,http_url"`

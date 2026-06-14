@@ -125,7 +125,7 @@ type LoggerParams struct {
 // NewLogger constructs the configured slog logger, installs it as the
 // process-wide default, and returns a wrapper with go-service logging helpers.
 //
-// When [CacheParams.Config] is nil, logging is disabled and NewLogger returns (nil,
+// When [LoggerParams.Config] is nil, logging is disabled and NewLogger returns (nil,
 // nil).
 //
 // When logging is enabled, NewLogger validates [Config.Level], builds the

@@ -14,10 +14,10 @@
 //
 // The handlers are constructed using [github.com/alexfalkowski/go-service/v2/net/http/content.NewHandler]
 // and [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler], which:
-//   - select an encoder based on the request Content-Type, falling back to the first Accept media type when
-//     Content-Type is absent,
-//   - decode request bodies (where applicable), and
-//   - encode responses using the negotiated media type.
+//   - decode request bodies (where applicable) from Content-Type, falling back to JSON when
+//     Content-Type is absent or unknown, and
+//   - encode responses using the negotiated media type, falling back to the first Accept media type
+//     when Content-Type is absent.
 //
 // Errors are written using net/http/status helpers.
 //
