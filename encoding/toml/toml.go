@@ -20,7 +20,7 @@ func NewEncoder() *Encoder {
 
 // Encoder implements TOML encoding and decoding.
 //
-// It uses BurntSushi/toml with default settings.
+// It uses BurntSushi/toml and rejects undecoded keys.
 type Encoder struct{}
 
 // Encode writes v to w as TOML.

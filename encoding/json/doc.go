@@ -4,11 +4,12 @@
 //
 //   - it exposes [Encoder], a thin adapter that satisfies the repository's
 //     generic encoding abstraction while using readable indented encoding and
-//     standard library decoding
+//     strict standard library decoding
 //   - it re-exports common JSON helpers and types from the standard library so
 //     packages in this repository can depend on a single go-service JSON import
 //     path instead of importing encoding/json directly
 //
-// All marshaling and unmarshaling semantics remain those of the standard
-// library's encoding/json package.
+// Marshal and Valid preserve the standard library's encoding/json semantics.
+// Encoder and Unmarshal use the standard decoder with unknown fields and
+// trailing values rejected.
 package json
