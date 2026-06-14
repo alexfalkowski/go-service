@@ -13,8 +13,8 @@ import (
 //
 // The registration is performed via [github.com/alexfalkowski/go-service/v2/database/sql/driver.Register], which wraps
 // the underlying driver with OpenTelemetry instrumentation via
-// [github.com/alexfalkowski/go-service/v2/database/sql/telemetry]. The returned error from registration is
-// intentionally ignored.
+// [github.com/alexfalkowski/go-service/v2/database/sql/telemetry] when tracing or metrics are enabled.
+// The returned error from registration is intentionally ignored.
 //
 // Register is typically called during process initialization via DI wiring (see [Module]).
 func Register() {
@@ -27,8 +27,9 @@ func Register() {
 //
 // Enabled behavior: Connect delegates to the shared SQL driver helper to:
 //   - resolve master and replica DSNs (expressed as go-service "source strings"),
+//   - require at least one non-empty master or replica DSN,
 //   - connect using the previously registered driver name "pg",
-//   - register OpenTelemetry DB stats metrics, and
+//   - register OpenTelemetry DB stats metrics when metrics are enabled, and
 //   - apply connection pool limits/lifetime.
 //
 // The returned type wraps the upstream master/slave pool collection and is

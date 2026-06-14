@@ -72,9 +72,11 @@
 //
 // This scheme authenticates possession of a key (via signature verification) and binds
 // that to a logical subject/key id, audience, and validity window. It does not provide
-// nonce/jti replay protection for repeated calls to the same audience inside the
-// validity window. If your use case requires one-time-use tokens, prefer JWT or
-// PASETO token kinds with jti tracking or layer additional checks at a higher level.
+// replay protection for repeated calls to the same audience inside the validity
+// window. JWT and PASETO tokens include generated jti values that callers can
+// store and check, but this repository does not maintain replay state for any
+// token kind. If your use case requires one-time-use tokens, add durable
+// caller-owned replay tracking at a higher level.
 //
 // # Relationship to the top-level token facade
 //

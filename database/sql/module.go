@@ -14,8 +14,9 @@ import (
 // At present it includes only PostgreSQL support via [github.com/alexfalkowski/go-service/v2/database/sql/pg.Module], but the module shape
 // is intentionally extensible for additional SQL drivers in the future.
 //
-// Driver-specific constructors read DSNs/pool settings from config, open master/slave pools, register
-// OpenTelemetry instrumentation/metrics, and attach lifecycle hooks that close pools on shutdown.
+// Driver-specific constructors read DSNs/pool settings from config, open master/slave pools, install
+// OpenTelemetry driver instrumentation when tracing or metrics are enabled, register DB stats metrics
+// when metrics are enabled, and attach lifecycle hooks that close pools on shutdown.
 var Module = di.Module(
 	pg.Module,
 )

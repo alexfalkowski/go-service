@@ -26,7 +26,8 @@
 // # Master/slave pools and telemetry
 //
 // Driver integrations typically open master/slave connection pools, configure pool limits/lifetimes,
-// and register OpenTelemetry instrumentation/metrics for [database/sql] connections.
+// wrap drivers with OpenTelemetry instrumentation when tracing or metrics are enabled, and register
+// [database/sql] stats metrics when metrics are enabled.
 //
 // Start with [Module] and [Config].
 package sql
