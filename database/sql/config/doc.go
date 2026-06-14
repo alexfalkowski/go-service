@@ -18,5 +18,7 @@
 //   - "file:/path/to/dsn" to read from a file, or
 //   - any other value treated as a literal DSN.
 //
+// Enabled SQL configurations must provide at least one master or slave DSN, and each resolved DSN must be non-empty.
+//
 // Start with [Config] and [DSN].
 package config

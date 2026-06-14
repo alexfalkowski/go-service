@@ -134,7 +134,7 @@ Config input is routed by flags called `-config` and `-c`:
 
   HJSON works the same way, for example `hjson:<base64-content>`.
 
-  The repository helper `make kind=status encode-config` uses GNU `base64 -w 0`; on macOS/BSD, use `base64 | tr -d '\n'` for the equivalent single-line payload.
+  The repository helper `make kind=configs/config encode-config` uses GNU `base64 -w 0`; on macOS/BSD, use `base64 | tr -d '\n'` for the equivalent single-line payload.
 
 - Otherwise (no `file:`/`env:` prefix), the decoder falls back to **default lookup**, searching for:
 
@@ -367,7 +367,7 @@ Postgres config embeds common pool + DSN config (`database/sql/config.Config`), 
 
 `module.Server` and `module.Client` both include `sql.Module`, which currently wires PostgreSQL support via `database/sql/pg.Module`.
 
-Enablement is presence-based: a nil `sql` block or a nil `sql.pg` block disables SQL wiring. When enabled, the pgx stdlib driver is registered under the name `pg`, master/slave DSNs are resolved using the source-string rules described above, OpenTelemetry `database/sql` stats metrics are registered, and the resulting pools are closed on lifecycle stop.
+Enablement is presence-based: a nil `sql` block or a nil `sql.pg` block disables SQL wiring. When enabled, the pgx stdlib driver is registered under the name `pg`, and master/slave DSNs are resolved using the source-string rules described above. Enabled PostgreSQL config must provide at least one non-empty `masters[].url` or `slaves[].url`. Driver instrumentation is installed when tracing or metrics are enabled, OpenTelemetry `database/sql` stats metrics are registered when metrics are enabled, and the resulting pools are closed on lifecycle stop.
 
 Example (with source strings for DSNs):
 

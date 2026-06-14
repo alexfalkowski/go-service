@@ -51,7 +51,7 @@ type Application struct {
 //
 // The returned *[Command] embeds a *[flag.FlagSet]. The flag set is parsed before DI startup and is then
 // provided into the DI container so constructors can consume parsed flag values. Command names must be
-// unique across the application.
+// unique across the application. Duplicate command names panic with an error that wraps [ErrCommandRegistered].
 //
 // Execution semantics:
 //   - parse the command args into the command's FlagSet
@@ -99,7 +99,7 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 //
 // The returned *[Command] embeds a *[flag.FlagSet]. The flag set is parsed before DI startup and is then
 // provided into the DI container so constructors can consume parsed flag values. Command names must be
-// unique across the application.
+// unique across the application. Duplicate command names panic with an error that wraps [ErrCommandRegistered].
 //
 // Execution semantics:
 //   - parse the command args into the command's FlagSet

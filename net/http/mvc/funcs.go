@@ -28,6 +28,8 @@ type FunctionMapParams struct {
 }
 
 // NewFunctionMap builds a FunctionMap with common sprout registries enabled.
+//
+// It panics if any provided or built-in sprout registry cannot be added.
 // List of registries can be found at https://docs.atom.codes/sprout/registries/list-of-all-registries
 func NewFunctionMap(params FunctionMapParams) sprout.FunctionMap {
 	handler := sprout.New(sprout.WithLogger(params.Logger), sprout.WithSafeFuncs(true))

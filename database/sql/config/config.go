@@ -12,6 +12,7 @@ import (
 //
 // [Config.Masters] and [Config.Slaves] contain DSNs (connection strings) expressed as go-service "source strings"
 // (literal values, `file:` paths, or `env:` references) that are resolved by [os.FS.ReadSource].
+// Enabled SQL configurations must provide at least one master or slave DSN, and each resolved DSN must be non-empty.
 type Config struct {
 	// Masters is the set of primary (read-write) datasource DSNs.
 	//
