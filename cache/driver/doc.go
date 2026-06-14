@@ -27,6 +27,13 @@
 // If the configured kind is unknown, [NewDriver] returns
 // [github.com/alexfalkowski/go-service/v2/cache/driver/errors.ErrNotFound].
 //
+// # Flush behavior
+//
+// [Driver.Flush] is intentionally backend-specific. The built-in ttlcache
+// backend clears its in-process entries. The built-in Redis backend calls
+// Redis FLUSHDB, which clears the entire selected Redis database, including
+// keys not created by go-service cache key namespacing.
+//
 // # Errors
 //
 // Package [github.com/alexfalkowski/go-service/v2/cache/driver/errors] provides

@@ -62,6 +62,10 @@ func (m Map) Uint32(key string, fallback uint32) uint32 {
 //
 // The stored value must be a human-readable decimal size string accepted by [bytes.ParseSize], such
 // as "64B", "2MB", or "4GB".
+//
+// Size only parses the option value. It does not enforce [bytes.MaxConfigSize];
+// typed config fields that require that cap use the config package's
+// `config_size` validation rule after decoding.
 func (m Map) Size(key string, fallback bytes.Size) bytes.Size {
 	if val, ok := m[key]; ok {
 		return bytes.MustParseSize(val)
@@ -73,7 +77,8 @@ func (m Map) Size(key string, fallback bytes.Size) bytes.Size {
 // IntSize returns a byte-size option as an int.
 //
 // It resolves the value with Size, so it panics if the option value cannot be
-// parsed as a size or if the resolved size overflows int.
+// parsed as a size or if the resolved size overflows int. It does not apply
+// [bytes.MaxConfigSize].
 func (m Map) IntSize(key string, fallback bytes.Size) int {
 	size := m.Size(key, fallback)
 	if size.Bytes() > math.MaxInt {
@@ -86,7 +91,8 @@ func (m Map) IntSize(key string, fallback bytes.Size) int {
 // Int32Size returns a byte-size option as an int32.
 //
 // It resolves the value with Size, so it panics if the option value cannot be
-// parsed as a size or if the resolved size overflows int32.
+// parsed as a size or if the resolved size overflows int32. It does not apply
+// [bytes.MaxConfigSize].
 func (m Map) Int32Size(key string, fallback bytes.Size) int32 {
 	size := m.Size(key, fallback)
 	if size.Bytes() > math.MaxInt32 {
@@ -100,7 +106,8 @@ func (m Map) Int32Size(key string, fallback bytes.Size) int32 {
 // Uint32Size returns a byte-size option as a uint32.
 //
 // It resolves the value with Size, so it panics if the option value cannot be
-// parsed as a size or if the resolved size overflows uint32.
+// parsed as a size or if the resolved size overflows uint32. It does not apply
+// [bytes.MaxConfigSize].
 func (m Map) Uint32Size(key string, fallback bytes.Size) uint32 {
 	size := m.Size(key, fallback)
 	if size.Bytes() > math.MaxUint32 {

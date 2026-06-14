@@ -62,7 +62,8 @@ func Background() Context {
 //
 // This is a thin wrapper around [context.Cause]. Cause returns nil until the context is canceled. When a
 // cause-aware API is used, Cause can expose a more specific diagnostic error while Err still reports the
-// standard cancellation sentinel.
+// standard cancellation sentinel. For a context returned by WithoutCancel, Cause always returns nil because
+// the detached context does not inherit cancellation from its parent.
 func Cause(ctx Context) error {
 	return context.Cause(ctx)
 }
@@ -120,7 +121,7 @@ func WithTimeoutCause(parent Context, timeout time.Duration, cause error) (Conte
 // WithoutCancel returns a copy of parent that is not canceled when parent is canceled.
 //
 // This is a thin wrapper around [context.WithoutCancel]. The returned context still exposes values from
-// parent, but it has no deadline, no Done channel, and Err always reports nil.
+// parent, but it has no deadline, no Done channel, Err always reports nil, and Cause always returns nil.
 func WithoutCancel(parent Context) Context {
 	return context.WithoutCancel(parent)
 }

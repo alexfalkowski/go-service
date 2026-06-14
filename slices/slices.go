@@ -11,6 +11,7 @@ import (
 //
 // Zero values are determined using [reflect.IsZero], which supports
 // non-comparable values such as slices, maps, funcs, and structs containing them.
+// Nil slices and maps are skipped; non-nil empty slices and maps are appended.
 //
 // This helper preserves the relative order of appended elements and returns the
 // resulting slice.

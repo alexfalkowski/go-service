@@ -12,7 +12,8 @@
 //   - telemetry/errors: OpenTelemetry error handler wiring so OTel SDK/internal
 //     errors are logged.
 //   - telemetry/header: helpers for exporter/request headers, including secret
-//     resolution via the go-service "source string" convention (env:/file:/literal).
+//     resolution via the go-service "source string" convention (env:NAME,
+//     file:<path>, or literal values).
 //   - telemetry/attributes: aliases/helpers for OpenTelemetry semantic convention attributes.
 //
 // This top-level package primarily provides:

@@ -45,6 +45,7 @@ type ServerParams struct {
 //
 // Enabled behavior:
 //   - constructs an HTTP server using the configured timeout and debug mux,
+//   - wraps the mux with the configured maximum inbound request-body size,
 //   - builds the net/http server config (address and optional TLS), and
 //   - wraps it in a managed service ("debug") that integrates with DI lifecycle/shutdown.
 //

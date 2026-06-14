@@ -141,7 +141,10 @@ func ServiceMethod(ctx context.Context) Value {
 
 // TransportServiceMethod returns the transport and service-method attributes as one value.
 //
-// The returned ignored value is formatted as "<transport>:<service-method>".
+// It combines the underlying [Value.Value] strings, so ignored transport/service-method values still
+// contribute to the combined value. The returned value is [Ignored] and formatted as
+// "<transport>:<service-method>", which keeps it available for in-process lookups such as limiter keys
+// while preventing it from being exported by [Strings], [SnakeStrings], or [CamelStrings].
 func TransportServiceMethod(ctx context.Context) Value {
 	return Ignored(strings.Concat(Transport(ctx).Value(), ":", ServiceMethod(ctx).Value()))
 }

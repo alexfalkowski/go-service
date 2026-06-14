@@ -26,9 +26,10 @@
 //   - [Time] aliases [time.Time].
 //   - [Duration] wraps [time.Duration] and adds Text/JSON marshaling helpers while
 //     preserving Go duration string semantics.
-//   - [Now], [Since], [Sleep], [NewTimer], [NewTicker], and [ParseDuration]
-//     forward to time.Now, time.Since, time.Sleep, time.NewTimer,
-//     time.NewTicker, and time.ParseDuration respectively.
+//   - [After], [Now], [Since], [Until], [Sleep], [NewTimer], [NewTicker], and
+//     [ParseDuration] forward to time.After, time.Now, time.Since, time.Until,
+//     time.Sleep, time.NewTimer, time.NewTicker, and time.ParseDuration
+//     respectively.
 //   - Constants such as [Second], [Minute], [Hour], and [RFC3339] mirror the
 //     standard library values.
 //
@@ -52,7 +53,8 @@
 //
 // [NewNetwork] constructs a Network implementation based on [Config].
 // Enablement is modeled by presence: a nil *[Config] is treated as disabled and
-// NewNetwork returns (nil, nil).
+// NewNetwork returns (nil, nil). A non-nil *[Config] is enabled even when
+// [Config.Kind] is empty; empty or unknown kinds return [ErrNotFound].
 //
 // [Config.Kind] selects the provider implementation. This package currently
 // supports:

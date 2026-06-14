@@ -23,6 +23,11 @@ import (
 //
 // Default behavior: when *[Config] is nil/disabled, [NewGenerator] returns the "uuid" generator so
 // downstream consumers always have a usable ID source.
+//
+// The ULID generator requires [github.com/alexfalkowski/go-service/v2/crypto/rand.Reader]. Standard
+// top-level wiring supplies that dependency through [github.com/alexfalkowski/go-service/v2/module.Library]
+// via [github.com/alexfalkowski/go-service/v2/crypto.Module]. Direct lower-level composition of
+// Module must provide the same reader dependency.
 var Module = di.Module(
 	di.Constructor(ksuid.NewGenerator),
 	di.Constructor(nanoid.NewGenerator),

@@ -30,11 +30,12 @@ const (
 	// Its value is 4 megabytes.
 	DefaultSize Size = 4 * MB
 
-	// MaxConfigSize is the largest byte size accepted by configuration surfaces.
+	// MaxConfigSize is the shared upper bound for typed configuration fields that opt into
+	// repository-owned byte-size validation.
 	//
-	// Configured sizes protect in-memory buffering paths such as cache values, HTTP request bodies,
-	// HTTP client response bodies, and gRPC messages. Keep this comfortably below integer and allocator
-	// edge cases while still allowing unusually large service payloads.
+	// It is used by fields and public APIs that explicitly promise the repository cap, such as cache
+	// value sizes and server receive sizes. Low-level option maps and callers that parse [Size] values
+	// directly must apply their own bounds when they need one.
 	MaxConfigSize Size = 256 * MB
 )
 
@@ -49,6 +50,10 @@ const (
 // Formatting and parsing intentionally follow go-units compatibility behavior.
 // They are not a strict inverse for exabyte-scale values because go-units can
 // format larger suffixes than FromHumanSize parses.
+//
+// Parsing and unmarshaling [Size] values do not enforce [MaxConfigSize] by
+// themselves. Configuration fields that require repository-owned bounds use
+// validation such as the config package's `config_size` rule after parsing.
 type Size int64
 
 // Bytes returns s as a raw byte count.
@@ -114,6 +119,10 @@ func (s *Size) UnmarshalJSON(data []byte) error {
 // [github.com/docker/go-units.FromHumanSize]. Parsed values are decimal sizes,
 // so accepted suffix spellings such as `MB` and `MiB` both use the decimal `M`
 // multiplier.
+//
+// ParseSize does not enforce [MaxConfigSize]; callers that apply parsed values
+// to bounded buffers or typed configuration fields must validate the returned
+// size for their own contract.
 func ParseSize(s string) (Size, error) {
 	size, err := units.FromHumanSize(s)
 	return Size(size), err

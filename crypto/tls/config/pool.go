@@ -7,6 +7,9 @@ import (
 )
 
 // NewCertPool resolves and parses cfg's configured CA bundle.
+//
+// It returns [ErrInvalidCA] when cfg is nil, CA is not configured, or the resolved CA bytes cannot be
+// appended to a certificate pool. Source-resolution errors are returned directly.
 func NewCertPool(fs *os.FS, cfg *Config) (*x509.CertPool, error) {
 	if !cfg.HasCA() {
 		return nil, ErrInvalidCA

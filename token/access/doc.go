@@ -23,8 +23,9 @@
 // Policy content is treated as trusted deployment configuration here, and startup
 // still fails for empty policy content or invalid model construction.
 //
-// Model and Policy support go-service source strings such as "env:" and "file:",
-// plus literal content.
+// Model and Policy support go-service source strings such as "env:NAME" and
+// "file:<path>", plus literal content. File paths may be absolute or relative
+// according to [os.FS.ReadSource].
 //
 // # Enablement
 //

@@ -82,7 +82,10 @@ func (d *Driver) Fetch(ctx context.Context, key string) (string, error) {
 	return value, err
 }
 
-// Flush removes all cached keys managed by the driver.
+// Flush clears the entire selected Redis database.
+//
+// This uses Redis FLUSHDB, so it removes keys that were not created through the
+// go-service cache facade when they share the same selected database.
 func (d *Driver) Flush(ctx context.Context) error {
 	return d.client.FlushDB(ctx).Err()
 }

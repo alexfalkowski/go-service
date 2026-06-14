@@ -15,8 +15,8 @@ import "github.com/alexfalkowski/go-service/v2/di"
 // [Register] becomes a no-op and OpenFeature uses its default provider semantics.
 //
 // When a provider is present, [Register] appends lifecycle hooks to set the provider during startup and
-// shut down the OpenFeature SDK during stop. If a metrics provider is available, it also installs
-// OpenTelemetry hooks for metrics and traces.
+// shut down the OpenFeature SDK during stop. If a metrics provider is also available, [Register]
+// immediately installs OpenTelemetry hooks for metrics and traces.
 var Module = di.Module(
 	di.Constructor(NewClient),
 	di.Register(Register),

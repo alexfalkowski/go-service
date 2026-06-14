@@ -147,7 +147,8 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 // Run configures the underlying command runner with:
 //   - app name/description derived from a.name
 //   - version derived from a.version
-//   - sanitized process arguments from the go-service [os.Args] variable (see [os.SanitizeArgs])
+//   - sanitized process arguments from the go-service [os.Args] variable, with
+//     Go test harness flags such as "-test.v" removed (see [os.SanitizeArgs])
 //   - the provided context
 //
 // It returns any execution error from the underlying runner or command ExecFunc.

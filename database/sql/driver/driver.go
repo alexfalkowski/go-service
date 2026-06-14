@@ -92,7 +92,8 @@ func Register(name string, driver Driver, opts ...telemetry.Option) (err error) 
 //   - cfg must be non-nil and already treated as enabled/validated by the caller.
 //
 // Failure behavior:
-//   - returns errors encountered while resolving DSNs or connecting, and
+//   - returns errors encountered while resolving DSNs or connecting,
+//   - returns [ErrEmptyDSN] when any configured DSN source resolves to empty bytes, and
 //   - returns [ErrNoDSNs] when neither masters nor slaves are configured.
 //
 // The returned DBs embeds the upstream master/slave pool collection and owns
@@ -112,7 +113,7 @@ func Connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Optio
 //   - driver-specific wrappers, such as [github.com/alexfalkowski/go-service/v2/database/sql/pg.Open], own nil/disabled
 //     config semantics before delegating here.
 //
-// The returned type is the same go-service [driver.DBs] wrapper returned by [Connect].
+// The returned type is the same go-service [DBs] wrapper returned by [Connect].
 func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Option) (*DBs, error) {
 	db, err := Connect(name, fs, cfg, opts...)
 	if err != nil {

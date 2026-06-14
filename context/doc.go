@@ -10,7 +10,8 @@
 //
 // Cause-aware APIs mirror the standard library behavior: [Context.Err] continues to report the standard
 // sentinels ([Canceled] or [DeadlineExceeded]), while [Cause] can expose a richer diagnostic error when
-// a cause-aware constructor was used.
+// a cause-aware constructor was used. [WithoutCancel] is the detaching exception: it preserves parent
+// values but drops the parent deadline, Done channel, Err state, and cancellation cause.
 //
 // This package also defines [Key], a typed helper for context value keys to reduce accidental collisions
 // when multiple packages store values in the same context.

@@ -8,7 +8,9 @@ package time
 // # Enablement
 //
 // Enablement is modeled by presence: a nil *[Config] indicates that network time is
-// disabled. When disabled, NewNetwork returns (nil, nil).
+// disabled. When disabled, NewNetwork returns (nil, nil). A non-nil *[Config]
+// is enabled even when Kind is empty; empty or unknown kinds return
+// [ErrNotFound].
 //
 // # Kind
 //
@@ -18,7 +20,7 @@ package time
 //   - "ntp": Network Time Protocol (NTP)
 //   - "nts": Network Time Security (NTS)
 //
-// If Kind is unrecognized, NewNetwork returns [ErrNotFound].
+// If Kind is empty or unrecognized, NewNetwork returns [ErrNotFound].
 //
 // # Address
 //
@@ -29,7 +31,7 @@ package time
 type Config struct {
 	// Kind selects the network time provider implementation (for example "ntp" or "nts").
 	//
-	// If Kind is unknown, NewNetwork returns [ErrNotFound].
+	// If Kind is empty or unknown, NewNetwork returns [ErrNotFound].
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 
 	// Address is the provider address passed to the selected implementation.
@@ -41,7 +43,8 @@ type Config struct {
 
 // IsEnabled reports whether network time configuration is present.
 //
-// A nil receiver is considered disabled and returns false.
+// A nil receiver is considered disabled and returns false. IsEnabled does not
+// validate Kind; a non-nil config with an empty Kind still returns true.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

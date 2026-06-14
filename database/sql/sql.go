@@ -30,20 +30,19 @@ type Rows = sql.Rows
 
 // Open aliases [database/sql.Open].
 //
-// The driver name must already be registered with the global [github.com/alexfalkowski/go-service/v2/database/sql]
-// registry. The returned DB uses standard-library database/sql behavior.
+// The driver name must already be registered with the standard library [database/sql] driver registry.
+// The returned DB uses standard-library database/sql behavior.
 func Open(driverName, dataSourceName string) (*DB, error) {
 	return sql.Open(driverName, dataSourceName)
 }
 
 // ConnectMasterSlaves is a thin wrapper around [driver.ConnectMasterSlaves].
 //
-// It opens a master/slave SQL pool collection for a registered [github.com/alexfalkowski/go-service/v2/database/sql]
-// driver name and returns any per-DSN connection errors produced by the
-// upstream helper.
+// It opens a master/slave SQL pool collection for a registered standard library [database/sql] driver
+// name and returns any per-DSN connection errors produced by the upstream helper.
 //
-// The driver name must already be registered with the global [github.com/alexfalkowski/go-service/v2/database/sql]
-// registry. The returned [DBs] value may contain zero or more master and slave
+// The driver name must already be registered with the standard library [database/sql] driver registry.
+// The returned [DBs] value may contain zero or more master and slave
 // pools depending on the provided DSN lists.
 func ConnectMasterSlaves(name string, masterDSNs, slaveDSNs []string) (*DBs, []error) {
 	return driver.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)

@@ -140,7 +140,10 @@ func NewHook() *hooks.Config {
 	}
 }
 
-// NewRetry returns a short retry policy suitable for deterministic tests.
+// NewRetry returns the default client retry config used by the test world.
+//
+// Attempts is set to 1, so callers exercise retry middleware wiring without
+// scheduling additional attempts by default.
 func NewRetry() *retry.Config {
 	return &retry.Config{
 		Timeout:  timeout,
@@ -154,7 +157,7 @@ func NewTLSClientConfig() *tls.Config {
 	return NewTLSConfig("certs/client-cert.pem", "certs/client-key.pem")
 }
 
-// NewInsecureConfig returns an empty TLS config for client tests that do not load key material.
+// NewInsecureConfig returns an empty TLS config for client tests that enable TLS without loading key material.
 func NewInsecureConfig() *tls.Config {
 	return &tls.Config{}
 }
@@ -345,7 +348,7 @@ func NewCacheConfig(kind, compressor, encoder, secret string) *cache.Config {
 	}
 }
 
-// NewLimiterConfig returns a limiter config with the supplied backend kind, refill interval, and token count.
+// NewLimiterConfig returns a limiter config with the supplied key kind, refill interval, and token count.
 func NewLimiterConfig(kind, interval string, tokens uint64) *limiter.Config {
 	return &limiter.Config{
 		Kind:     kind,

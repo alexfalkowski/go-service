@@ -144,10 +144,10 @@ func (fs *FS) ExpandPath(path string) string {
 	return fs.Join(UserHomeDir(), path[1:])
 }
 
-// CleanPath expands "~" (when present) and then cleans the path.
+// CleanPath expands a leading "~" (when present) and then cleans the path.
 //
-// This is the normalization used by ReadFile and WriteFile to ensure consistent,
-// user-friendly path handling across go-service.
+// This is the normalization used by ReadFile, WriteFile, and PathExists to
+// ensure consistent, user-friendly path handling across go-service.
 func (fs *FS) CleanPath(path string) string {
 	return fs.Clean(fs.ExpandPath(path))
 }
@@ -179,7 +179,8 @@ func (fs *FS) ExecutableDir() string {
 //   - "env:NAME" reads the value of environment variable NAME and returns it as bytes.
 //     If NAME is omitted or unset, ReadSource returns ErrEnvSourceMissing. If NAME
 //     is explicitly set to the empty string, ReadSource returns empty bytes.
-//   - "file:/path" reads the file at /path via ReadFile (including path cleaning and trimming).
+//   - "file:<path>" reads the file at <path> via ReadFile (including path cleaning and trimming).
+//     The path may be absolute or relative.
 //   - otherwise treats source as the literal value and returns it as bytes.
 //
 // Note: "env:" values are not trimmed; they are returned exactly as provided by

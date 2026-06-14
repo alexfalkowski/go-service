@@ -14,9 +14,13 @@
 //   - [Application.Run] to execute the CLI and return any error, or
 //   - [Application.RunCode] to execute the CLI and return a process exit code.
 //
-// [RunCode] returns [os.ExitCodeSuccess] on success, returns the requested
+// [Application.RunCode] returns [os.ExitCodeSuccess] on success, returns the requested
 // non-zero shutdown exit code when the DI application shuts down with one, and
 // returns [os.ExitCodeFailure] for other errors.
+//
+// [Application.Run] reads the go-service [os.Args] variable, sanitizes injected
+// Go test harness flags such as `-test.v` and `-test.run=...`, and then passes
+// the remaining arguments to the command runner.
 //
 // # Subcommands and DI wiring
 //
@@ -27,9 +31,11 @@
 //   - [Application.AddClient] creates a short-lived client-style command. It starts the DI app, then stops it
 //     immediately after startup completes.
 //
-// Each added subcommand returns a *[Command], which embeds a `*flag.FlagSet`. You can define and parse flags on
-// that `FlagSet`; the command implementation wires the flag set into DI so constructors can read parsed values.
-// Command names must be unique across the application.
+// Each added subcommand returns a *[Command], which embeds a `*flag.FlagSet`.
+// Define command-specific flags on that `FlagSet` before execution. The
+// command implementation parses it and wires the parsed flag set into DI so
+// constructors can read parsed values. Command names must be unique across the
+// application.
 //
 // # Environment-derived metadata
 //

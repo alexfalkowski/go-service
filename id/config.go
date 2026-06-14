@@ -8,13 +8,14 @@ package id
 //
 // # Optional pointers and "enabled" semantics
 //
-// This config is intentionally optional. When nil, generator selection falls back to the default
-// "uuid" generator.
+// This config is intentionally optional. Only a nil *[Config] falls back to the "uuid" kind in the
+// generator registry; an enabled config with an empty Kind is selected as the empty kind and typically
+// returns [ErrNotFound].
 type Config struct {
 	// Kind selects the ID generator implementation.
 	//
 	// The set of supported kinds depends on what has been wired into the application (see [Module]).
-	// If Kind is set to an unknown value, generator selection typically returns [ErrNotFound].
+	// If Kind is empty or unknown, generator selection typically returns [ErrNotFound].
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 }
 

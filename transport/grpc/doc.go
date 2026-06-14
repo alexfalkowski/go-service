@@ -33,7 +33,7 @@
 //
 // This package uses package-level registration to inject filesystem access used when constructing TLS configuration.
 // The registered filesystem is used by [github.com/alexfalkowski/go-service/v2/config/server.NewConfig] and [github.com/alexfalkowski/go-service/v2/config/client.NewConfig]
-// to resolve TLS "source strings" (for example `file:/path/to/cert`
+// to resolve TLS "source strings" (for example `file:<path>`
 // or `env:VAR`) during TLS configuration.
 //
 // When you use [Module] (directly or through higher-level bundles such as [github.com/alexfalkowski/go-service/v2/module.Server]), DI performs

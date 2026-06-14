@@ -38,6 +38,10 @@
 // This ensures common request/service metadata and errors show up consistently across
 // handlers/exporters.
 //
+// Metadata values are capped at 1024 bytes before being attached to the log
+// record. Truncation preserves UTF-8 validity so multi-byte characters are not
+// split.
+//
 // # Exporter headers and secret resolution
 //
 // Some kinds (notably "otlp") support outbound request headers for authentication or

@@ -28,9 +28,11 @@ func Close(body io.ReadCloser) {
 
 // NewHandler wraps handler with request body size enforcement.
 //
-// It rejects requests whose body exceeds limit before calling handler. For
-// accepted requests, it buffers and restores req.Body so downstream handlers can
-// read it normally.
+// It rejects requests before calling handler when Content-Length is greater than
+// limit, or when buffering the body reads more than limit bytes. For accepted
+// requests, it replaces req.Body with a fresh buffered body so downstream
+// handlers can read it normally, and closes the original body after handler
+// returns.
 func NewHandler(handler http.Handler, limit int64) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		if req.ContentLength > limit {
