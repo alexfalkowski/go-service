@@ -29,6 +29,10 @@ type MapParams struct {
 
 // NewMap constructs a Map pre-populated with the default compressors keyed by kind.
 //
+// The standard [Module] supplies non-nil default compressor implementations. Direct
+// calls use the [MapParams] values exactly, so zero-value params register nil
+// implementations for the built-in keys.
+//
 // The returned map includes these kinds:
 //
 //   - "zstd"

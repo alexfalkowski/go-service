@@ -38,8 +38,8 @@ type Config struct {
 
 	// Tokens is the maximum number of tokens available per interval, per derived key.
 	//
-	// When Tokens is 0, the underlying store behavior is implementation-defined (it may reject all
-	// requests or behave as an always-empty bucket). Prefer configuring a positive value.
+	// When Tokens is 0, the underlying in-memory store applies its default of 1 token.
+	// Prefer configuring a positive value so the quota is explicit in service config.
 	Tokens uint64 `yaml:"tokens,omitempty" json:"tokens,omitempty" toml:"tokens,omitempty"`
 
 	// MaxKeys is the maximum number of caller-derived keys that get independent buckets.

@@ -34,6 +34,8 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
 // Decode rejects duplicate object keys and unknown destination fields.
+// Decode buffers all remaining input from r before decoding; callers should bound
+// untrusted or potentially large readers before calling it.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	data, _, err := io.ReadAll(r)
 	if err != nil {

@@ -113,6 +113,8 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 // This method returns sentinel errors from token/errors for some common classes of
 // failures (issuer/audience mismatches and validate-time algorithm/kid mismatches).
 // Parse/validation errors produced by the upstream JWT library may be returned as-is.
+// Upstream parse, signature, or registered-claim validation errors can be returned
+// before the local issuer, audience, required-claim, and lifetime checks run.
 func (t *Token) Verify(token, aud string) (string, error) {
 	if strings.IsEmpty(t.cfg.Issuer) || t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
