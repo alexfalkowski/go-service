@@ -19,7 +19,7 @@ func NewEncoder() *Encoder {
 
 // Encoder implements YAML encoding and decoding.
 //
-// It uses go-yaml v3 with default settings.
+// It uses go-yaml v3 with unknown fields and trailing documents rejected.
 type Encoder struct{}
 
 // Encode writes v to w as YAML.
@@ -38,7 +38,8 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode reads YAML from r and decodes it into v.
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
-// Decode reads one YAML document and rejects additional documents in the same stream.
+// Decode reads one YAML document and rejects unknown fields and additional
+// documents in the same stream.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	decoder := yaml.NewDecoder(r)
 	decoder.KnownFields(true)
