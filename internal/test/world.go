@@ -143,22 +143,38 @@ func NewStartedWorld(tb testing.TB, opts ...WorldOption) *World {
 // scenarios with minimal boilerplate.
 type World struct {
 	t testing.TB
+	// Lifecycle controls startup and shutdown hooks for the test world.
 	*fxtest.Lifecycle
+	// ServeMux is the HTTP mux used by world HTTP handlers.
 	*http.ServeMux
+	// Logger is the test logger shared by world components.
 	*logger.Logger
+	// Tracer configures tracing for world transports and clients.
 	Tracer *tracer.Config
-	PG     *pg.Config
+	// PG configures the PostgreSQL test database.
+	PG *pg.Config
+	// Server builds and registers world HTTP, gRPC, and debug servers.
 	*Server
+	// Client builds world HTTP and gRPC clients.
 	*Client
+	// Event contains shared CloudEvents test helpers.
 	*events.Event
+	// Receiver receives CloudEvents through the world HTTP mux.
 	*transportevents.Receiver
+	// Cache is the configured world cache, when enabled.
 	*cache.Cache
+	// CachePinger checks cache connectivity for health tests.
 	CachePinger cache.Pinger
-	Sender      *transportevents.Sender
-	Rest        *rest.Client
+	// Sender sends CloudEvents through the world HTTP client.
+	Sender *transportevents.Sender
+	// Rest is the world REST client.
+	Rest *rest.Client
 
-	DB         *sql.DBs
+	// DB contains connected SQL test pools, when enabled.
+	DB *sql.DBs
+	// HTTPHealth is the world HTTP health server, when registered.
 	HTTPHealth *health.Server
+	// GRPCHealth is the world gRPC health server, when registered.
 	GRPCHealth *health.Server
 	httpClient *http.Client
 }

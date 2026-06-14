@@ -5,6 +5,6 @@
 //
 // Start with [Module] and [Register].
 //
-// Registration: some transports use package-level registration to inject filesystem access or instrumentation.
-// If you enable features that require registration, call [Register] during application startup before constructing clients/servers.
+// [Register] registers service-prefixed /healthz, /livez, and /readyz handlers on the configured mux.
+// [Module] wires that route registration into the HTTP transport graph.
 package health

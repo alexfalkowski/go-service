@@ -14,13 +14,15 @@ var FS = os.NewFS()
 // Name is the CLI application name derived from the environment.
 //
 // The name is resolved via `env.NewName(FS)` and is used by [Application.Run] to populate the
-// command runner's app metadata (for example help text and descriptions).
+// command runner's app metadata (for example help text and descriptions). It is resolved at package
+// initialization; tests or embedders that need to change it after init should assign this variable directly.
 var Name = env.NewName(FS)
 
 // Version is the CLI application version derived from the environment.
 //
 // The version is resolved via `env.NewVersion()` and is used by [Application.Run] to populate the
-// command runner's version information.
+// command runner's version information. It is resolved at package initialization; tests or embedders that
+// need to change it after init should assign this variable directly.
 var Version = env.NewVersion()
 
 func provide() (*os.FS, env.Name, env.Version) {

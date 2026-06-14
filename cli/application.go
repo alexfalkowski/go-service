@@ -27,8 +27,9 @@ type RegisterFunc = func(commander Commander)
 
 // NewApplication constructs an Application and invokes register to add subcommands.
 //
-// The returned Application is pre-populated with module-level Name and Version derived from the environment
-// (see [Name] and [Version]).
+// The returned Application is pre-populated with the current module-level [Name] and [Version] values.
+// Those variables are initialized from the environment at package init time and can be assigned directly
+// by tests or embedders that need post-init overrides.
 func NewApplication(register RegisterFunc) *Application {
 	app := &Application{name: Name, version: Version}
 	register(app)
@@ -146,7 +147,7 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 // Run configures the underlying command runner with:
 //   - app name/description derived from a.name
 //   - version derived from a.version
-//   - sanitized process arguments (see [os.SanitizeArgs])
+//   - sanitized process arguments from the go-service [os.Args] variable (see [os.SanitizeArgs])
 //   - the provided context
 //
 // It returns any execution error from the underlying runner or command ExecFunc.

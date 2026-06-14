@@ -45,7 +45,7 @@ func (e *Text) Encode(w io.Writer, v any) error {
 // [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType] without reading from r.
 //
 // Decode otherwise reads all remaining bytes from r (via [io.ReadAll]) before
-// unmarshaling.
+// unmarshaling. Unknown protobuf text fields are discarded during unmarshal.
 //
 // Any read error from [io.ReadAll] and any unmarshal error from [prototext.UnmarshalOptions.Unmarshal] is returned.
 func (e *Text) Decode(r io.Reader, v any) error {

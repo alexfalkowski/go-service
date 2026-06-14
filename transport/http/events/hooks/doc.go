@@ -7,6 +7,10 @@
 // When webhook support is disabled, the returned handler behaves as a pass-through and simply delegates to
 // the wrapped handler.
 //
+// Encoding:
+// Webhook-protected CloudEvents must use structured HTTP encoding. Binary-mode CloudEvents that carry
+// ce-* headers are rejected with [ErrBinaryEncoding] before signature verification.
+//
 // Replay protection:
 // This adapter uses [github.com/alexfalkowski/go-service/v2/transport/http/hooks] verification, which validates the signature and timestamp but does
 // not keep replay state. CloudEvents handlers that perform non-idempotent work must deduplicate or process

@@ -37,11 +37,14 @@
 //
 // # OTLP endpoint security
 //
-// Logger, metrics, and tracer OTLP exporters may send [Config.Headers] as outbound
-// request headers. When headers are configured, non-loopback "http://" endpoints
-// are rejected to avoid sending credential-bearing headers over cleartext
-// transport. Use "https://" for external collectors. Local development
-// collectors on "localhost" or loopback IP addresses may use "http://".
+// Logger, metrics, and tracer OTLP exporters may send per-signal Headers fields as outbound request
+// headers. When headers are configured, non-loopback "http://" endpoints are rejected to avoid sending
+// credential-bearing headers over cleartext transport. Use "https://" for external collectors. Local
+// development collectors on "localhost" or loopback IP addresses may use "http://".
+//
+// OTLP endpoints must be supplied through go-service config fields such as telemetry.logger.url,
+// telemetry.metrics.url, and telemetry.tracer.url. Standard OpenTelemetry endpoint environment variables
+// such as OTEL_EXPORTER_OTLP_ENDPOINT are not used as fallback sources by this package.
 //
 // # Global propagation (Register)
 //

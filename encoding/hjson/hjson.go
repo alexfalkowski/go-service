@@ -33,7 +33,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode reads HJSON from r and decodes it into v.
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
-// Decode rejects duplicate object keys.
+// Decode rejects duplicate object keys and unknown destination fields.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	data, _, err := io.ReadAll(r)
 	if err != nil {
@@ -59,7 +59,7 @@ func Marshal(v any) ([]byte, error) {
 
 // Unmarshal decodes HJSON data into v.
 //
-// It uses Decode, so it rejects duplicate object keys.
+// It uses Decode, so it rejects duplicate object keys and unknown destination fields.
 func Unmarshal(data []byte, v any) error {
 	return defaultEncoder.Decode(bytes.NewReader(data), v)
 }

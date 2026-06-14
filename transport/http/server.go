@@ -93,7 +93,7 @@ type ServerParams struct {
 //   - optional rate limiting ([github.com/alexfalkowski/go-service/v2/transport/http/limiter]) when `params.Limiter` is non-nil
 //   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v2/transport/http/body])
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
-//   - gzip compression wrapping the mux not-found handler ([github.com/klauspost/compress/gzhttp.GzipHandler] with [http.NewNotFoundHandler])
+//   - gzip compression wrapping the final mux handler, including not-found fallbacks ([github.com/klauspost/compress/gzhttp.GzipHandler] with [http.NewNotFoundHandler])
 //
 // Token verification and rate limiting middleware typically treat "ignorable" paths (health/metrics/etc.)
 // as bypassable, so those endpoints do not require auth and do not consume limiter capacity by default.

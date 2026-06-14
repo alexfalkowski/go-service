@@ -17,11 +17,12 @@ const ExitCodeFailure = 1
 // ExitCodeServeFailure indicates an asynchronous server Serve failure.
 const ExitCodeServeFailure = 2
 
-// Args is the process argument vector.
+// Args is the process argument vector used by go-service CLI helpers.
 //
-// It is an alias of [os.Args] and is provided so go-service code can depend on
-// go-service packages consistently while still using the underlying OS
-// implementation.
+// It is initialized from [os.Args] at package init time and is provided so
+// go-service code can depend on go-service packages consistently. Tests or
+// embedders that need to override arguments after init should assign Args
+// directly.
 var Args = os.Args
 
 // Stdout is the standard output file descriptor.

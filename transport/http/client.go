@@ -68,6 +68,9 @@ func WithClientCompression() ClientOption {
 // When configured, the client will generate an Authorization token per request and add it to the outbound
 // request using the `Bearer` scheme. Token generation is typically scoped to the request path and the
 // configured user id.
+//
+// Token-enabled clients use [http.SameOriginRedirect] so credentials are not forwarded to cross-origin
+// redirect targets. Cross-origin redirects are returned to the caller as [http.ErrUseLastResponse].
 func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.id = id
@@ -253,6 +256,9 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 // The returned client:
 //   - uses the RoundTripper stack built by [NewRoundTripper], and
 //   - applies the configured client timeout (see [WithClientTimeout]).
+//
+// If token generation is enabled, the returned client uses [http.SameOriginRedirect] so cross-origin
+// redirects are returned to the caller instead of forwarding credentials.
 //
 // Note: [http.NewClient] wraps the provided transport with OpenTelemetry instrumentation when tracing
 // or metrics are enabled.

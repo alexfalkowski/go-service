@@ -15,6 +15,10 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //
 // Projection constructors are nil-safe by convention: if the parent feature is disabled (i.e. the parent
 // config pointer is nil), the projection returns nil so downstream modules treat that subsystem as disabled.
+//
+// Telemetry logger, metrics, and tracer projections also resolve configured header source strings by calling
+// [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.MustSecrets]. Missing environment variables or
+// unreadable files therefore fail fast during startup projection rather than later exporter construction.
 var Module = di.Module(
 	di.Constructor(NewValidator), di.Constructor(NewDecoder), di.Constructor(NewConfig[Config]),
 	di.Constructor(cryptoAESConfig), di.Constructor(cryptoED25519Config),
