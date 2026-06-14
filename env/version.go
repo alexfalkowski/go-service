@@ -10,7 +10,7 @@ import (
 
 // NewVersion returns the service version.
 //
-// It prefers the SERVICE_VERSION environment variable when set; otherwise it falls back to
+// It prefers the SERVICE_VERSION environment variable when non-empty; otherwise it falls back to
 // [runtime.Version]().
 //
 // The returned Version is not normalized at construction time; normalization

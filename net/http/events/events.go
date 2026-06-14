@@ -36,12 +36,20 @@ func NewHTTPResult(statusCode int, messageFmt string, args ...any) Result {
 }
 
 // NewClient constructs a CloudEvents HTTP client that uses httpClient.
+//
+// This wrapper supports the repository's standard HTTP sender path: it supplies
+// only the provided HTTP client option and does not expose CloudEvents
+// constructor errors to callers.
 func NewClient(httpClient http.Client) Client {
 	sender, _ := cloudevents.NewClientHTTP(protocolhttp.WithClient(httpClient))
 	return sender
 }
 
 // NewReceiveHandler constructs an HTTP receive handler for CloudEvents.
+//
+// This wrapper supports the repository's standard receiver path: it uses the
+// default CloudEvents HTTP protocol with a typed ReceiverFunc and does not
+// expose CloudEvents constructor errors to callers.
 func NewReceiveHandler(ctx context.Context, receiver ReceiverFunc) http.Handler {
 	protocol, _ := cloudevents.NewHTTP()
 

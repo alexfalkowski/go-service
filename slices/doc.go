@@ -35,9 +35,11 @@
 //
 // # Notes
 //
-// These helpers are designed to be predictable and side-effect free aside from
-// modifying the returned slice as normal for append-style operations. They do not
-// mutate elements beyond appending them. "Zero" is defined by [reflect.IsZero], so
-// nil slices and maps are skipped, while non-nil empty slices and maps are
-// appended.
+// Project-owned helpers are designed to be predictable and do not mutate elements
+// beyond normal append-style behavior. Thin wrappers around the standard library
+// preserve the standard library's mutation semantics; for example, [DeleteFunc]
+// removes matching elements in place and returns the resulting slice.
+//
+// "Zero" is defined by [reflect.IsZero], so nil slices and maps are skipped,
+// while non-nil empty slices and maps are appended.
 package slices

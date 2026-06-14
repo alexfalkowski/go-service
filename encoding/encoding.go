@@ -18,6 +18,8 @@ import (
 // MapParams defines the dependencies used to construct an encoding Map.
 //
 // It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The default wiring is provided by [Module].
+// [NewMap] registers these values as supplied; direct callers that leave a field nil will get a nil
+// encoder for that field's registered kind aliases.
 type MapParams struct {
 	di.In
 
@@ -56,9 +58,10 @@ type MapParams struct {
 	Bytes *bytes.Encoder
 }
 
-// NewMap constructs a Map pre-populated with default encoders.
+// NewMap constructs a Map from the supplied encoder dependencies.
 //
-// The returned registry includes common kinds used throughout go-service, including:
+// The returned registry includes common kinds used throughout go-service, mapped to the corresponding
+// fields from params:
 //
 //   - Structured config formats: "json", "hjson", "yaml", "yml", "toml", "msgpack"
 //
@@ -74,7 +77,8 @@ type MapParams struct {
 //
 //   - bytes/plain passthrough: "plain", "octet-stream", "markdown"
 //
-// Callers can add additional kinds or override existing kinds via [Map.Register].
+// Callers can add additional kinds or override existing kinds via [Map.Register]. NewMap does not
+// synthesize encoders; if a params field is nil, its registered kind aliases resolve to nil.
 func NewMap(params MapParams) *Map {
 	return &Map{
 		encoders: map[string]Encoder{
@@ -121,15 +125,15 @@ func (f *Map) Register(kind string, enc Encoder) {
 
 // Get returns the encoder registered for kind.
 //
-// If no encoder is registered for kind, Get returns nil. Callers typically treat nil as "unknown kind"
-// and fall back to a default encoder elsewhere.
+// If no encoder is registered for kind, or if kind was registered with a nil encoder, Get returns nil.
+// Callers typically treat nil as "unknown or unavailable kind" and fall back to a default encoder elsewhere.
 func (f *Map) Get(kind string) Encoder {
 	return f.encoders[kind]
 }
 
 // Keys returns the list of registered encoder kinds.
 //
-// The returned slice is not guaranteed to be sorted.
+// Keys includes kinds registered with nil encoders. The returned slice is not guaranteed to be sorted.
 func (f *Map) Keys() []string {
 	return slices.Collect(maps.Keys(f.encoders))
 }

@@ -12,6 +12,8 @@ import (
 )
 
 // RegisterTracer installs the shared test tracer provider on the supplied lifecycle.
+//
+// It panics through [runtime.Must] if tracer registration fails.
 func RegisterTracer(lc di.Lifecycle, config *tracer.Config) {
 	params := tracer.TracerParams{
 		Lifecycle:   lc,

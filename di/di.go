@@ -70,7 +70,8 @@ func Decorate(decorators ...any) Option {
 
 // New constructs a new Fx application from the provided options.
 //
-// This is a thin wrapper around [fx.New].
+// This is a thin wrapper around [fx.New]. Registered invocations run before New returns; initialization
+// errors are available from [App.Err] and are also returned by [App.Start].
 func New(opts ...Option) *App {
 	return fx.New(opts...)
 }
@@ -83,12 +84,16 @@ func Module(opts ...Option) Option {
 	return fx.Options(opts...)
 }
 
-// Register registers one or more invocation functions to run during application startup.
+// Register registers one or more invocation functions with Fx.
 //
-// This is a thin wrapper around [fx.Invoke]. Invocations are typically used for side-effectful wiring such as:
+// This is a thin wrapper around [fx.Invoke]. Fx runs invocations while [New] builds the application,
+// after dependencies are available and before [App.Start] runs lifecycle start hooks. Invocations are
+// typically used for side-effectful wiring such as:
 //   - HTTP route registration
 //   - telemetry registration
 //   - driver initialization/registration
+//
+// Use [Lifecycle.Append] when work must run during application start or stop instead of construction.
 func Register(funcs ...any) Option {
 	return fx.Invoke(funcs...)
 }

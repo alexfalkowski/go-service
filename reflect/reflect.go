@@ -28,6 +28,8 @@ func IsNil(value any) bool {
 //
 // It returns true for nil interfaces and typed nil values, and it supports
 // non-comparable values such as slices, maps, funcs, and structs containing them.
+// For slice and map values, only nil is zero; a non-nil empty slice or map is
+// not the zero value.
 func IsZero(value any) bool {
 	if value == nil {
 		return true

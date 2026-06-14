@@ -87,10 +87,12 @@ type Cache struct {
 	driver driver.Driver
 }
 
-// Flush removes all cached keys from the underlying driver.
+// Flush removes cached data according to the underlying driver's flush semantics.
 //
-// For persistent backends such as Redis this can be a destructive operation for the selected database.
-// It is intentionally not called during lifecycle shutdown.
+// For persistent backends such as Redis this can be a destructive operation:
+// the built-in Redis driver uses FLUSHDB and clears the entire selected Redis
+// database, including keys that were not created through this cache facade. It
+// is intentionally not called during lifecycle shutdown.
 func (c *Cache) Flush(ctx context.Context) error {
 	return c.driver.Flush(ctx)
 }

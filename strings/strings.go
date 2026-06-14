@@ -116,15 +116,16 @@ func IsEmpty(s string) bool {
 // IsAnyEmpty reports whether any of ss are empty.
 //
 // It returns true when at least one element of ss has length 0.
+// With no values, it returns false.
 func IsAnyEmpty(ss ...string) bool {
 	return slices.ContainsFunc(ss, IsEmpty)
 }
 
-// Join joins ss with sep.
+// Join joins ss with sep, taking the separator before the values to join.
 //
-// This is equivalent to [strings.Join], but it accepts variadic input so callers can
-// avoid allocating a slice at the callsite when they already have discrete string
-// values.
+// This is equivalent to strings.Join(ss, sep), but it accepts variadic input so
+// callers can avoid allocating a slice at the call site when they already have
+// discrete string values. With no values, it returns [Empty].
 func Join(sep string, ss ...string) string {
 	return strings.Join(ss, sep)
 }
@@ -138,7 +139,9 @@ func Concat(ss ...string) string {
 
 // CutColon splits s on the first ":" and returns the parts before and after.
 //
-// If ":" is not present, the returned after value is empty.
+// If ":" is not present, before is the original input and after is [Empty].
+// Callers that need to distinguish presence with a boolean should use [Cut]
+// with ":" directly.
 //
 // This helper is commonly used by go-service "source string" conventions where a
 // value is prefixed with a kind such as "env:NAME" or "file:/path".

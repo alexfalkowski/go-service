@@ -36,7 +36,8 @@ func (s Storage) AddPairs(pairs ...Pair) Storage {
 
 // Get returns the value stored under key.
 //
-// If key is not present, Get returns the zero-value Value.
+// If key is not present, Get returns the zero-value [Value]. The zero value renders like [String] with
+// an empty value, so callers that need presence information should track it before storing metadata.
 func (s Storage) Get(key string) Value {
 	return s[key]
 }

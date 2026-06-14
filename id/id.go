@@ -37,7 +37,7 @@ type MapParams struct {
 	XID *xid.Generator
 }
 
-// NewMap constructs a Map pre-populated with default generators.
+// NewMap constructs a Map from the supplied default generator dependencies.
 //
 // The returned registry includes these kinds:
 //   - "uuid"
@@ -46,8 +46,9 @@ type MapParams struct {
 //   - "nanoid"
 //   - "xid"
 //
-// The map is fixed by standard wiring. Services that need custom generator kinds should provide
-// custom DI wiring for [Map] or [Generator] selection.
+// The map is fixed by standard wiring, which supplies each generator dependency before NewMap runs.
+// Manual callers that pass nil generator fields register nil values for those kinds. Services that
+// need custom generator kinds should provide custom DI wiring for [Map] or [Generator] selection.
 func NewMap(params MapParams) *Map {
 	return &Map{
 		generators: map[string]Generator{
@@ -77,10 +78,12 @@ func (m *Map) Get(kind string) Generator {
 
 // NewGenerator selects a [Generator] based on [Config.Kind] from the provided registry.
 //
-// Default behavior: if config is nil/disabled, [NewGenerator] returns the "uuid" generator.
+// Default behavior: if config is nil/disabled, [NewGenerator] returns the generator registered under
+// kind "uuid".
 //
 // Enabled behavior: if config is enabled, [NewGenerator] looks up the generator for [Config.Kind] in m.
-// If the kind is registered, it returns that generator. If the kind is not registered, it returns [ErrNotFound].
+// If the kind is registered with a non-nil generator, it returns that generator. If the kind is not
+// registered or is registered as nil, it returns [ErrNotFound].
 func NewGenerator(config *Config, m *Map) (Generator, error) {
 	if !config.IsEnabled() {
 		return m.Get("uuid"), nil

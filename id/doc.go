@@ -17,10 +17,15 @@
 // available for compact, roughly sortable identifiers, but callers should not treat XIDs as opaque
 // or unpredictable values.
 //
+// These generators are for operational identifiers such as request IDs, webhook IDs, and token jti
+// values. They are not a secret-material API and should not be used as passwords, bearer tokens, or
+// other credentials.
+//
 // # Configuration and enablement
 //
-// ID generation configuration is optional. A nil *[Config] selects the default "uuid" generator.
-// If configuration is present but the configured kind is unknown, [NewGenerator] returns [ErrNotFound].
+// ID generation configuration is optional. A nil *[Config] selects the "uuid" kind from the generator
+// registry. If configuration is present, [NewGenerator] uses [Config.Kind] exactly; an empty or unknown
+// kind returns [ErrNotFound] unless a custom registry contains that key.
 //
 // Start with [Generator], [Config], [NewGenerator], [Map], and [Module].
 package id

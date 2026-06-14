@@ -11,6 +11,7 @@
 // [X509KeyPair].
 //
 // Use [github.com/alexfalkowski/go-service/v2/crypto/tls/config] when working with go-service TLS configuration
-// values that resolve certificate and key "source strings" and materialize a
-// runtime TLS config via [github.com/alexfalkowski/go-service/v2/config.NewConfig].
+// values that resolve certificate and key "source strings". Runtime TLS configs
+// are materialized by the role-specific constructors [github.com/alexfalkowski/go-service/v2/config/client.NewConfig]
+// and [github.com/alexfalkowski/go-service/v2/config/server.NewConfig].
 package tls

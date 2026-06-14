@@ -14,7 +14,7 @@ import (
 //   - [Register], the front door for optional debug endpoint registration.
 //
 // Register installs statsviz, pprof, fgprof, and psutil handlers under their
-// /debug/... routes.
+// service-namespaced /<name>/debug/... routes.
 //
 // Register attaches handlers to the debug mux only when the debug server is enabled. The mux is then
 // used by the debug server when it is enabled via configuration.

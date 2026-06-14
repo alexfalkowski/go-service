@@ -19,9 +19,9 @@ import (
 // *[yaml.Encoder], *[msgpack.Encoder]), and passthrough/specialized encoders
 // (*[gob.Encoder] and *[bytes.Encoder]).
 //
-// Finally, it constructs a *[Map] via [NewMap], pre-populated with common kind
-// aliases (for example "yaml"/"yml", protobuf kind synonyms, and
-// "plain"/"octet-stream" passthrough kinds).
+// Finally, it constructs a *[Map] via [NewMap], registering the provided
+// encoders under common kind aliases (for example "yaml"/"yml", protobuf kind
+// synonyms, and "plain"/"octet-stream" passthrough kinds).
 var Module = di.Module(
 	di.Constructor(proto.NewBinary),
 	di.Constructor(proto.NewText),

@@ -11,5 +11,6 @@
 //
 // Marshal and Valid preserve the standard library's encoding/json semantics.
 // Encoder and Unmarshal use the standard decoder with unknown fields and
-// trailing values rejected.
+// trailing values rejected. Duplicate object keys keep the standard library's
+// last-wins behavior.
 package json

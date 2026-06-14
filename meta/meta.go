@@ -29,8 +29,9 @@ func WithAttributes(ctx context.Context, pairs ...Pair) context.Context {
 
 // Attribute returns the stored attribute value for key.
 //
-// If no attribute is present for key, Attribute returns the zero-value [Value]. Callers can use
-// [Value.IsEmpty] to distinguish empty values.
+// If no attribute is present for key, Attribute returns the zero-value [Value]. The zero value renders
+// like [String] with an empty value, so [Value.IsEmpty] treats missing attributes and explicitly stored
+// empty values the same.
 func Attribute(ctx context.Context, key string) Value {
 	return attributes(ctx).Get(key)
 }

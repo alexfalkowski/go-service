@@ -45,9 +45,10 @@
 // load key material based on the embedded crypto/ssh.Config selected from Keys.
 //
 // Those configs commonly support go-service "source strings" for key sources
-// (for example "env:SSH_KEY", "file:/path/to/key", or a literal value).
-// Resolution and filesystem behavior depend on the go-service [os.FS] and
-// crypto/ssh packages used by your wiring.
+// (for example "env:SSH_KEY", "file:<path>", or a literal value). File paths
+// may be absolute or relative according to [os.FS.ReadSource]. Resolution and
+// filesystem behavior depend on the go-service [os.FS] and crypto/ssh packages
+// used by your wiring.
 //
 // # Error handling expectations
 //
@@ -63,10 +64,13 @@
 //   - signature verification fails,
 //   - key material cannot be loaded.
 //
-// Some invalid-token cases are intentionally collapsed into a generic "invalid match"
-// class so callers do not learn whether a name exists or which specific check failed.
-// Callers that need fine-grained diagnostics should add logging/metrics at the call
-// site rather than relying on error text.
+// Structural mismatches, unknown key ids, version mismatches, subject/key-id
+// mismatches, and signature mismatches are intentionally collapsed into a
+// generic "invalid match" class so callers do not learn whether a name exists
+// or which structural check failed. Audience mismatches return
+// token/errors.ErrInvalidAudience, and time-window or signed-lifetime failures
+// return token/errors.ErrInvalidTime. Callers that need fine-grained diagnostics
+// should add logging/metrics at the call site rather than relying on error text.
 //
 // # Security notes
 //

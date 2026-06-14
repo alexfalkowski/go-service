@@ -14,7 +14,8 @@
 // Consuming services that need a remote or custom provider should use that config in their own provider
 // constructor and provide the resulting [github.com/open-feature/go-sdk/openfeature.FeatureProvider] to the DI graph.
 //
-// When a provider is present, [Register] appends lifecycle hooks that:
+// When a provider is present, [Register] installs any configured telemetry hooks immediately and appends
+// lifecycle hooks that:
 //   - call [github.com/open-feature/go-sdk/openfeature.SetProviderWithContextAndWait] during application start, and
 //   - call [github.com/open-feature/go-sdk/openfeature.ShutdownWithContext] during application stop.
 //
@@ -23,8 +24,9 @@
 //
 // # Telemetry hooks
 //
-// When a metrics provider is available, [Register] installs OpenTelemetry hooks for OpenFeature so
-// evaluations can emit metrics and traces.
+// When both an OpenFeature provider and a metrics provider are available, [Register] installs
+// OpenTelemetry hooks for OpenFeature so evaluations can emit metrics and traces. If no FeatureProvider
+// is present, [Register] returns before installing hooks.
 //
 // Trace event attributes are produced by the upstream OpenFeature OpenTelemetry hook. They may include
 // OpenFeature semantic-convention fields such as the targeting key and evaluated flag value. Treat

@@ -15,6 +15,18 @@ Most services are expected to be bootstrapped from [`go-service-template`](https
 
 ---
 
+## 🚀 Install
+
+For a new service, start from `go-service-template` so the application `main`, command wiring, configuration fixtures, and standard module composition are generated together.
+
+For direct package use in an existing module, add the library dependency with the versioned module path:
+
+```sh
+go get github.com/alexfalkowski/go-service/v2
+```
+
+---
+
 ## 🧩 Dependency Injection (Fx)
 
 The framework is designed around dependency injection and uses [Uber Fx](https://github.com/uber-go/fx) (and Dig under the hood). Most subsystems expose Fx modules that you compose into your service.

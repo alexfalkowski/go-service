@@ -35,7 +35,7 @@ type ReadCloser = io.ReadCloser
 // Writer is an alias for [io.Writer].
 //
 // It is provided so go-service code can depend on a consistent import path while
-// standard library semantics.
+// preserving standard library semantics.
 type Writer = io.Writer
 
 // WriterTo is an alias for [io.WriterTo].
@@ -98,7 +98,12 @@ func WriteString(w Writer, s string) (int, error) {
 // Memory note: ReadAll loads the entire stream into memory. It should only be used when the input
 // size is bounded or otherwise acceptable for buffering.
 //
-// The returned ReadCloser is independent of the original reader; closing it does not affect r.
+// Error behavior follows [io.ReadAll]: if the read fails, the returned byte slice contains the data
+// read before the error, and the returned ReadCloser replays that same partial data. Callers should
+// check err before treating the buffered content as complete.
+//
+// ReadAll does not close r. The returned ReadCloser is independent of the original reader; closing it
+// does not affect r.
 func ReadAll(r Reader) ([]byte, ReadCloser, error) {
 	data, err := io.ReadAll(r)
 	return data, NopCloser(bytes.NewReader(data)), err

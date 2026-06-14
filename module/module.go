@@ -32,8 +32,8 @@ import (
 //   - [sync.Module] (shared buffer pool wiring)
 //   - [id.Module] (ID generator implementations and selection)
 //
-// Library does not wire transports, servers, or request handling; it is intended to be a common
-// foundation that both the [Server] and [Client] bundles build upon.
+// Library does not wire config decoding, transports, servers, or request handling; it is intended to
+// be a common foundation that both the [Server] and [Client] bundles build upon.
 var Library = di.Module(
 	env.Module,
 	compress.Module,
@@ -54,8 +54,9 @@ var Library = di.Module(
 //   - [feature.Module] (OpenFeature client + optional provider registration)
 //   - [sql.Module] (SQL database wiring; currently PostgreSQL)
 //   - [limiter.Module] (rate limiter key map wiring; transport modules typically construct limiters)
-//   - [transport.Module] (HTTP/gRPC transports and related client/server integrations)
-//   - [health.Module] (health server wiring)
+//   - [transport.Module] (HTTP/gRPC transports, transport health endpoint registration, CloudEvents
+//     HTTP receiver hooks, and server lifecycle wiring)
+//   - [health.Module] (shared go-health server/observer lifecycle used by transport health endpoints)
 //
 // Many of these subsystems are optional and are enabled/disabled by configuration (often via nil pointer
 // sub-configs). This bundle wires constructors/registrations; runtime behavior depends on the config
@@ -83,12 +84,14 @@ var Server = di.Module(
 //   - [telemetry.Module] (logging/tracing/metrics wiring)
 //   - [cache.Module] (cache drivers/facade; optional by config)
 //   - [feature.Module] (OpenFeature client + optional provider registration)
-//   - [hooks.Module] (Standard Webhooks helpers; used by HTTP hook integrations)
+//   - [hooks.Module] (shared Standard Webhooks constructor/generator helpers)
 //   - [sql.Module] (SQL database wiring; currently PostgreSQL)
 //   - [limiter.Module] (rate limiter key map wiring)
 //
-// Unlike [Server], Client does not wire debug endpoints, transports, or a health server by default.
-// Those can be added explicitly by composing additional modules on top of Client if needed.
+// Unlike [Server], Client does not wire debug endpoints, transports, HTTP/gRPC health endpoints, or
+// HTTP hook transport adapters by default. Those can be added explicitly by composing additional
+// modules, such as [transport.Module] or [github.com/alexfalkowski/go-service/v2/transport/http/hooks.Module],
+// on top of Client if needed.
 //
 // This is the primary entrypoint for client-style applications built from `go-service-template`.
 var Client = di.Module(

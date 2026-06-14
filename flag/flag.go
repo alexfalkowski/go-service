@@ -34,7 +34,11 @@ type FlagSet struct {
 //   - "file:/path/to/config.yaml" (decode kind inferred from file extension)
 //   - "env:MY_CONFIG" (read config payload from environment variable MY_CONFIG)
 //
-// The provided value is used as the default.
+// The provided value is used as the default. AddConfig registers both flag names against the same
+// backing value, so if both aliases are supplied during parsing, the later parsed flag wins.
+//
+// AddConfig must be called before [FlagSet.Parse]. Like the embedded standard library [flag.FlagSet],
+// it panics if either "config" or "c" has already been registered.
 func (f *FlagSet) AddConfig(value string) {
 	f.config = &value
 	f.StringVar(f.config, "config", value, "config location (format kind:location)")
@@ -43,7 +47,8 @@ func (f *FlagSet) AddConfig(value string) {
 
 // GetConfig returns the configured config flag ("-config" / "-c") value.
 //
-// GetConfig is safe to call before [FlagSet.AddConfig]; in that case it returns an empty string.
+// After [FlagSet.AddConfig], GetConfig returns the default value until [FlagSet.Parse] updates it.
+// GetConfig is safe to call before AddConfig; in that case it returns an empty string.
 func (f *FlagSet) GetConfig() string {
 	if f.config != nil {
 		return *f.config

@@ -21,7 +21,7 @@ type Config struct {
 	//
 	// It supports the go-service source string pattern implemented by [os.FS.ReadSource]:
 	//   - "env:NAME" to read model content from an environment variable,
-	//   - "file:/path/to/model.conf" to read model content from a file, or
+	//   - "file:<path>" to read model content from an absolute or relative file path, or
 	//   - any other value treated as literal model content.
 	Model string `yaml:"model,omitempty" json:"model,omitempty" toml:"model,omitempty"`
 
@@ -29,7 +29,7 @@ type Config struct {
 	//
 	// It supports the go-service source string pattern implemented by [os.FS.ReadSource]:
 	//   - "env:NAME" to read policy content from an environment variable,
-	//   - "file:/path/to/policy.csv" to read policy content from a file, or
+	//   - "file:<path>" to read policy content from an absolute or relative file path, or
 	//   - any other value treated as literal policy content.
 	Policy string `yaml:"policy,omitempty" json:"policy,omitempty" toml:"policy,omitempty"`
 }

@@ -35,8 +35,10 @@ type CacheChecker struct {
 
 // Check verifies cache health by pinging the configured cache backend.
 //
-// If no pingable driver is configured, Check returns ErrNoCachePinger. If the ping times out, Check
-// returns ErrCachePingTimeout.
+// If no pingable driver is configured, Check returns [ErrNoCachePinger]. If the ping context finishes
+// before Ping returns successfully, Check returns the context cause: [ErrCachePingTimeout] for this
+// checker's timeout, or the parent context's cause when the parent context is canceled first. Otherwise
+// it returns the driver's Ping error, if any.
 func (c *CacheChecker) Check(ctx context.Context) error {
 	if c.pinger == nil {
 		return ErrNoCachePinger

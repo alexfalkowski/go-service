@@ -14,7 +14,8 @@
 //   - Use [Module] to compose multiple [Option] values into a single module.
 //   - Use [Constructor] to provide constructors (Fx Provide).
 //   - Use [Decorate] to wrap/modify provided values (Fx Decorate).
-//   - Use [Register] to run registration/invocation hooks at startup (Fx Invoke).
+//   - Use [Register] to run registration/invocation hooks while [New] builds the app (Fx Invoke).
+//     Use [Lifecycle] hooks for work that must run during application start or stop.
 //   - Use [Recover] to recover constructor, decorator, and invocation panics.
 //   - Use [RootCause] to unwrap Fx/Dig errors to the underlying cause for reporting.
 //

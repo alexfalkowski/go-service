@@ -11,6 +11,8 @@
 // PostgreSQL configuration is optional. By convention, a nil *[Config] (or nil embedded config) is treated as
 // "disabled", and constructors such as [Open] return (nil, nil) when disabled.
 // Enabled PostgreSQL configuration must provide at least one non-empty master or replica DSN.
+// PostgreSQL DSN options, including TLS and sslmode settings, are supplied in the configured DSN and
+// passed through to pgx without repository-level rewriting or security policy enforcement.
 //
 // # Master/slave pools
 //

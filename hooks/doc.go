@@ -1,10 +1,11 @@
-// Package hooks provides Standard Webhooks helpers and wiring for go-service.
+// Package hooks provides shared Standard Webhooks construction helpers and wiring for go-service.
 //
 // This package integrates the Standard Webhooks Go library ([github.com/standard-webhooks/standard-webhooks/libraries/go])
 // by providing:
 //
-//   - configuration for webhook signing/verification secrets (see [Config]), loaded via the go-service "source string"
-//     pattern (resolved by [github.com/alexfalkowski/go-service/v2/os.FS.ReadSource]), and
+//   - configuration for the shared webhook secret used by Standard Webhooks signers/verifiers (see [Config]),
+//     loaded via the go-service "source string" pattern (resolved by
+//     [github.com/alexfalkowski/go-service/v2/os.FS.ReadSource]), and
 //
 //   - constructors for creating Standard Webhooks webhook instances (see [NewHook]) and generating new secrets (see [Generator]).
 //
@@ -16,11 +17,14 @@
 //   - "file:/path/to/secret" to read the secret from a file, or
 //   - any other value treated as the literal secret.
 //
-// The resolved secret bytes are passed to the Standard Webhooks library as a string. Empty resolved secrets are rejected.
-// Keep this value private and avoid logging it.
+// The resolved secret bytes are passed to the Standard Webhooks library as a string. Empty resolved
+// secrets are rejected by this package, while non-empty secrets must use a format accepted by the
+// Standard Webhooks constructor. The [Generator] output is accepted directly as a literal secret. Keep
+// this value private and avoid logging it.
 //
 // # Downstream integrations
 //
-// Transport integrations (for example [github.com/alexfalkowski/go-service/v2/transport/http/hooks]) build on top of this package to verify incoming webhook
-// signatures and/or sign outbound webhook requests.
+// Transport integrations (for example [github.com/alexfalkowski/go-service/v2/transport/http/hooks])
+// build on top of this package to verify incoming webhook signatures and/or sign outbound webhook
+// requests.
 package hooks

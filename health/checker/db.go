@@ -43,9 +43,11 @@ type DBChecker struct {
 
 // Check verifies database health by pinging all configured master and slave databases.
 //
-// It returns a single aggregated error (via [errors.Join]) containing all ping errors.
-// If no database pools are configured, Check returns ErrNoConnections.
-// If all pings succeed, Check returns nil.
+// It wraps ping failures with the pool role and index (for example `db master[0]`) and returns them as
+// a single aggregated error via [errors.Join]. If a ping context finishes before PingContext returns
+// successfully, the wrapped cause is [ErrPingTimeout] for this checker's timeout, or the parent context's
+// cause when the parent context is canceled first. If no database pools are configured, Check returns
+// [ErrNoConnections]. If all pings succeed, Check returns nil.
 func (c *DBChecker) Check(ctx context.Context) error {
 	databases := c.databases()
 	if len(databases) == 0 {

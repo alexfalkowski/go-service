@@ -4,14 +4,16 @@ import "github.com/alexfalkowski/go-service/v2/os"
 
 // Config configures Standard Webhooks secret loading.
 type Config struct {
-	// Secret is a "source string" that resolves to the webhook signing/verification secret bytes.
+	// Secret is a "source string" that resolves to the shared Standard Webhooks secret.
 	//
 	// It supports the go-service source string pattern implemented by [os.FS.ReadSource]:
 	//   - "env:NAME" to read the secret from an environment variable,
 	//   - "file:/path/to/secret" to read the secret from a file, or
 	//   - any other value treated as the literal secret.
 	//
-	// Security note: keep this secret private and avoid logging it.
+	// The resolved value is passed to the Standard Webhooks constructor. It must be accepted by that
+	// constructor, such as the literal value returned by [Generator.Generate] or the same value with the
+	// Standard Webhooks `whsec_` prefix. Security note: keep this secret private and avoid logging it.
 	Secret string `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
 }
 

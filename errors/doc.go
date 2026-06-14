@@ -28,8 +28,8 @@
 // # Safe messages
 //
 // [SafeMessenger] lets error implementations expose a non-sensitive message for clients while retaining
-// diagnostic Error text for logs and wrapping. [SafeMessage] walks an error chain, returns the first
-// non-empty safe message it finds, and falls back to the caller-provided message when none is available.
+// diagnostic Error text for logs and wrapping. [SafeMessage] walks wrapped and joined errors, returns the
+// first non-empty safe message it finds, and otherwise returns the caller-provided fallback as supplied.
 //
 // Start with [As], [AsType], [Is], [Join], [New], [Prefix], and [SafeMessage].
 package errors

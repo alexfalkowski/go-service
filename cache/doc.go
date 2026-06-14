@@ -24,4 +24,12 @@
 // TTL handling depends on the selected driver. The built-in in-memory "ttlcache"
 // driver stores a bounded number of values in process memory, expires entries
 // when they are read, and removes expired entries before saving new values.
+//
+// # Flush behavior
+//
+// [Cache.Flush] delegates to the selected driver and can have backend-wide
+// effects. The built-in Redis backend uses Redis FLUSHDB, so it clears the
+// entire selected Redis database, including keys that were not created through
+// this cache facade. Use a dedicated Redis database for go-service cache data
+// before calling Flush against Redis.
 package cache

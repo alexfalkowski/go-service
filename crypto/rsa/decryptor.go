@@ -33,7 +33,10 @@ func NewDecryptor(generator *rand.Generator, decoder *pem.Decoder, cfg *Config) 
 	return &Decryptor{generator: generator, privateKey: pri}, nil
 }
 
-// Decryptor holds an RSA private key and randomness source used for decryption.
+// Decryptor holds an RSA private key used for decryption.
+//
+// The generator is retained for API symmetry with Encryptor. The standard library's OAEP
+// decryption treats its random parameter as legacy and ignores it.
 type Decryptor struct {
 	generator  *rand.Generator
 	privateKey *rsa.PrivateKey
@@ -45,7 +48,8 @@ type Decryptor struct {
 //   - hash: SHA-512
 //   - label: nil
 //
-// The randomness source is the injected crypto/rand generator.
+// The injected generator is passed through for API consistency, but RSA-OAEP decryption ignores
+// the randomness parameter.
 func (d *Decryptor) Decrypt(msg []byte) ([]byte, error) {
 	return DecryptOAEP(d.generator, d.privateKey, msg)
 }

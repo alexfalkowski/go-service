@@ -9,7 +9,8 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //
 // NewNetwork uses *[Config] to decide whether to enable network time and which provider
 // to construct (for example "ntp" or "nts"). When network time is disabled (nil config),
-// the constructor returns (nil, nil).
+// the constructor returns (nil, nil). A non-nil config with an empty or unknown Kind
+// is treated as enabled but invalid, so the constructor returns [ErrNotFound].
 //
 // This module does not force the application to use network time; it only makes the
 // provider available for optional injection.

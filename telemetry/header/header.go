@@ -23,7 +23,7 @@ type Map map[string]string
 // [os.FS.ReadSource] supports these forms:
 //
 //   - "env:NAME"    reads the value of environment variable NAME.
-//   - "file:/path"  reads bytes from the file at /path (including path cleaning and trimming).
+//   - "file:<path>" reads bytes from an absolute or relative file path (including path cleaning and trimming).
 //   - otherwise     treats the value as a literal string.
 //
 // After successful resolution, every entry in m contains the final literal header

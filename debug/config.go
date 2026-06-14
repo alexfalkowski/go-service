@@ -5,7 +5,7 @@ import "github.com/alexfalkowski/go-service/v2/config/server"
 // Config configures the debug server.
 //
 // It embeds [github.com/alexfalkowski/go-service/v2/config/server.Config] to reuse common server settings such as address, timeout,
-// TLS configuration, and server-specific options.
+// TLS configuration, maximum inbound request-body size, and server-specific options.
 //
 // # Optional pointers and "enabled" semantics
 //

@@ -20,15 +20,17 @@
 //
 // This package also provides helpers not present in the standard library:
 //
-//   - [IsEmpty] / [IsAnyEmpty]: common emptiness checks.
+//   - [IsEmpty] / [IsAnyEmpty]: common emptiness checks. [IsAnyEmpty]
+//     returns false when called without values.
 //
-//   - [Join] and [Concat]: Join accepts variadic strings so callers can avoid
-//     allocating a slice at the callsite. Concat concatenates without a
-//     separator.
+//   - [Join] and [Concat]: Join takes the separator first and then variadic
+//     strings, so callers can avoid allocating a slice at the call site. With no
+//     strings it returns [Empty]. Concat concatenates without a separator.
 //
 //   - [CutColon]: a small helper that splits on the first ":" using [strings.Cut],
-//     returning the part before and after. If ":" is not present, the "after"
-//     return value is empty.
+//     returning the part before and after. If ":" is not present, "before" is
+//     the original input and "after" is empty. Callers that need the found flag
+//     should use [Cut] with ":" directly.
 //
 //   - [ToSnake] / [ToLowerCamel] / [ToDelimited]: common string case conversion
 //     helpers delegated to strcase.

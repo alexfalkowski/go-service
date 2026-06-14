@@ -45,6 +45,10 @@ type Encryptor struct {
 //   - hash: SHA-512
 //   - label: nil
 //
+// The message must fit RSA-OAEP's plaintext limit for the public key size:
+// modulus bytes minus two SHA-512 digest lengths minus two bytes. For this
+// package's default 4096-bit keys, the maximum plaintext size is 382 bytes.
+//
 // The randomness source is the injected generator's reader.
 func (e *Encryptor) Encrypt(msg []byte) ([]byte, error) {
 	return EncryptOAEP(e.generator, e.publicKey, msg)

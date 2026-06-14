@@ -22,6 +22,9 @@
 // [Size] is a named byte-count type for typed configuration surfaces. [Size.String] and [ParseSize]
 // use human-readable decimal size strings such as `64B`, `2MB`, and `4GB`.
 //
+// Parsing and unmarshaling only convert syntax to byte counts. Bounds such as [MaxConfigSize] are
+// enforced by typed configuration fields and public APIs that explicitly opt into that cap.
+//
 // Text and JSON marshaling emit exact raw byte counts with a `B` suffix, such as `4000000B`.
 // Text and JSON unmarshaling accept the same decimal size inputs as [ParseSize].
 package bytes

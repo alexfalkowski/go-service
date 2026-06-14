@@ -21,7 +21,7 @@ type ProviderParams struct {
 	Lifecycle di.Lifecycle
 
 	// MetricProvider is an optional OpenTelemetry meter provider used to install OpenFeature telemetry hooks.
-	// When nil, telemetry hooks are not installed.
+	// Hooks are installed only when MetricProvider and FeatureProvider are both present.
 	MetricProvider metrics.MeterProvider
 
 	// FeatureProvider is the OpenFeature provider to register.
@@ -30,7 +30,10 @@ type ProviderParams struct {
 	// default provider semantics.
 	FeatureProvider openfeature.FeatureProvider `optional:"true"`
 
-	// Name is the service name. It is typically used when constructing an OpenFeature client (see [NewClient]).
+	// Name is the service name.
+	//
+	// Register does not currently use this field. [NewClient] consumes [env.Name] separately when constructing
+	// the OpenFeature client.
 	Name env.Name
 }
 
@@ -39,12 +42,13 @@ type ProviderParams struct {
 // Disabled behavior: if params.FeatureProvider is nil (not provided), Register is a no-op.
 //
 // Enabled behavior:
-//   - If a MetricProvider is available, Register installs OpenTelemetry hooks so evaluations emit metrics
-//     and traces.
+//   - If a MetricProvider is also available, Register immediately installs OpenTelemetry hooks so
+//     evaluations emit metrics and traces.
 //   - Register appends lifecycle hooks that set the OpenFeature provider during application start and
 //     shut down the OpenFeature SDK during application stop.
 //
-// Register panics if OpenFeature metrics hook construction fails for a provided MetricProvider.
+// Register panics if OpenFeature metrics hook construction fails when both MetricProvider and
+// FeatureProvider are provided.
 //
 // Register uses OpenFeature's package-level SDK APIs, so provider registration, hooks, and shutdown are
 // process-global effects.

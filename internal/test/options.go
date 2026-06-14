@@ -88,7 +88,7 @@ func WithWorldSecure() WorldOption {
 	})
 }
 
-// WithWorldTelemetry selects the telemetry exporter kind used by the world meter.
+// WithWorldTelemetry selects the metrics exporter kind used by the world meter.
 //
 // The current helpers recognize "otlp" for OTLP metrics and fall back to the
 // Prometheus test setup for any other value.
@@ -235,6 +235,9 @@ func WithWorldLogger(logger *logger.Logger) WorldOption {
 }
 
 // WithWorldLoggerConfig selects the named logger config variant used when the world builds its own logger.
+//
+// Recognized values are "json", "text", "tint", and "otlp". Empty or
+// unrecognized values use the OTLP logger config.
 func WithWorldLoggerConfig(config string) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.loggerConfig = config

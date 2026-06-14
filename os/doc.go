@@ -12,7 +12,8 @@
 //
 //   - Path normalization:
 //     [FS.CleanPath] expands a leading "~" (when present) and then cleans the path.
-//     [FS.ReadFile] and [FS.WriteFile] call [FS.CleanPath] before accessing the filesystem.
+//     [FS.ReadFile], [FS.WriteFile], and [FS.PathExists] call [FS.CleanPath]
+//     before accessing the filesystem.
 //
 //   - Trimming behavior:
 //     [FS.ReadFile] trims leading/trailing whitespace from the bytes it returns.
@@ -42,9 +43,9 @@
 //     unset (or omitted entirely as "env:"), [FS.ReadSource] returns
 //     [ErrEnvSourceMissing]. If NAME is explicitly set to the empty string, it
 //     resolves to empty bytes.
-//   - "file:/path"  reads bytes from the file at /path (via [FS.ReadFile],
-//     including path cleaning and trimming).
-//   - otherwise     treats the string as the literal value.
+//   - "file:<path>" reads bytes from <path> (via [FS.ReadFile], including path
+//     cleaning and trimming). <path> may be absolute or relative.
+//   - otherwise      treats the string as the literal value.
 //
 // This pattern is used in multiple subsystems (for example secret material,
 // tokens, and telemetry headers) to support flexible deployment environments.

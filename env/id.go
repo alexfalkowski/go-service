@@ -10,6 +10,9 @@ import (
 // It prefers the SERVICE_ID environment variable when set (non-empty); otherwise it falls back to a
 // newly generated id produced by generator.Generate().
 //
+// Direct callers must pass a non-nil generator when SERVICE_ID is unset or empty. The standard module
+// wiring supplies this generator through the id module.
+//
 // This is commonly used to distinguish service instances in logs/metrics/traces when multiple replicas
 // are running.
 func NewID(generator id.Generator) ID {

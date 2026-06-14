@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 )
 
-// Register installs the psutil debug handler under /debug/psutil.
+// Register installs the psutil debug handler under the service-namespaced /<name>/debug/psutil route.
 func Register(name env.Name, cont *content.Content, mux *http.ServeMux) {
 	mux.HandleFunc(http.Pattern(name, "/debug/psutil"), NewHandler(cont))
 }

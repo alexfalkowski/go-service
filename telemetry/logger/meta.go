@@ -17,6 +17,8 @@ const maxMetaValueLength = 1024
 // It reads metadata stored in the provided context (via the `meta` package) and converts
 // it to camel-cased string key/value attributes with no prefix.
 //
+// Metadata values longer than 1024 bytes are truncated at a valid UTF-8 boundary.
+//
 // The returned attributes are intended to be appended to log records to provide
 // consistent request/service context across log lines.
 func Meta(ctx context.Context) []slog.Attr {

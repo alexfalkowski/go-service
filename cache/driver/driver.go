@@ -89,7 +89,11 @@ type Driver interface {
 	// Fetch retrieves the cached value for key.
 	Fetch(ctx context.Context, key string) (string, error)
 
-	// Flush removes all cached keys managed by the driver.
+	// Flush removes cached data according to backend-specific semantics.
+	//
+	// Implementations may clear more than go-service cache namespace keys. For
+	// example, the built-in Redis driver clears the entire selected Redis
+	// database.
 	Flush(ctx context.Context) error
 
 	// Save stores value under key for the provided lifetime.

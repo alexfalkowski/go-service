@@ -21,7 +21,7 @@
 // which supports these forms:
 //
 //   - "env:NAME"    reads the value of environment variable NAME.
-//   - "file:/path"  reads bytes from the file at /path (including path cleaning and trimming).
+//   - "file:<path>" reads bytes from an absolute or relative file path (including path cleaning and trimming).
 //   - otherwise     treats the value as a literal string.
 //
 // After resolving, the map is updated in place so each header value becomes the
@@ -33,8 +33,9 @@
 //
 // # Mutability and usage notes
 //
-// [Map.Secrets] and [Map.MustSecrets] mutate the map in place. If you need to preserve
-// the original configured source strings, copy the map before resolving.
+// [Map.Secrets] and [Map.MustSecrets] mutate the map in place after all values
+// resolve successfully. If you need to preserve the original configured source
+// strings, copy the map before resolving.
 //
 // This package does not itself attach headers to exporters; it provides a consistent
 // configuration representation and resolution mechanism used by telemetry packages
