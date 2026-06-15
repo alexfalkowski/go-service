@@ -442,6 +442,21 @@ Missing or failing observers return HTTP 503 with the standard go-service error 
 Built-in checker helpers under `health/checker` include DB connectivity checks and
 cache connectivity checks for pingable cache drivers such as Redis and ttlcache.
 
+When gRPC transport is enabled, `transport/grpc/health` registers the standard
+`grpc.health.v1.Health` service on the gRPC server. Named checks use the service
+name as the request `service`; an empty service checks overall gRPC health:
+
+```sh
+grpcurl -plaintext -d '{"service":"<name>"}' localhost:9000 grpc.health.v1.Health/Check
+```
+
+`Check` returns `SERVING` or `NOT_SERVING` for known services and `NotFound` for
+unknown services. `List` returns the current statuses for registered services.
+`Watch` streams status changes until the client cancels; unknown services stream
+`SERVICE_UNKNOWN`. Unary health RPCs bypass token verification and unary
+server-side limiting as operation RPCs. Health `Watch` is a stream and still
+uses stream limiting.
+
 These are modeled after [Kubernetes API health endpoints](https://kubernetes.io/docs/reference/using-api/health-checks/).
 
 ---
