@@ -2,14 +2,13 @@ package health
 
 import (
 	"github.com/alexfalkowski/go-health/v2/server"
-	"github.com/alexfalkowski/go-health/v2/subscriber"
+	"github.com/alexfalkowski/go-health/v2/watcher"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // ServerParams defines dependencies for constructing the gRPC health [Server] implementation.
@@ -55,7 +54,7 @@ type Server struct {
 func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response, error) {
 	service := req.GetService()
 	if strings.IsEmpty(service) {
-		return &health.Response{Status: s.overallStatus()}, nil
+		return &health.Response{Status: healthStatus(s.server.Error("grpc"))}, nil
 	}
 
 	observer, err := s.server.Observer(service, "grpc")
@@ -63,7 +62,7 @@ func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response
 		return nil, status.SafeError(codes.NotFound, err)
 	}
 
-	return &health.Response{Status: s.status(observer)}, nil
+	return &health.Response{Status: healthStatus(observer.Error())}, nil
 }
 
 // List returns the health status for all registered services.
@@ -73,7 +72,7 @@ func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response
 func (s *Server) List(_ context.Context, _ *health.ListRequest) (*health.ListResponse, error) {
 	res := &health.ListResponse{Statuses: map[string]*health.Response{}}
 	for name, observer := range s.server.Observers("grpc") {
-		res.Statuses[name] = &health.Response{Status: s.status(observer)}
+		res.Statuses[name] = &health.Response{Status: healthStatus(observer.Error())}
 	}
 
 	return res, nil
@@ -81,65 +80,72 @@ func (s *Server) List(_ context.Context, _ *health.ListRequest) (*health.ListRes
 
 // Watch streams health status updates for a single service until the client cancels.
 //
-// The initial status is sent immediately. When the requested service is unknown, Watch sends
-// `SERVICE_UNKNOWN` and keeps the stream open so clients can observe the service becoming available later.
-//
-// This package's underlying health server exposes observer state but not a push-based watch API, so Watch
-// polls that in-memory state and only emits a response when the effective serving status changes.
+// The initial status is sent immediately. When the requested service is unknown,
+// Watch sends `SERVICE_UNKNOWN` and keeps the stream open until the client cancels.
 func (s *Server) Watch(req *health.Request, w health.WatchServer) error {
 	service := req.GetService()
-	current := health.Unknown
-	ticker := time.NewTicker(50 * time.Millisecond)
-	defer ticker.Stop()
+	if strings.IsEmpty(service) {
+		return s.watch(w, s.server.Watch("grpc"))
+	}
 
+	observer, err := s.server.Observer(service, "grpc")
+	if err != nil {
+		return sendUnknownStatus(w)
+	}
+
+	return s.watch(w, observer.Watch())
+}
+
+func (s *Server) watch(w health.WatchServer, sub watcher.Subscription) error {
+	defer sub.Close()
+
+	current := health.Unknown
 	for {
-		next := s.watchStatus(service)
-		if next != current {
-			current = next
-			if err := w.Send(&health.Response{Status: current}); err != nil {
-				if _, ok := status.FromError(err); ok {
+		select {
+		case err, ok := <-sub.Receive():
+			if !ok {
+				return status.Error(codes.Canceled, "watch has ended")
+			}
+
+			next := healthStatus(err)
+			if next != current {
+				current = next
+				if err := sendStatus(w, current); err != nil {
 					return err
 				}
-
-				return status.Error(codes.Canceled, "stream has ended")
 			}
-		}
-
-		select {
 		case <-w.Context().Done():
 			return status.SafeError(codes.Canceled, w.Context().Err())
-		case <-ticker.C:
 		}
 	}
 }
 
-func (s *Server) status(observer *subscriber.Observer) health.Status {
-	if err := observer.Error(); err != nil {
+func healthStatus(err error) health.Status {
+	if err != nil {
 		return health.NotServing
 	}
 
 	return health.Serving
 }
 
-func (s *Server) overallStatus() health.Status {
-	for _, observer := range s.server.Observers("grpc") {
-		if s.status(observer) != health.Serving {
-			return health.NotServing
-		}
+func sendUnknownStatus(w health.WatchServer) error {
+	if err := sendStatus(w, health.ServiceUnknown); err != nil {
+		return err
 	}
 
-	return health.Serving
+	<-w.Context().Done()
+
+	return status.SafeError(codes.Canceled, w.Context().Err())
 }
 
-func (s *Server) watchStatus(service string) health.Status {
-	if strings.IsEmpty(service) {
-		return s.overallStatus()
+func sendStatus(w health.WatchServer, st health.Status) error {
+	if err := w.Send(&health.Response{Status: st}); err != nil {
+		if _, ok := status.FromError(err); ok {
+			return err
+		}
+
+		return status.Error(codes.Canceled, "stream has ended")
 	}
 
-	observer, err := s.server.Observer(service, "grpc")
-	if err != nil {
-		return health.ServiceUnknown
-	}
-
-	return s.status(observer)
+	return nil
 }
