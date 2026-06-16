@@ -292,10 +292,14 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 // gRPC wrapper package directly.
 type ClientConn = grpc.ClientConn
 
-// NewClient constructs and dials a gRPC client connection to target.
+// NewClient constructs a gRPC client connection to target.
 //
 // It uses dial options derived from opts (see [NewDialOptions]) and adds OpenTelemetry stats handling
 // when tracing or metrics are enabled.
+//
+// No I/O is performed during construction; the returned connection connects automatically when it is
+// used for RPCs, or when Connect is called explicitly. Connection, resolver, and TLS handshake failures
+// surface from RPCs or explicit connection attempts rather than from NewClient itself.
 //
 // The returned connection should be closed by the caller when no longer needed.
 func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {

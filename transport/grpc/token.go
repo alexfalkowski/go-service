@@ -11,6 +11,8 @@ import (
 //
 // When token auth is enabled (via cfg.Token), the returned controller can be used to authorize
 // authenticated subjects against configured access rules.
+// NewController only builds the controller; the built-in gRPC token interceptors authenticate requests
+// and store the verified user id, but they do not call the controller or enforce authorization policy.
 //
 // If cfg is disabled, it returns (nil, nil) so downstream wiring can treat access control as not configured.
 func NewController(cfg *Config, fs *os.FS) (token.AccessController, error) {

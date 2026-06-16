@@ -80,8 +80,11 @@ func (s *Server) List(_ context.Context, _ *health.ListRequest) (*health.ListRes
 
 // Watch streams health status updates for a single service until the client cancels.
 //
-// The initial status is sent immediately. When the requested service is unknown,
-// Watch sends `SERVICE_UNKNOWN` and keeps the stream open until the client cancels.
+// An empty service watches the overall "grpc" transport health. Named services are looked up under
+// the "grpc" transport kind, matching [Server.Check] and [Server.List].
+//
+// The initial status is sent immediately. When the requested service is unknown, Watch sends
+// `SERVICE_UNKNOWN` and keeps the stream open until the client cancels.
 func (s *Server) Watch(req *health.Request, w health.WatchServer) error {
 	service := req.GetService()
 	if strings.IsEmpty(service) {
