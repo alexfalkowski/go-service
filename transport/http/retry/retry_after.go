@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
-	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 )
 
 const (
@@ -17,7 +16,7 @@ const (
 )
 
 func retryAfterDelayExceedsBackoff(res *http.Response, backoff time.Duration) bool {
-	return retryAfterDelay(res) > minimumJitteredBackoff(backoff)
+	return retryAfterDelay(res) > backoff
 }
 
 func retryAfterDelay(res *http.Response) time.Duration {
@@ -31,10 +30,6 @@ func retryAfterDelay(res *http.Response) time.Duration {
 	}
 
 	return parseRetryAfterDate(value)
-}
-
-func minimumJitteredBackoff(backoff time.Duration) time.Duration {
-	return backoff - (backoff * time.Duration(config.DefaultJitterPercent) / 100)
 }
 
 func parseRetryAfterSeconds(value string) (time.Duration, bool) {

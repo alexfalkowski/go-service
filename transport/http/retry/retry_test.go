@@ -122,7 +122,7 @@ func TestRoundTripperRetriesWithDefaultBackoff(t *testing.T) {
 	require.Equal(t, 2, rt.Calls)
 }
 
-func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsMinimumBackoff(t *testing.T) {
+func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsBackoff(t *testing.T) {
 	retryAfterDate := time.Now().Add(5 * time.Second.Duration()).UTC().Format(http.TimeFormat)
 	tests := []struct {
 		name       string
@@ -131,7 +131,6 @@ func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsMinimumBackoff(t *testing.
 		backoff    time.Duration
 	}{
 		{name: "too many requests seconds", code: http.StatusTooManyRequests, retryAfter: "2", backoff: time.Second},
-		{name: "too many requests equal backoff", code: http.StatusTooManyRequests, retryAfter: "1", backoff: time.Second},
 		{name: "service unavailable date", code: http.StatusServiceUnavailable, retryAfter: retryAfterDate, backoff: time.Second},
 		{name: "too many requests overflow", code: http.StatusTooManyRequests, retryAfter: "999999999999999999999999999999", backoff: time.Second},
 	}
@@ -162,58 +161,45 @@ func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsMinimumBackoff(t *testing.
 	}
 }
 
-func TestRoundTripperRetriesWhenRetryAfterDoesNotExceedBackoff(t *testing.T) {
-	calls := 0
-	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
-		calls++
-		if calls == 1 {
-			res := test.ResponseWithStatus(http.StatusTooManyRequests)
-			res.Header.Set("Retry-After", "1")
+func TestRoundTripperRetriesWhenRetryAfterDoesNotExceedBackoffOrIsInvalid(t *testing.T) {
+	tests := []struct {
+		name       string
+		retryAfter string
+		backoff    time.Duration
+	}{
+		{name: "equal backoff", retryAfter: "1", backoff: time.Second},
+		{name: "less than backoff", retryAfter: "1", backoff: 2 * time.Second},
+		{name: "invalid", retryAfter: "invalid", backoff: time.Millisecond},
+	}
 
-			return res, nil
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calls := 0
+			rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+				calls++
+				if calls == 1 {
+					res := test.ResponseWithStatus(http.StatusTooManyRequests)
+					res.Header.Set("Retry-After", tt.retryAfter)
 
-		return test.ResponseWithStatus(http.StatusOK), nil
-	})
-	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
-		Backoff:  2 * time.Second,
-	}, rt)
+					return res, nil
+				}
 
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+				return test.ResponseWithStatus(http.StatusOK), nil
+			})
+			retrying := retry.NewRoundTripper(&retry.Config{
+				Attempts: 2,
+				Timeout:  time.Second,
+				Backoff:  tt.backoff,
+			}, rt)
 
-	res, err := retrying.RoundTrip(req)
-	require.NoError(t, err)
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, 2, calls)
-}
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
 
-func TestRoundTripperRetriesWhenRetryAfterIsInvalid(t *testing.T) {
-	calls := 0
-	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
-		calls++
-		if calls == 1 {
-			res := test.ResponseWithStatus(http.StatusTooManyRequests)
-			res.Header.Set("Retry-After", "invalid")
-
-			return res, nil
-		}
-
-		return test.ResponseWithStatus(http.StatusOK), nil
-	})
-	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	}, rt)
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
-
-	res, err := retrying.RoundTrip(req)
-	require.NoError(t, err)
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, 2, calls)
+			res, err := retrying.RoundTrip(req)
+			require.NoError(t, err)
+			require.Equal(t, http.StatusOK, res.StatusCode)
+			require.Equal(t, 2, calls)
+		})
+	}
 }
 
 func TestRoundTripperUsesIndependentRetryBudgetPerRequest(t *testing.T) {
