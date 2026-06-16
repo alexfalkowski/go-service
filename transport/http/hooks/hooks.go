@@ -19,6 +19,9 @@ import (
 // Enabled behavior:
 // When hook is non-nil, the returned Webhook adds go-service request-body buffering and header conventions
 // on top of the underlying Standard Webhooks signer/verifier.
+//
+// Signing requires a non-nil generator. Passing a nil generator is valid for verification-only use, but
+// calling [Webhook.Sign] or using the signing [RoundTripper] with a nil generator will panic.
 func NewWebhook(hook *hooks.Webhook, generator id.Generator) *Webhook {
 	if hook == nil {
 		return nil
@@ -43,7 +46,10 @@ type Webhook struct {
 
 // Sign signs an outbound webhook request.
 //
-// It reads and buffers the request body, restores `req.Body`, and then sets signature headers.
+// It reads and buffers the request body, closes the original body, replaces `req.Body` with a fresh
+// readable body, and then sets signature headers.
+//
+// A non-nil generator is required because Sign generates the Webhook-Id used in the signature.
 //
 // Headers set:
 //   - `Webhook-Id`
@@ -86,8 +92,8 @@ func (h *Webhook) Sign(req *http.Request) error {
 
 // Verify verifies the signature headers on an inbound webhook request.
 //
-// It reads and buffers the request body, restores `req.Body`, and then verifies the signature headers
-// using the underlying Standard Webhooks verifier.
+// It reads and buffers the request body, closes the original body, replaces `req.Body` with a fresh
+// readable body, and then verifies the signature headers using the underlying Standard Webhooks verifier.
 //
 // Security note:
 // This method intentionally does not add a second local size cap. Supported inbound use goes through
@@ -170,6 +176,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 //
 // The returned RoundTripper signs each request by buffering the request body, restoring `req.Body`, and
 // attaching the Standard Webhooks signature headers before delegating to the underlying transport.
+// A non-nil generator must have been supplied to [NewWebhook] for signing use.
 //
 // If hook is nil, the returned RoundTripper behaves as a pass-through wrapper.
 func NewRoundTripper(hook *Webhook, rt http.RoundTripper) *RoundTripper {

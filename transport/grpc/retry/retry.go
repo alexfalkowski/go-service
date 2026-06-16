@@ -24,6 +24,8 @@ type Config = config.Config
 //
 // Policies describe operation safety, not transient failure classification. The retry interceptor still only retries
 // configured gRPC status codes after the policy allows the logical RPC.
+// When multiple non-nil policies are provided, all must allow the call. Nil policies are ignored; if every
+// provided policy is nil, the default [IdempotentMethods] policy is used.
 type Policy func(ctx context.Context, fullMethod string, req any) bool
 
 // StandardReadMethods allows retries for AIP-style read methods named Get* or List*.
@@ -65,6 +67,8 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 // When no policy is provided, only side-effect-safe unary RPCs are eligible for retry: AIP-style read methods,
 // or calls carrying a request-id idempotency contract. Callers that need different behavior can pass an
 // explicit policy.
+// Multiple non-nil policies are composed with logical AND, so any denying policy makes the RPC non-retryable.
+// Nil policies are ignored, and the default policy is used only when no non-nil policy is supplied.
 //
 // Notes:
 // This interceptor does not automatically retry on every error; application-level errors that map to other

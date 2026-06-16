@@ -460,9 +460,9 @@ grpcurl -plaintext -d '{"service":"<name>"}' localhost:9000 grpc.health.v1.Healt
 `Check` returns `SERVING` or `NOT_SERVING` for known services and `NotFound` for
 unknown services. `List` returns the current statuses for registered services.
 `Watch` streams status changes until the client cancels; unknown services stream
-`SERVICE_UNKNOWN`. Unary health RPCs bypass token verification and unary
-server-side limiting as operation RPCs. Health `Watch` is a stream and still
-uses stream limiting.
+`SERVICE_UNKNOWN`. Health operation RPCs bypass token verification. Unary
+`Check` and `List` also bypass unary server-side limiting, while health `Watch`
+is a stream and still uses stream limiting.
 
 These are modeled after [Kubernetes API health endpoints](https://kubernetes.io/docs/reference/using-api/health-checks/).
 
@@ -862,6 +862,7 @@ transport:
 > [!NOTE]
 > - Address may use `<network>://<address>` (for example `tcp://:8000`) or a raw listen address such as `:8000`, which defaults to the `tcp` network.
 > - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
+> - `transport.grpc.timeout` bounds unary RPC handlers and feeds gRPC server keepalive/connection defaults; it does not cap stream lifetime. Long-lived streams remain open until client cancellation or stream-specific controls apply.
 > - `max_receive_size` limits inbound payload size. A zero value uses the default `4MB`.
 > - For HTTP, `max_receive_size` applies per request body. For gRPC, it applies per inbound unary request and per inbound stream message.
 > - MVC does not enforce its own body-size caps; supported HTTP server wiring applies `max_receive_size` before MVC handlers run, and go-service HTTP clients apply their configured response-size cap when reading responses.
@@ -982,7 +983,9 @@ When manually constructing HTTP or gRPC clients, pass the decoded retry config t
 
 `attempts` is the total number of attempts, including the initial call. A value
 of `0` or `1` means no retry beyond the first attempt; values above `10` are
-rejected during config validation.
+rejected during config validation. `timeout` is applied per attempt, not as a
+whole logical request budget, so total elapsed time can include multiple attempt
+timeouts plus backoff unless the caller's context or client timeout ends first.
 
 Default retry policy is intentionally conservative:
 

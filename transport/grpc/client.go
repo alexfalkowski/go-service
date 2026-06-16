@@ -69,9 +69,13 @@ func WithClientCompression() ClientOption {
 
 // WithClientTokenGenerator enables client-side token injection interceptors.
 //
-// When configured, the client will generate an Authorization token per RPC and attach it to outgoing
+// When configured, the client will generate Authorization tokens and attach them to outgoing
 // metadata (unary and streaming). The token is generated via gen and is typically scoped to the RPC's
 // full method name and the provided user id.
+//
+// Unary token generation runs inside the retry interceptor, so retryable unary calls may generate one
+// token per attempt. Streaming calls are not retried by the standard client chain and generate one token
+// when the stream is opened.
 func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.id = id
@@ -321,6 +325,8 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 //
 // The logger wraps retry, limiter, and breaker outcomes so local rejections are recorded.
 // Retry wraps the limiter and breaker so each retry attempt consumes quota and breaker capacity.
+// Token injection is inside retry, so each retried unary attempt can generate a fresh token while the
+// metadata request id remains stable for the logical RPC.
 // The limiter stays before the breaker so local quota denials are not counted as upstream failures.
 func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor {
 	resolved := options(opts...)
