@@ -87,6 +87,7 @@ func ServerFailureOption() di.Option {
 		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
 			server.Register(server.RegisterParams{
 				Lifecycle: lc,
+				Drain:     server.NewDrain(),
 				Services: []*server.Service{
 					server.NewService("test", DelayedFailingServer{}, nil, sh),
 				},

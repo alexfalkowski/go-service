@@ -5,7 +5,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
@@ -15,15 +14,15 @@ import (
 // from the request context.
 type KeyMap = limiter.KeyMap
 
-func take(ctx context.Context, limiter *limiter.Limiter) (string, error) {
-	ok, header, err := limiter.Take(ctx)
+func take(ctx context.Context, rateLimiter *limiter.Limiter) (limiter.Decision, error) {
+	decision, err := rateLimiter.TakeDecision(ctx)
 	if err != nil {
-		return strings.Empty, status.SafeError(codes.Internal, err)
+		return decision, status.SafeError(codes.Internal, err)
 	}
 
-	if !ok {
-		return header, status.Error(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted))
-	}
+	return decision, nil
+}
 
-	return header, nil
+func limitError() error {
+	return status.Error(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted))
 }

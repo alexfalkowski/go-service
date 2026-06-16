@@ -37,6 +37,8 @@ type Server struct {
 	GRPCServer *grpc.Server
 	// DebugServer is populated when RegisterDebug is true.
 	DebugServer *debug.Server
+	// Drain tracks server lifecycle shutdown state.
+	Drain *server.Drain
 	// TransportConfig configures HTTP and gRPC servers.
 	TransportConfig *transport.Config
 	// DebugConfig configures the debug server.
@@ -126,7 +128,7 @@ func (s *Server) Register() error {
 		servers = append(servers, debugServer.GetService())
 	}
 
-	server.Register(server.RegisterParams{Lifecycle: s.Lifecycle, Services: servers})
+	server.Register(server.RegisterParams{Lifecycle: s.Lifecycle, Drain: s.Drain, Services: servers})
 
 	return nil
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	netserver "github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/time"
 	grpchealth "github.com/alexfalkowski/go-service/v2/transport/grpc/health"
 	"github.com/alexfalkowski/go-sync"
@@ -81,6 +82,24 @@ func TestInvalidCheck(t *testing.T) {
 	resp, err := client.Check(ctx, req)
 	require.NoError(t, err)
 
+	require.Equal(t, health.NotServing, resp.GetStatus())
+}
+
+func TestCheckDrains(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
+	requireGRPCReady(t, world)
+
+	drain := netserver.NewDrain()
+	server := grpchealth.NewServer(grpchealth.ServerParams{Server: world.GRPCHealth, Drain: drain})
+
+	resp, err := server.Check(t.Context(), &health.Request{Service: test.Name.String()})
+	require.NoError(t, err)
+	require.Equal(t, health.Serving, resp.GetStatus())
+
+	drain.Start()
+
+	resp, err = server.Check(t.Context(), &health.Request{Service: test.Name.String()})
+	require.NoError(t, err)
 	require.Equal(t, health.NotServing, resp.GetStatus())
 }
 
@@ -177,6 +196,24 @@ func TestList(t *testing.T) {
 		test.Name.String(): {Status: health.Serving},
 	}
 	require.Equal(t, expected, resp.GetStatuses())
+}
+
+func TestListDrains(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
+	requireGRPCReady(t, world)
+
+	drain := netserver.NewDrain()
+	server := grpchealth.NewServer(grpchealth.ServerParams{Server: world.GRPCHealth, Drain: drain})
+
+	resp, err := server.List(t.Context(), &health.ListRequest{})
+	require.NoError(t, err)
+	require.Equal(t, health.Serving, resp.GetStatuses()[test.Name.String()].GetStatus())
+
+	drain.Start()
+
+	resp, err = server.List(t.Context(), &health.ListRequest{})
+	require.NoError(t, err)
+	require.Equal(t, health.NotServing, resp.GetStatuses()[test.Name.String()].GetStatus())
 }
 
 func TestWatch(t *testing.T) {
@@ -418,7 +455,7 @@ func TestWatchStatusChanges(t *testing.T) {
 
 	world := newGRPCHealthWorld(t, probe.URL, test.WithWorldTelemetry("otlp"))
 
-	watcher := grpchealth.NewServer(grpchealth.ServerParams{Server: world.GRPCHealth})
+	watcher := grpchealth.NewServer(grpchealth.ServerParams{Server: world.GRPCHealth, Drain: netserver.NewDrain()})
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
@@ -450,6 +487,37 @@ func TestWatchStatusChanges(t *testing.T) {
 		require.Equal(t, codes.Canceled, status.Code(err))
 	case <-time.After(time.Second):
 		require.FailNow(t, "watch stream did not stop after cancellation")
+	}
+}
+
+func TestWatchDrains(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
+	requireGRPCReady(t, world)
+
+	drain := netserver.NewDrain()
+	watcher := grpchealth.NewServer(grpchealth.ServerParams{Server: world.GRPCHealth, Drain: drain})
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	stream := test.NewWatchStream(ctx)
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- watcher.Watch(&health.Request{Service: test.Name.String()}, stream)
+	}()
+
+	resp := requireWatchResponse(t, stream.Responses)
+	require.Equal(t, health.Serving, resp.GetStatus())
+
+	drain.Start()
+
+	resp = requireWatchResponse(t, stream.Responses)
+	require.Equal(t, health.NotServing, resp.GetStatus())
+
+	select {
+	case err := <-errCh:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		require.FailNow(t, "watch stream did not stop after drain")
 	}
 }
 

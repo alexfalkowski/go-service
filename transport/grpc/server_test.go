@@ -7,6 +7,7 @@ import (
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	netserver "github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/stretchr/testify/require"
@@ -24,7 +25,7 @@ func TestServer(t *testing.T) {
 	require.NoError(t, err)
 
 	c := test.NewInsecureTransportConfig()
-	s := &test.Server{Lifecycle: lc, Logger: logger, TransportConfig: c, Mux: mux}
+	s := &test.Server{Lifecycle: lc, Logger: logger, TransportConfig: c, Mux: mux, Drain: netserver.NewDrain()}
 	require.NoError(t, s.Register())
 
 	lc.RequireStart()

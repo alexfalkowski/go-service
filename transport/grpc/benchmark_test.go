@@ -72,7 +72,7 @@ func BenchmarkGRPC(b *testing.B) {
 		cfg.GRPC.Address = test.BoundAddress(cfg.GRPC.Address, g.GetService().String())
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
-		server.Register(server.RegisterParams{Lifecycle: lc, Services: []*server.Service{g.GetService()}})
+		server.Register(server.RegisterParams{Lifecycle: lc, Drain: server.NewDrain(), Services: []*server.Service{g.GetService()}})
 
 		lc.RequireStart()
 
@@ -116,7 +116,7 @@ func BenchmarkGRPC(b *testing.B) {
 		cfg.GRPC.Address = test.BoundAddress(cfg.GRPC.Address, g.GetService().String())
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
-		server.Register(server.RegisterParams{Lifecycle: lc, Services: []*server.Service{g.GetService()}})
+		server.Register(server.RegisterParams{Lifecycle: lc, Drain: server.NewDrain(), Services: []*server.Service{g.GetService()}})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()
@@ -163,7 +163,7 @@ func BenchmarkGRPC(b *testing.B) {
 		cfg.GRPC.Address = test.BoundAddress(cfg.GRPC.Address, g.GetService().String())
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
-		server.Register(server.RegisterParams{Lifecycle: lc, Services: []*server.Service{g.GetService()}})
+		server.Register(server.RegisterParams{Lifecycle: lc, Drain: server.NewDrain(), Services: []*server.Service{g.GetService()}})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()

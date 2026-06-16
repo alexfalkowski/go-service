@@ -60,7 +60,7 @@ type Handler struct {
 //
 // Behavior:
 //   - If the limiter returns an error, it writes an internal server error response.
-//   - If the limiter returns a header string, it is added to the response as the "RateLimit" header.
+//   - It writes RateLimit and RateLimit-Policy headers describing the current decision.
 //   - If the request is not allowed, it writes an HTTP 429 response with Retry-After when reset timing is available.
 //   - Otherwise it calls next.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
@@ -77,7 +77,8 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	res.Header().Add("RateLimit", decision.Header())
+	res.Header().Set("RateLimit", decision.Header())
+	res.Header().Set("RateLimit-Policy", decision.PolicyHeader())
 
 	if !decision.Allowed() {
 		if resetAfter := decision.ResetAfterSeconds(); resetAfter > 0 {

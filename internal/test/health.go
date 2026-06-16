@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/health"
 	healthchecker "github.com/alexfalkowski/go-service/v2/health/checker"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	netserver "github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/time"
 	grpchealth "github.com/alexfalkowski/go-service/v2/transport/grpc/health"
 	httphealth "github.com/alexfalkowski/go-service/v2/transport/http/health"
@@ -17,11 +18,12 @@ import (
 // It delegates to [github.com/alexfalkowski/go-service/v2/transport/http/health.Register] using the shared test service name and the
 // provided health server so integration-style tests can exercise the same route registration
 // path used in production wiring.
-func RegisterHealth(mux *http.ServeMux, server *server.Server) {
+func RegisterHealth(mux *http.ServeMux, server *server.Server, drain *netserver.Drain) {
 	params := httphealth.RegisterParams{
 		Name:   Name,
 		Server: server,
 		Mux:    mux,
+		Drain:  drain,
 	}
 
 	httphealth.Register(params)
@@ -31,7 +33,7 @@ func RegisterHealth(mux *http.ServeMux, server *server.Server) {
 func (w *World) RegisterHTTPHealth(name, url string, observations ...HealthObservation) *server.Server {
 	server := w.HealthServer(name, url)
 	w.observeHealth(server, name, observations...)
-	RegisterHealth(w.Mux, server)
+	RegisterHealth(w.Mux, server, w.Drain)
 	w.HTTPHealth = server
 
 	return server
@@ -42,7 +44,7 @@ func (w *World) RegisterGRPCHealth(name, url string, observations ...HealthObser
 	server := w.HealthServer(name, url)
 	w.observeHealth(server, name, observations...)
 
-	grpcServer := grpchealth.NewServer(grpchealth.ServerParams{Server: server})
+	grpcServer := grpchealth.NewServer(grpchealth.ServerParams{Server: server, Drain: w.Drain})
 	grpchealth.Register(grpchealth.RegisterParams{
 		Registrar: w.GRPCServer.ServiceRegistrar(),
 		Server:    grpcServer,
