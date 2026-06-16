@@ -163,7 +163,7 @@ func WithClientDialOption(opts ...grpc.DialOption) ClientOption {
 //
 // Metadata propagation runs first so custom interceptors see the resolved user-agent and request-id.
 // Interceptors provided here then run before the remaining standard interceptors added by this package
-// (timeout, retry, breaker, logging, token injection, etc.).
+// (timeout, logging, retry, limiter, breaker, token injection, etc.).
 //
 // Pass all custom unary interceptors for a client construction in one call. Repeating this option follows
 // the package's last-wins functional option convention and replaces earlier custom unary interceptors.
@@ -313,12 +313,14 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 //   - metadata propagation interceptor (user-agent and request-id)
 //   - any custom interceptors provided via [WithClientUnaryInterceptors]
 //   - a timeout interceptor
+//   - optional logging interceptor (when configured)
+//   - optional retry interceptor (when configured)
 //   - optional limiter interceptor (when configured)
 //   - optional circuit breaker interceptor (when enabled via [WithClientBreaker])
-//   - optional retry interceptor (when configured)
-//   - optional logging interceptor (when configured)
 //   - optional token injection interceptor (when configured)
 //
+// The logger wraps retry, limiter, and breaker outcomes so local rejections are recorded.
+// Retry wraps the limiter and breaker so each retry attempt consumes quota and breaker capacity.
 // The limiter stays before the breaker so local quota denials are not counted as upstream failures.
 func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor {
 	resolved := options(opts...)
@@ -328,20 +330,20 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	unary = append(unary, resolved.unary...)
 	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(resolved.timeout))
 
-	if resolved.limiter != nil {
-		unary = append(unary, limiter.UnaryClientInterceptor(resolved.limiter))
-	}
-
-	if resolved.breaker {
-		unary = append(unary, breaker.UnaryClientInterceptor(resolved.breakerOptions...))
+	if resolved.logger != nil {
+		unary = append(unary, logger.UnaryClientInterceptor(resolved.logger))
 	}
 
 	if resolved.retry != nil {
 		unary = append(unary, retry.UnaryClientInterceptor(resolved.retry, resolved.retryPolicies...))
 	}
 
-	if resolved.logger != nil {
-		unary = append(unary, logger.UnaryClientInterceptor(resolved.logger))
+	if resolved.limiter != nil {
+		unary = append(unary, limiter.UnaryClientInterceptor(resolved.limiter))
+	}
+
+	if resolved.breaker {
+		unary = append(unary, breaker.UnaryClientInterceptor(resolved.breakerOptions...))
 	}
 
 	if resolved.gen != nil {
