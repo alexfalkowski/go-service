@@ -143,6 +143,14 @@ matching skill for the task.
   startup failure exits the process. Report only concrete same-process reuse bugs
   in supported tests/tools, ignored successful shutdown cleanup, or an API
   promise that failed startup is recoverable in the same process.
+- Process-global telemetry logger state, including the OpenTelemetry logger
+  provider and the process-wide `slog` default installed by the OTLP logger, is
+  intentionally not reset during normal process shutdown. Do not flag stale
+  logger/provider globals after a clean lifecycle stop solely because a
+  hypothetical same-process app instance could be started after shutdown.
+  Supported service shutdown exits the process; report only concrete reuse bugs
+  in supported tests/tools that actually continue running after shutdown and
+  require isolated global logger state.
 - Telemetry logger, metrics, and tracer shutdown hooks intentionally ignore
   provider/exporter shutdown errors so one telemetry flush failure does not stop
   later lifecycle shutdown hooks. Do not flag swallowed telemetry shutdown
