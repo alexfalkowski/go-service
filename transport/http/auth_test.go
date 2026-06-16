@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/stretchr/testify/require"
 )
 
@@ -79,6 +80,33 @@ func TestValidAuthUnary(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.NotEmpty(t, body)
+}
+
+func TestAccessDeniedUnary(t *testing.T) {
+	controller, err := access.NewController(&access.Config{
+		Model:  test.FilePath("configs/rbac.conf"),
+		Policy: "p, " + test.UserID.String() + ", http:POST /other, invoke",
+	}, test.FS)
+	require.NoError(t, err)
+
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
+		test.WithWorldAccessController(controller),
+		test.WithWorldHTTP(),
+	)
+
+	rpc.Route("/hello", test.SuccessSayHello)
+
+	header := http.Header{}
+	header.Set(content.TypeKey, media.JSON)
+
+	url := world.PathServerURL("http", "hello")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
+	require.NoError(t, err)
+	require.Equal(t, http.StatusForbidden, res.StatusCode)
+	require.Equal(t, "http: forbidden", body)
 }
 
 func TestAuthDoesNotBypassApplicationMetricsPath(t *testing.T) {

@@ -17,9 +17,10 @@ import (
 //
 // The returned handler extracts request metadata into the request context and sets standard response headers.
 // It is designed to be used early in the server middleware chain so downstream middleware and handlers can
-// rely on a populated context (for example, logging, auth, rate limiting, and tracing).
-func NewHandler(name env.Name, userAgent env.UserAgent, version env.Version, generator id.Generator) *Handler {
-	return &Handler{name: name, userAgent: userAgent, serviceVersion: version.String(), generator: generator}
+// rely on a populated context (for example, logging, auth, rate limiting, and tracing). When mux is non-nil,
+// the handler uses it to resolve the matched route pattern before downstream middleware runs.
+func NewHandler(name env.Name, userAgent env.UserAgent, version env.Version, generator id.Generator, mux *http.ServeMux) *Handler {
+	return &Handler{name: name, userAgent: userAgent, serviceVersion: version.String(), generator: generator, mux: mux}
 }
 
 // Handler extracts request metadata and stores it in the request context.
@@ -29,6 +30,7 @@ func NewHandler(name env.Name, userAgent env.UserAgent, version env.Version, gen
 // parseable).
 type Handler struct {
 	generator      id.Generator
+	mux            *http.ServeMux
 	name           env.Name
 	userAgent      env.UserAgent
 	serviceVersion string
@@ -81,7 +83,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		meta.WithTransport(meta.Ignored("http")),
 		meta.WithUserAgent(userAgent),
 		meta.WithRequestID(requestID),
-		meta.WithServiceMethod(serverServiceMethod(req)),
+		meta.WithServiceMethod(serverServiceMethod(h.mux, req)),
 		meta.WithIPAddr(ip),
 		meta.WithIPAddrKind(kind),
 		meta.WithGeolocation(geolocation),
@@ -123,9 +125,16 @@ func serverRequestID(ctx context.Context, generator id.Generator, req *http.Requ
 	return meta.String(generator.Generate())
 }
 
-func serverServiceMethod(req *http.Request) meta.Value {
+func serverServiceMethod(mux *http.ServeMux, req *http.Request) meta.Value {
 	if !strings.IsEmpty(req.Pattern) {
 		return meta.Ignored(req.Pattern)
+	}
+
+	if mux != nil {
+		if _, pattern := mux.Handler(req); !strings.IsEmpty(pattern) {
+			req.Pattern = pattern
+			return meta.Ignored(pattern)
+		}
 	}
 
 	return meta.Ignored(req.URL.Path)

@@ -59,6 +59,9 @@ time:
   kind: nts
   address: time.cloudflare.com
 transport:
+  access:
+    model: file:../test/configs/rbac.conf
+    policy: file:../test/configs/rbac.csv
   http:
     address: tcp://localhost:11000
     max_receive_size: 2MB
@@ -74,9 +77,6 @@ transport:
       max_header_bytes: 32KB
     timeout: 10s
     token:
-      access:
-        model: file:../test/configs/rbac.conf
-        policy: file:../test/configs/rbac.csv
       kind: "jwt"
       jwt:
         iss: "iss"
@@ -107,9 +107,6 @@ transport:
       max_send_msg_size: 8MB
     timeout: 10s
     token:
-      access:
-        model: file:../test/configs/rbac.conf
-        policy: file:../test/configs/rbac.csv
       kind: "jwt"
       jwt:
         iss: "iss"

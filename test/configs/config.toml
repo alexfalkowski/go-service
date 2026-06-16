@@ -75,6 +75,10 @@ Authorization = "file:../test/secrets/telemetry"
 kind = "nts"
 address = "time.cloudflare.com"
 
+[transport.access]
+model = "file:../test/configs/rbac.conf"
+policy = "file:../test/configs/rbac.csv"
+
 [transport.http]
 address = "tcp://localhost:11000"
 max_receive_size = "2MB"
@@ -94,10 +98,6 @@ max_header_bytes = "32KB"
 
 [transport.http.token]
 kind = "jwt"
-
-[transport.http.token.access]
-model = "file:../test/configs/rbac.conf"
-policy = "file:../test/configs/rbac.csv"
 
 [transport.http.token.jwt]
 iss = "iss"
@@ -133,10 +133,6 @@ max_send_msg_size = "8MB"
 
 [transport.grpc.token]
 kind = "jwt"
-
-[transport.grpc.token.access]
-model = "file:../test/configs/rbac.conf"
-policy = "file:../test/configs/rbac.csv"
 
 [transport.grpc.token.jwt]
 iss = "iss"

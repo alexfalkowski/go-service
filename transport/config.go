@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 )
@@ -18,6 +19,14 @@ import (
 //
 // The struct tags are compatible with the repository's config decoder (YAML/JSON/TOML).
 type Config struct {
+	// Access configures shared authorization policy for all enabled transport server stacks.
+	//
+	// When nil, transport access control is disabled. When configured, the same controller is injected into
+	// HTTP and gRPC server middleware/interceptors, and policies distinguish protocols through
+	// meta.TransportServiceMethod values such as "http:GET /users/{id}" or
+	// "grpc:/package.Service/Method".
+	Access *access.Config `yaml:"access,omitempty" json:"access,omitempty" toml:"access,omitempty"`
+
 	// GRPC configures the gRPC server transport stack.
 	//
 	// When nil or when the nested config is disabled, gRPC transport wiring is effectively

@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
@@ -20,6 +21,7 @@ type WorldOption interface {
 
 type worldOpts struct {
 	verifier      token.Verifier
+	access        access.Controller
 	rt            http.RoundTripper
 	generator     token.Generator
 	logger        *logger.Logger
@@ -261,6 +263,13 @@ func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOpt
 	return worldOptionFunc(func(o *worldOpts) {
 		o.generator = generator
 		o.verifier = verifier
+	})
+}
+
+// WithWorldAccessController overrides the access controller used by world servers.
+func WithWorldAccessController(controller access.Controller) WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.access = controller
 	})
 }
 

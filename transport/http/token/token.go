@@ -14,24 +14,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token/access"
 )
 
-// NewAccessController constructs an access controller when token auth is enabled.
-//
-// The controller is responsible for evaluating access rules associated with token-authenticated subjects.
-//
-// If cfg is disabled, it returns (nil, nil) so callers can treat access control as not configured.
-func NewAccessController(cfg *token.Config, fs *os.FS) (AccessController, error) {
-	if !cfg.IsEnabled() {
-		return nil, nil
-	}
-	return access.NewController(cfg.Access, fs)
-}
-
-// AccessController is an alias for [github.com/alexfalkowski/go-service/v2/token/access.Controller].
-//
-// It is exposed from this package so callers can refer to the access controller type from the HTTP token
-// integration layer.
-type AccessController access.Controller
-
 // NewToken constructs a token service when token auth is enabled.
 //
 // The returned service is responsible for generating and verifying tokens according to cfg (for example,
@@ -89,7 +71,7 @@ type Handler struct {
 // Service-owned operation paths (health/metrics/etc.) bypass verification (see [github.com/alexfalkowski/go-service/v2/net/http/strings.IsOperationPath]).
 //
 // The handler expects an Authorization value to be available in the request context (typically injected by
-// [github.com/alexfalkowski/go-service/v2/net/http/meta.Handler]). It verifies the token using verifier, scoping verification to the request path.
+// [github.com/alexfalkowski/go-service/v2/net/http/meta.Handler]). It verifies the token using verifier, scoping verification to the request method and path.
 //
 // Behavior:
 //   - If verification fails, it writes an HTTP 401 error response and does not call next.
@@ -105,7 +87,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ctx := req.Context()
 	auth := meta.Authorization(ctx).Value()
 
-	sub, err := h.verifier.Verify(strings.Bytes(auth), req.URL.Path)
+	sub, err := h.verifier.Verify(strings.Bytes(auth), audience(req))
 	if err != nil {
 		_ = status.WriteError(res, status.UnauthorizedError(err))
 		return
@@ -113,6 +95,49 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx = meta.WithAttributes(ctx, meta.WithUserID(meta.Ignored(sub)))
 	next(res, req.WithContext(ctx))
+}
+
+// NewAccessHandler constructs server-side access-control middleware.
+//
+// Callers should only install this handler when controller is non-nil.
+func NewAccessHandler(name env.Name, controller access.Controller) *AccessHandler {
+	return &AccessHandler{name: name, controller: controller}
+}
+
+// AccessHandler enforces access policy for token-authenticated requests.
+type AccessHandler struct {
+	controller access.Controller
+	name       env.Name
+}
+
+// ServeHTTP checks the verified user id against the configured access policy.
+//
+// Service-owned operation paths (health/metrics/etc.) bypass access control. For application paths, a
+// missing verified user id is treated as unauthenticated, a policy denial is written as HTTP 403, and policy
+// evaluation errors are written as HTTP 500.
+func (h *AccessHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+	if strings.IsOperationPath(h.name, req.URL.Path) {
+		next(res, req)
+		return
+	}
+
+	ctx := req.Context()
+	if meta.UserID(ctx).IsEmpty() {
+		_ = status.WriteError(res, status.UnauthorizedError(header.ErrInvalidAuthorization))
+		return
+	}
+
+	ok, err := h.controller.HasAccess(ctx)
+	if err != nil {
+		_ = status.WriteError(res, status.InternalServerError(err))
+		return
+	}
+	if !ok {
+		_ = status.WriteError(res, status.SafeError(http.StatusForbidden, access.ErrAccessDenied))
+		return
+	}
+
+	next(res, req)
 }
 
 // NewGenerator returns a [Generator] backed by token.
@@ -128,8 +153,8 @@ func NewGenerator(token *Token) Generator {
 
 // Generator is an alias for [token.Generator].
 //
-// Generators create Authorization tokens for outbound HTTP requests, typically scoped to the request path
-// and a caller identity (user id).
+// Generators create Authorization tokens for outbound HTTP requests, typically scoped to the request method
+// and path plus a caller identity (user id).
 type Generator token.Generator
 
 // NewRoundTripper constructs client-side token injection middleware for HTTP requests.
@@ -151,8 +176,8 @@ type RoundTripper struct {
 
 // RoundTrip sets the Authorization header using a generated token.
 //
-// For each request, it generates a token scoped to the request path and the configured user id and then
-// writes it as a single `Bearer` token in the Authorization header.
+// For each request, it generates a token scoped to the request method and path and the configured user id
+// and then writes it as a single `Bearer` token in the Authorization header.
 //
 // Failure behavior:
 //   - If token generation fails, it returns an unauthorized status error.
@@ -168,7 +193,7 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 		return nil, http.ErrUseLastResponse, true
 	}
 
-	token, err := r.generator.Generate(req.URL.Path, r.id.String())
+	token, err := r.generator.Generate(audience(req), r.id.String())
 	if err != nil {
 		return nil, status.UnauthorizedError(err), true
 	}
@@ -187,4 +212,8 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 
 	res, err := r.RoundTripper.RoundTrip(clonedReq)
 	return res, err, false
+}
+
+func audience(req *http.Request) string {
+	return strings.Join(strings.Space, req.Method, req.URL.Path)
 }

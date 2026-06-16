@@ -25,10 +25,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
-	gt "github.com/alexfalkowski/go-service/v2/transport/grpc/token"
+	"github.com/alexfalkowski/go-service/v2/token/access"
+	grpctoken "github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
-	ht "github.com/alexfalkowski/go-service/v2/transport/http/token"
+	httptoken "github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/open-feature/go-sdk/openfeature"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
@@ -148,9 +149,10 @@ func invokeEnvironment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 
 func invokeNetwork(_ time.Network) {}
 
-func invokeAccessController(_ ht.AccessController, _ gt.AccessController) {}
+func invokeAccessController(_ access.Controller) {}
 
-func invokeTokens(_ ht.Generator, _ ht.Verifier, _ gt.Generator, _ gt.Verifier) {}
+func invokeTokens(_ httptoken.Generator, _ httptoken.Verifier, _ grpctoken.Generator, _ grpctoken.Verifier) {
+}
 
 func invokeDB(_ *sql.DBs) {}
 

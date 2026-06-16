@@ -1,21 +1,28 @@
 package access
 
 import (
+	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	persist "github.com/casbin/casbin/v2/persist/string-adapter"
 )
 
-// Controller answers authorization questions for a user, system, and action.
+// ErrAccessDenied is returned by transport integrations when a policy denies access.
+var ErrAccessDenied = errors.New("access: transport policy denied")
+
+// Controller answers authorization questions for request contexts.
 //
 // Implementations typically evaluate a policy and return whether the permission is
 // granted, along with any evaluation/IO error.
 type Controller interface {
-	// HasAccess reports whether user is allowed to perform action on system.
+	// HasAccess reports whether the context's verified user id is allowed to invoke the context's
+	// transport service-method.
 	// The returned bool indicates whether access is granted. If an error is
 	// returned, the boolean result should not be trusted.
-	HasAccess(user, system, action string) (bool, error)
+	HasAccess(ctx context.Context) (bool, error)
 }
 
 // NewController constructs a Controller from cfg.
@@ -61,11 +68,10 @@ type CasbinController struct {
 	enforcer *casbin.Enforcer
 }
 
-// HasAccess evaluates whether user is allowed to perform action on system.
+// HasAccess evaluates the request context using the controller's configured policy.
 //
-// It calls the configured Casbin enforcer as:
-//
-//	c.enforcer.Enforce(user, system, action)
-func (c *CasbinController) HasAccess(user, system, action string) (bool, error) {
-	return c.enforcer.Enforce(user, system, action)
+// The context is expected to contain a verified user id and transport service-method metadata, as populated
+// by the standard HTTP and gRPC transport middleware.
+func (c *CasbinController) HasAccess(ctx context.Context) (bool, error) {
+	return c.enforcer.Enforce(meta.UserID(ctx).Value(), meta.TransportServiceMethod(ctx).Value(), "invoke")
 }

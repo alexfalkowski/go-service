@@ -14,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/structs"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
@@ -152,6 +153,13 @@ func pgConfig(cfg *Config) *pg.Config {
 func timeConfig(cfg *Config) *time.Config {
 	if cfg.Time.IsEnabled() {
 		return cfg.Time
+	}
+	return nil
+}
+
+func accessConfig(cfg *Config) *access.Config {
+	if cfg.Transport.IsEnabled() {
+		return cfg.Transport.Access
 	}
 	return nil
 }

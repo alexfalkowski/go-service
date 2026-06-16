@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/stretchr/testify/require"
 )
@@ -156,6 +157,30 @@ func TestValidAuthUnary(t *testing.T) {
 			require.Equal(t, "Hello test", resp.GetMessage())
 		})
 	}
+}
+
+func TestAccessDeniedUnary(t *testing.T) {
+	controller, err := access.NewController(&access.Config{
+		Model:  test.FilePath("configs/rbac.conf"),
+		Policy: "p, " + test.UserID.String() + ", grpc:/greet.v1.GreeterService/Other, invoke",
+	}, test.FS)
+	require.NoError(t, err)
+
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
+		test.WithWorldAccessController(controller),
+		test.WithWorldGRPC(),
+	)
+
+	conn := test.RequireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
+
+	_, err = client.SayHello(t.Context(), req)
+	require.Equal(t, codes.PermissionDenied, status.Code(err))
 }
 
 func TestUnknownTokenKindAuthUnary(t *testing.T) {

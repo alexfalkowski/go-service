@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/stretchr/testify/require"
@@ -28,26 +29,50 @@ func TestHasAccess(t *testing.T) {
 	require.NoError(t, err)
 
 	tests := []struct {
-		name   string
-		user   string
-		system string
-		action string
-		access bool
+		name          string
+		user          string
+		transport     string
+		serviceMethod string
+		access        bool
 	}{
-		{name: "allowed read", user: "alice", system: "service", action: "read", access: true},
-		{name: "denied wrong action", user: "alice", system: "service", action: "write"},
-		{name: "denied wrong user", user: "bob", system: "service", action: "read"},
-		{name: "denied unknown user", user: "carol", system: "service", action: "read"},
-		{name: "denied unknown system", user: "alice", system: "other", action: "read"},
+		{name: "allowed say hello", user: "frontend", transport: "grpc", serviceMethod: "/greet.v1.GreeterService/SayHello", access: true},
+		{name: "denied wrong method", user: "frontend", transport: "grpc", serviceMethod: "/greet.v1.GreeterService/ListGreetings"},
+		{name: "denied wrong user", user: "admin-api", transport: "grpc", serviceMethod: "/greet.v1.GreeterService/SayHello"},
+		{name: "denied unknown user", user: "guest", transport: "grpc", serviceMethod: "/greet.v1.GreeterService/SayHello"},
+		{name: "denied unknown transport", user: "frontend", transport: "http", serviceMethod: "/greet.v1.GreeterService/SayHello"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ok, err := controller.HasAccess(tt.user, tt.system, tt.action)
+			ctx := meta.WithAttributes(t.Context(),
+				meta.WithUserID(meta.String(tt.user)),
+				meta.WithTransport(meta.String(tt.transport)),
+				meta.WithServiceMethod(meta.String(tt.serviceMethod)),
+			)
+
+			ok, err := controller.HasAccess(ctx)
 			require.NoError(t, err)
 			require.Equal(t, tt.access, ok)
 		})
 	}
+}
+
+func TestHasAccessUsesTransportServiceMethod(t *testing.T) {
+	controller, err := access.NewController(&access.Config{
+		Model:  test.FilePath("configs/rbac.conf"),
+		Policy: "p, frontend, http:GET /users/{id}, invoke",
+	}, test.FS)
+	require.NoError(t, err)
+
+	ctx := meta.WithAttributes(t.Context(),
+		meta.WithUserID(meta.String("frontend")),
+		meta.WithTransport(meta.String("http")),
+		meta.WithServiceMethod(meta.String("GET /users/{id}")),
+	)
+
+	ok, err := controller.HasAccess(ctx)
+	require.NoError(t, err)
+	require.True(t, ok)
 }
 
 func TestNewControllerErrors(t *testing.T) {
@@ -116,7 +141,13 @@ func TestHasAccessWithEnvSources(t *testing.T) {
 	}, test.FS)
 	require.NoError(t, err)
 
-	ok, err := controller.HasAccess("alice", "service", "read")
+	ctx := meta.WithAttributes(t.Context(),
+		meta.WithUserID(meta.String("frontend")),
+		meta.WithTransport(meta.String("grpc")),
+		meta.WithServiceMethod(meta.String("/greet.v1.GreeterService/SayHello")),
+	)
+
+	ok, err := controller.HasAccess(ctx)
 	require.NoError(t, err)
 	require.True(t, ok)
 }
@@ -134,7 +165,13 @@ func TestHasAccessWithLiteralSources(t *testing.T) {
 	}, test.FS)
 	require.NoError(t, err)
 
-	ok, err := controller.HasAccess("alice", "service", "read")
+	ctx := meta.WithAttributes(t.Context(),
+		meta.WithUserID(meta.String("frontend")),
+		meta.WithTransport(meta.String("grpc")),
+		meta.WithServiceMethod(meta.String("/greet.v1.GreeterService/SayHello")),
+	)
+
+	ok, err := controller.HasAccess(ctx)
 	require.NoError(t, err)
 	require.True(t, ok)
 }

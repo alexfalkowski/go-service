@@ -2,10 +2,11 @@ package access
 
 import "github.com/alexfalkowski/go-service/v2/os"
 
-// Config configures access control model and policy loading for the access Controller.
+// Config configures access-control model and policy loading for the access Controller.
 //
 // The config is consumed by NewController, which constructs a Casbin-backed
-// controller/enforcer using the configured model and policy sources.
+// controller/enforcer using the configured model and policy sources. The standard HTTP and gRPC transport
+// stacks enforce a configured controller after token authentication.
 //
 // # Model and policy sources
 //

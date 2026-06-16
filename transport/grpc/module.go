@@ -13,7 +13,7 @@ import (
 //
 //   - transport registration for TLS filesystem access ([Register])
 //   - server-side rate limiting wiring ([NewServerLimiter])
-//   - token access-controller construction and token service wiring ([NewController], [NewToken])
+//   - token service wiring ([NewToken])
 //   - token generator/verifier adapters for interceptor wiring
 //     ([github.com/alexfalkowski/go-service/v2/transport/grpc/token.NewGenerator],
 //     [github.com/alexfalkowski/go-service/v2/transport/grpc/token.NewVerifier])
@@ -25,7 +25,6 @@ import (
 var Module = di.Module(
 	di.Register(Register),
 	di.Constructor(NewServerLimiter),
-	di.Constructor(NewController),
 	di.Constructor(NewToken),
 	di.Constructor(token.NewGenerator),
 	di.Constructor(token.NewVerifier),

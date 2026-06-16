@@ -16,6 +16,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/http/body"
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
@@ -33,6 +34,7 @@ import (
 //   - `Logger`: enables server-side request logging middleware when non-nil.
 //   - `Limiter`: enables server-side rate limiting middleware when non-nil.
 //   - `Verifier`: enables server-side token verification middleware when non-nil.
+//   - `Access`: enables server-side access control middleware when non-nil.
 //   - `Handlers`: allows callers to inject additional chained middleware (and is optional in DI).
 type ServerParams struct {
 	di.In
@@ -73,6 +75,9 @@ type ServerParams struct {
 	// Verifier enables server-side token verification middleware when non-nil.
 	Verifier token.Verifier
 
+	// Access enables server-side access control middleware when non-nil.
+	Access access.Controller
+
 	// Handlers are additional chained handlers to insert into the middleware chain.
 	//
 	// These handlers are applied in the order provided.
@@ -91,10 +96,11 @@ type ServerParams struct {
 //
 // The server is built using Negroni and composes middleware in this order inside that instrumentation wrapper
 // (first listed runs first):
-//   - metadata extraction/injection and response headers ([github.com/alexfalkowski/go-service/v2/net/http/meta])
+//   - metadata extraction/injection, route-pattern resolution, and response headers ([github.com/alexfalkowski/go-service/v2/net/http/meta])
 //   - optional logging ([github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger]) when `params.Logger` is non-nil
 //   - optional token verification ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Verifier` is non-nil
 //   - optional rate limiting ([github.com/alexfalkowski/go-service/v2/transport/http/limiter]) when `params.Limiter` is non-nil
+//   - optional access control ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Access` is non-nil
 //   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v2/transport/http/body])
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - gzip compression wrapping the final mux handler, including not-found fallbacks ([github.com/klauspost/compress/gzhttp.GzipHandler] with [http.NewNotFoundHandler])
@@ -121,7 +127,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	neg := NewChainedHandlers()
-	neg.Use(meta.NewHandler(params.Name, params.UserAgent, params.Version, params.ID))
+	neg.Use(meta.NewHandler(params.Name, params.UserAgent, params.Version, params.ID, params.Mux))
 
 	if params.Logger != nil {
 		neg.Use(logger.NewHandler(params.Name, params.Logger))
@@ -133,6 +139,10 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	if params.Limiter != nil {
 		neg.Use(limiter.NewHandler(params.Name, params.Limiter))
+	}
+
+	if params.Access != nil {
+		neg.Use(token.NewAccessHandler(params.Name, params.Access))
 	}
 
 	neg.Use(body.NewHandler(params.Config.GetMaxReceiveSize().Bytes()))

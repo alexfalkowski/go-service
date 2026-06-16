@@ -1,7 +1,6 @@
 package token
 
 import (
-	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
@@ -33,20 +32,7 @@ import (
 //
 // If Kind is unknown, the token facade treats the configuration as invalid and
 // [Token.Generate]/[Token.Verify] return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
-//
-// # Access control (Access)
-//
-// Access configures optional access-control policy wiring (see package
-// token/access). It is orthogonal to the token kind: some services may use token
-// verification to establish identity (subject) and then evaluate permissions via
-// Access.
 type Config struct {
-	// Access configures access control policy used by token/access.
-	//
-	// This is used to answer authorization checks (for example "user has permission X")
-	// and is typically used in addition to authentication (token verification).
-	Access *access.Config `yaml:"access,omitempty" json:"access,omitempty" toml:"access,omitempty"`
-
 	// JWT configures the JWT token implementation.
 	//
 	// When Kind == "jwt", this configuration is consumed by token/jwt.

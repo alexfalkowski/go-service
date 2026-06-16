@@ -323,9 +323,9 @@ func verifyTimeConfig(t *testing.T, cfg *config.Config) {
 func verifyGRPCConfig(t *testing.T, cfg *config.Config) {
 	t.Helper()
 
+	require.Equal(t, "file:../test/configs/rbac.conf", cfg.Transport.Access.Model)
+	require.Equal(t, "file:../test/configs/rbac.csv", cfg.Transport.Access.Policy)
 	require.True(t, cfg.Transport.GRPC.Token.IsEnabled())
-	require.Equal(t, "file:../test/configs/rbac.conf", cfg.Transport.GRPC.Token.Access.Model)
-	require.Equal(t, "file:../test/configs/rbac.csv", cfg.Transport.GRPC.Token.Access.Policy)
 	require.Equal(t, "jwt", cfg.Transport.GRPC.Token.Kind)
 	require.Equal(t, time.Hour, cfg.Transport.GRPC.Token.JWT.Expiration)
 	require.Equal(t, "iss", cfg.Transport.GRPC.Token.JWT.Issuer)
@@ -362,8 +362,6 @@ func verifyHTTPConfig(t *testing.T, cfg *config.Config) {
 	t.Helper()
 
 	require.True(t, cfg.Transport.HTTP.Token.IsEnabled())
-	require.Equal(t, "file:../test/configs/rbac.conf", cfg.Transport.HTTP.Token.Access.Model)
-	require.Equal(t, "file:../test/configs/rbac.csv", cfg.Transport.HTTP.Token.Access.Policy)
 	require.Equal(t, "jwt", cfg.Transport.HTTP.Token.Kind)
 	require.Equal(t, time.Hour, cfg.Transport.HTTP.Token.JWT.Expiration)
 	require.Equal(t, "iss", cfg.Transport.HTTP.Token.JWT.Issuer)
