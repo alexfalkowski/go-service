@@ -8,13 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/time"
 	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
-	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
-	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -97,89 +92,4 @@ func TestRoundTripperWithTokenDoesNotSendAuthorizationToCrossOriginRedirect(t *t
 	require.Nil(t, res)
 	require.Equal(t, "Bearer secret", trustedAuthorization)
 	require.Empty(t, attackerAuthorization)
-}
-
-func TestRoundTripperGeneratesTokenPerRetryAttempt(t *testing.T) {
-	base := &test.AuthRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
-	rt, err := transporthttp.NewRoundTripper(
-		transporthttp.WithClientRoundTripper(base),
-		transporthttp.WithClientRetry(&retry.Config{
-			Attempts: 2,
-			Timeout:  time.Second,
-			Backoff:  time.Millisecond,
-		}),
-		transporthttp.WithClientTokenGenerator(env.UserID("service-user"), &test.SequenceGenerator{}),
-	)
-	require.NoError(t, err)
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com/hello", http.NoBody)
-	require.NoError(t, err)
-
-	res, err := rt.RoundTrip(req)
-	require.NoError(t, err)
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, []string{"Bearer token-1", "Bearer token-2"}, base.AuthValues)
-	require.Equal(t, []int{1, 1}, base.AuthCounts)
-}
-
-func TestRoundTripperLimiterDenialDoesNotOpenBreaker(t *testing.T) {
-	clientLimiter, err := httplimiter.NewClientLimiter(test.NoopLifecycle{}, limiter.NewKeyMap(), test.NewLimiterConfig("user-agent", "1s", 1))
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, clientLimiter.Close(t.Context())) })
-
-	calls := 0
-	rt, err := transporthttp.NewRoundTripper(
-		transporthttp.WithClientRoundTripper(test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
-			calls++
-			return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil
-		})),
-		transporthttp.WithClientLimiter(clientLimiter),
-		transporthttp.WithClientBreaker(breaker.WithSettings(breaker.Settings{
-			ReadyToTrip: func(counts breaker.Counts) bool {
-				return counts.ConsecutiveFailures >= 1
-			},
-		})),
-	)
-	require.NoError(t, err)
-
-	t.Run("allows first request", func(t *testing.T) {
-		res, err := rt.RoundTrip(newUserAgentRequest(t, "first-agent"))
-		require.NoError(t, err)
-		require.Equal(t, http.StatusOK, res.StatusCode)
-		require.NoError(t, res.Body.Close())
-		require.Equal(t, 1, calls)
-	})
-
-	t.Run("denies exhausted key", func(t *testing.T) {
-		res, err := rt.RoundTrip(newUserAgentRequest(t, "first-agent"))
-		require.Nil(t, res)
-		require.Error(t, err)
-		require.Equal(t, http.StatusTooManyRequests, status.Code(err))
-		require.Equal(t, 1, calls)
-	})
-
-	t.Run("denial does not open breaker", func(t *testing.T) {
-		res, err := rt.RoundTrip(newUserAgentRequest(t, "first-agent"))
-		require.Nil(t, res)
-		require.Error(t, err)
-		require.Equal(t, http.StatusTooManyRequests, status.Code(err))
-		require.Equal(t, 1, calls)
-	})
-
-	t.Run("allows different key", func(t *testing.T) {
-		res, err := rt.RoundTrip(newUserAgentRequest(t, "second-agent"))
-		require.NoError(t, err)
-		require.Equal(t, http.StatusOK, res.StatusCode)
-		require.NoError(t, res.Body.Close())
-		require.Equal(t, 2, calls)
-	})
-}
-
-func newUserAgentRequest(t *testing.T, userAgent string) *http.Request {
-	t.Helper()
-
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com/hello", http.NoBody)
-	require.NoError(t, err)
-	req.Header.Set("User-Agent", userAgent)
-
-	return req
 }

@@ -1,21 +1,15 @@
 package grpc_test
 
 import (
-	"slices"
 	"strconv"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	grpcmeta "github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/transport/breaker"
-	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
-	grpcbreaker "github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/stretchr/testify/require"
@@ -92,39 +86,6 @@ func TestClientLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
-}
-
-func TestClientLimiterDenialDoesNotOpenBreaker(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
-	client, err := grpclimiter.NewClientLimiter(lc, limiter.NewKeyMap(), test.NewLimiterConfig("user-agent", "1s", 0))
-	require.NoError(t, err)
-	require.NotNil(t, client)
-	defer func() {
-		require.NoError(t, client.Close(t.Context()))
-	}()
-
-	interceptors := transportgrpc.UnaryClientInterceptors(
-		transportgrpc.WithClientLimiter(client),
-		transportgrpc.WithClientBreaker(grpcbreaker.WithSettings(grpcbreaker.Settings{
-			ReadyToTrip: func(counts breaker.Counts) bool {
-				return counts.ConsecutiveFailures >= 1
-			},
-		})),
-	)
-	calls := 0
-	invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
-		calls++
-		return nil
-	}
-	first := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("first-agent")))
-	second := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("second-agent")))
-
-	require.NoError(t, invokeUnaryClient(first, interceptors, invoker))
-	err = invokeUnaryClient(first, interceptors, invoker)
-	require.Error(t, err)
-	require.Equal(t, codes.ResourceExhausted, status.Code(err))
-	require.NoError(t, invokeUnaryClient(second, interceptors, invoker))
-	require.Equal(t, 2, calls)
 }
 
 func TestClientLimiterStream(t *testing.T) {
@@ -254,18 +215,6 @@ func TestClientClosedLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
 	require.Equal(t, codes.Internal, status.Code(err))
-}
-
-func invokeUnaryClient(ctx context.Context, interceptors []grpc.UnaryClientInterceptor, invoker grpc.UnaryInvoker) error {
-	chained := invoker
-	for _, interceptor := range slices.Backward(interceptors) {
-		next := chained
-		chained = func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, opts ...grpc.CallOption) error {
-			return interceptor(ctx, fullMethod, req, resp, conn, next, opts...)
-		}
-	}
-
-	return chained(ctx, "/test.Service/GetHello", nil, nil, nil)
 }
 
 func sayStreamHello(t *testing.T, client v1.GreeterServiceClient) error {

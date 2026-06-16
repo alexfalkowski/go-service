@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-sync"
@@ -19,6 +20,12 @@ type Counts = breaker.Counts
 //
 // It is returned by [github.com/sony/gobreaker.CircuitBreaker.Execute] when the breaker is open.
 var ErrOpenState = breaker.ErrOpenState
+
+// ErrTooManyRequests is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.ErrTooManyRequests].
+//
+// It is returned by [github.com/sony/gobreaker.CircuitBreaker.Execute] when the breaker is half-open and MaxRequests
+// would be exceeded.
+var ErrTooManyRequests = breaker.ErrTooManyRequests
 
 // Settings is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.Settings].
 //
@@ -106,10 +113,21 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 			return re.resp, nil, false
 		}
 
-		return nil, err, errors.Is(err, breaker.ErrOpenState) || errors.Is(err, breaker.ErrTooManyRequests)
+		return nil, localRejectionError(err), errors.Is(err, breaker.ErrOpenState) || errors.Is(err, breaker.ErrTooManyRequests)
 	}
 
 	return result.(*http.Response), nil, false
+}
+
+func localRejectionError(err error) error {
+	if errors.Is(err, breaker.ErrTooManyRequests) {
+		return status.SafeError(http.StatusTooManyRequests, err)
+	}
+	if errors.Is(err, breaker.ErrOpenState) {
+		return status.ServiceUnavailableError(err)
+	}
+
+	return err
 }
 
 func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {

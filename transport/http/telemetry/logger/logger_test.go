@@ -10,6 +10,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	httplogger "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/stretchr/testify/require"
@@ -80,6 +81,23 @@ func TestRoundTripperLogsTransportError(t *testing.T) {
 	require.Nil(t, res)
 	require.Contains(t, logs.String(), `"level":"ERROR"`)
 	require.Contains(t, logs.String(), `"error":"dial failed"`)
+}
+
+func TestRoundTripperLogsStatusErrorCode(t *testing.T) {
+	var logs bytes.Buffer
+	err := status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
+	base := &test.ErrorRoundTripper{Err: err}
+	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+	rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, base)
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/users", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.Error(t, err)
+	require.Nil(t, res)
+	require.Contains(t, logs.String(), `"level":"WARN"`)
+	require.Contains(t, logs.String(), `"code":429`)
 }
 
 func TestRoundTripperLogsResponse(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"strconv"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -17,6 +18,43 @@ const maxKeySize = 256
 
 // overflowStoreKey is outside the storeKey namespace, which only emits empty:, raw:, and hash: prefixes.
 const overflowStoreKey = "internal:max-keys-overflow"
+
+// NewKeyMap returns the default KeyMap used by the limiter.
+//
+// Supported default kinds, in the usual order of preference, are:
+//   - "user-id": rate limit per verified user/principal identifier ([meta.UserID])
+//   - "transport-service-method": rate limit per transport-prefixed service method
+//     ([meta.TransportServiceMethod])
+//   - "service-method": rate limit per HTTP route/path or gRPC full method ([meta.ServiceMethod])
+//   - "ip": rate limit per client IP address ([meta.IPAddr])
+//   - "user-agent": rate limit per User-Agent header ([meta.UserAgent])
+//
+// These defaults are intended for controlled service-to-service traffic where user agents,
+// forwarded IP headers, and authorization metadata are supplied by trusted clients or platform
+// infrastructure. They are not sufficient as public-edge anti-abuse controls when clients can
+// freely spoof headers; use trusted ingress, gateway, service-mesh, or post-auth identity limits
+// for those boundaries.
+func NewKeyMap() KeyMap {
+	return KeyMap{
+		"user-id":                  meta.UserID,
+		"transport-service-method": meta.TransportServiceMethod,
+		"service-method":           meta.ServiceMethod,
+		"ip":                       meta.IPAddr,
+		"user-agent":               meta.UserAgent,
+	}
+}
+
+// KeyFunc derives the metadata value used to key rate limits for ctx.
+//
+// The returned [meta.Value] is expected to yield a stable string via Value() that can be used as a
+// per-request/per-actor limiter key (for example a user-agent, an IP address, a transport method, or a
+// verified principal).
+type KeyFunc func(context.Context) meta.Value
+
+// KeyMap maps a configured kind string to the KeyFunc used to derive the limiter key.
+//
+// It is typically constructed via NewKeyMap and passed to NewLimiter along with [Config.Kind].
+type KeyMap map[string]KeyFunc
 
 type keys struct {
 	values  map[string]time.Time

@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/net/http/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -85,7 +86,7 @@ type RoundTripper struct {
 //   - system: "http"
 //   - service/method: derived from the request (see [http.ParseServiceMethod])
 //   - duration: wall-clock elapsed time
-//   - code: HTTP response status code (when available)
+//   - code: HTTP response status code, or status-bearing transport error code when no response is available
 //   - error: transport error (when present)
 //
 // Log level is derived from the status code:
@@ -93,7 +94,7 @@ type RoundTripper struct {
 //   - 5xx → error
 //   - otherwise → info
 //
-// If resp is nil (for example, due to a transport error), it is treated as HTTP 500 for level selection.
+// If resp is nil and err does not carry a status code, it is treated as HTTP 500 for level selection.
 // The log message includes the derived method and service.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	service, method := http.ParseServiceMethod(req)
@@ -106,25 +107,21 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	attrs = append(attrs, logger.String(meta.SystemKey, "http"))
 	attrs = append(attrs, logger.String(meta.ServiceKey, service))
 	attrs = append(attrs, logger.String(meta.MethodKey, method))
-	if resp != nil {
-		attrs = append(attrs, logger.Int(meta.CodeKey, resp.StatusCode))
-	}
+	code := responseCode(resp, err)
+	attrs = append(attrs, logger.Int(meta.CodeKey, code))
 
 	message := logger.NewMessage(httpMessage(strings.Join(strings.Space, method, service)), err)
 
-	r.logger.LogAttrs(ctx, respToLevel(resp), message, attrs...)
+	r.logger.LogAttrs(ctx, codeToLevel(code), message, attrs...)
 	return resp, err
 }
 
-func respToLevel(resp *http.Response) logger.Level {
-	var code int
+func responseCode(resp *http.Response, err error) int {
 	if resp != nil {
-		code = resp.StatusCode
-	} else {
-		code = 500
+		return resp.StatusCode
 	}
 
-	return codeToLevel(code)
+	return status.Code(err)
 }
 
 func codeToLevel(code int) logger.Level {

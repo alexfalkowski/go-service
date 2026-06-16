@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/net/server"
 )
 
 // RegisterParams defines dependencies for registering HTTP health endpoints.
@@ -26,6 +27,9 @@ type RegisterParams struct {
 	// Mux is the HTTP serve mux the health handlers are registered on.
 	Mux *http.ServeMux
 
+	// Drain tracks whether the server lifecycle has started shutting down.
+	Drain *server.Drain `optional:"true"`
+
 	// Name is the service name used both for route prefixing and observer lookup.
 	Name env.Name
 }
@@ -40,6 +44,7 @@ type RegisterParams struct {
 //
 //   - HTTP 200 with the plain-text body "SERVING" when the observer reports no error.
 //   - HTTP 503 when the observer is missing or reports an error.
+//   - HTTP 503 for `/readyz` after the server lifecycle starts draining.
 //
 // Error responses are written with [status.WriteError], and successful responses are written with
 // [status.WriteText]. Callers are expected to have request metadata middleware in place if they want
@@ -52,6 +57,13 @@ func Register(params RegisterParams) {
 
 func resister(pattern string, params RegisterParams) {
 	params.Mux.HandleFunc("GET "+http.Pattern(params.Name, pattern), func(res http.ResponseWriter, req *http.Request) {
+		if pattern == "/readyz" {
+			if err := params.Drain.Error(); err != nil {
+				_ = status.WriteError(res, status.ServiceUnavailableError(err))
+				return
+			}
+		}
+
 		observer, err := params.Server.Observer(params.Name.String(), pattern[1:])
 		if err != nil {
 			_ = status.WriteError(res, status.ServiceUnavailableError(err))
