@@ -1,13 +1,20 @@
 package health_test
 
 import (
+	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-health/v2/checker"
+	healthserver "github.com/alexfalkowski/go-health/v2/server"
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
+	netserver "github.com/alexfalkowski/go-service/v2/net/server"
+	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/stretchr/testify/require"
 )
 
@@ -74,6 +81,36 @@ func TestReadinessCache(t *testing.T) {
 	require.Equal(t, "SERVING", body)
 }
 
+func TestReadinessDrains(t *testing.T) {
+	srv := healthserver.NewServer()
+	reg := healthserver.NewRegistration("noop", time.Millisecond.Duration(), checker.NewNoopChecker())
+	srv.Register(test.Name.String(), reg)
+	require.NoError(t, srv.Observe(test.Name.String(), "readyz", "noop"))
+	require.NoError(t, srv.Observe(test.Name.String(), "livez", "noop"))
+	require.NoError(t, srv.Start(t.Context()))
+	t.Cleanup(func() {
+		require.NoError(t, srv.Stop(context.Background()))
+	})
+
+	drain := netserver.NewDrain()
+	mux := http.NewServeMux()
+	health.Register(health.RegisterParams{
+		Name:   test.Name,
+		Server: srv,
+		Mux:    mux,
+		Drain:  drain,
+	})
+
+	require.Eventually(t, func() bool {
+		return healthStatus(mux, "readyz") == http.StatusOK
+	}, time.Second.Duration(), time.Millisecond.Duration())
+
+	drain.Start()
+
+	require.Equal(t, http.StatusServiceUnavailable, healthStatus(mux, "readyz"))
+	require.Equal(t, http.StatusOK, healthStatus(mux, "livez"))
+}
+
 func TestInvalidHealth(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
@@ -117,4 +154,13 @@ func TestMissingHealth(t *testing.T) {
 			require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 		})
 	}
+}
+
+func healthStatus(mux *http.ServeMux, check string) int {
+	res := httptest.NewRecorder()
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, http.Pattern(test.Name, "/"+check), http.NoBody)
+
+	mux.ServeHTTP(res, req)
+
+	return res.Code
 }

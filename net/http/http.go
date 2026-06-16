@@ -226,25 +226,23 @@ func MaxBytesHandler(h Handler, n int64) Handler {
 	return http.MaxBytesHandler(h, n)
 }
 
+// NewTelemetryHandler wraps handler with OpenTelemetry instrumentation when tracing or metrics are enabled.
+func NewTelemetryHandler(handler Handler, operation string) Handler {
+	if !metrics.IsEnabled() && !tracer.IsEnabled() {
+		return handler
+	}
+
+	return telemetry.NewHandler(handler, operation)
+}
+
 // HandleFunc registers handler for pattern on mux.
-//
-// When tracing or metrics are enabled, handler is wrapped with OpenTelemetry instrumentation before
-// registration.
 func HandleFunc(mux *ServeMux, pattern string, handler http.HandlerFunc) {
 	Handle(mux, pattern, handler)
 }
 
 // Handle registers handler for pattern on mux.
-//
-// When tracing or metrics are enabled, handler is wrapped with [telemetry.NewHandler] using the provided
-// pattern as the handler name.
 func Handle(mux *ServeMux, pattern string, handler http.Handler) {
-	if !metrics.IsEnabled() && !tracer.IsEnabled() {
-		mux.Handle(pattern, handler)
-		return
-	}
-
-	mux.Handle(pattern, telemetry.NewHandler(handler, pattern))
+	mux.Handle(pattern, handler)
 }
 
 // StatusText returns the standard HTTP status text for the given status code.

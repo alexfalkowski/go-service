@@ -87,7 +87,7 @@ func BenchmarkHTTP(b *testing.B) {
 		require.NoError(b, err)
 		cfg.HTTP.Address = test.BoundAddress(cfg.HTTP.Address, h.GetService().String())
 
-		server.Register(lc, []*server.Service{h.GetService()})
+		server.Register(server.RegisterParams{Lifecycle: lc, Services: []*server.Service{h.GetService()}})
 
 		lc.RequireStart()
 
@@ -137,7 +137,7 @@ func BenchmarkHTTP(b *testing.B) {
 		require.NoError(b, err)
 		cfg.HTTP.Address = test.BoundAddress(cfg.HTTP.Address, h.GetService().String())
 
-		server.Register(lc, []*server.Service{h.GetService()})
+		server.Register(server.RegisterParams{Lifecycle: lc, Services: []*server.Service{h.GetService()}})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()
@@ -190,7 +190,7 @@ func BenchmarkHTTP(b *testing.B) {
 		require.NoError(b, err)
 		cfg.HTTP.Address = test.BoundAddress(cfg.HTTP.Address, h.GetService().String())
 
-		server.Register(lc, []*server.Service{h.GetService()})
+		server.Register(server.RegisterParams{Lifecycle: lc, Services: []*server.Service{h.GetService()}})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()

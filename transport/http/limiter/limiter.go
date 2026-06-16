@@ -1,6 +1,8 @@
 package limiter
 
 import (
+	"strconv"
+
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -57,9 +59,9 @@ type Handler struct {
 // Service-owned operation paths (health/metrics/etc.) bypass limiting (see [github.com/alexfalkowski/go-service/v2/net/http/strings.IsOperationPath]).
 //
 // Behavior:
-//   - If `Take` returns an error, it writes an internal server error response.
-//   - If `Take` returns a header string, it is added to the response as the "RateLimit" header.
-//   - If the request is not allowed, it writes an HTTP 429 response.
+//   - If the limiter returns an error, it writes an internal server error response.
+//   - If the limiter returns a header string, it is added to the response as the "RateLimit" header.
+//   - If the request is not allowed, it writes an HTTP 429 response with Retry-After when reset timing is available.
 //   - Otherwise it calls next.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if strings.IsOperationPath(h.name, req.URL.Path) {
@@ -69,15 +71,19 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx := req.Context()
 
-	ok, header, err := h.limiter.Take(ctx)
+	decision, err := h.limiter.TakeDecision(ctx)
 	if err != nil {
 		_ = status.WriteError(res, status.InternalServerError(err))
 		return
 	}
 
-	res.Header().Add("RateLimit", header)
+	res.Header().Add("RateLimit", decision.Header())
 
-	if !ok {
+	if !decision.Allowed() {
+		if resetAfter := decision.ResetAfterSeconds(); resetAfter > 0 {
+			res.Header().Set("Retry-After", strconv.FormatUint(resetAfter, 10))
+		}
+
 		_ = status.WriteError(res, status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests)))
 		return
 	}

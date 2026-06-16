@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -51,6 +52,30 @@ func TestServerLimiter(t *testing.T) {
 			require.NotEmpty(t, res.Header.Get("Ratelimit"))
 		})
 	}
+}
+
+func TestServerLimiterSetsRetryAfter(t *testing.T) {
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1h", 1)),
+		test.WithWorldHTTP(),
+		test.WithWorldHello(),
+	)
+
+	url := world.PathServerURL("http", "hello")
+
+	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+
+	res, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+	require.NotEmpty(t, res.Header.Get("Ratelimit"))
+	retryAfter, err := strconv.ParseUint(res.Header.Get("Retry-After"), 10, 64)
+	require.NoError(t, err)
+	require.Positive(t, retryAfter)
+	require.LessOrEqual(t, retryAfter, uint64(3600))
 }
 
 func TestServerLimiterDoesNotBypassApplicationMetricsPath(t *testing.T) {

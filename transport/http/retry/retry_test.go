@@ -122,15 +122,18 @@ func TestRoundTripperRetriesWithDefaultBackoff(t *testing.T) {
 	require.Equal(t, 2, rt.Calls)
 }
 
-func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsBackoff(t *testing.T) {
+func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsMinimumBackoff(t *testing.T) {
+	retryAfterDate := time.Now().Add(5 * time.Second.Duration()).UTC().Format(http.TimeFormat)
 	tests := []struct {
 		name       string
 		retryAfter string
 		code       int
+		backoff    time.Duration
 	}{
-		{name: "too many requests seconds", code: http.StatusTooManyRequests, retryAfter: "2"},
-		{name: "service unavailable date", code: http.StatusServiceUnavailable, retryAfter: time.Now().Add(5 * time.Second.Duration()).UTC().Format(http.TimeFormat)},
-		{name: "too many requests overflow", code: http.StatusTooManyRequests, retryAfter: "999999999999999999999999999999"},
+		{name: "too many requests seconds", code: http.StatusTooManyRequests, retryAfter: "2", backoff: time.Second},
+		{name: "too many requests equal backoff", code: http.StatusTooManyRequests, retryAfter: "1", backoff: time.Second},
+		{name: "service unavailable date", code: http.StatusServiceUnavailable, retryAfter: retryAfterDate, backoff: time.Second},
+		{name: "too many requests overflow", code: http.StatusTooManyRequests, retryAfter: "999999999999999999999999999999", backoff: time.Second},
 	}
 
 	for _, tt := range tests {
@@ -146,7 +149,7 @@ func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsBackoff(t *testing.T) {
 			retrying := retry.NewRoundTripper(&retry.Config{
 				Attempts: 2,
 				Timeout:  time.Second,
-				Backoff:  time.Second,
+				Backoff:  tt.backoff,
 			}, rt)
 
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)

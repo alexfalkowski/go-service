@@ -22,11 +22,9 @@ func TestServer(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	logger, err := test.NewLogger(lc, test.NewTextLoggerConfig())
 	require.NoError(t, err)
-	meter, err := test.NewPrometheusMeter(lc)
-	require.NoError(t, err)
 
 	c := test.NewInsecureTransportConfig()
-	s := &test.Server{Lifecycle: lc, Logger: logger, TransportConfig: c, Meter: meter, Mux: mux}
+	s := &test.Server{Lifecycle: lc, Logger: logger, TransportConfig: c, Mux: mux}
 	require.NoError(t, s.Register())
 
 	lc.RequireStart()

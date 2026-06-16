@@ -6,7 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	"github.com/stretchr/testify/require"
 )
@@ -31,6 +33,7 @@ func TestRoundTripperOpensOnTransportError(t *testing.T) {
 	res, err = rt.RoundTrip(req)
 	require.Nil(t, res)
 	require.ErrorIs(t, err, breaker.ErrOpenState)
+	require.Equal(t, http.StatusServiceUnavailable, status.Code(err))
 }
 
 func TestRoundTripperClosesBodyWhenBreakerIsOpen(t *testing.T) {
@@ -57,6 +60,62 @@ func TestRoundTripperClosesBodyWhenBreakerIsOpen(t *testing.T) {
 	require.Nil(t, res)
 	require.ErrorIs(t, err, breaker.ErrOpenState)
 	require.True(t, body.Closed)
+}
+
+func TestRoundTripperMapsHalfOpenProbeSaturationToTooManyRequests(t *testing.T) {
+	started := make(chan struct{})
+	release := make(chan struct{})
+	transportErr := errors.New("transport unavailable")
+	failed := false
+	rt := breaker.NewRoundTripper(
+		test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+			if !failed {
+				failed = true
+				return nil, transportErr
+			}
+
+			close(started)
+			<-release
+
+			return test.ResponseWithStatus(http.StatusOK), nil
+		}),
+		breaker.WithSettings(breaker.Settings{
+			MaxRequests: 1,
+			Timeout:     time.Millisecond.Duration(),
+			ReadyToTrip: func(counts breaker.Counts) bool {
+				return counts.ConsecutiveFailures >= 1
+			},
+		}),
+	)
+	first, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+	res, err := rt.RoundTrip(first)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, transportErr)
+
+	<-time.After(10 * time.Millisecond)
+
+	probe, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+	probeErr := make(chan error, 1)
+	go func() {
+		res, err := rt.RoundTrip(probe)
+		if res != nil {
+			_ = res.Body.Close()
+		}
+		probeErr <- err
+	}()
+	<-started
+
+	saturated, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+	res, err = rt.RoundTrip(saturated)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, breaker.ErrTooManyRequests)
+	require.Equal(t, http.StatusTooManyRequests, status.Code(err))
+
+	close(release)
+	require.NoError(t, <-probeErr)
 }
 
 func TestRoundTripperOpensOnFailureStatus(t *testing.T) {

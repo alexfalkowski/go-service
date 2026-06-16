@@ -20,11 +20,12 @@ import (
 //
 // Server lifecycle wiring:
 // This module also provides [NewServers] (to collect enabled *[server.Service] instances) and registers
-// [github.com/alexfalkowski/go-service/v2/net/server.Register], which attaches lifecycle hooks to start and stop those services.
+// [github.com/alexfalkowski/go-service/v2/net/server.Register], which attaches lifecycle hooks to start, drain, and stop those services.
 //
 // In typical service applications this module is consumed through [github.com/alexfalkowski/go-service/v2/module.Server], so callers normally do
 // not need to invoke lower-level transport registration or lifecycle helpers themselves.
 var Module = di.Module(
+	di.Constructor(server.NewDrain),
 	grpc.Module,
 	http.Module,
 	events.Module,

@@ -85,8 +85,11 @@ func ServerFailureOption() di.Option {
 		di.NoLogger,
 		di.Constructor(slog.Default),
 		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
-			server.Register(lc, []*server.Service{
-				server.NewService("test", DelayedFailingServer{}, nil, sh),
+			server.Register(server.RegisterParams{
+				Lifecycle: lc,
+				Services: []*server.Service{
+					server.NewService("test", DelayedFailingServer{}, nil, sh),
+				},
 			})
 		}),
 	)

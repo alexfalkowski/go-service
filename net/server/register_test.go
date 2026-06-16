@@ -19,9 +19,12 @@ func TestRegisterStopErrors(t *testing.T) {
 	second := test.NewObservableServer(nil, secondErr)
 	sh := test.NewShutdowner()
 
-	server.Register(lc, []*server.Service{
-		server.NewService("first", first, nil, sh),
-		server.NewService("second", second, nil, sh),
+	server.Register(server.RegisterParams{
+		Lifecycle: lc,
+		Services: []*server.Service{
+			server.NewService("first", first, nil, sh),
+			server.NewService("second", second, nil, sh),
+		},
 	})
 
 	require.NoError(t, lc.Start(t.Context()))
@@ -42,9 +45,12 @@ func TestRegisterStartsAllServices(t *testing.T) {
 	second := test.NewObservableServer(nil, nil)
 	sh := test.NewShutdowner()
 
-	server.Register(lc, []*server.Service{
-		server.NewService("first", first, nil, sh),
-		server.NewService("second", second, nil, sh),
+	server.Register(server.RegisterParams{
+		Lifecycle: lc,
+		Services: []*server.Service{
+			server.NewService("first", first, nil, sh),
+			server.NewService("second", second, nil, sh),
+		},
 	})
 
 	require.NoError(t, lc.Start(t.Context()))
@@ -62,9 +68,12 @@ func TestRegisterStopsServicesConcurrently(t *testing.T) {
 	second := newShutdownContextServer()
 	sh := test.NewShutdowner()
 
-	server.Register(lc, []*server.Service{
-		server.NewService("first", first, nil, sh),
-		server.NewService("second", second, nil, sh),
+	server.Register(server.RegisterParams{
+		Lifecycle: lc,
+		Services: []*server.Service{
+			server.NewService("first", first, nil, sh),
+			server.NewService("second", second, nil, sh),
+		},
 	})
 
 	require.NoError(t, lc.Start(t.Context()))
@@ -79,6 +88,32 @@ func TestRegisterStopsServicesConcurrently(t *testing.T) {
 	require.NoError(t, <-second.ShutdownErrs)
 }
 
+func TestRegisterStartsDrainBeforeStoppingServices(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	drain := server.NewDrain()
+	srv := &drainObservingServer{
+		Done:     make(chan struct{}),
+		Draining: make(chan bool, 1),
+		Drain:    drain,
+	}
+	sh := test.NewShutdowner()
+
+	server.Register(server.RegisterParams{
+		Lifecycle: lc,
+		Services: []*server.Service{
+			server.NewService("test", srv, nil, sh),
+		},
+		Drain: drain,
+	})
+
+	require.NoError(t, lc.Start(t.Context()))
+	waitForRegisteredService(t, srv.Done)
+
+	require.NoError(t, lc.Stop(t.Context()))
+	require.True(t, <-srv.Draining, "drain should start before server shutdown")
+	require.ErrorIs(t, drain.Error(), server.ErrDraining)
+}
+
 func TestRegisterSnapshotsServices(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	original := test.NewObservableServer(nil, nil)
@@ -88,7 +123,7 @@ func TestRegisterSnapshotsServices(t *testing.T) {
 		server.NewService("original", original, nil, sh),
 	}
 
-	server.Register(lc, services)
+	server.Register(server.RegisterParams{Lifecycle: lc, Services: services})
 	services[0] = server.NewService("replacement", replacement, nil, sh)
 
 	require.NoError(t, lc.Start(t.Context()))
@@ -158,5 +193,27 @@ func (s *shutdownContextServer) Shutdown(ctx context.Context) error {
 }
 
 func (*shutdownContextServer) String() string {
+	return "test"
+}
+
+type drainObservingServer struct {
+	Done     chan struct{}
+	Draining chan bool
+	Drain    *server.Drain
+}
+
+func (s *drainObservingServer) Serve() error {
+	close(s.Done)
+
+	return nil
+}
+
+func (s *drainObservingServer) Shutdown(context.Context) error {
+	s.Draining <- errors.Is(s.Drain.Error(), server.ErrDraining)
+
+	return nil
+}
+
+func (*drainObservingServer) String() string {
 	return "test"
 }

@@ -12,11 +12,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestMaxBytesHandler(t *testing.T) {
@@ -216,54 +213,4 @@ func TestParseServiceMethod(t *testing.T) {
 			require.Equal(t, test.action, action)
 		})
 	}
-}
-
-func TestHandleWhenTelemetryDisabled(t *testing.T) {
-	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
-	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
-
-	mux := http.NewServeMux()
-	called := false
-
-	http.Handle(mux, "/hello", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		called = true
-		_, _ = res.Write([]byte("hello"))
-	}))
-
-	res := httptest.NewRecorder()
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-
-	mux.ServeHTTP(res, req)
-
-	require.True(t, called)
-	require.Equal(t, http.StatusOK, res.Code)
-	test.RequireResponseBody(t, res, "hello")
-}
-
-func TestHandleWhenMetricsEnabled(t *testing.T) {
-	t.Cleanup(func() {
-		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
-	})
-
-	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
-	metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle: fxtest.NewLifecycle(t),
-		Config:    &metrics.Config{},
-		Reader:    metrics.NewManualReader(),
-	})
-
-	mux := http.NewServeMux()
-
-	http.Handle(mux, "/hello", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		_, _ = res.Write([]byte("hello"))
-	}))
-
-	res := httptest.NewRecorder()
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-
-	mux.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusOK, res.Code)
-	test.RequireResponseBody(t, res, "hello")
 }

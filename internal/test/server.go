@@ -123,7 +123,7 @@ func (s *Server) Register() error {
 		servers = append(servers, debugServer.GetService())
 	}
 
-	server.Register(s.Lifecycle, servers)
+	server.Register(server.RegisterParams{Lifecycle: s.Lifecycle, Services: servers})
 
 	return nil
 }

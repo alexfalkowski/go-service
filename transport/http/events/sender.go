@@ -21,9 +21,10 @@ import (
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) *Sender {
 	resolved := options(opts...)
 	rt := hooks.NewRoundTripper(hook, resolved.roundTripper)
-	httpClient := http.Client{Transport: rt, CheckRedirect: http.SameOriginRedirect, Timeout: resolved.timeout.Duration()}
+	httpClient := http.NewClient(rt, resolved.timeout)
+	httpClient.CheckRedirect = http.SameOriginRedirect
 
-	sender := events.NewClient(httpClient)
+	sender := events.NewClient(*httpClient)
 	return &Sender{client: sender}
 }
 

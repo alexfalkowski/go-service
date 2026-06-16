@@ -86,7 +86,11 @@ type ServerParams struct {
 //
 // Middleware composition:
 //
-// The server is built using Negroni and composes middleware in this order (first listed runs first):
+// When OpenTelemetry tracing or metrics are enabled, the full transport chain is wrapped with HTTP server
+// instrumentation so transport-level rejections are observed before the request reaches the mux.
+//
+// The server is built using Negroni and composes middleware in this order inside that instrumentation wrapper
+// (first listed runs first):
 //   - metadata extraction/injection and response headers ([github.com/alexfalkowski/go-service/v2/net/http/meta])
 //   - optional logging ([github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger]) when `params.Logger` is non-nil
 //   - optional token verification ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Verifier` is non-nil
@@ -140,7 +144,8 @@ func NewServer(params ServerParams) (*Server, error) {
 	handler := http.NewNotFoundHandler(params.Mux, params.Pool, mvc.NotFoundHandler(), content.NotFoundHandler())
 	neg.UseHandler(gzhttp.GzipHandler(handler))
 
-	httpServer := http.NewServer(params.Config.Options, params.Config.GetTimeout(), neg)
+	handler = http.NewTelemetryHandler(neg, "http.server")
+	httpServer := http.NewServer(params.Config.Options, params.Config.GetTimeout(), handler)
 
 	cfg, err := newConfig(fs, params.Config)
 	if err != nil {

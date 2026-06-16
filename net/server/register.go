@@ -8,17 +8,32 @@ import (
 	"github.com/alexfalkowski/go-sync"
 )
 
+// RegisterParams defines dependencies for registering server services.
+type RegisterParams struct {
+	di.In
+
+	// Lifecycle receives the server start and stop hooks.
+	Lifecycle di.Lifecycle
+
+	// Drain tracks whether shutdown has started.
+	Drain *Drain `optional:"true"`
+
+	// Services are the server services managed by the lifecycle.
+	Services []*Service
+}
+
 // Register wires server services into the application lifecycle.
 //
 // It appends an Fx lifecycle hook that:
 //   - OnStart: starts each provided *[Service] by calling `Start()`.
-//   - OnStop: stops each provided *[Service] by calling `Stop(ctx)` and returns the joined shutdown errors.
+//   - OnStop: marks the optional drain state, stops each provided *[Service] by calling `Stop(ctx)`,
+//     and returns the joined shutdown errors.
 //
 // Callers should ensure the slice does not contain nil entries.
-func Register(lc di.Lifecycle, services []*Service) {
-	services = slices.Clone(services)
+func Register(params RegisterParams) {
+	services := slices.Clone(params.Services)
 
-	lc.Append(di.Hook{
+	params.Lifecycle.Append(di.Hook{
 		OnStart: func(context.Context) error {
 			for _, s := range services {
 				s.Start()
@@ -27,6 +42,8 @@ func Register(lc di.Lifecycle, services []*Service) {
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
+			params.Drain.Start()
+
 			var group sync.ErrorsGroup
 			for _, s := range services {
 				group.Go(func() error {
