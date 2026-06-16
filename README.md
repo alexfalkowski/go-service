@@ -619,6 +619,8 @@ The model is based on Casbin RBAC:
 
 > [!NOTE]
 > `access.model` and `access.policy` are resolved through `os.FS.ReadSource`; use `file:` for files, `env:` for environment-provided content, or literal content.
+>
+> Access config builds an injectable controller for authorization checks. The built-in HTTP and gRPC token middleware authenticates tokens and stores the verified user id, but it does not automatically enforce Casbin policy. Services must call `HasAccess(...)` from handlers or install their own authorization middleware/interceptors where policy enforcement is required.
 
 ### JWT
 

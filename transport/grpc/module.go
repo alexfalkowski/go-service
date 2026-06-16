@@ -13,7 +13,7 @@ import (
 //
 //   - transport registration for TLS filesystem access ([Register])
 //   - server-side rate limiting wiring ([NewServerLimiter])
-//   - token access control and token service wiring ([NewController], [NewToken])
+//   - token access-controller construction and token service wiring ([NewController], [NewToken])
 //   - token generator/verifier adapters for interceptor wiring
 //     ([github.com/alexfalkowski/go-service/v2/transport/grpc/token.NewGenerator],
 //     [github.com/alexfalkowski/go-service/v2/transport/grpc/token.NewVerifier])
