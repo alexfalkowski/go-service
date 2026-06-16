@@ -28,6 +28,8 @@ type RegisterParams struct {
 	Mux *http.ServeMux
 
 	// Drain tracks whether the server lifecycle has started shutting down.
+	//
+	// When omitted, /readyz does not report drain state and only reflects the registered readiness observer.
 	Drain *server.Drain `optional:"true"`
 
 	// Name is the service name used both for route prefixing and observer lookup.
@@ -44,7 +46,7 @@ type RegisterParams struct {
 //
 //   - HTTP 200 with the plain-text body "SERVING" when the observer reports no error.
 //   - HTTP 503 when the observer is missing or reports an error.
-//   - HTTP 503 for `/readyz` after the server lifecycle starts draining.
+//   - HTTP 503 for `/readyz` after the server lifecycle starts draining, when params.Drain is provided.
 //
 // Error responses are written with [status.WriteError], and successful responses are written with
 // [status.WriteText]. Callers are expected to have request metadata middleware in place if they want
