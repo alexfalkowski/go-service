@@ -16,6 +16,9 @@ import (
 //
 // If no round tripper is configured via [WithSenderRoundTripper], it uses the default HTTP transport.
 //
+// The sender follows only same-origin redirects. Cross-origin redirects are returned to the caller instead
+// of being followed so webhook signatures are not minted for redirected origins.
+//
 // Note: the provided hook must be configured appropriately (for example with the expected secret) for
 // signing to succeed.
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) *Sender {

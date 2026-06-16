@@ -28,6 +28,8 @@ type Config = config.Config
 //
 // Policies describe operation safety, not transient failure classification. The retry transport still only retries
 // retryable responses/errors after the policy allows the logical request.
+// When multiple non-nil policies are provided, all must allow the request. Nil policies are ignored; if every
+// provided policy is nil, the default [IdempotentRequests] policy is used.
 type Policy func(req *http.Request) bool
 
 // SafeMethods allows retries for HTTP methods that should not have request side effects.
@@ -84,6 +86,9 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 // When no policy is provided, only side-effect-safe requests are eligible for retry: safe HTTP methods, or
 // requests carrying a request-id idempotency contract. Callers that need different behavior can pass an
 // explicit policy.
+// Multiple non-nil policies are composed with logical AND, so any denying policy makes the request
+// non-retryable. Nil policies are ignored, and the default policy is used only when no non-nil policy is
+// supplied.
 //
 // Exhaustion behavior:
 //   - If retries are exhausted after retryable HTTP responses, the final retryable response is returned.

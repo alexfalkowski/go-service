@@ -16,7 +16,7 @@ import (
 // Included submodules:
 //   - [github.com/alexfalkowski/go-service/v2/transport/grpc.Module]: gRPC transport server wiring (including TLS filesystem registration, interceptors, and health).
 //   - [github.com/alexfalkowski/go-service/v2/transport/http.Module]: HTTP transport server wiring (routing helpers, middleware, TLS filesystem registration, metrics, and health).
-//   - [github.com/alexfalkowski/go-service/v2/transport/http/events.Module]: CloudEvents HTTP wiring (sender/receiver helpers and webhook signing/verification adapters).
+//   - [github.com/alexfalkowski/go-service/v2/transport/http/events.Module]: CloudEvents HTTP receiver and webhook verification wiring.
 //
 // Server lifecycle wiring:
 // This module also provides [NewServers] (to collect enabled *[server.Service] instances) and registers

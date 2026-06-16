@@ -5,22 +5,26 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 )
 
-// Config configures the transport layer for a service.
+// Config configures server-side transport wiring for a service.
 //
-// It is a top-level configuration object that enables and configures the supported
+// It is a top-level configuration object that enables and configures the supported server
 // transport stacks (currently HTTP and gRPC). Each nested transport config is optional:
-// when nil or disabled, the corresponding transport constructors typically return nil
-// and no server/client is created.
+// when nil or disabled, the corresponding server constructors typically return nil and no
+// server is created.
+//
+// Client construction uses explicit client options and client-side config types such as
+// [github.com/alexfalkowski/go-service/v2/config/client.Config]; transport.http and
+// transport.grpc are the server-side config trees.
 //
 // The struct tags are compatible with the repository's config decoder (YAML/JSON/TOML).
 type Config struct {
-	// GRPC configures the gRPC transport stack (client and server).
+	// GRPC configures the gRPC server transport stack.
 	//
 	// When nil or when the nested config is disabled, gRPC transport wiring is effectively
 	// turned off and constructors such as [github.com/alexfalkowski/go-service/v2/transport/grpc.NewServer] typically return nil.
 	GRPC *grpc.Config `yaml:"grpc,omitempty" json:"grpc,omitempty" toml:"grpc,omitempty"`
 
-	// HTTP configures the HTTP transport stack (client and server).
+	// HTTP configures the HTTP server transport stack.
 	//
 	// When nil or when the nested config is disabled, HTTP transport wiring is effectively
 	// turned off and constructors such as [github.com/alexfalkowski/go-service/v2/transport/http.NewServer] typically return nil.
