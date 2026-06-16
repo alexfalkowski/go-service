@@ -42,10 +42,11 @@ func init() {
 // builders, telemetry config, cache handle, database config, and optional REST
 // client.
 //
-// NewWorld completes the package-level helper registrations during construction,
-// so callers only need to add any test-specific routes/handlers and then start
-// the lifecycle. Most tests should prefer Start or NewStartedWorld to ensure
-// cleanup is always registered with the testing framework.
+// Package-level helper registrations are installed during package initialization.
+// NewWorld builds the per-test harness; callers only need to add any
+// test-specific routes/handlers and then start the lifecycle. Most tests should
+// prefer Start or NewStartedWorld to ensure cleanup is always registered with
+// the testing framework.
 //
 //nolint:funlen
 func NewWorld(tb testing.TB, opts ...WorldOption) *World {

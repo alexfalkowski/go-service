@@ -13,6 +13,9 @@ import (
 
 // RegisterTracer installs the shared test tracer provider on the supplied lifecycle.
 //
+// This mutates the process-global OpenTelemetry tracer provider through
+// telemetry/tracer registration. The supplied lifecycle owns provider shutdown.
+//
 // It panics through [runtime.Must] if tracer registration fails.
 func RegisterTracer(lc di.Lifecycle, config *tracer.Config) {
 	params := tracer.TracerParams{
@@ -27,6 +30,9 @@ func RegisterTracer(lc di.Lifecycle, config *tracer.Config) {
 }
 
 // EnableSpanExporter installs a synchronous tracer provider backed by a SpanExporter.
+//
+// This mutates the process-global OpenTelemetry tracer provider for the current
+// test and resets it to a no-op provider with tb.Cleanup.
 func EnableSpanExporter(tb testing.TB) *SpanExporter {
 	tb.Helper()
 
@@ -43,6 +49,10 @@ func EnableSpanExporter(tb testing.TB) *SpanExporter {
 }
 
 // EnableIsolatedSpanExporter resets telemetry and installs a synchronous span exporter.
+//
+// It resets process-global telemetry before installation and again with
+// tb.Cleanup, making it the preferred helper for tests that assert exported
+// spans.
 func EnableIsolatedSpanExporter(tb testing.TB) *SpanExporter {
 	tb.Helper()
 

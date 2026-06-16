@@ -31,6 +31,8 @@ import (
 //  1. Empty detection: if the decoded value is considered empty (see [structs.IsEmpty]), NewConfig returns
 //     ErrInvalidConfig. This guards against accidentally starting with a zero-value configuration when the
 //     input is missing or does not populate any fields.
+//     Because this comparison uses the zero value of T, T must be comparable. Config types that contain
+//     slices, maps, or other non-comparable fields should use a custom decode/empty-check path instead.
 //
 //  2. Validation: the decoded value is validated using the provided Validator (go-playground/validator).
 //     Any validation errors are returned to the caller.

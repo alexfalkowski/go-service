@@ -18,6 +18,10 @@ func ResetTelemetry(tb testing.TB) {
 }
 
 // EnableMetrics installs the shared test meter provider.
+//
+// This mutates the process-global OpenTelemetry meter provider. Use
+// ResetTelemetry or a helper that resets telemetry when a test needs isolation
+// from other telemetry assertions in the same process.
 func EnableMetrics(tb testing.TB) {
 	tb.Helper()
 
@@ -33,6 +37,10 @@ func EnableMetrics(tb testing.TB) {
 }
 
 // EnableTracer installs the shared test tracer provider.
+//
+// This mutates the process-global OpenTelemetry tracer provider. Use
+// ResetTelemetry or EnableIsolatedSpanExporter when a test needs isolated span
+// assertions.
 func EnableTracer(tb testing.TB) {
 	tb.Helper()
 
@@ -47,6 +55,10 @@ func EnableTracer(tb testing.TB) {
 }
 
 // EnableTelemetry installs the shared test meter and tracer providers.
+//
+// This mutates process-global OpenTelemetry meter and tracer providers. Tests
+// that assert telemetry state should reset telemetry before and after the
+// assertion path.
 func EnableTelemetry(tb testing.TB) {
 	tb.Helper()
 
