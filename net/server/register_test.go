@@ -21,6 +21,7 @@ func TestRegisterStopErrors(t *testing.T) {
 
 	server.Register(server.RegisterParams{
 		Lifecycle: lc,
+		Drain:     server.NewDrain(),
 		Services: []*server.Service{
 			server.NewService("first", first, nil, sh),
 			server.NewService("second", second, nil, sh),
@@ -47,6 +48,7 @@ func TestRegisterStartsAllServices(t *testing.T) {
 
 	server.Register(server.RegisterParams{
 		Lifecycle: lc,
+		Drain:     server.NewDrain(),
 		Services: []*server.Service{
 			server.NewService("first", first, nil, sh),
 			server.NewService("second", second, nil, sh),
@@ -70,6 +72,7 @@ func TestRegisterStopsServicesConcurrently(t *testing.T) {
 
 	server.Register(server.RegisterParams{
 		Lifecycle: lc,
+		Drain:     server.NewDrain(),
 		Services: []*server.Service{
 			server.NewService("first", first, nil, sh),
 			server.NewService("second", second, nil, sh),
@@ -114,6 +117,35 @@ func TestRegisterStartsDrainBeforeStoppingServices(t *testing.T) {
 	require.ErrorIs(t, drain.Error(), server.ErrDraining)
 }
 
+func TestDrainDoneClosesWhenStarted(t *testing.T) {
+	drain := server.NewDrain()
+
+	select {
+	case <-drain.Done():
+		require.Fail(t, "drain should not be done before start")
+	default:
+	}
+
+	drain.Start()
+
+	select {
+	case <-drain.Done():
+	case <-time.After(time.Second):
+		require.Fail(t, "drain done channel did not close after start")
+	}
+}
+
+func TestDrainDoneClosesWhenStartedBeforeDone(t *testing.T) {
+	drain := server.NewDrain()
+	drain.Start()
+
+	select {
+	case <-drain.Done():
+	case <-time.After(time.Second):
+		require.Fail(t, "drain done channel did not close after start")
+	}
+}
+
 func TestRegisterSnapshotsServices(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	original := test.NewObservableServer(nil, nil)
@@ -123,7 +155,7 @@ func TestRegisterSnapshotsServices(t *testing.T) {
 		server.NewService("original", original, nil, sh),
 	}
 
-	server.Register(server.RegisterParams{Lifecycle: lc, Services: services})
+	server.Register(server.RegisterParams{Lifecycle: lc, Drain: server.NewDrain(), Services: services})
 	services[0] = server.NewService("replacement", replacement, nil, sh)
 
 	require.NoError(t, lc.Start(t.Context()))

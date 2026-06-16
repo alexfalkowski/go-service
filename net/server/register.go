@@ -16,7 +16,7 @@ type RegisterParams struct {
 	Lifecycle di.Lifecycle
 
 	// Drain tracks whether shutdown has started.
-	Drain *Drain `optional:"true"`
+	Drain *Drain
 
 	// Services are the server services managed by the lifecycle.
 	Services []*Service
@@ -26,7 +26,7 @@ type RegisterParams struct {
 //
 // It appends an Fx lifecycle hook that:
 //   - OnStart: starts each provided *[Service] by calling `Start()`.
-//   - OnStop: marks the optional drain state, stops each provided *[Service] by calling `Stop(ctx)`,
+//   - OnStop: marks the drain state, stops each provided *[Service] by calling `Stop(ctx)`,
 //     and returns the joined shutdown errors.
 //
 // Callers should ensure the slice does not contain nil entries.

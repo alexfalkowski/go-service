@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http/events"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
+	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
@@ -56,6 +57,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	lc := fxtest.NewLifecycle(tb)
 	tracer := NewOTLPTracerConfig()
 	generator := uuid.NewGenerator()
+	drain := server.NewDrain()
 	os := worldOptions(opts...)
 
 	logger, err := createLogger(lc, os)
@@ -74,7 +76,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	server := &Server{
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
 		TransportConfig: transportCfg, DebugConfig: debugCfg,
-		Meter: meter, Mux: mux,
+		Meter: meter, Mux: mux, Drain: drain,
 		GRPCLimiter: grpcServerLimiter,
 		HTTPLimiter: httpServerLimiter,
 		Verifier:    os.verifier, Access: os.access, Generator: generator,

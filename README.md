@@ -802,6 +802,7 @@ transport:
 > - The `transport-service-method` key prefixes the service-method value with the transport name, such as `http:GET /users/{id}` or `grpc:/users.v1.Users/Get`, so HTTP and gRPC operations use separate buckets.
 > - The `service-method` key uses HTTP route/path metadata or the gRPC full method name. Prefer `transport-service-method` unless cross-transport operations intentionally share quota.
 > - Server-side HTTP and gRPC limiters run after metadata extraction and token verification, so missing, malformed, or invalid authorization is rejected before it reaches the limiter. This is intentional; enforce quotas for those attempts with an external edge, gateway, ingress, load balancer, or service-mesh limiter.
+> - Server-side HTTP limiters set `RateLimit` and `RateLimit-Policy` headers; denied HTTP requests also set `Retry-After` when reset timing is available. Server-side gRPC limiters set `ratelimit` and `ratelimit-policy` response metadata.
 > - gRPC stream limiters consume one token when the stream opens and one token for each `RecvMsg` and `SendMsg` operation. Unary HTTP and gRPC requests consume one token per request/RPC.
 
 ---

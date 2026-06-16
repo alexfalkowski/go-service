@@ -80,17 +80,39 @@ func TestTake(t *testing.T) {
 
 	require.NoError(t, err)
 	require.True(t, ok)
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 
 	ok, header, err = limiter.Take(first)
 	require.NoError(t, err)
 	require.False(t, ok)
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 
 	ok, header, err = limiter.Take(second)
 	require.NoError(t, err)
 	require.True(t, ok)
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
+}
+
+func TestTakeDecisionHeaders(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 2, Interval: 1500 * time.Millisecond}
+
+	limiter, err := limiter.NewLimiter(lc, m, config)
+	require.NoError(t, err)
+	require.NotNil(t, limiter)
+	defer func() {
+		require.NoError(t, limiter.Close(t.Context()))
+	}()
+
+	ctx := meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("test-agent")))
+	decision, err := limiter.TakeDecision(ctx)
+
+	require.NoError(t, err)
+	require.True(t, decision.Allowed())
+	require.Equal(t, `"default";r=1;t=2`, decision.Header())
+	require.Equal(t, `"default";q=2;w=2`, decision.PolicyHeader())
+	require.Equal(t, uint64(2), decision.ResetAfterSeconds())
 }
 
 func TestTakeCapsActiveKeys(t *testing.T) {
@@ -113,27 +135,27 @@ func TestTakeCapsActiveKeys(t *testing.T) {
 	ok, header, err := limiter.Take(first)
 	require.NoError(t, err)
 	require.True(t, ok, "first key should get an admitted bucket")
-	require.Equal(t, "limit=2, remaining=1", header)
+	require.Equal(t, `"default";r=1;t=1`, header)
 
 	ok, header, err = limiter.Take(second)
 	require.NoError(t, err)
 	require.True(t, ok, "second key should take from the overflow bucket")
-	require.Equal(t, "limit=2, remaining=1", header)
+	require.Equal(t, `"default";r=1;t=1`, header)
 
 	ok, header, err = limiter.Take(third)
 	require.NoError(t, err)
 	require.True(t, ok, "third key should share the overflow bucket")
-	require.Equal(t, "limit=2, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 
 	ok, header, err = limiter.Take(fourth)
 	require.NoError(t, err)
 	require.False(t, ok, "fourth key should be denied by the exhausted overflow bucket")
-	require.Equal(t, "limit=2, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 
 	ok, header, err = limiter.Take(first)
 	require.NoError(t, err)
 	require.True(t, ok, "admitted key should keep its independent bucket")
-	require.Equal(t, "limit=2, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 }
 
 func TestTakeSupportsCustomKeyKind(t *testing.T) {
@@ -157,21 +179,21 @@ func TestTakeSupportsCustomKeyKind(t *testing.T) {
 		ok, header, err := limiter.Take(first)
 		require.NoError(t, err)
 		require.True(t, ok)
-		require.Equal(t, "limit=1, remaining=0", header)
+		require.Equal(t, `"default";r=0;t=1`, header)
 	})
 
 	t.Run("denies exhausted tenant", func(t *testing.T) {
 		ok, header, err := limiter.Take(first)
 		require.NoError(t, err)
 		require.False(t, ok)
-		require.Equal(t, "limit=1, remaining=0", header)
+		require.Equal(t, `"default";r=0;t=1`, header)
 	})
 
 	t.Run("uses independent bucket for second tenant", func(t *testing.T) {
 		ok, header, err := limiter.Take(second)
 		require.NoError(t, err)
 		require.True(t, ok)
-		require.Equal(t, "limit=1, remaining=0", header)
+		require.Equal(t, `"default";r=0;t=1`, header)
 	})
 }
 
@@ -193,14 +215,14 @@ func TestTakeRefillsAfterConfiguredInterval(t *testing.T) {
 		ok, header, err := limiter.Take(ctx)
 		require.NoError(t, err)
 		require.True(t, ok)
-		require.Equal(t, "limit=1, remaining=0", header)
+		require.Equal(t, `"default";r=0;t=1`, header)
 	})
 
 	t.Run("denies exhausted bucket", func(t *testing.T) {
 		ok, header, err := limiter.Take(ctx)
 		require.NoError(t, err)
 		require.False(t, ok)
-		require.Equal(t, "limit=1, remaining=0", header)
+		require.Equal(t, `"default";r=0;t=1`, header)
 	})
 
 	t.Run("refills after interval", func(t *testing.T) {
@@ -228,17 +250,17 @@ func TestTakeUsesSingleBucketForEmptyKeys(t *testing.T) {
 	ok, header, err := limiter.Take(t.Context())
 	require.NoError(t, err)
 	require.True(t, ok)
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 
 	ok, header, err = limiter.Take(meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.Blank())))
 	require.NoError(t, err)
 	require.False(t, ok)
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 
 	ok, header, err = limiter.Take(meta.WithAttributes(t.Context(), meta.WithUserAgent(meta.String("<empty>"))))
 	require.NoError(t, err)
 	require.True(t, ok, "raw reserved empty literal should use its own bucket")
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 }
 
 func TestTakeSupportsOversizedKeys(t *testing.T) {
@@ -259,17 +281,17 @@ func TestTakeSupportsOversizedKeys(t *testing.T) {
 	ok, header, err := limiter.Take(first)
 	require.NoError(t, err)
 	require.True(t, ok)
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 
 	ok, header, err = limiter.Take(first)
 	require.NoError(t, err)
 	require.False(t, ok)
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 
 	ok, header, err = limiter.Take(second)
 	require.NoError(t, err)
 	require.True(t, ok)
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 }
 
 func TestTakeDoesNotCollideOversizedKeysWithRawHashKeys(t *testing.T) {
@@ -293,12 +315,12 @@ func TestTakeDoesNotCollideOversizedKeysWithRawHashKeys(t *testing.T) {
 	ok, header, err := limiter.Take(oversizedCtx)
 	require.NoError(t, err)
 	require.True(t, ok, "oversized key should take its own bucket")
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 
 	ok, header, err = limiter.Take(rawHashCtx)
 	require.NoError(t, err)
 	require.True(t, ok, "raw hash-looking key should use its own bucket")
-	require.Equal(t, "limit=1, remaining=0", header)
+	require.Equal(t, `"default";r=0;t=1`, header)
 }
 
 func TestNewKeyMap(t *testing.T) {

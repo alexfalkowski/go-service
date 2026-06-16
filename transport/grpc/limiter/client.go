@@ -33,17 +33,22 @@ type Client struct {
 
 // UnaryClientInterceptor returns a gRPC unary client interceptor that enforces rate limiting.
 //
-// The interceptor calls `limiter.Take(ctx)` before invoking the RPC:
+// The interceptor calls `limiter.TakeDecision(ctx)` before invoking the RPC:
 //
-//   - If `Take` returns an error, it returns [codes.Internal].
+//   - If `TakeDecision` returns an error, it returns [codes.Internal].
 //   - If the request is not allowed, it returns [codes.ResourceExhausted].
 //   - Otherwise, it invokes the underlying `invoker`.
 //
 // Callers should only install this interceptor when limiter is non-nil.
 func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		if _, err := take(ctx, limiter.Limiter); err != nil {
+		decision, err := take(ctx, limiter.Limiter)
+		if err != nil {
 			return err
+		}
+
+		if !decision.Allowed() {
+			return limitError()
 		}
 
 		return invoker(ctx, fullMethod, req, resp, conn, opts...)
@@ -52,18 +57,23 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 
 // StreamClientInterceptor returns a gRPC stream client interceptor that enforces rate limiting.
 //
-// The interceptor calls `limiter.Take(ctx)` before opening the stream, then meters each sent and received
+// The interceptor calls `limiter.TakeDecision(ctx)` before opening the stream, then meters each sent and received
 // stream message:
 //
-//   - If `Take` returns an error, it returns [codes.Internal].
+//   - If `TakeDecision` returns an error, it returns [codes.Internal].
 //   - If the stream is not allowed, it returns [codes.ResourceExhausted].
 //   - Otherwise, it invokes the underlying `streamer`.
 //
 // Callers should only install this interceptor when limiter is non-nil.
 func StreamClientInterceptor(limiter *Client) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		if _, err := take(ctx, limiter.Limiter); err != nil {
+		decision, err := take(ctx, limiter.Limiter)
+		if err != nil {
 			return nil, err
+		}
+
+		if !decision.Allowed() {
+			return nil, limitError()
 		}
 
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
@@ -86,13 +96,26 @@ func (s *clientStream) RecvMsg(m any) error {
 		return err
 	}
 
-	_, err := take(s.ctx, s.limiter)
-	return err
+	decision, err := take(s.ctx, s.limiter)
+	if err != nil {
+		return err
+	}
+
+	if !decision.Allowed() {
+		return limitError()
+	}
+
+	return nil
 }
 
 func (s *clientStream) SendMsg(m any) error {
-	if _, err := take(s.ctx, s.limiter); err != nil {
+	decision, err := take(s.ctx, s.limiter)
+	if err != nil {
 		return err
+	}
+
+	if !decision.Allowed() {
+		return limitError()
 	}
 
 	return s.ClientStream.SendMsg(m)

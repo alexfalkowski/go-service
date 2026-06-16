@@ -39,10 +39,10 @@ type Server struct {
 // Stream RPCs do not bypass limiting because long-lived streams, such as health Watch, can hold server resources
 // until the client disconnects.
 //
-// On every request, the interceptor calls `limiter.Take(ctx)` to determine whether the request is allowed:
+// On every request, the interceptor calls `limiter.TakeDecision(ctx)` to determine whether the request is allowed:
 //
 //   - If `Take` returns an error, the interceptor returns [codes.Internal].
-//   - If `Take` returns a header string, it is attached to response metadata as the "ratelimit" header.
+//   - It attaches "ratelimit" and "ratelimit-policy" response metadata describing the current decision.
 //   - If the request is not allowed, the interceptor returns [codes.ResourceExhausted].
 //   - Otherwise, it invokes the handler.
 //
@@ -53,12 +53,14 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
-		header, err := take(ctx, limiter.Limiter)
-		if !strings.IsEmpty(header) {
-			_ = grpc.SetHeader(ctx, meta.Pairs("ratelimit", header))
-		}
+		decision, err := take(ctx, limiter.Limiter)
 		if err != nil {
 			return nil, err
+		}
+
+		setHeader(ctx, decision)
+		if !decision.Allowed() {
+			return nil, limitError()
 		}
 
 		return handler(ctx, req)
@@ -74,23 +76,24 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 // Use gRPC server options such as max_concurrent_streams, plus edge, gateway, ingress, load-balancer, or
 // service-mesh limits when long-lived stream occupancy needs a hard cap.
 //
-// On every stream, the interceptor calls `limiter.Take(ctx)` to determine whether the stream is allowed:
+// On every stream, the interceptor calls `limiter.TakeDecision(ctx)` to determine whether the stream is allowed:
 //
 //   - If `Take` returns an error, the interceptor returns [codes.Internal].
-//   - If `Take` returns a header string, it is attached to response metadata as the "ratelimit" header.
+//   - It attaches "ratelimit" and "ratelimit-policy" response metadata describing the current decision.
 //   - If the stream is not allowed, the interceptor returns [codes.ResourceExhausted].
 //   - Otherwise, it invokes the handler.
 //
 // Callers should only install this interceptor when limiter is non-nil.
 func StreamServerInterceptor(limiter *Server) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		header, err := take(stream.Context(), limiter.Limiter)
-		if !strings.IsEmpty(header) {
-			_ = stream.SetHeader(meta.Pairs("ratelimit", header))
-		}
-
+		decision, err := take(stream.Context(), limiter.Limiter)
 		if err != nil {
 			return err
+		}
+
+		setStreamHeader(stream, decision)
+		if !decision.Allowed() {
+			return limitError()
 		}
 
 		return handler(srv, &serverStream{ServerStream: stream, limiter: limiter.Limiter})
@@ -107,22 +110,37 @@ func (s *serverStream) RecvMsg(m any) error {
 		return err
 	}
 
-	header, err := take(s.Context(), s.limiter)
-	if !strings.IsEmpty(header) {
-		_ = s.SetHeader(meta.Pairs("ratelimit", header))
-	}
-
-	return err
-}
-
-func (s *serverStream) SendMsg(m any) error {
-	header, err := take(s.Context(), s.limiter)
-	if !strings.IsEmpty(header) {
-		_ = s.SetHeader(meta.Pairs("ratelimit", header))
-	}
+	decision, err := take(s.Context(), s.limiter)
 	if err != nil {
 		return err
 	}
 
+	setStreamHeader(s, decision)
+	if !decision.Allowed() {
+		return limitError()
+	}
+
+	return nil
+}
+
+func (s *serverStream) SendMsg(m any) error {
+	decision, err := take(s.Context(), s.limiter)
+	if err != nil {
+		return err
+	}
+
+	setStreamHeader(s, decision)
+	if !decision.Allowed() {
+		return limitError()
+	}
+
 	return s.ServerStream.SendMsg(m)
+}
+
+func setHeader(ctx context.Context, decision limiter.Decision) {
+	_ = grpc.SetHeader(ctx, meta.Pairs("ratelimit", decision.Header(), "ratelimit-policy", decision.PolicyHeader()))
+}
+
+func setStreamHeader(stream grpc.ServerStream, decision limiter.Decision) {
+	_ = stream.SetHeader(meta.Pairs("ratelimit", decision.Header(), "ratelimit-policy", decision.PolicyHeader()))
 }

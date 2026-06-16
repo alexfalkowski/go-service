@@ -1,19 +1,20 @@
 package health
 
 import (
-	"github.com/alexfalkowski/go-health/v2/server"
+	healthserver "github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-health/v2/watcher"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	netserver "github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // ServerParams defines dependencies for constructing the gRPC health [Server] implementation.
 //
-// It is an Fx parameter struct ([di.In]) that provides the underlying *[health.Server]
+// It is an Fx parameter struct ([di.In]) that provides the underlying *[healthserver.Server]
 // from [github.com/alexfalkowski/go-health/v2/server], which maintains health observers.
 type ServerParams struct {
 	di.In
@@ -21,32 +22,36 @@ type ServerParams struct {
 	// Server is the underlying health server that stores and exposes health observers.
 	//
 	// It is expected to be non-nil when this gRPC health service is wired.
-	Server *server.Server
+	Server *healthserver.Server
+
+	// Drain tracks whether the server lifecycle has started shutting down.
+	Drain *netserver.Drain
 }
 
 // NewServer constructs a new gRPC health [Server] implementation.
 //
 // The returned server implements the standard gRPC health service
 // (`grpc.health.v1.Health`) and delegates health state lookups to the provided
-// underlying *[health.Server].
+// underlying *[healthserver.Server].
 func NewServer(params ServerParams) *Server {
-	return &Server{server: params.Server}
+	return &Server{server: params.Server, drain: params.Drain}
 }
 
 // Server implements the standard gRPC health service.
 //
-// It exposes health state by querying observers registered in the underlying *[health.Server].
+// It exposes health state by querying observers registered in the underlying *[healthserver.Server].
 // The service is typically used by load balancers and orchestration systems to determine whether
 // a server is serving traffic.
 type Server struct {
 	health.UnimplementedServer
-	server *server.Server
+	server *healthserver.Server
+	drain  *netserver.Drain
 }
 
 // Check returns the health status for a single service.
 //
 // The requested service name is taken from `req.GetService()`. The health state is resolved by looking up
-// an observer from the underlying *[health.Server] using the "grpc" transport kind.
+// an observer from the underlying *[healthserver.Server] using the "grpc" transport kind.
 //
 // Error mapping:
 //   - If the requested service does not exist, it returns [codes.NotFound].
@@ -54,7 +59,7 @@ type Server struct {
 func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response, error) {
 	service := req.GetService()
 	if strings.IsEmpty(service) {
-		return &health.Response{Status: healthStatus(s.server.Error("grpc"))}, nil
+		return &health.Response{Status: s.healthStatus(s.server.Error("grpc"))}, nil
 	}
 
 	observer, err := s.server.Observer(service, "grpc")
@@ -62,7 +67,7 @@ func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response
 		return nil, status.SafeError(codes.NotFound, err)
 	}
 
-	return &health.Response{Status: healthStatus(observer.Error())}, nil
+	return &health.Response{Status: s.healthStatus(observer.Error())}, nil
 }
 
 // List returns the health status for all registered services.
@@ -72,7 +77,7 @@ func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response
 func (s *Server) List(_ context.Context, _ *health.ListRequest) (*health.ListResponse, error) {
 	res := &health.ListResponse{Statuses: map[string]*health.Response{}}
 	for name, observer := range s.server.Observers("grpc") {
-		res.Statuses[name] = &health.Response{Status: healthStatus(observer.Error())}
+		res.Statuses[name] = &health.Response{Status: s.healthStatus(observer.Error())}
 	}
 
 	return res, nil
@@ -110,17 +115,31 @@ func (s *Server) watch(w health.WatchServer, sub watcher.Subscription) error {
 				return status.Error(codes.Canceled, "watch has ended")
 			}
 
-			next := healthStatus(err)
+			next := s.healthStatus(err)
 			if next != current {
 				current = next
 				if err := sendStatus(w, current); err != nil {
 					return err
 				}
 			}
+		case <-s.drain.Done():
+			if current != health.NotServing {
+				return sendStatus(w, health.NotServing)
+			}
+
+			return nil
 		case <-w.Context().Done():
 			return status.SafeError(codes.Canceled, w.Context().Err())
 		}
 	}
+}
+
+func (s *Server) healthStatus(err error) health.Status {
+	if s.drain.Error() != nil {
+		return health.NotServing
+	}
+
+	return healthStatus(err)
 }
 
 func healthStatus(err error) health.Status {

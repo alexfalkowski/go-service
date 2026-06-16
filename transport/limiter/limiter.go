@@ -13,6 +13,11 @@ import (
 	"github.com/sethvargo/go-limiter/memorystore"
 )
 
+// limiterPolicy identifies the quota policy described by the RateLimit fields.
+// The HTTPAPI draft uses "default" for a single default quota policy:
+// https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-ratelimit-headers#section-4
+const limiterPolicy = "default"
+
 // ErrMissingKey is returned when the configured key kind is not present in the KeyMap.
 var ErrMissingKey = errors.New("limiter: missing key")
 
@@ -61,8 +66,9 @@ func NewLimiter(lc di.Lifecycle, keyMap KeyMap, cfg *Config) (*Limiter, error) {
 	}
 	store, _ := memorystore.New(config)
 	limiter := &Limiter{
-		store: store,
-		key:   k,
+		store:  store,
+		key:    k,
+		window: limiterWindow(cfg.Interval),
 		keys: &keys{
 			values:  map[string]time.Time{},
 			ttl:     time.Duration(sweepMinTTL + sweepInterval),
@@ -84,9 +90,10 @@ func NewLimiter(lc di.Lifecycle, keyMap KeyMap, cfg *Config) (*Limiter, error) {
 // Limits are enforced per derived key string (see KeyFunc/KeyMap). This limiter uses an in-memory
 // store, so limits are process-local and are not shared across replicas.
 type Limiter struct {
-	store limiter.Store
-	key   KeyFunc
-	keys  *keys
+	store  limiter.Store
+	key    KeyFunc
+	keys   *keys
+	window time.Duration
 }
 
 // Take attempts to take a token for the key derived from ctx.
@@ -97,9 +104,8 @@ type Limiter struct {
 //
 // Return values:
 //   - ok: false when the rate limit is exceeded for the derived key, true otherwise.
-//   - header: a human-readable header value formatted as:
-//     "limit=<tokens>, remaining=<remaining>".
-//     The values represent the store-reported token limit and remaining tokens after this attempt.
+//   - header: the RateLimit header value formatted as `"default";r=<remaining>;t=<reset_seconds>`.
+//     The values represent the store-reported remaining tokens after this attempt and reset timing.
 //   - error: any error returned by the underlying store.
 //
 // Note: callers are responsible for deciding how to surface the header value (e.g. in HTTP response headers).
@@ -115,18 +121,44 @@ func (l *Limiter) TakeDecision(ctx context.Context) (Decision, error) {
 		return Decision{}, err
 	}
 
-	header := strings.Concat(
-		"limit=",
-		strconv.FormatUint(tokens, 10),
-		", remaining=",
-		strconv.FormatUint(remaining, 10),
-	)
+	resetAfter := resetAfter(reset)
 
 	return Decision{
-		allowed:    ok,
-		header:     header,
-		resetAfter: resetAfter(reset),
+		allowed:      ok,
+		header:       rateLimitHeader(remaining, durationSeconds(resetAfter)),
+		policyHeader: rateLimitPolicyHeader(tokens, durationSeconds(l.window)),
+		resetAfter:   resetAfter,
 	}, nil
+}
+
+func rateLimitHeader(remaining, resetAfter uint64) string {
+	return strings.Concat(
+		`"`,
+		limiterPolicy,
+		`";r=`,
+		strconv.FormatUint(remaining, 10),
+		";t=",
+		strconv.FormatUint(resetAfter, 10),
+	)
+}
+
+func rateLimitPolicyHeader(tokens, window uint64) string {
+	return strings.Concat(
+		`"`,
+		limiterPolicy,
+		`";q=`,
+		strconv.FormatUint(tokens, 10),
+		";w=",
+		strconv.FormatUint(window, 10),
+	)
+}
+
+func limiterWindow(interval time.Duration) time.Duration {
+	if interval <= 0 {
+		return time.Second
+	}
+
+	return interval
 }
 
 func resetAfter(reset uint64) time.Duration {
@@ -137,6 +169,19 @@ func resetAfter(reset uint64) time.Duration {
 
 	//nolint:gosec // Reset delay is bounded by the validated limiter interval from the internal store.
 	return time.Duration(reset - now)
+}
+
+func durationSeconds(duration time.Duration) uint64 {
+	if duration <= 0 {
+		return 0
+	}
+
+	seconds := uint64(duration / time.Second)
+	if duration%time.Second != 0 {
+		seconds++
+	}
+
+	return seconds
 }
 
 // Close closes the underlying store and releases any associated resources.

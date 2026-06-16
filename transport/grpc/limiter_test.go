@@ -29,12 +29,14 @@ func TestServerLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req, grpc.Header(&header))
 	require.NoError(t, err)
 	require.NotEmpty(t, header.Get("ratelimit"))
+	require.NotEmpty(t, header.Get("ratelimit-policy"))
 
 	rejectedHeader := grpcmeta.Map{}
 	_, err = client.SayHello(t.Context(), req, grpc.Header(&rejectedHeader))
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 	require.NotEmpty(t, rejectedHeader.Get("ratelimit"))
+	require.NotEmpty(t, rejectedHeader.Get("ratelimit-policy"))
 }
 
 func TestServerLimiterStream(t *testing.T) {
@@ -63,6 +65,7 @@ func TestServerLimiterStreamHeader(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotEmpty(t, allowed.Header.Get("ratelimit"))
+	require.NotEmpty(t, allowed.Header.Get("ratelimit-policy"))
 
 	rejected := &test.MetaServerStream{Ctx: ctx}
 	err = interceptor(nil, rejected, &grpc.StreamServerInfo{FullMethod: "/greet.v1.GreeterService/SayStreamHello"}, func(any, grpc.ServerStream) error {
@@ -71,6 +74,7 @@ func TestServerLimiterStreamHeader(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 	require.NotEmpty(t, rejected.Header.Get("ratelimit"))
+	require.NotEmpty(t, rejected.Header.Get("ratelimit-policy"))
 }
 
 func TestClientLimiterUnary(t *testing.T) {
@@ -98,6 +102,37 @@ func TestClientLimiterStream(t *testing.T) {
 
 	_ = sayStreamHello(t, client)
 	err := sayStreamHello(t, client)
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
+func TestClientLimiterStreamRecvRejected(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 2)), test.WithWorldGRPC())
+
+	conn := test.RequireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+	stream, err := client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+	require.NoError(t, stream.Send(&v1.SayStreamHelloRequest{Name: "test"}))
+
+	_, err = stream.Recv()
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
+func TestClientLimiterStreamSendRejected(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 1)), test.WithWorldGRPC())
+
+	conn := test.RequireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+	stream, err := client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+
+	err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
