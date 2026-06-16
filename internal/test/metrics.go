@@ -141,6 +141,10 @@ func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) (metrics.MeterPro
 }
 
 // EnableMetricsReader installs the shared test meter provider and returns its manual reader.
+//
+// It resets process-global telemetry before installation and again with
+// tb.Cleanup, so the returned reader can be used for isolated metric
+// assertions.
 func EnableMetricsReader(tb testing.TB) metrics.Reader {
 	tb.Helper()
 

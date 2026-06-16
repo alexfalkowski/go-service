@@ -209,6 +209,11 @@ func WithWorldCacheDriver(driver driver.Driver) WorldOption {
 }
 
 // WithWorldRegisterCache registers the world's cache with the generic cache helpers.
+//
+// This mutates the package-level cache used by cache.Get and cache.Persist.
+// NewWorld resets that package-level registration with tb.Cleanup, so this
+// option is intended for tests that specifically exercise the generic cache
+// helpers.
 func WithWorldRegisterCache() WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.registerCache = true

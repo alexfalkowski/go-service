@@ -25,6 +25,8 @@ For direct package use in an existing module, add the library dependency with th
 go get github.com/alexfalkowski/go-service/v2
 ```
 
+Use the Go version declared in `go.mod` or newer when installing or building this module.
+
 ---
 
 ## 🧩 Dependency Injection (Fx)
@@ -180,6 +182,9 @@ The library provides a helper `config.NewConfig[T]` which:
 - decodes into `*T`
 - rejects an “empty” decoded value (guards against starting with a zero-value config)
 - validates the decoded config
+
+Because empty detection compares the decoded value with the zero value, `T` must be comparable. Config
+types containing maps, slices, or other non-comparable fields should use a custom decode/empty-check path.
 
 Example:
 
@@ -371,7 +376,7 @@ id:
 ```
 
 > [!NOTE]
-> ID generators produce operational identifiers such as request ids, webhook ids, and token `jti` values. They are not a secret-material API and should not be used as passwords, bearer tokens, or other credentials. A nil `id` config selects `uuid`; sortable kinds such as `ksuid`, `ulid`, and `xid` expose ordering characteristics.
+> ID generators produce operational identifiers such as request ids, webhook ids, and token `jti` values. They are not a secret-material API and should not be used as passwords, bearer tokens, or other credentials. Omit `id` entirely to select the `uuid` default. If `id` is present, `kind` must be one of the supported registered kinds. Sortable kinds such as `ksuid`, `ulid`, and `xid` expose ordering characteristics.
 
 ---
 
@@ -438,6 +443,8 @@ The framework provides Kubernetes-style endpoints:
 
 Successful health responses return HTTP 200 with the plain-text body `SERVING`.
 Missing or failing observers return HTTP 503 with the standard go-service error response.
+During server shutdown, `/readyz` also returns HTTP 503 after the lifecycle starts draining so
+orchestrators can stop sending new traffic before the listener fully stops.
 
 Built-in checker helpers under `health/checker` include DB connectivity checks and
 cache connectivity checks for pingable cache drivers such as Redis and ttlcache.
@@ -642,6 +649,9 @@ Important behavior:
 > [!IMPORTANT]
 > JWT generation and verification use Ed25519 key material from `jwt.keys`. Keep private key material only on services that mint tokens; verifiers only need public keys.
 
+All token `exp` values are Go duration strings and must be positive whole-second durations. Values such
+as `1s`, `15m`, and `24h` validate; sub-second values such as `500ms` do not.
+
 ### Paseto
 
 Paseto config:
@@ -761,6 +771,11 @@ Supported kinds:
 
 - `ntp`
 - `nts`
+
+Omit the `time` block to disable network time. If the block is present, `kind`
+must be `ntp` or `nts`; empty or unknown kinds fail startup with the time
+provider not found error. `address` is provider-specific and is used when the
+network time provider performs I/O.
 
 ---
 
@@ -909,6 +924,9 @@ on clients when the dial address differs from the certificate DNS name.
 Server-side TLS requires a complete `cert` and `key` pair whenever TLS material is configured. `ca` enables
 client-certificate verification for mTLS, but a CA-only server TLS config fails startup.
 
+gRPC clients use insecure transport credentials when TLS is not configured. That default is intended for
+local or platform-secured traffic; configure client TLS for calls outside that trusted boundary.
+
 > [!IMPORTANT]
 > If you are using `go-service-template` or composing server transport bundles such as `module.Server` or `transport.Module`, the required transport registration is handled for you by DI.
 >
@@ -1004,8 +1022,10 @@ crypto:
 
 > [!NOTE]
 > - AES keys must be 16/24/32 bytes after resolving the source string.
+> - HMAC keys should be high-entropy secrets and must remain private.
 > - RSA keys expect PKCS#1 PEM blocks (`RSA PUBLIC KEY` / `RSA PRIVATE KEY`) and must be at least 4096 bits.
 > - Ed25519 expects PKIX `PUBLIC KEY` and PKCS#8 `PRIVATE KEY` PEM blocks.
+> - SSH keys must be Ed25519 SSH keys: public keys use `authorized_keys` format and private keys use SSH private key format.
 
 ### Crypto Dependencies
 
@@ -1075,6 +1095,10 @@ GET http://localhost:6060/<name>/debug/fgprof?seconds=10
 ```http
 GET http://localhost:6060/<name>/debug/psutil
 ```
+
+The response is content-negotiated and contains a best-effort snapshot with `cpu`, `host`, `load`, `mem`,
+and `net` sections. Individual nested values may be empty or partially populated when the platform or
+runtime permissions do not expose a metric.
 
 <https://github.com/shirou/gopsutil>
 
