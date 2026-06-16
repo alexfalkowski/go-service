@@ -8,12 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewControllerWithoutTokenConfig(t *testing.T) {
-	controller, err := grpc.NewController(test.NewGRPCTransportConfig(), test.FS)
-	require.NoError(t, err)
-	require.Nil(t, controller)
-}
-
 func TestNewTokenWithoutTokenConfig(t *testing.T) {
 	tkn := grpc.NewToken(test.Name, test.NewGRPCTransportConfig(), nil, nil)
 	require.Nil(t, tkn)

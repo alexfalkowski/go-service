@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
@@ -26,6 +27,8 @@ type Server struct {
 	Meter metrics.Meter
 	// Verifier verifies inbound transport tokens.
 	Verifier token.Verifier
+	// Access controls inbound transport authorization.
+	Access access.Controller
 	// Mux holds HTTP routes registered by tests.
 	Mux *http.ServeMux
 	// HTTPServer is populated when RegisterHTTP is true.
@@ -77,7 +80,7 @@ func (s *Server) Register() error {
 			Logger:   s.Logger,
 			Limiter:  s.HTTPLimiter,
 			Handlers: []http.ChainedHandler{&EmptyHandler{}},
-			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
+			Verifier: s.Verifier, Access: s.Access, ID: s.Generator, UserID: UserID,
 			Name: Name, UserAgent: UserAgent, Version: Version,
 		}
 
@@ -96,7 +99,7 @@ func (s *Server) Register() error {
 			Shutdowner: sh,
 			Config:     s.TransportConfig.GRPC,
 			Logger:     s.Logger,
-			Verifier:   s.Verifier, ID: s.Generator, UserID: UserID,
+			Verifier:   s.Verifier, Access: s.Access, ID: s.Generator, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
 			Limiter: s.GRPCLimiter,
 		}

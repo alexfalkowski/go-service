@@ -1,16 +1,24 @@
 // Package access provides authorization (access control) helpers used by go-service.
 //
-// This package is focused on answering the question "is subject X allowed to do Y?"
-// based on an authorization policy. It currently provides:
+// This package is focused on answering the question "is the verified request
+// subject allowed to invoke this transport operation?" based on an authorization
+// policy. It currently provides:
 //
 //   - Controller: an interface for permission checks.
 //   - A Casbin-backed implementation of Controller.
 //
 // # Access checks
 //
-// [Controller.HasAccess] expects separate user, system, and action values. The
-// implementation treats system as the authorization object and action as the
-// operation being requested.
+// [Controller.HasAccess] expects a request context populated by the transport
+// metadata middleware. The Casbin request tuple is:
+//
+//   - sub: [github.com/alexfalkowski/go-service/v2/meta.UserID]
+//   - obj: [github.com/alexfalkowski/go-service/v2/meta.TransportServiceMethod]
+//   - act: "invoke"
+//
+// HTTP servers use the matched route pattern as the service-method when one is
+// available, for example "http:GET /users/{id}". gRPC servers use the full RPC
+// method, for example "grpc:/package.Service/Method".
 //
 // # Casbin implementation
 //

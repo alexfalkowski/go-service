@@ -35,7 +35,6 @@ var Module = di.Module(
 	di.Register(rpc.Register),
 	di.Register(rest.Register),
 	di.Constructor(NewServerLimiter),
-	di.Constructor(NewController),
 	di.Constructor(NewToken),
 	di.Constructor(token.NewGenerator),
 	di.Constructor(token.NewVerifier),

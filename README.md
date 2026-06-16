@@ -603,24 +603,71 @@ Supported token `kind` values:
 
 ### Access control (Casbin)
 
-Access control is configured inside transport token config:
+Access control is configured once at the transport level and shared by all
+enabled HTTP and gRPC server stacks:
 
 ```yaml
 transport:
-  http:
-    token:
-      access:
-        model: file:./config/rbac.conf
-        policy: file:./config/rbac.csv
+  access:
+    model: file:./config/rbac.conf
+    policy: file:./config/rbac.csv
 ```
+
+When `access` is configured, the standard HTTP and gRPC server stacks enforce
+the policy after token authentication and before application handlers run. Omit
+`access` to leave transport authorization disabled.
 
 The model is based on Casbin RBAC:
 <https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf>
 
+Example `rbac.conf`:
+
+```ini
+[request_definition]
+r = sub, obj, act
+
+[policy_definition]
+p = sub, obj, act
+
+[role_definition]
+g = _, _
+
+[policy_effect]
+e = some(where (p.eft == allow))
+
+[matchers]
+m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act
+```
+
+Policies use the verified user id as `sub`, `meta.TransportServiceMethod` as
+`obj`, and `invoke` as `act`. Example `rbac.csv`:
+
+```csv
+p, reader, http:GET /users/{id}, invoke
+p, writer, http:POST /users, invoke
+p, greeter, grpc:/greet.v1.GreeterService/SayHello, invoke
+g, frontend, reader
+g, admin, reader
+g, admin, writer
+g, billing-service, greeter
+```
+
+The `p` rows define permissions and must match the model's `p = sub, obj, act`
+shape, so they include `invoke`. The `g` rows define role membership and match
+`g = _, _`, so they only contain `subject, role`.
+
+For HTTP servers the object uses the matched route pattern when available, such
+as `http:GET /users/{id}`. HTTP tokens are authenticated against the concrete
+request method and path, such as `GET /users/123`; access policy enforcement
+uses the canonical route pattern. gRPC tokens are authenticated against the full
+method name, such as `/greet.v1.GreeterService/SayHello`; access policy
+enforcement uses the transport service-method object, such as
+`grpc:/greet.v1.GreeterService/SayHello`.
+
 > [!NOTE]
 > `access.model` and `access.policy` are resolved through `os.FS.ReadSource`; use `file:` for files, `env:` for environment-provided content, or literal content.
 >
-> Access config builds an injectable controller for authorization checks. The built-in HTTP and gRPC token middleware authenticates tokens and stores the verified user id, but it does not automatically enforce Casbin policy. Services must call `HasAccess(...)` from handlers or install their own authorization middleware/interceptors where policy enforcement is required.
+> Access config builds an injectable controller for authorization checks. The built-in HTTP and gRPC server stacks authenticate tokens, store the verified user id, and enforce the configured Casbin policy before application handlers run.
 
 ### JWT
 

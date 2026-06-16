@@ -77,7 +77,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 		Meter: meter, Mux: mux,
 		GRPCLimiter: grpcServerLimiter,
 		HTTPLimiter: httpServerLimiter,
-		Verifier:    os.verifier, Generator: generator,
+		Verifier:    os.verifier, Access: os.access, Generator: generator,
 		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
 	}
 	require.NoError(tb, server.Register())

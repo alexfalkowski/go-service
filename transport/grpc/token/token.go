@@ -17,23 +17,6 @@ import (
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 )
 
-// NewAccessController constructs an access controller when token auth is enabled.
-//
-// The controller is responsible for evaluating access rules associated with token-authenticated subjects.
-// If cfg is disabled, it returns (nil, nil) so callers can treat access control as not configured.
-func NewAccessController(cfg *token.Config, fs *os.FS) (AccessController, error) {
-	if !cfg.IsEnabled() {
-		return nil, nil
-	}
-	return access.NewController(cfg.Access, fs)
-}
-
-// AccessController is an alias for [github.com/alexfalkowski/go-service/v2/token/access.Controller].
-//
-// It is exposed from this package so callers can refer to the access controller type from the gRPC token
-// integration layer.
-type AccessController access.Controller
-
 // NewToken constructs a token service when token auth is enabled.
 //
 // The returned service is responsible for generating and verifying tokens according to cfg (for example,
@@ -137,6 +120,61 @@ func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServer
 		wrapped.WrappedContext = ctx
 
 		return handler(srv, wrapped)
+	}
+}
+
+// UnaryAccessServerInterceptor returns a gRPC unary server interceptor that enforces access policy.
+//
+// Operation RPC methods bypass access control. For application RPCs, a missing verified user id is treated
+// as unauthenticated, a policy denial returns [codes.PermissionDenied], and policy evaluation errors return
+// [codes.Internal].
+func UnaryAccessServerInterceptor(controller access.Controller) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		if strings.IsOperationMethod(info.FullMethod) {
+			return handler(ctx, req)
+		}
+
+		if meta.UserID(ctx).IsEmpty() {
+			return nil, status.SafeError(codes.Unauthenticated, header.ErrInvalidAuthorization)
+		}
+
+		ok, err := controller.HasAccess(ctx)
+		if err != nil {
+			return nil, status.SafeError(codes.Internal, err)
+		}
+		if !ok {
+			return nil, status.SafeError(codes.PermissionDenied, access.ErrAccessDenied)
+		}
+
+		return handler(ctx, req)
+	}
+}
+
+// StreamAccessServerInterceptor returns a gRPC stream server interceptor that enforces access policy.
+//
+// Operation RPC methods bypass access control. For application RPCs, a missing verified user id is treated
+// as unauthenticated, a policy denial returns [codes.PermissionDenied], and policy evaluation errors return
+// [codes.Internal].
+func StreamAccessServerInterceptor(controller access.Controller) grpc.StreamServerInterceptor {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		if strings.IsOperationMethod(info.FullMethod) {
+			return handler(srv, stream)
+		}
+
+		ctx := stream.Context()
+		if meta.UserID(ctx).IsEmpty() {
+			return status.SafeError(codes.Unauthenticated, header.ErrInvalidAuthorization)
+		}
+
+		ok, err := controller.HasAccess(ctx)
+		if err != nil {
+			return status.SafeError(codes.Internal, err)
+		}
+		if !ok {
+			return status.SafeError(codes.PermissionDenied, access.ErrAccessDenied)
+		}
+
+		return handler(srv, stream)
 	}
 }
 

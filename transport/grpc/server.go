@@ -18,6 +18,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
@@ -32,6 +33,7 @@ import (
 //   - `Logger`: enables server-side RPC outcome logging when non-nil.
 //   - `Limiter`: enables server-side rate limiting when non-nil.
 //   - `Verifier`: enables server-side token verification when non-nil.
+//   - `Access`: enables server-side access control when non-nil.
 //   - `Unary`/`Stream`: allow callers to inject additional interceptors (and are optional in DI).
 type ServerParams struct {
 	di.In
@@ -63,6 +65,9 @@ type ServerParams struct {
 	// Verifier enables server-side token verification when non-nil.
 	Verifier token.Verifier
 
+	// Access enables server-side access control when non-nil.
+	Access access.Controller
+
 	// Unary are additional unary server interceptors to append after the standard chain.
 	Unary []grpc.UnaryServerInterceptor `optional:"true"`
 
@@ -78,10 +83,10 @@ type ServerParams struct {
 // The constructed server includes:
 //   - OpenTelemetry stats handling when tracing or metrics are enabled.
 //   - A unary interceptor chain that performs metadata extraction/injection, applies the configured
-//     server timeout, and optionally logging, token verification, and rate limiting, followed by any
-//     user-provided interceptors.
+//     server timeout, and optionally logging, token verification, rate limiting, and access control,
+//     followed by any user-provided interceptors.
 //   - A stream interceptor chain that performs metadata extraction/injection, and optionally logging,
-//     token verification, and rate limiting, followed by any user-provided interceptors.
+//     token verification, rate limiting, and access control, followed by any user-provided interceptors.
 //
 // TLS:
 // If TLS is enabled in config, server credentials are built from `params.Config.TLS`. Certificate/key
@@ -176,6 +181,10 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 		uis = append(uis, limiter.UnaryServerInterceptor(params.Limiter))
 	}
 
+	if params.Access != nil {
+		uis = append(uis, token.UnaryAccessServerInterceptor(params.Access))
+	}
+
 	uis = append(uis, interceptors...)
 
 	return grpc.ChainUnaryInterceptor(uis...)
@@ -194,6 +203,10 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 
 	if params.Limiter != nil {
 		sis = append(sis, limiter.StreamServerInterceptor(params.Limiter))
+	}
+
+	if params.Access != nil {
+		sis = append(sis, token.StreamAccessServerInterceptor(params.Access))
 	}
 
 	sis = append(sis, interceptors...)

@@ -29,6 +29,7 @@ var Module = di.Module(
 	grpc.Module,
 	http.Module,
 	events.Module,
+	di.Constructor(NewAccessController),
 	di.Constructor(NewServers),
 	di.Register(server.Register),
 )

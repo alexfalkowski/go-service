@@ -7,21 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 )
 
-// NewController constructs an access controller for gRPC token authorization.
-//
-// When token auth is enabled (via cfg.Token), the returned controller can be used to authorize
-// authenticated subjects against configured access rules.
-// NewController only builds the controller; the built-in gRPC token interceptors authenticate requests
-// and store the verified user id, but they do not call the controller or enforce authorization policy.
-//
-// If cfg is disabled, it returns (nil, nil) so downstream wiring can treat access control as not configured.
-func NewController(cfg *Config, fs *os.FS) (token.AccessController, error) {
-	if !cfg.IsEnabled() || !cfg.Token.IsEnabled() {
-		return nil, nil
-	}
-	return token.NewAccessController(cfg.Token, fs)
-}
-
 // NewToken constructs a token service for gRPC transport integration.
 //
 // The returned service is responsible for generating and verifying tokens according to cfg.Token (for example,

@@ -12,22 +12,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestNewControllerWithoutTokenConfig(t *testing.T) {
-	controller, err := http.NewController(test.NewHTTPTransportConfig(), test.FS)
-	require.NoError(t, err)
-	require.Nil(t, controller)
-}
-
-func TestNewControllerWithTokenConfig(t *testing.T) {
-	cfg := test.NewHTTPTransportConfig()
-	cfg.Token = test.NewToken("jwt")
-	cfg.Token.Access = test.NewAccessConfig()
-
-	controller, err := http.NewController(cfg, test.FS)
-	require.NoError(t, err)
-	require.NotNil(t, controller)
-}
-
 func TestNewTokenWithoutTokenConfig(t *testing.T) {
 	tkn := http.NewToken(test.Name, test.NewHTTPTransportConfig(), nil, nil)
 	require.Nil(t, tkn)

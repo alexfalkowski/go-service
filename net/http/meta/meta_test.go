@@ -98,7 +98,7 @@ func TestRoundTripperStoresServiceMethod(t *testing.T) {
 }
 
 func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
-	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
 	res := httptest.NewRecorder()
@@ -112,7 +112,7 @@ func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
 }
 
 func TestHandlerStoresServiceMethodFromPath(t *testing.T) {
-	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/users/123", http.NoBody)
 	require.NoError(t, err)
 	res := httptest.NewRecorder()
@@ -125,21 +125,23 @@ func TestHandlerStoresServiceMethodFromPath(t *testing.T) {
 }
 
 func TestHandlerStoresServiceMethodFromPattern(t *testing.T) {
-	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /users/{id}", func(http.ResponseWriter, *http.Request) {})
+	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), mux)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/users/123", http.NoBody)
 	require.NoError(t, err)
-	req.Pattern = "GET /users/{id}"
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
 		require.Equal(t, meta.Ignored("http"), meta.Transport(req.Context()))
 		require.Equal(t, meta.Ignored("GET /users/{id}"), meta.ServiceMethod(req.Context()))
+		require.Equal(t, "GET /users/{id}", req.Pattern)
 		require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
 	})
 }
 
 func TestHandlerStoresGeolocationAsIgnored(t *testing.T) {
-	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	handler := httpmeta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
 	req.Header.Set("Geolocation", "geo:47,11")

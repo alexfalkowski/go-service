@@ -1,2 +1,2 @@
-p, alice, service, read
-p, bob, service, write
+p, frontend, grpc:/greet.v1.GreeterService/SayHello, invoke
+p, admin-api, grpc:/greet.v1.GreeterService/ListGreetings, invoke

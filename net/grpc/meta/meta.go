@@ -71,6 +71,13 @@ func WithUserID(value meta.Value) Pair {
 	return meta.WithUserID(value)
 }
 
+// UserID returns the user ID attribute stored on ctx.
+//
+// If no value is present, it returns the zero-value [meta.Value].
+func UserID(ctx context.Context) meta.Value {
+	return meta.UserID(ctx)
+}
+
 // IPAddr returns the stored IP address attribute from ctx.
 //
 // If no value is present, it returns the zero-value [meta.Value].
