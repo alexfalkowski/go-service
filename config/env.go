@@ -28,7 +28,7 @@ import (
 //
 // NewENV reads the environment variable once at construction time and stores the parsed kind and data.
 func NewENV(location string, enc *encoding.Map) *ENV {
-	kind, data := strings.CutColon(os.Getenv(location))
+	kind, data, _ := strings.CutColon(os.Getenv(location))
 	return &ENV{kind: kind, data: data, enc: enc}
 }
 

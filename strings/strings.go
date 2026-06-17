@@ -140,12 +140,10 @@ func Concat(ss ...string) string {
 // CutColon splits s on the first ":" and returns the parts before and after.
 //
 // If ":" is not present, before is the original input and after is [Empty].
-// Callers that need to distinguish presence with a boolean should use [Cut]
-// with ":" directly.
+// The returned boolean reports whether ":" was found.
 //
 // This helper is commonly used by go-service "source string" conventions where a
 // value is prefixed with a kind such as "env:NAME" or "file:/path".
-func CutColon(s string) (string, string) {
-	before, after, _ := Cut(s, ":")
-	return before, after
+func CutColon(s string) (string, string, bool) {
+	return Cut(s, ":")
 }

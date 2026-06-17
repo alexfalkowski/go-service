@@ -30,4 +30,10 @@ var (
 	// (as determined by structs.IsEmpty), which helps prevent accidentally starting with a zero-value
 	// configuration.
 	ErrInvalidConfig = errors.New("config: invalid format")
+
+	// ErrInvalidSource is returned when an explicit configuration source uses an unsupported kind.
+	//
+	// Supported explicit sources are "file:<path>" and "env:<ENV_VAR>". Use an empty or unprefixed
+	// value to select default lookup.
+	ErrInvalidSource = errors.New("config: invalid source")
 )

@@ -122,20 +122,22 @@ func TestCutColon(t *testing.T) {
 		s          string
 		wantBefore string
 		wantAfter  string
+		wantFound  bool
 	}{
-		{name: "env source", s: "env:NAME", wantBefore: "env", wantAfter: "NAME"},
-		{name: "file source with later colon", s: "file:/tmp/a:b", wantBefore: "file", wantAfter: "/tmp/a:b"},
+		{name: "env source", s: "env:NAME", wantBefore: "env", wantAfter: "NAME", wantFound: true},
+		{name: "file source with later colon", s: "file:/tmp/a:b", wantBefore: "file", wantAfter: "/tmp/a:b", wantFound: true},
 		{name: "missing colon", s: "literal", wantBefore: "literal", wantAfter: ""},
-		{name: "leading colon", s: ":value", wantBefore: "", wantAfter: "value"},
-		{name: "trailing colon", s: "env:", wantBefore: "env", wantAfter: ""},
+		{name: "leading colon", s: ":value", wantBefore: "", wantAfter: "value", wantFound: true},
+		{name: "trailing colon", s: "env:", wantBefore: "env", wantAfter: "", wantFound: true},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			before, after := strings.CutColon(test.s)
+			before, after, found := strings.CutColon(test.s)
 
 			require.Equal(t, test.wantBefore, before)
 			require.Equal(t, test.wantAfter, after)
+			require.Equal(t, test.wantFound, found)
 		})
 	}
 }

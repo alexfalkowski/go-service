@@ -161,7 +161,9 @@ Config input is routed by flags called `-config` and `-c`:
 
   The repository helper `make kind=configs/config encode-config` uses GNU `base64 -w 0`; on macOS/BSD, use `base64 | tr -d '\n'` for the equivalent single-line payload.
 
-- Otherwise (no `file:`/`env:` prefix), the decoder falls back to **default lookup**, searching for:
+- Unsupported explicit `kind:location` prefixes fail startup instead of falling back to another source.
+
+- Unprefixed values, including an empty value, fall back to **default lookup**, searching for:
 
   `<serviceName>.{yaml,yml,hjson,toml,json}`
 
