@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	grpcstatus "github.com/alexfalkowski/go-service/v2/net/grpc/status"
@@ -168,6 +169,23 @@ func TestCodeMapsUnknownGRPCStatusCodeToInternalServerError(t *testing.T) {
 	err := grpcstatus.Error(codes.Code(999), "unknown")
 
 	require.Equal(t, http.StatusInternalServerError, httpstatus.Code(err))
+}
+
+func TestCodeMapsContextErrors(t *testing.T) {
+	for _, tc := range []struct {
+		err  error
+		name string
+		want int
+	}{
+		{name: "canceled", err: context.Canceled, want: http.StatusClientClosedRequest},
+		{name: "wrapped canceled", err: fmt.Errorf("wrapped: %w", context.Canceled), want: http.StatusClientClosedRequest},
+		{name: "deadline exceeded", err: context.DeadlineExceeded, want: http.StatusGatewayTimeout},
+		{name: "wrapped deadline exceeded", err: fmt.Errorf("wrapped: %w", context.DeadlineExceeded), want: http.StatusGatewayTimeout},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.want, httpstatus.Code(tc.err))
+		})
+	}
 }
 
 func TestWriteErrorReturnsWriteFailure(t *testing.T) {
