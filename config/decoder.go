@@ -72,9 +72,3 @@ type Decoder interface {
 	// errors for missing inputs, unknown/unsupported kinds, I/O failures, or decode/unmarshal failures.
 	Decode(v any) error
 }
-
-type invalidSourceDecoder struct{}
-
-func (invalidSourceDecoder) Decode(any) error {
-	return ErrInvalidSource
-}
