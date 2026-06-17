@@ -149,6 +149,47 @@ func TestSSHSubjectMatchesActiveKey(t *testing.T) {
 	require.Equal(t, test.UserID.String(), sub)
 }
 
+func TestConfigRejectsInvalidValues(t *testing.T) {
+	valid := test.NewToken("jwt")
+	tests := []struct {
+		config *token.Config
+		name   string
+	}{
+		{
+			name:   "missing kind",
+			config: &token.Config{JWT: valid.JWT},
+		},
+		{
+			name:   "unknown kind",
+			config: &token.Config{Kind: "none"},
+		},
+		{
+			name:   "missing jwt config",
+			config: &token.Config{Kind: "jwt"},
+		},
+		{
+			name:   "missing paseto config",
+			config: &token.Config{Kind: "paseto"},
+		},
+		{
+			name:   "missing ssh config",
+			config: &token.Config{Kind: "ssh"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Error(t, test.Validator.Struct(tt.config))
+		})
+	}
+
+	for _, kind := range []string{"jwt", "paseto", "ssh"} {
+		t.Run(kind, func(t *testing.T) {
+			require.NoError(t, test.Validator.Struct(test.NewToken(kind)))
+		})
+	}
+}
+
 func TestUnknownKindConfig(t *testing.T) {
 	cfg := test.NewToken("none")
 	tkn := token.NewToken(test.Name, cfg, test.FS, nil)

@@ -309,6 +309,14 @@ matching skill for the task.
   real client, route, or deployment contract that depends on strict weighted
   `Accept` negotiation for MVC 404 responses.
 - JWT verification requires both the expected algorithm and a `kid` header.
+- JWT, PASETO, and SSH token key material is intentionally loaded and checked
+  by the runtime `Generate` and `Verify` paths. Do not flag missing startup
+  warmup/validation for token key sources solely because bad, missing,
+  unreadable, or malformed administrator-supplied key material can surface
+  during token issuance or verification. Report only concrete bugs such as
+  panics, accepted weak or wrong key types/sizes, secret leakage, ignored
+  documented token config validation, or a public API promise that token key
+  material is fully resolved before runtime token operations.
 - Token tests should focus on repository-owned wrapper behavior. Do not flag or
   add tests that require hand-crafting upstream JWT/PASETO internals solely to
   prove library-owned parsing, signature, expiration, not-before, or

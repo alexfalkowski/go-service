@@ -7,6 +7,9 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// FieldLevel aliases the upstream validator field-level interface for custom config validation rules.
+type FieldLevel = validator.FieldLevel
+
 // NewValidator constructs a Validator backed by go-playground/validator.
 //
 // It enables required-struct validation ([validator.WithRequiredStructEnabled]), which causes validation
@@ -26,30 +29,22 @@ func NewValidator() *Validator {
 	return &Validator{validate}
 }
 
-func validateConfigSize(fl validator.FieldLevel) bool {
-	field := fl.Field()
-	if !field.CanInt() {
-		return false
-	}
-
-	size := bytes.Size(field.Int())
-	return size >= 0 && size <= bytes.MaxConfigSize
-}
-
-func validateDurationSecondPrecision(fl validator.FieldLevel) bool {
-	field := fl.Field()
-	if !field.CanInt() {
-		return false
-	}
-
-	duration := time.Duration(field.Int())
-	return duration > 0 && duration%time.Second == 0
-}
-
 // Validator wraps a go-playground validator instance.
 //
 // It is used by `NewConfig[T]` to validate decoded configuration structs. You may use the embedded
 // `*validator.Validate` directly to register custom validations or to validate values manually.
 type Validator struct {
 	*validator.Validate
+}
+
+func validateConfigSize(fl FieldLevel) bool {
+	field := fl.Field()
+	size := bytes.Size(field.Int())
+	return size >= 0 && size <= bytes.MaxConfigSize
+}
+
+func validateDurationSecondPrecision(fl FieldLevel) bool {
+	field := fl.Field()
+	duration := time.Duration(field.Int())
+	return duration > 0 && duration%time.Second == 0
 }
