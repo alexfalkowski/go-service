@@ -54,14 +54,18 @@ func (c *DBChecker) Check(ctx context.Context) error {
 		return ErrNoConnections
 	}
 
-	errs := make([]error, 0, len(databases))
+	var group sync.ErrorsGroup
 	for _, database := range databases {
-		err := c.ping(ctx, database.db)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("db %s[%d]: %w", database.role, database.index, err))
-		}
+		group.Go(func() error {
+			err := c.ping(ctx, database.db)
+			if err != nil {
+				return fmt.Errorf("db %s[%d]: %w", database.role, database.index, err)
+			}
+
+			return nil
+		})
 	}
-	return errors.Join(errs...)
+	return group.Wait()
 }
 
 type database struct {
