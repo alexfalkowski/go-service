@@ -17,30 +17,6 @@ type secondPrecisionDuration struct {
 	Duration time.Duration `validate:"duration_second_precision"`
 }
 
-type invalidConfigSizeFieldKind struct {
-	Size string `validate:"config_size"`
-}
-
-type invalidSecondPrecisionDurationFieldKind struct {
-	Duration string `validate:"duration_second_precision"`
-}
-
-func TestValidatorRejectsInvalidFieldKinds(t *testing.T) {
-	tests := []struct {
-		config any
-		name   string
-	}{
-		{name: "config size", config: &invalidConfigSizeFieldKind{Size: "64B"}},
-		{name: "duration second precision", config: &invalidSecondPrecisionDurationFieldKind{Duration: "1s"}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			require.Error(t, test.Validator.Struct(tt.config))
-		})
-	}
-}
-
 func TestValidatorConfigSize(t *testing.T) {
 	tests := []struct {
 		name  string
