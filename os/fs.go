@@ -191,7 +191,7 @@ func (fs *FS) ExecutableDir() string {
 // storage. Callers that need to mutate the bytes should clone the returned
 // slice first.
 func (fs *FS) ReadSource(source string) ([]byte, error) {
-	kind, path := strings.CutColon(source)
+	kind, path, _ := strings.CutColon(source)
 	switch kind {
 	case "env":
 		if strings.IsEmpty(path) {

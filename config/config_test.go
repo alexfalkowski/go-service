@@ -197,13 +197,27 @@ func TestInvalidCommonConfig(t *testing.T) {
 }
 
 func TestInvalidKindConfig(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", test.FS.Join(home, ".config"))
+
+	configDir := os.UserConfigDir()
+	path := test.FS.Join(configDir, test.Name.String())
+
+	require.NoError(t, test.FS.MkdirAll(path, 0o777))
+
+	data, err := test.FS.ReadFile(test.Path("configs/config.yml"))
+	require.NoError(t, err)
+
+	require.NoError(t, test.FS.WriteFile(test.FS.Join(path, test.Name.String()+".yml"), data, 0o600))
+
 	set := flag.NewFlagSet("test")
 	set.AddConfig("test:test")
 
 	decoder := test.NewDecoder(set)
 
-	_, err := config.NewConfig[config.Config](decoder, test.Validator)
-	require.Error(t, err)
+	_, err = config.NewConfig[config.Config](decoder, test.Validator)
+	require.ErrorIs(t, err, config.ErrInvalidSource)
 }
 
 func TestNewConfigRejectsEmptyDecodedConfig(t *testing.T) {

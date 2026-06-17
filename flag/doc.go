@@ -14,6 +14,8 @@
 //   - "file:/path/to/config.yaml" to read configuration from a file (decoder selected by extension)
 //   - "env:MY_CONFIG" to read configuration from an environment variable (typically "<kind>:<base64-content>")
 //
+// The config package treats unsupported explicit "kind:location" values as invalid.
+//
 // The [FlagSet] type in this package supports installing this convention via [FlagSet.AddConfig] and
 // retrieving it via [FlagSet.GetConfig]. The config subsystem ([config.NewDecoder]) consumes this value
 // to route to the appropriate decoder.

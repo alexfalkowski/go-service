@@ -12,8 +12,9 @@
 //     on the file extension.
 //   - "env:<ENV_VAR>": loads configuration from the environment variable named <ENV_VAR>. The variable
 //     value must be formatted as "<extension>:<base64-content>" (for example "yaml:...").
-//   - otherwise: uses the default lookup, searching for "<serviceName>.{yaml,yml,hjson,toml,json}" in common
+//   - unprefixed values use the default lookup, searching for "<serviceName>.{yaml,yml,hjson,toml,json}" in common
 //     locations (executable directory, user config dir, and /etc).
+//   - unsupported explicit "kind:location" values fail with [ErrInvalidSource].
 //
 // Default lookup intentionally requires a valid user configuration directory environment before lookup starts.
 // It may resolve the user config directory before probing file candidates, so runtimes using default lookup

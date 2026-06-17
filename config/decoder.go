@@ -39,20 +39,25 @@ type DecoderParams struct {
 //     encoder is used (e.g. ".yaml" -> "yaml", ".hjson" -> "hjson").
 //   - "env:<ENV_VAR>": uses the env decoder to read from the environment variable <ENV_VAR>.
 //     The variable value must be formatted as "<extension>:<base64-content>" (e.g. "yaml:..." or "hjson:...").
-//   - anything else (including empty): uses the default lookup decoder, which searches common
+//   - unprefixed values (including empty): use the default lookup decoder, which searches common
 //     locations for "<serviceName>.{yaml,yml,hjson,toml,json}".
+//   - unsupported explicit "kind:location" values fail with [ErrInvalidSource].
 //
 // The returned Decoder is safe for repeated calls to Decode; underlying behavior depends on the
 // selected implementation.
 func NewDecoder(params DecoderParams) Decoder {
-	kind, location := strings.CutColon(params.Flags.GetConfig())
+	kind, location, found := strings.CutColon(params.Flags.GetConfig())
+	if !found {
+		return NewDefault(params.Name, params.Encoder, params.FS)
+	}
+
 	switch kind {
 	case "file":
 		return NewFile(location, params.Encoder, params.FS)
 	case "env":
 		return NewENV(location, params.Encoder)
 	default:
-		return NewDefault(params.Name, params.Encoder, params.FS)
+		return invalidSourceDecoder{}
 	}
 }
 
@@ -66,4 +71,10 @@ type Decoder interface {
 	// The v parameter should be a pointer to the destination type. Implementations may return
 	// errors for missing inputs, unknown/unsupported kinds, I/O failures, or decode/unmarshal failures.
 	Decode(v any) error
+}
+
+type invalidSourceDecoder struct{}
+
+func (invalidSourceDecoder) Decode(any) error {
+	return ErrInvalidSource
 }

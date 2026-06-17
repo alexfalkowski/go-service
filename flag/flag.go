@@ -34,6 +34,8 @@ type FlagSet struct {
 //   - "file:/path/to/config.yaml" (decode kind inferred from file extension)
 //   - "env:MY_CONFIG" (read config payload from environment variable MY_CONFIG)
 //
+// The config package treats unsupported explicit "kind:location" values as invalid.
+//
 // The provided value is used as the default. AddConfig registers both flag names against the same
 // backing value, so if both aliases are supplied during parsing, the later parsed flag wins.
 //
