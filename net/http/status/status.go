@@ -3,6 +3,7 @@ package status
 import (
 	"fmt"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -115,8 +116,10 @@ func DefaultMessage(code int) string {
 // Resolution order:
 //  1. If err implements Coder, return coder.Code().
 //  2. If err is a raw *[http.MaxBytesError], return StatusRequestEntityTooLarge (413).
-//  3. If err is a gRPC status error, map its gRPC code to an HTTP status code using the statusCodes table.
-//  4. Otherwise return StatusInternalServerError (500).
+//  3. If err wraps context.Canceled, return StatusClientClosedRequest (499).
+//  4. If err wraps context.DeadlineExceeded, return StatusGatewayTimeout (504).
+//  5. If err is a gRPC status error, map its gRPC code to an HTTP status code using the statusCodes table.
+//  6. Otherwise return StatusInternalServerError (500).
 func Code(err error) int {
 	if coder, ok := coderFromError(err); ok {
 		return coder.Code()
@@ -124,6 +127,14 @@ func Code(err error) int {
 
 	if isMaxBytesError(err) {
 		return http.StatusRequestEntityTooLarge
+	}
+
+	if errors.Is(err, context.Canceled) {
+		return http.StatusClientClosedRequest
+	}
+
+	if errors.Is(err, context.DeadlineExceeded) {
+		return http.StatusGatewayTimeout
 	}
 
 	s, ok := status.FromError(err)
