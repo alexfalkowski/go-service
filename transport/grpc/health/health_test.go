@@ -415,6 +415,37 @@ func TestNotFoundWatch(t *testing.T) {
 	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
+func TestNotFoundWatchDrains(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
+	requireGRPCReady(t, world)
+
+	drain := netserver.NewDrain()
+	watcher := grpchealth.NewServer(grpchealth.ServerParams{Server: world.GRPCHealth, Drain: drain})
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	stream := test.NewWatchStream(ctx)
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- watcher.Watch(&health.Request{Service: "bob"}, stream)
+	}()
+
+	resp := requireWatchResponse(t, stream.Responses)
+	require.Equal(t, health.ServiceUnknown, resp.GetStatus())
+
+	drain.Start()
+
+	resp = requireWatchResponse(t, stream.Responses)
+	require.Equal(t, health.NotServing, resp.GetStatus())
+
+	select {
+	case err := <-errCh:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		require.FailNow(t, "watch stream did not stop after drain")
+	}
+}
+
 func TestIgnoreAuthWatch(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"),
 		test.WithWorldTelemetry("otlp"),
