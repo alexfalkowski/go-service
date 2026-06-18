@@ -89,7 +89,7 @@ func (s *Server) List(_ context.Context, _ *health.ListRequest) (*health.ListRes
 // the "grpc" transport kind, matching [Server.Check] and [Server.List].
 //
 // The initial status is sent immediately. When the requested service is unknown, Watch sends
-// `SERVICE_UNKNOWN` and keeps the stream open until the client cancels.
+// `SERVICE_UNKNOWN` and keeps the stream open until the client cancels or the server drains.
 func (s *Server) Watch(req *health.Request, w health.WatchServer) error {
 	service := req.GetService()
 	if strings.IsEmpty(service) {
@@ -98,7 +98,7 @@ func (s *Server) Watch(req *health.Request, w health.WatchServer) error {
 
 	observer, err := s.server.Observer(service, "grpc")
 	if err != nil {
-		return sendUnknownStatus(w)
+		return s.sendUnknownStatus(w)
 	}
 
 	return s.watch(w, observer.Watch())
@@ -142,22 +142,25 @@ func (s *Server) healthStatus(err error) health.Status {
 	return healthStatus(err)
 }
 
+func (s *Server) sendUnknownStatus(w health.WatchServer) error {
+	if err := sendStatus(w, health.ServiceUnknown); err != nil {
+		return err
+	}
+
+	select {
+	case <-s.drain.Done():
+		return sendStatus(w, health.NotServing)
+	case <-w.Context().Done():
+		return status.SafeError(codes.Canceled, w.Context().Err())
+	}
+}
+
 func healthStatus(err error) health.Status {
 	if err != nil {
 		return health.NotServing
 	}
 
 	return health.Serving
-}
-
-func sendUnknownStatus(w health.WatchServer) error {
-	if err := sendStatus(w, health.ServiceUnknown); err != nil {
-		return err
-	}
-
-	<-w.Context().Done()
-
-	return status.SafeError(codes.Canceled, w.Context().Err())
 }
 
 func sendStatus(w health.WatchServer, st health.Status) error {
