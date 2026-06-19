@@ -190,6 +190,8 @@ func TestStaticFileUsesETagValidator(t *testing.T) {
 	etag := firstRes.Header().Get("ETag")
 	require.Equal(t, http.StatusOK, firstRes.Code)
 	require.NotEmpty(t, etag)
+	require.GreaterOrEqual(t, len(etag), 2)
+	require.Equal(t, "W/", etag[:2])
 	require.Equal(t, modified.Format(http.TimeFormat), firstRes.Header().Get("Last-Modified"))
 	test.RequireResponseBody(t, firstRes, "hello")
 
@@ -199,7 +201,8 @@ func TestStaticFileUsesETagValidator(t *testing.T) {
 		body    string
 		code    int
 	}{
-		{headers: map[string]string{"If-None-Match": "W/" + etag}, name: "etag", code: http.StatusNotModified},
+		{headers: map[string]string{"If-None-Match": etag}, name: "etag", code: http.StatusNotModified},
+		{headers: map[string]string{"If-None-Match": etag[2:]}, name: "strong-etag", code: http.StatusNotModified},
 		{headers: map[string]string{"If-Modified-Since": modified.Format(http.TimeFormat)}, name: "modified", code: http.StatusNotModified},
 		{headers: map[string]string{"If-Modified-Since": modified.AddDate(0, 0, -1).Format(http.TimeFormat)}, name: "stale", body: "hello", code: http.StatusOK},
 	} {

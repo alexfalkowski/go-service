@@ -303,6 +303,18 @@ matching skill for the task.
   non-generated method strings are used for a security decision, or a public API
   promises strict validation of arbitrary method strings.
 - MVC controller errors render a client-safe `mvc.Error` model; `mvcModelError` metadata intentionally remains the raw error string for compatibility and must not be rendered unless diagnostic detail exposure is acceptable.
+- MVC views should be constructed during startup or route registration so
+  missing, unreadable, or malformed templates fail fast before serving traffic.
+  Do not flag `mvc.NewFullView`, `mvc.NewPartialView`, or `mvc.NewViewPair`
+  panics as request-path reliability gaps solely because those constructors
+  panic; report only concrete supported paths that construct views per request
+  contrary to the documented lifecycle.
+- MVC static files are expected to be served from embedded or otherwise stable
+  application assets. Do not flag ignored mid-stream `io.Copy` errors in
+  `mvc.writeStaticFile` as reliability gaps solely because an artificial
+  `fs.FS` can return partial data after successful `Open`/`Stat`; report only
+  concrete supported filesystem paths where static reads can fail mid-stream
+  and operators need different behavior.
 - MVC not-found handling intentionally uses a simple `Accept` header check for
   `text/html` and does not fully evaluate quality weights such as
   `text/html;q=0`. Do not flag this unless there is concrete evidence of a

@@ -22,8 +22,9 @@ func ExampleGet() {
 		Layout:      mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
+	view := mvc.NewFullView("views/page.tmpl")
 	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *examplePage, error) {
-		return mvc.NewFullView("views/page.tmpl"), &examplePage{Title: "Hello"}, nil
+		return view, &examplePage{Title: "Hello"}, nil
 	})
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/hello", http.NoBody)
@@ -48,8 +49,9 @@ func ExampleNotFound() {
 		Layout:      mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
+	view := mvc.NewFullView("views/page.tmpl")
 	mvc.NotFound(func(_ context.Context) (*mvc.View, *examplePage) {
-		return mvc.NewFullView("views/page.tmpl"), &examplePage{Title: "Not Found"}
+		return view, &examplePage{Title: "Not Found"}
 	})
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/missing", http.NoBody)

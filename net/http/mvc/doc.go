@@ -13,4 +13,9 @@
 //
 // Controllers and views use net/http/meta to retrieve the request and response writer from context.
 // The routing helpers set these values before invoking the controller.
+//
+// View lifecycle:
+//
+// Construct views during startup or route registration so template read and parse failures fail fast before
+// the server starts handling requests.
 package mvc
