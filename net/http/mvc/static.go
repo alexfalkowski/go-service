@@ -14,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // StaticFile registers an HTTP GET route that serves the named file from the registered filesystem.
@@ -99,6 +100,10 @@ func serveFileWithCacheValidators(res http.ResponseWriter, req *http.Request, na
 		res.WriteHeader(http.StatusNotModified)
 		return
 	}
+	if strings.IsEmpty(req.Header.Get("If-None-Match")) && staticModifiedSinceMatches(req, info) {
+		res.WriteHeader(http.StatusNotModified)
+		return
+	}
 
 	writeStaticFile(res, name, f, info)
 }
@@ -113,6 +118,9 @@ func writeStaticFile(res http.ResponseWriter, name string, f fs.File, info fs.Fi
 func staticStatusCode(err error) int {
 	if errors.Is(err, fs.ErrNotExist) {
 		return http.StatusNotFound
+	}
+	if errors.Is(err, fs.ErrPermission) {
+		return http.StatusForbidden
 	}
 	return status.Code(err)
 }
@@ -137,6 +145,26 @@ func setStaticValidators(res http.ResponseWriter, etag string, info fs.FileInfo)
 	if !modified.IsZero() {
 		res.Header().Set("Last-Modified", modified.UTC().Format(http.TimeFormat))
 	}
+}
+
+func staticModifiedSinceMatches(req *http.Request, info fs.FileInfo) bool {
+	value := req.Header.Get("If-Modified-Since")
+	if strings.IsEmpty(value) {
+		return false
+	}
+
+	since, err := http.ParseTime(value)
+	if err != nil {
+		return false
+	}
+
+	modified := info.ModTime()
+	if modified.IsZero() {
+		return false
+	}
+
+	modified = modified.UTC().Truncate(time.Second.Duration())
+	return !modified.After(since)
 }
 
 func setStaticContentLength(res http.ResponseWriter, size int64) {

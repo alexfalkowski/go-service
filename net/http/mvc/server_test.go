@@ -125,6 +125,25 @@ func TestStaticFileRejectsDirectory(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, res.Code)
 }
 
+func TestStaticFileRejectsPermissionDenied(t *testing.T) {
+	mux := http.NewServeMux()
+	mvc.Register(mvc.RegisterParams{
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem:  permissionFileSystem{},
+		Pool:        test.Pool,
+		Layout:      test.Layout,
+	})
+	require.True(t, mvc.StaticFile("/asset", "asset.txt"))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset", http.NoBody)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusForbidden, res.Code)
+}
+
 func TestStaticFileSetsCacheControl(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
@@ -174,15 +193,33 @@ func TestStaticFileUsesETagValidator(t *testing.T) {
 	require.Equal(t, modified.Format(http.TimeFormat), firstRes.Header().Get("Last-Modified"))
 	test.RequireResponseBody(t, firstRes, "hello")
 
-	secondReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
-	secondReq.Header.Set("If-None-Match", "W/"+etag)
-	secondRes := httptest.NewRecorder()
+	for _, tt := range []struct {
+		headers map[string]string
+		name    string
+		body    string
+		code    int
+	}{
+		{headers: map[string]string{"If-None-Match": "W/" + etag}, name: "etag", code: http.StatusNotModified},
+		{headers: map[string]string{"If-Modified-Since": modified.Format(http.TimeFormat)}, name: "modified", code: http.StatusNotModified},
+		{headers: map[string]string{"If-Modified-Since": modified.AddDate(0, 0, -1).Format(http.TimeFormat)}, name: "stale", body: "hello", code: http.StatusOK},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
+			for key, value := range tt.headers {
+				req.Header.Set(key, value)
+			}
+			res := httptest.NewRecorder()
 
-	mux.ServeHTTP(secondRes, secondReq)
+			mux.ServeHTTP(res, req)
 
-	require.Equal(t, http.StatusNotModified, secondRes.Code)
-	require.Equal(t, etag, secondRes.Header().Get("ETag"))
-	test.RequireEmptyResponseBody(t, secondRes)
+			require.Equal(t, tt.code, res.Code)
+			if tt.body == "" {
+				test.RequireEmptyResponseBody(t, res)
+				return
+			}
+			test.RequireResponseBody(t, res, tt.body)
+		})
+	}
 }
 
 func TestStaticPathValueUsesETagValidator(t *testing.T) {
@@ -253,6 +290,56 @@ func TestViewRenderReturnsWriteError(t *testing.T) {
 	err := view.Render(ctx, &test.Model)
 
 	require.ErrorIs(t, err, test.ErrFailed)
+}
+
+func TestNewViewUsesLayoutPathWhenBasenameCollides(t *testing.T) {
+	for _, tt := range []struct {
+		view func() *mvc.View
+		name string
+		want string
+	}{
+		{
+			view: func() *mvc.View { return mvc.NewFullView("pages/full.tmpl") },
+			name: "full",
+			want: "full layout full page",
+		},
+		{
+			view: func() *mvc.View { return mvc.NewPartialView("pages/partial.tmpl") },
+			name: "partial",
+			want: "partial layout partial page",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			mux := http.NewServeMux()
+			mvc.Register(mvc.RegisterParams{
+				Mux:         mux,
+				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+				FileSystem: fstest.MapFS{
+					"views/full.tmpl":    &fstest.MapFile{Data: []byte(`full layout {{ block "content" . }}default{{ end }}`)},
+					"views/partial.tmpl": &fstest.MapFile{Data: []byte(`partial layout {{ block "content" . }}default{{ end }}`)},
+					"pages/full.tmpl":    &fstest.MapFile{Data: []byte(`view-root{{ define "content" }}full page{{ end }}`)},
+					"pages/partial.tmpl": &fstest.MapFile{Data: []byte(`view-root{{ define "content" }}partial page{{ end }}`)},
+				},
+				Pool:   test.Pool,
+				Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
+			})
+
+			res := httptest.NewRecorder()
+			ctx := meta.WithContent(t.Context(), nil, res, nil)
+
+			err := tt.view().Render(ctx, &test.Model)
+
+			require.NoError(t, err)
+			test.RequireResponseBody(t, res, tt.want)
+		})
+	}
+}
+
+func TestLayoutNames(t *testing.T) {
+	layout := mvc.NewLayout("views/full.tmpl", "views/partial.tmpl")
+
+	require.Equal(t, "full.tmpl", layout.FullName())
+	require.Equal(t, "partial.tmpl", layout.PartialName())
 }
 
 func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
@@ -582,4 +669,10 @@ func TestStaticFileSetsContentLength(t *testing.T) {
 type requestModel struct {
 	Method string
 	Path   string
+}
+
+type permissionFileSystem struct{}
+
+func (permissionFileSystem) Open(string) (fs.File, error) {
+	return nil, fs.ErrPermission
 }
