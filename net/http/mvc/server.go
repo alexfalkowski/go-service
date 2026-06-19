@@ -1,14 +1,8 @@
 package mvc
 
 import (
-	"io/fs"
-	"path"
-	"strconv"
-
-	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
@@ -99,104 +93,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 	return true
 }
 
-// StaticFile registers an HTTP GET route that serves the named file from the registered filesystem.
-//
-// It returns false when MVC is not defined (see IsDefined).
-func StaticFile(pattern, name string) bool {
-	if !IsDefined() {
-		return false
-	}
-
-	handler := func(res http.ResponseWriter, req *http.Request) {
-		serveFile(res, name)
-	}
-
-	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
-	return true
-}
-
-// StaticPathValue registers an HTTP GET route that serves a file chosen by a path value.
-//
-// The file name is built under prefix from a validated request path value. Invalid paths and
-// traversal attempts are rejected with HTTP 400.
-//
-// It returns false when MVC is not defined (see IsDefined).
-func StaticPathValue(pattern, value, prefix string) bool {
-	if !IsDefined() {
-		return false
-	}
-
-	handler := func(res http.ResponseWriter, req *http.Request) {
-		cleaned := path.Clean(req.PathValue(value))
-		if cleaned == "." || cleaned != req.PathValue(value) || !fs.ValidPath(cleaned) || strings.Contains(cleaned, `\`) {
-			res.WriteHeader(staticStatusCode(status.BadRequestError(fs.ErrInvalid)))
-			return
-		}
-
-		name := path.Join(prefix, cleaned)
-		serveFile(res, name)
-	}
-
-	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
-	return true
-}
-
-func serveFile(res http.ResponseWriter, name string) {
-	f, err := fileSystem.Open(name)
-	if err != nil {
-		res.WriteHeader(staticStatusCode(err))
-		return
-	}
-	defer f.Close()
-
-	info, err := f.Stat()
-	if err != nil {
-		res.WriteHeader(staticStatusCode(err))
-		return
-	}
-	if info.IsDir() {
-		res.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	setStaticContentType(res, name)
-	setStaticContentLength(res, info.Size())
-	res.WriteHeader(http.StatusOK)
-	_, _ = io.Copy(res, f)
-}
-
-func staticStatusCode(err error) int {
-	if errors.Is(err, fs.ErrNotExist) {
-		return http.StatusNotFound
-	}
-	return status.Code(err)
-}
-
-func setStaticContentType(res http.ResponseWriter, name string) {
-	mediaType := media.TypeByExtension(path.Ext(name))
-	if !strings.IsEmpty(mediaType) {
-		res.Header().Set(content.TypeKey, media.MustParse(mediaType).WithUTF8())
-	}
-}
-
-func setStaticContentLength(res http.ResponseWriter, size int64) {
-	if size >= 0 {
-		res.Header().Set("Content-Length", strconv.FormatInt(size, 10))
-	}
-}
-
-func writeView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) {
-	if err := renderView(ctx, res, view, model, code); err != nil {
-		res.WriteHeader(status.Code(err))
-	}
-}
-
 func writeNotFound(req *http.Request, res http.ResponseWriter) {
-	if notFoundController == nil {
-		res.WriteHeader(http.StatusNotFound)
-		return
-	}
-
 	err := status.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	res.Header().Set(content.TypeKey, htmlContentType)
 	ctx := req.Context()
@@ -207,25 +104,4 @@ func writeNotFound(req *http.Request, res http.ResponseWriter) {
 	if err := renderView(ctx, res, view, model, http.StatusNotFound); err != nil {
 		res.WriteHeader(status.Code(err))
 	}
-}
-
-func renderView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) error {
-	if view == nil {
-		return ErrMissingView
-	}
-
-	buffer := pool.Get()
-	defer pool.Put(buffer)
-
-	if err := view.render(ctx, buffer, model); err != nil {
-		return err
-	}
-
-	writeBuffer(res, code, buffer)
-	return nil
-}
-
-func writeBuffer(res http.ResponseWriter, code int, buffer *bytes.Buffer) {
-	res.WriteHeader(code)
-	_, _ = buffer.WriteTo(res)
 }
