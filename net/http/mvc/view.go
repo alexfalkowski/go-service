@@ -75,6 +75,7 @@ func (l *Layout) name(name string) string {
 // NewViewPair returns a full and partial View pair for name.
 //
 // This is a convenience helper when a controller supports both full-page and partial rendering.
+// Call it during startup or route registration so template read and parse failures fail fast.
 func NewViewPair(name string) (*View, *View) {
 	return NewFullView(name), NewPartialView(name)
 }
@@ -82,6 +83,7 @@ func NewViewPair(name string) (*View, *View) {
 // NewFullView parses the full layout template and the view template from the registered filesystem.
 //
 // It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
+// Call it during startup or route registration so template read and parse failures fail fast.
 // If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
 // panic.
 func NewFullView(name string) *View {
@@ -91,6 +93,7 @@ func NewFullView(name string) *View {
 // NewPartialView parses the partial layout template and the view template from the registered filesystem.
 //
 // It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
+// Call it during startup or route registration so template read and parse failures fail fast.
 // If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
 // panic.
 func NewPartialView(name string) *View {

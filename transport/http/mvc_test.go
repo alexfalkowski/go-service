@@ -73,8 +73,9 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 func TestRouteError(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
 
+	view := mvc.NewFullView("views/error.tmpl")
 	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewFullView("views/error.tmpl"), &test.Model, status.ServiceUnavailableError(test.ErrInternal)
+		return view, &test.Model, status.ServiceUnavailableError(test.ErrInternal)
 	})
 
 	header := http.Header{}
@@ -95,8 +96,9 @@ func TestRouteError(t *testing.T) {
 func TestNotFound(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
+	view := mvc.NewFullView("views/error.tmpl")
 	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
-		return mvc.NewFullView("views/error.tmpl"), &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
+		return view, &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
 	}))
 
 	header := http.Header{}
@@ -118,8 +120,9 @@ func TestNotFound(t *testing.T) {
 func TestNotFoundUsesContentFallbackWithoutHTMLAccept(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
+	view := mvc.NewFullView("views/error.tmpl")
 	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
-		return mvc.NewFullView("views/error.tmpl"), &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
+		return view, &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
 	}))
 
 	header := http.Header{}
@@ -137,8 +140,9 @@ func TestNotFoundUsesContentFallbackWithoutHTMLAccept(t *testing.T) {
 func TestNotFoundHandlesHTMXRequest(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
+	view := mvc.NewPartialView("views/error.tmpl")
 	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
-		return mvc.NewPartialView("views/error.tmpl"), &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
+		return view, &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
 	}))
 
 	header := http.Header{}
@@ -227,10 +231,10 @@ func TestMissingViews(t *testing.T) {
 	})
 
 	require.False(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
+		return nil, &test.Model, nil
 	}))
 	require.False(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
-		return mvc.NewFullView("views/error.tmpl"), nil
+		return nil, nil
 	}))
 	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
 	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
@@ -243,10 +247,10 @@ func TestMissingViews(t *testing.T) {
 	})
 
 	require.False(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
+		return nil, &test.Model, nil
 	}))
 	require.False(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
-		return mvc.NewFullView("views/error.tmpl"), nil
+		return nil, nil
 	}))
 	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
 	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))

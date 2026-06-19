@@ -8,7 +8,8 @@ import "github.com/alexfalkowski/go-service/v2/context"
 // populate the request context with HTTP content metadata before calling the Controller.
 //
 // Return values:
-//   - view: the view that should be rendered. It is typically created via NewFullView/NewPartialView or NewViewPair.
+//   - view: the view that should be rendered. It is typically prebuilt during startup or route registration
+//     via NewFullView/NewPartialView or NewViewPair.
 //   - model: the model passed to the template when rendering succeeds.
 //   - err: an error indicating the controller failed.
 //

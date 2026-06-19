@@ -10,3 +10,4 @@ test/new_config.yml
 test/reports/coverage.html
 .source-key
 ISSUES.md
+RELIABILITY.md

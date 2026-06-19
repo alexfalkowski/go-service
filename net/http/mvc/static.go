@@ -1,8 +1,6 @@
 package mvc
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"io/fs"
 	"path"
 	"strconv"
@@ -89,12 +87,7 @@ func serveFile(res http.ResponseWriter, req *http.Request, name string, options 
 }
 
 func serveFileWithCacheValidators(res http.ResponseWriter, req *http.Request, name string, f fs.File, info fs.FileInfo) {
-	etag, err := staticETag(name)
-	if err != nil {
-		res.WriteHeader(staticStatusCode(err))
-		return
-	}
-
+	etag := staticETag(name, info)
 	setStaticValidators(res, etag, info)
 	if staticETagMatches(req.Header.Get("If-None-Match"), etag) {
 		res.WriteHeader(http.StatusNotModified)
@@ -173,26 +166,25 @@ func setStaticContentLength(res http.ResponseWriter, size int64) {
 	}
 }
 
-func staticETag(name string) (string, error) {
-	f, err := fileSystem.Open(name)
-	if err != nil {
-		return strings.Empty, err
-	}
-	defer f.Close()
-
-	hash := sha256.New()
-	if _, err := io.Copy(hash, f); err != nil {
-		return strings.Empty, err
-	}
-
-	return strings.Concat(`"`, hex.EncodeToString(hash.Sum(nil)), `"`), nil
+func staticETag(name string, info fs.FileInfo) string {
+	// W/ marks a weak ETag: metadata freshness, not byte-for-byte content identity.
+	return strings.Concat(
+		`W/"`,
+		name,
+		"-",
+		strconv.FormatInt(info.Size(), 10),
+		"-",
+		strconv.FormatInt(info.ModTime().UTC().UnixNano(), 10),
+		`"`,
+	)
 }
 
 func staticETagMatches(value, etag string) bool {
+	tag := staticETagOpaqueTag(etag)
 	for {
 		candidate, rest, found := strings.Cut(value, ",")
 		candidate = strings.TrimSpace(candidate)
-		if candidate == "*" || candidate == etag || staticWeakETagMatches(candidate, etag) {
+		if candidate == "*" || staticETagOpaqueTag(candidate) == tag {
 			return true
 		}
 		if !found {
@@ -203,6 +195,10 @@ func staticETagMatches(value, etag string) bool {
 	}
 }
 
-func staticWeakETagMatches(candidate, etag string) bool {
-	return strings.HasPrefix(candidate, "W/") && candidate[2:] == etag
+func staticETagOpaqueTag(value string) string {
+	if strings.HasPrefix(value, "W/") {
+		return value[2:]
+	}
+
+	return value
 }
