@@ -4,11 +4,14 @@ import (
 	"html/template"
 	"path/filepath"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/meta"
-	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http"
+	httpmeta "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -130,7 +133,7 @@ func (v *View) Render(ctx context.Context, model any) error {
 		return err
 	}
 
-	_, err := buffer.WriteTo(hm.Response(ctx))
+	_, err := buffer.WriteTo(httpmeta.Response(ctx))
 	return err
 }
 
@@ -145,4 +148,31 @@ func (v *View) render(ctx context.Context, writer io.Writer, model any) error {
 	}
 
 	return v.template.ExecuteTemplate(writer, v.name, template)
+}
+
+func writeView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) {
+	if err := renderView(ctx, res, view, model, code); err != nil {
+		res.WriteHeader(status.Code(err))
+	}
+}
+
+func renderView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) error {
+	if view == nil {
+		return ErrMissingView
+	}
+
+	buffer := pool.Get()
+	defer pool.Put(buffer)
+
+	if err := view.render(ctx, buffer, model); err != nil {
+		return err
+	}
+
+	writeBuffer(res, code, buffer)
+	return nil
+}
+
+func writeBuffer(res http.ResponseWriter, code int, buffer *bytes.Buffer) {
+	res.WriteHeader(code)
+	_, _ = buffer.WriteTo(res)
 }

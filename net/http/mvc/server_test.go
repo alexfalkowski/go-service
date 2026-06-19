@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -122,6 +123,99 @@ func TestStaticFileRejectsDirectory(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusNotFound, res.Code)
+}
+
+func TestStaticFileSetsCacheControl(t *testing.T) {
+	mux := http.NewServeMux()
+	mvc.Register(mvc.RegisterParams{
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem: fstest.MapFS{
+			"static/asset.txt": &fstest.MapFile{Data: []byte("hello")},
+		},
+		Pool:   test.Pool,
+		Layout: test.Layout,
+	})
+	require.True(t, mvc.StaticFile("/asset.txt", "static/asset.txt", mvc.WithCacheControl("public, max-age=60")))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, "public, max-age=60", res.Header().Get("Cache-Control"))
+	require.Empty(t, res.Header().Get("ETag"))
+	test.RequireResponseBody(t, res, "hello")
+}
+
+func TestStaticFileUsesETagValidator(t *testing.T) {
+	modified := time.Now().UTC()
+	mux := http.NewServeMux()
+	mvc.Register(mvc.RegisterParams{
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem: fstest.MapFS{
+			"static/asset.txt": &fstest.MapFile{Data: []byte("hello"), ModTime: modified},
+		},
+		Pool:   test.Pool,
+		Layout: test.Layout,
+	})
+	require.True(t, mvc.StaticFile("/asset.txt", "static/asset.txt", mvc.WithCacheValidators()))
+
+	firstReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
+	firstRes := httptest.NewRecorder()
+
+	mux.ServeHTTP(firstRes, firstReq)
+
+	etag := firstRes.Header().Get("ETag")
+	require.Equal(t, http.StatusOK, firstRes.Code)
+	require.NotEmpty(t, etag)
+	require.Equal(t, modified.Format(http.TimeFormat), firstRes.Header().Get("Last-Modified"))
+	test.RequireResponseBody(t, firstRes, "hello")
+
+	secondReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
+	secondReq.Header.Set("If-None-Match", "W/"+etag)
+	secondRes := httptest.NewRecorder()
+
+	mux.ServeHTTP(secondRes, secondReq)
+
+	require.Equal(t, http.StatusNotModified, secondRes.Code)
+	require.Equal(t, etag, secondRes.Header().Get("ETag"))
+	test.RequireEmptyResponseBody(t, secondRes)
+}
+
+func TestStaticPathValueUsesETagValidator(t *testing.T) {
+	mux := http.NewServeMux()
+	mvc.Register(mvc.RegisterParams{
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem: fstest.MapFS{
+			"static/asset.txt": &fstest.MapFile{Data: []byte("hello")},
+		},
+		Pool:   test.Pool,
+		Layout: test.Layout,
+	})
+	require.True(t, mvc.StaticPathValue("/{file...}", "file", "static", mvc.WithCacheValidators()))
+
+	firstReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
+	firstRes := httptest.NewRecorder()
+
+	mux.ServeHTTP(firstRes, firstReq)
+
+	etag := firstRes.Header().Get("ETag")
+	require.Equal(t, http.StatusOK, firstRes.Code)
+	require.NotEmpty(t, etag)
+	test.RequireResponseBody(t, firstRes, "hello")
+
+	secondReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
+	secondReq.Header.Set("If-None-Match", etag)
+	secondRes := httptest.NewRecorder()
+
+	mux.ServeHTTP(secondRes, secondReq)
+
+	require.Equal(t, http.StatusNotModified, secondRes.Code)
+	test.RequireEmptyResponseBody(t, secondRes)
 }
 
 func TestViewRenderReturnsContextError(t *testing.T) {
