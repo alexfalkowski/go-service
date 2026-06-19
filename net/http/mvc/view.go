@@ -2,7 +2,8 @@ package mvc
 
 import (
 	"html/template"
-	"path/filepath"
+	"io/fs"
+	"path"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -12,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	httpmeta "github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -67,7 +69,7 @@ func (l *Layout) IsValid() bool {
 }
 
 func (l *Layout) name(name string) string {
-	return filepath.Base(name)
+	return path.Base(name)
 }
 
 // NewViewPair returns a full and partial View pair for name.
@@ -81,22 +83,34 @@ func NewViewPair(name string) (*View, *View) {
 //
 // It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
 // If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
-// panic because it uses [template.Must].
+// panic.
 func NewFullView(name string) *View {
-	template := template.Must(template.New(strings.Empty).Funcs(fmap).ParseFS(fileSystem, layout.Full(), name))
-
-	return &View{name: layout.FullName(), template: template}
+	return newView(layout.Full(), name)
 }
 
 // NewPartialView parses the partial layout template and the view template from the registered filesystem.
 //
 // It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
 // If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
-// panic because it uses [template.Must].
+// panic.
 func NewPartialView(name string) *View {
-	template := template.Must(template.New(strings.Empty).Funcs(fmap).ParseFS(fileSystem, layout.Partial(), name))
+	return newView(layout.Partial(), name)
+}
 
-	return &View{name: layout.PartialName(), template: template}
+func newView(layoutName, name string) *View {
+	tmpl := template.New(layoutName).Funcs(fmap)
+	parseTemplate(tmpl, layoutName)
+	parseTemplate(tmpl.New(name), name)
+
+	return &View{name: layoutName, template: tmpl}
+}
+
+func parseTemplate(tmpl *template.Template, name string) {
+	data, err := fs.ReadFile(fileSystem, name)
+	runtime.Must(err)
+
+	_, err = tmpl.Parse(string(data))
+	runtime.Must(err)
 }
 
 // View renders an HTML template.
