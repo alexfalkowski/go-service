@@ -95,10 +95,10 @@ jobs:
     resource_class: arm.large
   wait-all:
     docker:
-      - image: alexfalkowski/go:4.20
+      - image: alpine:latest
+    resource_class: small
     steps:
       - run: echo "all applicable jobs finished"
-    resource_class: arm.large
 
 workflows:
   go-service:
