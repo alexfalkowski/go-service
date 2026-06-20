@@ -6,14 +6,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 
 ## Repo Snapshot
 
-- Library repo; check `go.mod` for module and Go version details.
+- Library repo; check `go.mod` for module and toolchain details.
 - DI is under `di/`; CLI helpers are under `cli/`.
 - Many `make` targets come from the `bin/` submodule.
 
 ## Setup
 
-- Initialize the submodule before using `make`: `git submodule sync` then `git submodule update --init`.
-- Equivalent: `make submodule`.
+- Initialize the submodule before using shared Make targets. Use
+  `make submodule` once the shared `bin` checkout is present; see
+  `bin/AGENTS.md` for fresh-clone bootstrap details.
 - Submodule fetches use SSH.
 
 ## Common Commands
@@ -22,8 +23,7 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 - Dependencies: `make dep` after dependency changes.
 - Quality: `make specs`, `make lint`, `make fix-lint`, `make format`, `make sec`.
 - Coverage and benchmarks: use the repo `make` targets shown by `make help`.
-- TLS fixtures: `mkcert -install` then `make create-certs`.
-- `encode-config` expects GNU `base64 -w 0`; on macOS/BSD use `base64 | tr -d '\n'`.
+- TLS fixtures: `make create-certs` when the target is relevant.
 
 ## Layout And Wiring
 
@@ -408,14 +408,12 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 ## CI
 
 - CI initializes submodules, prepares certs/services, then runs dependency, lint, security, spec, benchmark, and coverage targets.
-- Check CI config for exact service images, ports, and command order.
-- CircleCI intentionally uses floating `latest` tags for selected dependency
-  sidecars, such as `alexfalkowski/status:latest` and `grafana/mimir:latest`,
-  so upstream sidecar breakage is caught by CI. Do not flag those floating CI
-  sidecar tags as reliability, release-safety, or reproducibility gaps solely
-  because they can change; report only concrete breakage such as CI no longer
-  starting the required service, waiting on the wrong port, or using an image
-  that no longer satisfies the documented test dependency.
+- Check CI config for exact service dependencies, ports, and command order.
+- CircleCI owns the selected dependency sidecars. Do not flag the sidecar
+  selection as a reliability, release-safety, or reproducibility gap solely
+  because it is CI-owned; report only concrete breakage such as CI no longer
+  starting the required service, waiting on the wrong port, or using a
+  dependency that no longer satisfies the documented test dependency.
 - CircleCI `store_artifacts` and `store_test_results` steps run after earlier
   failed steps by default. Do not flag missing `when: always` on those steps as
   a reliability or diagnostics gap solely because earlier validation commands
