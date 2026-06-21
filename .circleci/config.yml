@@ -73,6 +73,7 @@ jobs:
           key: go-service-go-lint-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}-{{ checksum ".source-key" }}
           paths:
             - ~/.cache/golangci-lint
+      - run: make generate-stale
       - run: make sec
       - run: make specs
       - run: make benchmarks
