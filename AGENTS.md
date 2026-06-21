@@ -33,6 +33,10 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 - `net/` holds lower-level HTTP/gRPC, metadata, header, and server helpers.
 - `transport/` holds the higher-level HTTP/gRPC stacks, middleware, and ops endpoints.
 - `internal/test/` contains shared test helpers; `test/` stores fixtures and reports.
+- `internal/test` protobufs are test fixtures, not an external API contract.
+  Use `make -C internal/test generate` / `stale` when changing them, but do
+  not treat the inherited `breaking` target as applicable there; the shared
+  Buf target assumes an `api/` contract directory.
 - Modules are composed with `di.Module(...)`; many constructors use `di.In`.
 
 ## Configuration
