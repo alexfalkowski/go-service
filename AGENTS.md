@@ -414,9 +414,3 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   because it is CI-owned; report only concrete breakage such as CI no longer
   starting the required service, waiting on the wrong port, or using a
   dependency that no longer satisfies the documented test dependency.
-- CircleCI `store_artifacts` and `store_test_results` steps run after earlier
-  failed steps by default. Do not flag missing `when: always` on those steps as
-  a reliability or diagnostics gap solely because earlier validation commands
-  can fail; report only concrete artifact/report collection breakage, such as
-  wrong paths, missing generated reports, cancellation/runtime-timeout cases
-  that the repo claims to preserve, or unsupported CircleCI behavior changes.
