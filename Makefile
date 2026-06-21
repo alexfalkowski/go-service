@@ -46,4 +46,8 @@ http-content-benchmarks:
 
 # Generate for tests.
 generate:
-	@make -C internal/test generate
+	@$(MAKE) -C internal/test generate
+
+# Check generated test protobuf outputs are fresh.
+generate-stale:
+	@$(MAKE) -C internal/test stale
