@@ -1,6 +1,8 @@
 package mvc
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"io/fs"
 	"path"
 	"strconv"
@@ -14,6 +16,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
+
+// staticETagSeparator is a NUL byte field separator for ETag hash input.
+// Static file names cannot contain NUL, so this keeps name/size/mod-time boundaries unambiguous.
+const staticETagSeparator = "\x00"
 
 // StaticFile registers an HTTP GET route that serves the named file from the registered filesystem.
 //
@@ -167,14 +173,17 @@ func setStaticContentLength(res http.ResponseWriter, size int64) {
 }
 
 func staticETag(name string, info fs.FileInfo) string {
+	sum := sha256.Sum256(strings.Bytes(strings.Join(
+		staticETagSeparator,
+		name,
+		strconv.FormatInt(info.Size(), 10),
+		strconv.FormatInt(info.ModTime().UTC().UnixNano(), 10),
+	)))
+
 	// W/ marks a weak ETag: metadata freshness, not byte-for-byte content identity.
 	return strings.Concat(
 		`W/"`,
-		name,
-		"-",
-		strconv.FormatInt(info.Size(), 10),
-		"-",
-		strconv.FormatInt(info.ModTime().UTC().UnixNano(), 10),
+		hex.EncodeToString(sum[:]),
 		`"`,
 	)
 }

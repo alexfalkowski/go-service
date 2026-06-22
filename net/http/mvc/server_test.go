@@ -226,36 +226,47 @@ func TestStaticFileUsesETagValidator(t *testing.T) {
 }
 
 func TestStaticPathValueUsesETagValidator(t *testing.T) {
-	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
-		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
-		FileSystem: fstest.MapFS{
-			"static/asset.txt": &fstest.MapFile{Data: []byte("hello")},
-		},
-		Pool:   test.Pool,
-		Layout: test.Layout,
-	})
-	require.True(t, mvc.StaticPathValue("/{file...}", "file", "static", mvc.WithCacheValidators()))
+	for _, tt := range []struct {
+		name string
+		path string
+	}{
+		{name: "simple", path: "/asset.txt"},
+		{name: "comma", path: "/a,b.txt"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			mux := http.NewServeMux()
+			mvc.Register(mvc.RegisterParams{
+				Mux:         mux,
+				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+				FileSystem: fstest.MapFS{
+					"static/asset.txt": &fstest.MapFile{Data: []byte("hello")},
+					"static/a,b.txt":   &fstest.MapFile{Data: []byte("hello")},
+				},
+				Pool:   test.Pool,
+				Layout: test.Layout,
+			})
+			require.True(t, mvc.StaticPathValue("/{file...}", "file", "static", mvc.WithCacheValidators()))
 
-	firstReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
-	firstRes := httptest.NewRecorder()
+			firstReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, tt.path, http.NoBody)
+			firstRes := httptest.NewRecorder()
 
-	mux.ServeHTTP(firstRes, firstReq)
+			mux.ServeHTTP(firstRes, firstReq)
 
-	etag := firstRes.Header().Get("ETag")
-	require.Equal(t, http.StatusOK, firstRes.Code)
-	require.NotEmpty(t, etag)
-	test.RequireResponseBody(t, firstRes, "hello")
+			etag := firstRes.Header().Get("ETag")
+			require.Equal(t, http.StatusOK, firstRes.Code)
+			require.NotEmpty(t, etag)
+			test.RequireResponseBody(t, firstRes, "hello")
 
-	secondReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
-	secondReq.Header.Set("If-None-Match", etag)
-	secondRes := httptest.NewRecorder()
+			secondReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, tt.path, http.NoBody)
+			secondReq.Header.Set("If-None-Match", etag)
+			secondRes := httptest.NewRecorder()
 
-	mux.ServeHTTP(secondRes, secondReq)
+			mux.ServeHTTP(secondRes, secondReq)
 
-	require.Equal(t, http.StatusNotModified, secondRes.Code)
-	test.RequireEmptyResponseBody(t, secondRes)
+			require.Equal(t, http.StatusNotModified, secondRes.Code)
+			test.RequireEmptyResponseBody(t, secondRes)
+		})
+	}
 }
 
 func TestViewRenderReturnsContextError(t *testing.T) {
