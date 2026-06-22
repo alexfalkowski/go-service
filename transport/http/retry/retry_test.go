@@ -511,6 +511,21 @@ func TestRoundTripperDoesNotRetryLocalStatusError(t *testing.T) {
 	require.Equal(t, 1, rt.Calls)
 }
 
+func TestRoundTripperDoesNotRetryUseLastResponse(t *testing.T) {
+	rt := &test.ErrorRoundTripper{Err: http.ErrUseLastResponse}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, http.ErrUseLastResponse)
+	require.Equal(t, 1, rt.Calls)
+}
+
 func TestRoundTripperPreservesRecoverableTransportError(t *testing.T) {
 	wantErr := io.ErrUnexpectedEOF
 	rt := &test.ErrorRoundTripper{Err: wantErr}
