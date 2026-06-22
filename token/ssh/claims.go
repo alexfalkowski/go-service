@@ -54,7 +54,7 @@ func decodeClaims(raw []byte) (*claims, error) {
 	return c, nil
 }
 
-func validateClaims(c *claims, aud string, now int64, maxLifetime time.Duration) error {
+func validateClaims(c *claims, aud string, now time.Time, maxLifetime, leeway time.Duration) error {
 	if c.Audience != aud {
 		return token.ErrInvalidAudience
 	}
@@ -64,8 +64,8 @@ func validateClaims(c *claims, aud string, now int64, maxLifetime time.Duration)
 	if c.Subject != c.KeyID {
 		return crypto.ErrInvalidMatch
 	}
-	invalidIssuedAt := c.IssuedAt <= 0 || c.IssuedAt > now
-	invalidExpiration := c.ExpiresAt <= now || c.ExpiresAt <= c.IssuedAt
+	invalidIssuedAt := c.IssuedAt <= 0 || c.IssuedAt > now.Add(leeway.Duration()).UnixNano()
+	invalidExpiration := c.ExpiresAt <= 0 || c.ExpiresAt <= now.Add(-leeway.Duration()).UnixNano() || c.ExpiresAt <= c.IssuedAt
 	if invalidIssuedAt || invalidExpiration {
 		return token.ErrInvalidTime
 	}

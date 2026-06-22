@@ -53,10 +53,12 @@
 //   - The "kid" header exists and selects a configured verification key.
 //   - The issuer claim matches the configured Issuer.
 //   - The audience claim contains the expected audience.
-//   - Registered claim validity (exp/nbf/iat) using [github.com/golang-jwt/jwt/v4.RegisteredClaims.Valid].
+//   - Registered claim time validity (exp/nbf/iat) using [Config.Leeway] as
+//     optional clock-skew tolerance.
+//   - The signed lifetime from iat to exp does not exceed [Config.Expiration].
 //
-// Upstream parsing, signature validation, and registered-claim validation can fail before
-// later go-service issuer, audience, and lifetime checks run.
+// Upstream parsing and signature validation can fail before later go-service
+// issuer, audience, time-validity, and lifetime checks run.
 //
 // On failures, this package may return sentinel errors from token/errors for common
 // classes of validation issues (for example ErrInvalidAlgorithm, ErrInvalidKeyID,
@@ -68,8 +70,8 @@
 //
 // # Configuration and enablement
 //
-// Config provides the issuer, active key id, named key set, and expiration settings
-// used for issuance and verification. A nil *[Config] is treated as disabled:
+// Config provides the issuer, active key id, named key set, expiration, and optional
+// leeway settings used for issuance and verification. A nil *[Config] is treated as disabled:
 // NewToken returns nil.
 //
 // Expiration is a typed duration. In config files it is encoded using the standard

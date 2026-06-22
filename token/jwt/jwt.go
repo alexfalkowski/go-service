@@ -107,14 +107,14 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //   - The JWT header "kid" exists, is non-empty, and selects a configured verification key.
 //   - The issuer claim ("iss") matches cfg.Issuer.
 //   - The audience claim ("aud") contains the expected aud.
-//   - Registered claim time validity using [github.com/golang-jwt/jwt/v4.RegisteredClaims.Valid] (exp/nbf/iat).
+//   - Registered claim time validity with cfg.Leeway clock-skew tolerance (exp/nbf/iat).
 //   - The signed lifetime (exp - iat) does not exceed cfg.Expiration.
 //
 // This method returns sentinel errors from token/errors for some common classes of
 // failures (issuer/audience mismatches and validate-time algorithm/kid mismatches).
 // Parse/validation errors produced by the upstream JWT library may be returned as-is.
-// Upstream parse, signature, or registered-claim validation errors can be returned
-// before the local issuer, audience, required-claim, and lifetime checks run.
+// Upstream parse and signature errors can be returned before the local issuer,
+// audience, required-claim, time-validity, and lifetime checks run.
 func (t *Token) Verify(token, aud string) (string, error) {
 	if strings.IsEmpty(t.cfg.Issuer) || t.cfg.Expiration <= 0 {
 		return strings.Empty, errors.ErrInvalidConfig
@@ -122,7 +122,7 @@ func (t *Token) Verify(token, aud string) (string, error) {
 
 	claims := &RegisteredClaims{}
 
-	_, err := jwt.ParseWithClaims(token, claims, t.validate)
+	_, err := jwt.ParseWithClaims(token, claims, t.validate, jwt.WithoutClaimsValidation())
 	if err != nil {
 		return strings.Empty, err
 	}
@@ -135,14 +135,10 @@ func (t *Token) Verify(token, aud string) (string, error) {
 		return strings.Empty, errors.ErrInvalidAudience
 	}
 
-	if err := claims.Valid(); err != nil {
-		return strings.Empty, err
-	}
-
 	if err := validateRequiredClaims(claims); err != nil {
 		return strings.Empty, err
 	}
-	if err := validateLifetime(claims, t.cfg.Expiration); err != nil {
+	if err := validateTime(claims, t.cfg.Expiration, t.cfg.Leeway); err != nil {
 		return strings.Empty, err
 	}
 
@@ -182,6 +178,20 @@ func validateRequiredClaims(claims *RegisteredClaims) error {
 	}
 
 	return nil
+}
+
+func validateTime(claims *RegisteredClaims, maxLifetime, leeway time.Duration) error {
+	now := time.Now()
+	allowedFuture := now.Add(leeway.Duration())
+	if claims.IssuedAt.After(allowedFuture) || claims.NotBefore.After(allowedFuture) {
+		return errors.ErrInvalidTime
+	}
+
+	if !claims.ExpiresAt.Time.Add(leeway.Duration()).After(now) {
+		return errors.ErrInvalidTime
+	}
+
+	return validateLifetime(claims, maxLifetime)
 }
 
 func validateLifetime(claims *RegisteredClaims, maxLifetime time.Duration) error {

@@ -50,13 +50,13 @@
 // set of rules that typically include:
 //
 //   - issued by the configured issuer (iss),
-//   - not expired at the time of verification,
-//   - valid at the current time (iat/nbf window semantics as defined by the
-//     upstream library),
 //   - for the expected audience (aud).
 //
 // The signature is verified using the Ed25519 public key selected by the footer
 // "kid" value.
+// After parsing and signature verification, go-service validates exp/nbf/iat
+// using [Config.Leeway] as optional clock-skew tolerance and checks that the
+// signed lifetime from iat to exp does not exceed [Config.Expiration].
 //
 // On failure, parser, rule, signature, and key-construction errors may come
 // from the upstream PASETO library. Local config, subject, and signed-lifetime
@@ -64,8 +64,8 @@
 //
 // # Configuration and enablement
 //
-// Config provides issuer, active key id, named key set, and expiration settings.
-// A nil *[Config] is treated as disabled: NewToken returns nil.
+// Config provides issuer, active key id, named key set, expiration, and optional
+// leeway settings. A nil *[Config] is treated as disabled: NewToken returns nil.
 //
 // Expiration is a typed duration. In config files it is encoded using the standard
 // Go duration string format (such as "15m" or "24h"), so invalid values fail during

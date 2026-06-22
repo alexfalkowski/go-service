@@ -184,7 +184,7 @@ func (t *Token) Verify(tkn, aud string) (string, error) {
 		return strings.Empty, err
 	}
 
-	if err := validateClaims(claims, aud, time.Now().UnixNano(), t.cfg.Expiration); err != nil {
+	if err := validateClaims(claims, aud, time.Now(), t.cfg.Expiration, t.cfg.Leeway); err != nil {
 		return strings.Empty, err
 	}
 

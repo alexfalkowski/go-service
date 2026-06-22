@@ -44,6 +44,13 @@ type Config struct {
 	//
 	// In config files it is encoded as a Go duration string, for example "15m" or "24h".
 	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"duration_second_precision"`
+
+	// Leeway is the optional clock-skew tolerance applied during verification.
+	//
+	// A zero value keeps strict time validation. Non-zero values allow iat/nbf to
+	// be slightly in the future and exp to be slightly in the past while preserving
+	// the signed lifetime cap enforced from iat to exp.
+	Leeway time.Duration `yaml:"leeway,omitempty" json:"leeway,omitempty" toml:"leeway,omitempty" validate:"omitempty,duration_second_precision"`
 }
 
 // IsEnabled reports whether PASETO configuration is present.
