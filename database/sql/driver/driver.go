@@ -3,6 +3,7 @@ package driver
 import (
 	"database/sql"
 	"database/sql/driver"
+	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -207,25 +208,37 @@ func connectDBs(name string, masterDSNs, slaveDSNs []string, opts ...telemetry.O
 		opts := telemetryOptions(name, opts)
 
 		masters, _ := db.GetAllMasters()
-		regs = append(regs, register(masters, opts...)...)
+		regs = append(regs, register(masters, "master", opts...)...)
 
 		slaves, _ := db.GetAllSlaves()
-		regs = append(regs, register(slaves, opts...)...)
+		regs = append(regs, register(slaves, "slave", opts...)...)
 	}
 
 	return &DBs{DBs: db, registrations: regs}, nil
 }
 
-func register(dbs []*sqlx.DB, opts ...telemetry.Option) []metrics.Registration {
+func register(dbs []*sqlx.DB, role string, opts ...telemetry.Option) []metrics.Registration {
 	regs := make([]metrics.Registration, 0, len(dbs))
 
-	for _, db := range dbs {
-		reg, err := telemetry.RegisterDBStatsMetrics(db.DB, opts...)
+	for i, db := range dbs {
+		reg, err := telemetry.RegisterDBStatsMetrics(db.DB, dbStatsOptions(role, i, opts)...)
 		runtime.Must(err)
 		regs = append(regs, reg)
 	}
 
 	return regs
+}
+
+func dbStatsOptions(role string, index int, opts []telemetry.Option) []telemetry.Option {
+	options := make([]telemetry.Option, 0, len(opts)+1)
+	options = append(options, opts...)
+
+	// mssqlx does not expose a pool name, so DB stats metrics use a stable
+	// go-service pattern unique within this DBs collection.
+	name := role + "." + strconv.Itoa(index)
+	options = append(options, telemetry.WithAttributes(attributes.DBClientConnectionPoolName(name)))
+
+	return options
 }
 
 func unregister(regs []metrics.Registration) []error {
