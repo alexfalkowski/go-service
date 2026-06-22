@@ -16,7 +16,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
-	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 )
 
@@ -40,7 +39,6 @@ func TestRoundTripperRetriesRetryableResponses(t *testing.T) {
 			rt := &test.StatusSequenceRoundTripper{Codes: tt.codes}
 			retrying := retry.NewRoundTripper(&retry.Config{
 				Attempts: 2,
-				Timeout:  time.Second,
 				Backoff:  time.Millisecond,
 			}, rt)
 
@@ -58,7 +56,6 @@ func TestRoundTripperDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 1,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -78,7 +75,6 @@ func TestRoundTripperClampsAttemptsAboveMax(t *testing.T) {
 	})
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: config.MaxAttempts + 1,
-		Timeout:  time.Second,
 		Backoff:  time.Nanosecond,
 	}, rt)
 
@@ -94,7 +90,6 @@ func TestRoundTripperDoesNotPanicWithOmittedBackoff(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 1,
-		Timeout:  time.Second,
 	}, rt)
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
@@ -111,7 +106,6 @@ func TestRoundTripperRetriesWithDefaultBackoff(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 	}, rt)
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
@@ -148,7 +142,6 @@ func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsMinimumBackoff(t *testing.
 			})
 			retrying := retry.NewRoundTripper(&retry.Config{
 				Attempts: 2,
-				Timeout:  time.Second,
 				Backoff:  tt.backoff,
 			}, rt)
 
@@ -177,7 +170,6 @@ func TestRoundTripperRetriesWhenRetryAfterDoesNotExceedBackoff(t *testing.T) {
 	})
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  2 * time.Second,
 	}, rt)
 
@@ -204,7 +196,6 @@ func TestRoundTripperRetriesWhenRetryAfterIsInvalid(t *testing.T) {
 	})
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -223,7 +214,6 @@ func TestRoundTripperUsesIndependentRetryBudgetPerRequest(t *testing.T) {
 	}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -243,7 +233,6 @@ func TestRoundTripperDoesNotRetryUnhandledStatusCode(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusInternalServerError, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -259,7 +248,6 @@ func TestRoundTripperDoesNotRetryWhenPolicyDeniesRequest(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt, retry.SafeMethods)
 
@@ -275,7 +263,6 @@ func TestRoundTripperDoesNotRetryUnsafeRequestByDefault(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -291,7 +278,6 @@ func TestRoundTripperRetriesWhenPolicyAllowsRequestID(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt, retry.IdempotentRequests)
 
@@ -308,7 +294,6 @@ func TestRoundTripperReturnsLastRetryableResponseWhenExhausted(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusTooManyRequests}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -324,7 +309,6 @@ func TestRoundTripperReturnsFinalRetryableResponseWhenExhausted(t *testing.T) {
 	rt := &test.BodySequenceRoundTripper{Responses: []string{"first failure", "second failure"}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -361,7 +345,6 @@ func TestRoundTripperClosesRetryableResponseBeforeNextAttempt(t *testing.T) {
 
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  100 * time.Millisecond,
 		Backoff:  time.Millisecond,
 	}, transport)
 
@@ -379,7 +362,6 @@ func TestRoundTripperReplaysRequestBodyAcrossRetries(t *testing.T) {
 	rt := &test.RequestBodyRecorderRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -397,7 +379,6 @@ func TestRoundTripperReplaysRequestBodyAfterTransportError(t *testing.T) {
 	rt := &test.TransportErrorThenSuccessRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -416,7 +397,6 @@ func TestRoundTripperUsesOriginalBodyOnFirstAttempt(t *testing.T) {
 	rt := &test.OriginalBodyRoundTripper{Original: body}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -440,7 +420,6 @@ func TestRoundTripperDoesNotRetryNonReplayableRequestBody(t *testing.T) {
 	rt := &test.RequestBodyRecorderRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -460,7 +439,6 @@ func TestRoundTripperReturnsGetBodyError(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -481,7 +459,6 @@ func TestRoundTripperClosesBodyWhenContextAlreadyCanceled(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -505,7 +482,6 @@ func TestRoundTripperPreservesRetryableStatusError(t *testing.T) {
 	rt := &test.ErrorRoundTripper{Err: status.Errorf(http.StatusTooManyRequests, "limiter: too many requests")}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -518,12 +494,28 @@ func TestRoundTripperPreservesRetryableStatusError(t *testing.T) {
 	require.Equal(t, 2, rt.Calls)
 }
 
+func TestRoundTripperDoesNotRetryLocalStatusError(t *testing.T) {
+	rt := &test.ErrorRoundTripper{Err: status.LocalError(status.Errorf(http.StatusTooManyRequests, "limiter: too many requests"))}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.Nil(t, res)
+	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, http.StatusTooManyRequests, status.Code(err))
+	require.Equal(t, 1, rt.Calls)
+}
+
 func TestRoundTripperPreservesRecoverableTransportError(t *testing.T) {
 	wantErr := io.ErrUnexpectedEOF
 	rt := &test.ErrorRoundTripper{Err: wantErr}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -535,36 +527,10 @@ func TestRoundTripperPreservesRecoverableTransportError(t *testing.T) {
 	require.Equal(t, 2, rt.Calls)
 }
 
-func TestRoundTripperRetriesAttemptTimeout(t *testing.T) {
-	var calls int
-	transport := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		calls++
-		if calls == 1 {
-			<-req.Context().Done()
-			return nil, req.Context().Err()
-		}
-
-		return test.ResponseWithStatus(http.StatusOK), nil
-	})
-	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 2,
-		Timeout:  50 * time.Millisecond,
-		Backoff:  time.Millisecond,
-	}, transport)
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
-
-	res, err := retrying.RoundTrip(req)
-	require.NoError(t, err)
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, 2, calls)
-}
-
 func TestRoundTripperDoesNotRetryUnhandledTransportError(t *testing.T) {
 	rt := &test.ErrorRoundTripper{Err: status.Errorf(http.StatusInternalServerError, "internal")}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
@@ -582,7 +548,6 @@ func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testi
 	generator := &test.SequenceGenerator{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
-		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, token.NewRoundTripper(env.UserID("user-id"), generator, rt))
 
@@ -593,42 +558,4 @@ func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testi
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, []string{"Bearer token-1", "Bearer token-2"}, rt.AuthValues)
 	require.Equal(t, []int{1, 1}, rt.AuthCounts)
-}
-
-func TestRoundTripperUsesDefaultAttemptTimeoutWhenTimeoutIsZero(t *testing.T) {
-	var deadlineSet bool
-	transport := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		_, deadlineSet = req.Context().Deadline()
-		return test.ResponseWithStatus(http.StatusOK), nil
-	})
-	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 1,
-		Timeout:  0,
-		Backoff:  time.Millisecond,
-	}, transport)
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
-
-	res, err := retrying.RoundTrip(req)
-	require.NoError(t, err)
-	require.NotNil(t, res)
-	require.True(t, deadlineSet)
-}
-
-func TestRoundTripperSetsAttemptTimeoutCause(t *testing.T) {
-	transport := &test.CauseRoundTripper{Wait: true}
-	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 1,
-		Timeout:  time.Nanosecond,
-		Backoff:  time.Millisecond,
-	}, transport)
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
-
-	res, err := retrying.RoundTrip(req)
-	require.NoError(t, err)
-	require.NotNil(t, res)
-	require.ErrorIs(t, transport.Err, context.DeadlineExceeded)
-	require.ErrorIs(t, transport.Cause, retry.ErrAttemptTimeout)
-	require.ErrorIs(t, transport.Cause, sync.ErrTimeout)
 }

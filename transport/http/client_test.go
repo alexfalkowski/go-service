@@ -8,8 +8,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/time"
 	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
+	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
+	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
+	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -92,4 +97,60 @@ func TestRoundTripperWithTokenDoesNotSendAuthorizationToCrossOriginRedirect(t *t
 	require.Nil(t, res)
 	require.Equal(t, "Bearer secret", trustedAuthorization)
 	require.Empty(t, attackerAuthorization)
+}
+
+func TestRoundTripperRetriesThroughClientLimiter(t *testing.T) {
+	clientLimiter, err := httplimiter.NewClientLimiter(
+		test.NoopLifecycle{},
+		limiter.NewKeyMap(),
+		test.NewLimiterConfig("user-agent", "1m", 1),
+	)
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, clientLimiter.Close(t.Context())) })
+
+	base := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
+	rt, err := transporthttp.NewRoundTripper(
+		transporthttp.WithClientRoundTripper(base),
+		transporthttp.WithClientLimiter(clientLimiter),
+		transporthttp.WithClientRetry(&retry.Config{Attempts: 2, Backoff: time.Nanosecond}),
+		transporthttp.WithClientUserAgent(test.UserAgent),
+	)
+	require.NoError(t, err)
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com/hello", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, http.StatusTooManyRequests, status.Code(err))
+	require.Equal(t, 1, base.Calls)
+}
+
+func TestRoundTripperRetriesThroughClientBreaker(t *testing.T) {
+	base := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
+	rt, err := transporthttp.NewRoundTripper(
+		transporthttp.WithClientRoundTripper(base),
+		transporthttp.WithClientRetry(&retry.Config{Attempts: 2, Backoff: time.Nanosecond}),
+		transporthttp.WithClientBreaker(
+			breaker.WithSettings(breaker.Settings{
+				ReadyToTrip: func(counts breaker.Counts) bool {
+					return counts.ConsecutiveFailures >= 1
+				},
+			}),
+			breaker.WithFailureStatuses(http.StatusServiceUnavailable),
+		),
+	)
+	require.NoError(t, err)
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com/hello", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, breaker.ErrOpenState)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, http.StatusServiceUnavailable, status.Code(err))
+	require.Equal(t, 1, base.Calls)
 }

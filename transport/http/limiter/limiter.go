@@ -149,7 +149,7 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 	}
 
 	if !ok {
-		return nil, status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests)), true
+		return nil, status.LocalError(status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))), true
 	}
 
 	res, err := r.RoundTripper.RoundTrip(req)

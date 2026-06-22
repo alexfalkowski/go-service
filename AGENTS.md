@@ -228,6 +228,24 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   deduplicate by request id when duplicate processing would be unsafe. Do not
   flag the default HTTP/gRPC retry policy merely because metadata injects
   request ids before retry.
+- HTTP retry intentionally does not apply `transport/retry.Config.Timeout` as a
+  per-attempt timeout. HTTP response bodies are caller-owned after `RoundTrip`
+  returns, and tying retry-owned attempt contexts to returned bodies requires
+  response body wrapping that can hide optional body interfaces. Bound outbound
+  HTTP calls with the request context or `http.Client.Timeout`; do not flag the
+  absence of HTTP retry per-attempt timeout unless a public API starts promising
+  that timeout or the retry layer reintroduces owned response-body lifecycle
+  handling.
+- HTTP and gRPC client retry/load-control ordering intentionally match at the
+  supported transport stack level: metadata is outside retry so `Request-Id`
+  stays logical-request scoped, retry wraps the client limiter and breaker so
+  each attempt consumes local quota and breaker capacity, and token generation
+  remains inside retry so each wire attempt gets a fresh token. HTTP local
+  limiter and breaker rejections are marked with `net/http/status.LocalError`
+  and are terminal, not retried as upstream 429/503 responses. Do not flag
+  retry/load-control ordering unless a supported stack regresses from this
+  contract, local load-control rejections become retryable, or a public API
+  starts promising a different composition.
 - `net/http/status.Code(err)` usually returns a valid HTTP status code because
   repository code should construct HTTP status errors with the constants exposed
   by `net/http` (for example `http.StatusBadRequest`) or intentionally supported

@@ -37,6 +37,24 @@ func SafeError(code int, err error) error {
 	return &statusError{code: code, error: err.Error(), msg: msg, err: err}
 }
 
+// LocalError wraps err to mark an HTTP status error as produced by local client-side controls.
+//
+// Retry middleware can use this marker to distinguish local load-control rejections from upstream
+// HTTP 429/503 responses that may be worth retrying.
+func LocalError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	return &localError{err: err}
+}
+
+// IsLocalError reports whether err was wrapped by LocalError.
+func IsLocalError(err error) bool {
+	_, ok := errors.AsType[*localError](err)
+	return ok
+}
+
 // InternalServerError wraps err with StatusInternalServerError (500) unless err already carries a status code.
 //
 // This is a convenience wrapper over FromError.
@@ -196,4 +214,18 @@ func (s *statusError) SafeMessage() string {
 // Unwrap returns the wrapped cause, if any.
 func (s *statusError) Unwrap() error {
 	return s.err
+}
+
+type localError struct {
+	err error
+}
+
+// Error returns the diagnostic error message.
+func (e *localError) Error() string {
+	return e.err.Error()
+}
+
+// Unwrap returns the wrapped cause, if any.
+func (e *localError) Unwrap() error {
+	return e.err
 }
