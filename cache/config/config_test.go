@@ -57,6 +57,14 @@ func TestConfigValidation(t *testing.T) {
 			cfg:  &config.Config{MaxEntries: 1},
 		},
 		{
+			name: "valid default max entries",
+			cfg:  &config.Config{MaxEntries: 0},
+		},
+		{
+			name: "valid redis without max entries",
+			cfg:  &config.Config{Kind: "redis", Options: map[string]any{"url": "redis://localhost:6379"}},
+		},
+		{
 			name: "negative max size",
 			cfg:  &config.Config{MaxSize: -1, MaxEntries: config.DefaultMaxEntries},
 			err:  true,
@@ -64,11 +72,6 @@ func TestConfigValidation(t *testing.T) {
 		{
 			name: "oversized max size",
 			cfg:  &config.Config{MaxSize: bytes.MaxConfigSize + 1, MaxEntries: config.DefaultMaxEntries},
-			err:  true,
-		},
-		{
-			name: "zero max entries",
-			cfg:  &config.Config{MaxEntries: 0},
 			err:  true,
 		},
 		{

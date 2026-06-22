@@ -34,7 +34,9 @@ type Config struct {
 	MaxSize bytes.Size `yaml:"max_size" json:"max_size" toml:"max_size" validate:"config_size"`
 
 	// MaxEntries limits the number of entries retained by bounded in-memory cache drivers.
-	MaxEntries int `yaml:"max_entries" json:"max_entries" toml:"max_entries" validate:"gt=0"`
+	//
+	// A zero value applies [DefaultMaxEntries].
+	MaxEntries int `yaml:"max_entries" json:"max_entries" toml:"max_entries" validate:"gte=0"`
 }
 
 // IsEnabled reports whether caching is enabled.
