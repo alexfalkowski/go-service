@@ -78,6 +78,45 @@ func TestStream(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
+func TestServerRecoversUnaryPanic(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldGRPC())
+	conn := test.RequireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	_, err := client.SayHello(t.Context(), &v1.SayHelloRequest{Name: "panic"})
+	require.Error(t, err)
+	require.Equal(t, codes.Internal, status.Code(err))
+	assertSafePanicStatus(t, err)
+
+	resp, err := client.SayHello(t.Context(), &v1.SayHelloRequest{Name: "test"})
+	require.NoError(t, err)
+	require.Equal(t, "Hello test", resp.GetMessage())
+}
+
+func TestServerRecoversStreamPanic(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldGRPC())
+	conn := test.RequireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	stream, err := client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+
+	_, err = test.SendStreamHello(t, stream, "panic")
+	require.Error(t, err)
+	require.Equal(t, codes.Internal, status.Code(err))
+	assertSafePanicStatus(t, err)
+
+	stream, err = client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+	resp, err := test.SendStreamHello(t, stream, "test")
+	require.NoError(t, err)
+	require.Equal(t, "Hello test", resp.GetMessage())
+}
+
 func TestUnaryMaxReceiveSize(t *testing.T) {
 	world := newStartedGRPCWorld(t, 64)
 	conn := test.RequireGRPCConn(t, world)
@@ -151,4 +190,14 @@ func newStartedGRPCWorldWithOptions(t *testing.T, maxReceiveSize bytes.Size, opt
 	}
 
 	return test.NewStartedWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldGRPC())
+}
+
+func assertSafePanicStatus(t *testing.T, err error) {
+	t.Helper()
+
+	stat, ok := status.FromError(err)
+	require.True(t, ok)
+	require.Equal(t, "grpc: internal", stat.Message())
+	require.NotContains(t, stat.Message(), "test panic")
+	require.NotContains(t, stat.Message(), "recovered")
 }

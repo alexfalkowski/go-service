@@ -11,17 +11,21 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	grpcserver "github.com/alexfalkowski/go-service/v2/net/grpc/server"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 )
 
 // ServerParams defines dependencies for constructing a gRPC transport [Server].
@@ -173,6 +177,8 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 		uis = append(uis, logger.UnaryServerInterceptor(params.Logger))
 	}
 
+	uis = append(uis, recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)))
+
 	if params.Verifier != nil {
 		uis = append(uis, token.UnaryServerInterceptor(params.UserID, params.Verifier))
 	}
@@ -197,6 +203,8 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 		sis = append(sis, logger.StreamServerInterceptor(params.Logger))
 	}
 
+	sis = append(sis, recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)))
+
 	if params.Verifier != nil {
 		sis = append(sis, token.StreamServerInterceptor(params.UserID, params.Verifier))
 	}
@@ -212,6 +220,10 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 	sis = append(sis, interceptors...)
 
 	return grpc.ChainStreamInterceptor(sis...)
+}
+
+func recoveryHandler(value any) error {
+	return status.SafeError(codes.Internal, runtime.ConvertRecover(value))
 }
 
 func maxReceiveSizeOption(cfg *Config) grpc.ServerOption {
