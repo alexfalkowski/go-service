@@ -236,6 +236,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   absence of HTTP retry per-attempt timeout unless a public API starts promising
   that timeout or the retry layer reintroduces owned response-body lifecycle
   handling.
+- HTTP retry intentionally runs the first attempt directly after its initial
+  request-context cancellation check, then uses the retry/backoff helper only
+  for later attempts. This keeps request-body ownership simple: an already
+  canceled request is closed locally, while any non-canceled request body is
+  handed to the inner `RoundTripper` on the first attempt. Do not reintroduce
+  per-attempt ownership flags or synthetic tests for the tiny cancellation
+  window before the first attempt unless the retry architecture changes. Local
+  redirect sentinels such as `net/http.ErrUseLastResponse` are terminal retry
+  outcomes, not transport failures to retry.
 - HTTP and gRPC client retry/load-control ordering intentionally match at the
   supported transport stack level: metadata is outside retry so `Request-Id`
   stays logical-request scoped, retry wraps the client limiter and breaker so

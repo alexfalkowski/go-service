@@ -151,28 +151,48 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 
 	attempt := &roundTripAttempt{}
 
+	res, err, retrying := r.attempt(req.Context(), req, attempt)
+	if !retrying {
+		return res, err, false
+	}
+
+	res, err = r.retry(req.Context(), req, attempt, err)
+	return res, err, false
+}
+
+func (r *RoundTripper) retry(ctx context.Context, req *http.Request, attempt *roundTripAttempt, retryErr error) (*http.Response, error) {
+	firstRetry := true
 	operation := func(ctx context.Context) (*http.Response, error) {
-		return r.attempt(ctx, req, attempt)
+		if firstRetry {
+			firstRetry = false
+			return nil, retry.RetryableError(retryErr)
+		}
+
+		res, err, retrying := r.attempt(ctx, req, attempt)
+		if retrying {
+			return nil, retry.RetryableError(err)
+		}
+
+		return res, err
 	}
 
 	backoff := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewConstant(r.backoff))
 	backoff = retry.WithMaxRetries(r.maxRetries, backoff)
-	res, err := retry.DoValue(req.Context(), backoff, operation)
-	return res, err, false
+	return retry.DoValue(ctx, backoff, operation)
 }
 
-func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *roundTripAttempt) (*http.Response, error) {
+func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *roundTripAttempt) (*http.Response, error, bool) {
 	attemptReq, err := request(req, ctx, attempt.attempt)
 	if err != nil {
-		return nil, err
+		return nil, err, false
 	}
 
 	res, err := r.RoundTripper.RoundTrip(attemptReq)
 	if retryErr := attempt.retry(ctx, req, res, err, r.backoff, r.maxRetries); retryErr != nil {
-		return nil, retryErr
+		return nil, retryErr, true
 	}
 
-	return res, err
+	return res, err, false
 }
 
 type roundTripAttempt struct {
@@ -191,7 +211,7 @@ func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *ht
 	retryErr = statusError(retryErr, err)
 	if res == nil {
 		a.attempt++
-		return retry.RetryableError(retryErr)
+		return retryErr
 	}
 	if a.attempt >= maxRetries {
 		return nil
@@ -202,7 +222,7 @@ func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *ht
 
 	closeResponse(res)
 	a.attempt++
-	return retry.RetryableError(retryErr)
+	return retryErr
 }
 
 func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Request, error) {
@@ -226,6 +246,10 @@ func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Requ
 
 func shouldRetryAttempt(ctx context.Context, res *http.Response, err error) (bool, error) {
 	if err := ctx.Err(); err != nil {
+		return false, err
+	}
+
+	if errors.Is(err, http.ErrUseLastResponse) {
 		return false, err
 	}
 
