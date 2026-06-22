@@ -16,15 +16,26 @@ type Service struct {
 }
 
 // SayHello returns a greeting for the requested name.
+//
+// The name "panic" is reserved for transport recovery tests.
 func (s *Service) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
+	if req.GetName() == "panic" {
+		panic("test panic")
+	}
+
 	return &v1.SayHelloResponse{Message: "Hello " + req.GetName()}, nil
 }
 
 // SayStreamHello reads a single request from the bidi stream and replies with one greeting message.
+//
+// The name "panic" is reserved for transport recovery tests.
 func (s *Service) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) error {
 	req, err := stream.Recv()
 	if err != nil {
 		return err
+	}
+	if req.GetName() == "panic" {
+		panic("test panic")
 	}
 
 	return stream.Send(&v1.SayStreamHelloResponse{Message: "Hello " + req.GetName()})
