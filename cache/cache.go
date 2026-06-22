@@ -87,6 +87,37 @@ type Cache struct {
 	driver driver.Driver
 }
 
+// maxSizeWriter enforces the cache encoded-size limit at the writer boundary.
+// It prevents encoders from growing the intermediate buffer past max_size before
+// compression gets its own chance to validate the payload.
+type maxSizeWriter struct {
+	writer  io.Writer
+	max     int64
+	written int64
+}
+
+func (w *maxSizeWriter) Write(data []byte) (int, error) {
+	remaining := w.max - w.written
+	if int64(len(data)) > remaining {
+		if remaining <= 0 {
+			return 0, compresserrors.ErrTooLarge
+		}
+
+		n, err := w.writer.Write(data[:int(remaining)])
+		w.written += int64(n)
+		if err != nil {
+			return n, err
+		}
+
+		return n, compresserrors.ErrTooLarge
+	}
+
+	n, err := w.writer.Write(data)
+	w.written += int64(n)
+
+	return n, err
+}
+
 // Flush removes cached data according to the underlying driver's flush semantics.
 //
 // For persistent backends such as Redis this can be a destructive operation:
@@ -147,16 +178,18 @@ func (c *Cache) encode(value any) (string, error) {
 	buf := c.pool.Get()
 	defer c.pool.Put(buf)
 
-	if err := c.writeEncoder(value).Encode(buf, value); err != nil {
+	maxSize := c.cfg.GetMaxSize()
+	writer := &maxSizeWriter{writer: buf, max: maxSize.Bytes()}
+	if err := c.writeEncoder(value).Encode(writer, value); err != nil {
 		return strings.Empty, err
 	}
 
 	data := buf.Bytes()
-	compressed, err := c.compressor().Compress(data, c.cfg.GetMaxSize())
+	compressed, err := c.compressor().Compress(data, maxSize)
 	if err != nil {
 		return strings.Empty, err
 	}
-	if int64(len(compressed)) > c.cfg.GetMaxSize().Bytes() {
+	if int64(len(compressed)) > maxSize.Bytes() {
 		return strings.Empty, compresserrors.ErrTooLarge
 	}
 
