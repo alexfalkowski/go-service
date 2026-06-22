@@ -116,6 +116,7 @@ func TestInvalidEnvMissingConfig(t *testing.T) {
 
 	_, err := config.NewConfig[config.Config](decoder, test.Validator)
 	require.ErrorIs(t, err, config.ErrEnvMissing)
+	require.ErrorContains(t, err, "env CONFIG")
 }
 
 func TestInvalidEnvKindConfig(t *testing.T) {
@@ -131,6 +132,20 @@ func TestInvalidEnvKindConfig(t *testing.T) {
 
 	_, err = config.NewConfig[config.Config](decoder, test.Validator)
 	require.ErrorIs(t, err, config.ErrNoEncoder)
+	require.ErrorContains(t, err, "env CONFIG")
+	require.ErrorContains(t, err, "kind what")
+}
+
+func TestInvalidFileKindConfig(t *testing.T) {
+	set := flag.NewFlagSet("test")
+	set.AddConfig("file:config.go")
+
+	decoder := test.NewDecoder(set)
+
+	_, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.ErrorIs(t, err, config.ErrNoEncoder)
+	require.ErrorContains(t, err, "file config.go")
+	require.ErrorContains(t, err, "extension go")
 }
 
 func TestInvalidEnvDataConfig(t *testing.T) {
@@ -187,13 +202,19 @@ func TestValidCommonConfig(t *testing.T) {
 }
 
 func TestInvalidCommonConfig(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", test.FS.Join(home, ".config"))
+
 	set := flag.NewFlagSet("test")
 	set.AddConfig(strings.Empty)
 
 	decoder := test.NewDecoder(set)
 
 	_, err := config.NewConfig[config.Config](decoder, test.Validator)
-	require.Error(t, err)
+	require.ErrorIs(t, err, config.ErrLocationMissing)
+	require.ErrorContains(t, err, "default config "+test.Name.String())
+	require.ErrorContains(t, err, "/etc/"+test.Name.String()+"/"+test.Name.String()+".yaml")
 }
 
 func TestInvalidKindConfig(t *testing.T) {
@@ -218,6 +239,7 @@ func TestInvalidKindConfig(t *testing.T) {
 
 	_, err = config.NewConfig[config.Config](decoder, test.Validator)
 	require.ErrorIs(t, err, config.ErrInvalidSource)
+	require.ErrorContains(t, err, "source test:test")
 }
 
 func TestNewConfigRejectsEmptyDecodedConfig(t *testing.T) {

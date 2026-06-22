@@ -2,7 +2,9 @@ package config
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewFile constructs a file-based Decoder that loads configuration from a specific file path.
@@ -46,9 +48,10 @@ func (f *File) Decode(v any) error {
 	}
 	defer file.Close()
 
-	enc := f.enc.Get(f.fs.PathExtension(location))
+	extension := f.fs.PathExtension(location)
+	enc := f.enc.Get(extension)
 	if enc == nil {
-		return ErrNoEncoder
+		return errors.Prefix(strings.Join(strings.Space, "file", location, "extension", extension), ErrNoEncoder)
 	}
 
 	return enc.Decode(file, v)

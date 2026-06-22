@@ -1,7 +1,11 @@
 package config
 
-type invalidSourceDecoder struct{}
+import "github.com/alexfalkowski/go-service/v2/errors"
 
-func (invalidSourceDecoder) Decode(any) error {
-	return ErrInvalidSource
+type invalidSourceDecoder struct {
+	source string
+}
+
+func (d invalidSourceDecoder) Decode(any) error {
+	return errors.Prefix("source "+d.source, ErrInvalidSource)
 }
