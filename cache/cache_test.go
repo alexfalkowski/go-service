@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/ptr"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
@@ -103,6 +104,17 @@ func TestMaxSizeOnPersistCompressedValue(t *testing.T) {
 
 	err := world.Persist(t.Context(), "test", new("a"), time.Minute)
 	require.ErrorIs(t, err, compresserrors.ErrTooLarge)
+}
+
+func TestMaxSizeOnPersistStopsOversizedEncodedValue(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+	cfg.MaxSize = 4
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+	value := &oversizedWriterTo{size: cfg.MaxSize.Bytes() + 1}
+
+	err := world.Persist(t.Context(), "test", value, time.Minute)
+	require.ErrorIs(t, err, compresserrors.ErrTooLarge)
+	require.Equal(t, cfg.MaxSize.Bytes(), value.written)
 }
 
 func TestMaxSizeOnGet(t *testing.T) {
@@ -400,6 +412,18 @@ type cacheRoundTripCase struct {
 	get     func() any
 	config  *config.Config
 	name    string
+}
+
+type oversizedWriterTo struct {
+	size    int64
+	written int64
+}
+
+func (w *oversizedWriterTo) WriteTo(dst io.Writer) (int64, error) {
+	n, err := dst.Write(make([]byte, w.size))
+	w.written = int64(n)
+
+	return w.written, err
 }
 
 type expiredCacheDriver struct{}
