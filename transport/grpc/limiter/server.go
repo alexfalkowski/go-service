@@ -138,9 +138,18 @@ func (s *serverStream) SendMsg(m any) error {
 }
 
 func setHeader(ctx context.Context, decision limiter.Decision) {
-	_ = grpc.SetHeader(ctx, meta.Pairs("ratelimit", decision.Header(), "ratelimit-policy", decision.PolicyHeader()))
+	_ = grpc.SetHeader(ctx, limiterMetadata(decision))
 }
 
 func setStreamHeader(stream grpc.ServerStream, decision limiter.Decision) {
-	_ = stream.SetHeader(meta.Pairs("ratelimit", decision.Header(), "ratelimit-policy", decision.PolicyHeader()))
+	md := limiterMetadata(decision)
+	// Streaming headers may already be sent after the first response message; use trailers for later
+	// limiter decisions so clients can still observe the current quota state on stream errors.
+	if err := stream.SetHeader(md); err != nil {
+		stream.SetTrailer(md)
+	}
+}
+
+func limiterMetadata(decision limiter.Decision) meta.Map {
+	return meta.Pairs("ratelimit", decision.Header(), "ratelimit-policy", decision.PolicyHeader())
 }
