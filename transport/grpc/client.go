@@ -372,12 +372,14 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 		stream = append(stream, logger.StreamClientInterceptor(opts.logger))
 	}
 
-	if opts.gen != nil {
-		stream = append(stream, token.StreamClientInterceptor(opts.id, opts.gen))
-	}
-
+	// gRPC chains stream interceptors outermost-first, so keep the limiter before token injection
+	// to shed over-quota stream opens before token generation does key loading or signing work.
 	if opts.limiter != nil {
 		stream = append(stream, limiter.StreamClientInterceptor(opts.limiter))
+	}
+
+	if opts.gen != nil {
+		stream = append(stream, token.StreamClientInterceptor(opts.id, opts.gen))
 	}
 
 	return grpc.WithChainStreamInterceptor(stream...)
