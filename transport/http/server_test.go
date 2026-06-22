@@ -98,3 +98,22 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
 	require.Equal(t, "http: request entity too large", body)
 }
+
+func TestServerRecoversPanic(t *testing.T) {
+	world := test.NewWorld(t, test.WithWorldHTTP())
+	http.HandleFunc(world.ServeMux, "GET /panic", func(http.ResponseWriter, *http.Request) {
+		panic("test panic")
+	})
+	world.HandleHello()
+	world.Start()
+
+	res, body, err := world.GetBody(t.Context(), world.PathServerURL("http", "panic"), http.Header{})
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, "http: internal server error", body)
+
+	res, body, err = world.GetBody(t.Context(), world.PathServerURL("http", "hello"), http.Header{})
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, "hello!", body)
+}
