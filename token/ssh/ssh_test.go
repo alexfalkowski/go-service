@@ -35,6 +35,32 @@ func TestConfigIsEnabled(t *testing.T) {
 	}
 }
 
+func TestConfigRejectsInvalidValues(t *testing.T) {
+	valid := test.NewToken("ssh").SSH
+	tests := []struct {
+		config *ssh.Config
+		name   string
+	}{
+		{
+			name: "invalid leeway precision",
+			config: &ssh.Config{
+				Key:        valid.Key,
+				Keys:       valid.Keys,
+				Expiration: valid.Expiration,
+				Leeway:     time.Millisecond,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Error(t, test.Validator.Struct(tt.config))
+		})
+	}
+
+	require.NoError(t, test.Validator.Struct(valid))
+}
+
 func TestValid(t *testing.T) {
 	token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 
@@ -60,6 +86,58 @@ func TestValidForAudience(t *testing.T) {
 	sub, err := token.Verify(tkn, "/service.Method")
 	require.NoError(t, err)
 	require.Equal(t, test.UserID.String(), sub)
+}
+
+func TestVerifyWithLeeway(t *testing.T) {
+	cfg := test.NewToken("ssh").SSH
+	cfg.Leeway = time.Minute
+	token := ssh.NewToken(cfg, test.FS)
+	now := time.Now()
+
+	tests := []struct {
+		err       error
+		issuedAt  time.Time
+		expiresAt time.Time
+		name      string
+	}{
+		{
+			name:      "issuer clock ahead within leeway",
+			issuedAt:  now.Add((30 * time.Second).Duration()),
+			expiresAt: now.Add((30 * time.Second).Duration()).Add(cfg.Expiration.Duration()),
+		},
+		{
+			name:      "issuer clock ahead beyond leeway",
+			issuedAt:  now.Add((2 * time.Minute).Duration()),
+			expiresAt: now.Add((2 * time.Minute).Duration()).Add(cfg.Expiration.Duration()),
+			err:       errors.ErrInvalidTime,
+		},
+		{
+			name:      "expired within leeway",
+			issuedAt:  now.Add(-(30 * time.Second).Duration()).Add(-cfg.Expiration.Duration()),
+			expiresAt: now.Add(-(30 * time.Second).Duration()),
+		},
+		{
+			name:      "expired beyond leeway",
+			issuedAt:  now.Add(-(2 * time.Minute).Duration()).Add(-cfg.Expiration.Duration()),
+			expiresAt: now.Add(-(2 * time.Minute).Duration()),
+			err:       errors.ErrInvalidTime,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tkn := signedSSHToken(t, cfg, sshClaims(cfg, tt.issuedAt, tt.expiresAt))
+			sub, err := token.Verify(tkn, "/service.Method")
+			if tt.err != nil {
+				require.Empty(t, sub)
+				require.ErrorIs(t, err, tt.err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, test.UserID.String(), sub)
+		})
+	}
 }
 
 func TestInvalidAudience(t *testing.T) {
@@ -482,6 +560,17 @@ func TestKeysGet(t *testing.T) {
 	require.Nil(t, keys.Get("missing"))
 	require.Nil(t, ssh.Keys{}.Get("missing"))
 	require.Nil(t, ssh.Keys(nil).Get("missing"))
+}
+
+func sshClaims(cfg *ssh.Config, issuedAt, expiresAt time.Time) map[string]any {
+	return map[string]any{
+		"ver": "v1",
+		"kid": cfg.Key,
+		"sub": cfg.Key,
+		"aud": "/service.Method",
+		"iat": issuedAt.UnixNano(),
+		"exp": expiresAt.UnixNano(),
+	}
 }
 
 func signedSSHToken(t *testing.T, cfg *ssh.Config, claims map[string]any) string {

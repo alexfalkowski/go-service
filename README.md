@@ -683,6 +683,7 @@ transport:
       jwt:
         iss: my-service
         exp: 1h
+        leeway: 30s
         key: active
         keys:
           active:
@@ -696,11 +697,12 @@ Important behavior:
 
 - JWT generation signs with `jwt.key`; verification requires the token `kid` header to select an entry in `jwt.keys`.
 - `exp` is parsed as a Go duration string; invalid values can fail fast.
+- `leeway` is optional clock-skew tolerance for verification; keep it small because it extends acceptance around `iat`/`nbf` and `exp`.
 
 > [!IMPORTANT]
 > JWT generation and verification use Ed25519 key material from `jwt.keys`. Keep private key material only on services that mint tokens; verifiers only need public keys.
 
-All token `exp` values are Go duration strings and must be positive whole-second durations. Values such
+All token `exp` and non-zero `leeway` values are Go duration strings and must be positive whole-second durations. Values such
 as `1s`, `15m`, and `24h` validate; sub-second values such as `500ms` do not.
 
 ### Paseto
@@ -715,6 +717,7 @@ transport:
       paseto:
         iss: my-service
         exp: 1h
+        leeway: 30s
         key: active
         keys:
           active:
@@ -725,7 +728,7 @@ transport:
 ```
 
 > [!NOTE]
-> The PASETO implementation issues **v4 public** tokens. Generation signs with `paseto.key`, writes that id as footer `kid`, and verification selects the public key from `paseto.keys`.
+> The PASETO implementation issues **v4 public** tokens. Generation signs with `paseto.key`, writes that id as footer `kid`, and verification selects the public key from `paseto.keys`. `paseto.leeway` is optional clock-skew tolerance for verification.
 
 ### SSH tokens
 
@@ -740,6 +743,7 @@ transport:
       kind: ssh
       ssh:
         exp: 5m
+        leeway: 30s
         keys:
           active:
             public: file:/keys/active.pub
@@ -754,6 +758,7 @@ transport:
       kind: ssh
       ssh:
         exp: 5m
+        leeway: 30s
         key: active
         keys:
           active:
@@ -767,6 +772,7 @@ transport:
 > - `ssh.key` is the active key id used for minting tokens (the matching `ssh.keys` entry requires private key material).
 > - `ssh.keys` is the trusted key map used for verification (public keys).
 > - `ssh.exp` sets the token validity window; SSH keys remain long-lived, while generated tokens are short-lived.
+> - `ssh.leeway` is optional clock-skew tolerance for verification; keep it small because it extends acceptance around `iat` and `exp`.
 > - SSH tokens carry `sub` equal to `kid`, so the verified subject is the trusted peer key id.
 
 ---

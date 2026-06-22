@@ -29,6 +29,8 @@
 //   - [Config.Key] is the active signing key id used for Generate.
 //   - [Config.Keys] is a named key set used for Generate and Verify.
 //   - [Config.Expiration] controls how long generated tokens remain valid.
+//   - [Config.Leeway] optionally tolerates small verifier/issuer clock skew
+//     around iat and exp while preserving the signed lifetime cap.
 //
 // Verification is id-based: Verify extracts kid from the signed claims and
 // then looks up a matching public key configuration in [Config.Keys] (via

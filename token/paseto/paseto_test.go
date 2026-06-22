@@ -3,7 +3,9 @@ package paseto_test
 import (
 	"testing"
 
+	pasetotest "aidanwoods.dev/go-paseto"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -44,6 +46,16 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 				Expiration: time.Hour,
 			},
 		},
+		{
+			name: "invalid leeway precision",
+			config: &paseto.Config{
+				Issuer:     "iss",
+				Key:        valid.Key,
+				Keys:       valid.Keys,
+				Expiration: time.Hour,
+				Leeway:     time.Millisecond,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -66,6 +78,51 @@ func TestValid(t *testing.T) {
 	sub, err := token.Verify(tkn, "hello")
 	require.NoError(t, err)
 	require.Equal(t, test.UserID.String(), sub)
+}
+
+func TestVerifyWithLeeway(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	cfg.Paseto.Leeway = time.Minute
+	token := paseto.NewToken(cfg.Paseto, test.FS, uuid.NewGenerator())
+	now := time.Now()
+
+	t.Run("issuer clock ahead within leeway", func(t *testing.T) {
+		issuedAt := now.Add((30 * time.Second).Duration())
+		tkn := signedPaseto(t, cfg.Paseto, issuedAt, issuedAt, issuedAt.Add(cfg.Paseto.Expiration.Duration()))
+
+		sub, err := token.Verify(tkn, "hello")
+		require.NoError(t, err)
+		require.Equal(t, test.UserID.String(), sub)
+	})
+
+	t.Run("issuer clock ahead beyond leeway", func(t *testing.T) {
+		issuedAt := now.Add((2 * time.Minute).Duration())
+		tkn := signedPaseto(t, cfg.Paseto, issuedAt, issuedAt, issuedAt.Add(cfg.Paseto.Expiration.Duration()))
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidTime)
+	})
+
+	t.Run("expired within leeway", func(t *testing.T) {
+		expiresAt := now.Add(-(30 * time.Second).Duration())
+		issuedAt := expiresAt.Add(-cfg.Paseto.Expiration.Duration())
+		tkn := signedPaseto(t, cfg.Paseto, issuedAt, issuedAt, expiresAt)
+
+		sub, err := token.Verify(tkn, "hello")
+		require.NoError(t, err)
+		require.Equal(t, test.UserID.String(), sub)
+	})
+
+	t.Run("expired beyond leeway", func(t *testing.T) {
+		expiresAt := now.Add(-(2 * time.Minute).Duration())
+		issuedAt := expiresAt.Add(-cfg.Paseto.Expiration.Duration())
+		tkn := signedPaseto(t, cfg.Paseto, issuedAt, issuedAt, expiresAt)
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidTime)
+	})
 }
 
 func TestInvalidEmptySubject(t *testing.T) {
@@ -337,5 +394,31 @@ func cloneConfig(cfg *paseto.Config) *paseto.Config {
 		Key:        cfg.Key,
 		Keys:       cfg.Keys,
 		Expiration: cfg.Expiration,
+		Leeway:     cfg.Leeway,
 	}
+}
+
+func signedPaseto(t *testing.T, cfg *paseto.Config, issuedAt, notBefore, expiresAt time.Time) string {
+	t.Helper()
+
+	key, err := cfg.Keys.Get(cfg.Key).Signer(test.PEM)
+	require.NoError(t, err)
+
+	token := pasetotest.NewToken()
+	token.SetJti("test-id")
+	token.SetIssuedAt(issuedAt)
+	token.SetNotBefore(notBefore)
+	token.SetExpiration(expiresAt)
+	token.SetIssuer(cfg.Issuer)
+	token.SetAudience("hello")
+	token.SetSubject(test.UserID.String())
+
+	footer, err := json.Marshal(map[string]string{"kid": cfg.Key})
+	require.NoError(t, err)
+	token.SetFooter(footer)
+
+	s, err := pasetotest.NewV4AsymmetricSecretKeyFromBytes(key.PrivateKey)
+	require.NoError(t, err)
+
+	return token.V4Sign(s, nil)
 }

@@ -44,6 +44,16 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 				Expiration: time.Hour,
 			},
 		},
+		{
+			name: "invalid leeway precision",
+			config: &jwt.Config{
+				Issuer:     "iss",
+				Key:        valid.Key,
+				Keys:       valid.Keys,
+				Expiration: time.Hour,
+				Leeway:     time.Millisecond,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -66,6 +76,67 @@ func TestValid(t *testing.T) {
 	sub, err := token.Verify(tkn, "hello")
 	require.NoError(t, err)
 	require.Equal(t, test.UserID.String(), sub)
+}
+
+func TestVerifyWithLeeway(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	cfg.JWT.Leeway = time.Minute
+	token := jwt.NewToken(cfg.JWT, test.FS, uuid.NewGenerator())
+	now := time.Now()
+
+	t.Run("issuer clock ahead within leeway", func(t *testing.T) {
+		tkn := signedJWT(t, cfg.JWT, nil, func(claims *jwt.RegisteredClaims) {
+			issuedAt := now.Add((30 * time.Second).Duration())
+			claims.IssuedAt = &jwt.NumericDate{Time: issuedAt}
+			claims.NotBefore = &jwt.NumericDate{Time: issuedAt}
+			claims.ExpiresAt = &jwt.NumericDate{Time: issuedAt.Add(cfg.JWT.Expiration.Duration())}
+		})
+
+		sub, err := token.Verify(tkn, "hello")
+		require.NoError(t, err)
+		require.Equal(t, test.UserID.String(), sub)
+	})
+
+	t.Run("issuer clock ahead beyond leeway", func(t *testing.T) {
+		tkn := signedJWT(t, cfg.JWT, nil, func(claims *jwt.RegisteredClaims) {
+			issuedAt := now.Add((2 * time.Minute).Duration())
+			claims.IssuedAt = &jwt.NumericDate{Time: issuedAt}
+			claims.NotBefore = &jwt.NumericDate{Time: issuedAt}
+			claims.ExpiresAt = &jwt.NumericDate{Time: issuedAt.Add(cfg.JWT.Expiration.Duration())}
+		})
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidTime)
+	})
+
+	t.Run("expired within leeway", func(t *testing.T) {
+		tkn := signedJWT(t, cfg.JWT, nil, func(claims *jwt.RegisteredClaims) {
+			expiresAt := now.Add(-(30 * time.Second).Duration())
+			issuedAt := expiresAt.Add(-cfg.JWT.Expiration.Duration())
+			claims.IssuedAt = &jwt.NumericDate{Time: issuedAt}
+			claims.NotBefore = &jwt.NumericDate{Time: issuedAt}
+			claims.ExpiresAt = &jwt.NumericDate{Time: expiresAt}
+		})
+
+		sub, err := token.Verify(tkn, "hello")
+		require.NoError(t, err)
+		require.Equal(t, test.UserID.String(), sub)
+	})
+
+	t.Run("expired beyond leeway", func(t *testing.T) {
+		tkn := signedJWT(t, cfg.JWT, nil, func(claims *jwt.RegisteredClaims) {
+			expiresAt := now.Add(-(2 * time.Minute).Duration())
+			issuedAt := expiresAt.Add(-cfg.JWT.Expiration.Duration())
+			claims.IssuedAt = &jwt.NumericDate{Time: issuedAt}
+			claims.NotBefore = &jwt.NumericDate{Time: issuedAt}
+			claims.ExpiresAt = &jwt.NumericDate{Time: expiresAt}
+		})
+
+		sub, err := token.Verify(tkn, "hello")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidTime)
+	})
 }
 
 func TestInvalid(t *testing.T) {
@@ -428,5 +499,6 @@ func cloneConfig(cfg *jwt.Config) *jwt.Config {
 		Key:        cfg.Key,
 		Keys:       cfg.Keys,
 		Expiration: cfg.Expiration,
+		Leeway:     cfg.Leeway,
 	}
 }

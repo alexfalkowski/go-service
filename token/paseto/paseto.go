@@ -92,8 +92,7 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //
 // The rules enforced include:
 //   - issuer matches cfg.Issuer (iss)
-//   - token is not expired
-//   - token is valid at the current time (iat/nbf semantics as defined by the upstream library)
+//   - token is valid at the current time with cfg.Leeway clock-skew tolerance (iat/nbf/exp)
 //   - audience matches aud (aud)
 //   - the signed lifetime (exp - iat) does not exceed cfg.Expiration
 //
@@ -105,10 +104,8 @@ func (t *Token) Verify(token, aud string) (string, error) {
 		return strings.Empty, errors.ErrInvalidConfig
 	}
 
-	parser := paseto.NewParser()
+	parser := paseto.NewParserWithoutExpiryCheck()
 	parser.AddRule(paseto.IssuedBy(t.cfg.Issuer))
-	parser.AddRule(paseto.NotExpired())
-	parser.AddRule(paseto.ValidAt(time.Now()))
 	parser.AddRule(paseto.ForAudience(aud))
 
 	key, err := t.publicKey(token, parser)
@@ -126,7 +123,7 @@ func (t *Token) Verify(token, aud string) (string, error) {
 		return strings.Empty, err
 	}
 
-	if err := validateLifetime(parsed, t.cfg.Expiration); err != nil {
+	if err := validateTime(parsed, t.cfg.Expiration, t.cfg.Leeway); err != nil {
 		return strings.Empty, err
 	}
 
@@ -169,15 +166,33 @@ func subject(token *paseto.Token) (string, error) {
 	return sub, nil
 }
 
-func validateLifetime(token *paseto.Token, maxLifetime time.Duration) error {
+func validateTime(token *paseto.Token, maxLifetime, leeway time.Duration) error {
 	issuedAt, err := token.GetIssuedAt()
 	if err != nil {
-		return err
+		return errors.ErrInvalidTime
+	}
+	notBefore, err := token.GetNotBefore()
+	if err != nil {
+		return errors.ErrInvalidTime
 	}
 	expiresAt, err := token.GetExpiration()
 	if err != nil {
-		return err
+		return errors.ErrInvalidTime
 	}
+
+	now := time.Now()
+	allowedFuture := now.Add(leeway.Duration())
+	if issuedAt.After(allowedFuture) || notBefore.After(allowedFuture) {
+		return errors.ErrInvalidTime
+	}
+	if !expiresAt.Add(leeway.Duration()).After(now) {
+		return errors.ErrInvalidTime
+	}
+
+	return validateLifetimeRange(issuedAt, expiresAt, maxLifetime)
+}
+
+func validateLifetimeRange(issuedAt, expiresAt time.Time, maxLifetime time.Duration) error {
 	if !expiresAt.After(issuedAt) || expiresAt.Sub(issuedAt) > maxLifetime.Duration() {
 		return errors.ErrInvalidTime
 	}
