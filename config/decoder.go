@@ -57,7 +57,7 @@ func NewDecoder(params DecoderParams) Decoder {
 	case "env":
 		return NewENV(location, params.Encoder)
 	default:
-		return invalidSourceDecoder{}
+		return invalidSourceDecoder{source: params.Flags.GetConfig()}
 	}
 }
 

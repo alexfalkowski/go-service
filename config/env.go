@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -29,16 +30,17 @@ import (
 // NewENV reads the environment variable once at construction time and stores the parsed kind and data.
 func NewENV(location string, enc *encoding.Map) *ENV {
 	kind, data, _ := strings.CutColon(os.Getenv(location))
-	return &ENV{kind: kind, data: data, enc: enc}
+	return &ENV{location: location, kind: kind, data: data, enc: enc}
 }
 
 // ENV decodes configuration from an environment variable.
 //
 // It expects the variable value to be formatted as "<kind>:<base64-content>" (see NewENV).
 type ENV struct {
-	enc  *encoding.Map
-	kind string
-	data string
+	enc      *encoding.Map
+	location string
+	kind     string
+	data     string
 }
 
 // Decode decodes the configuration into v.
@@ -52,7 +54,7 @@ type ENV struct {
 //   - Any decode/unmarshal error returned by the selected encoder.
 func (e *ENV) Decode(v any) error {
 	if strings.IsEmpty(e.kind) || strings.IsEmpty(e.data) {
-		return ErrEnvMissing
+		return errors.Prefix("env "+e.location, ErrEnvMissing)
 	}
 
 	data, err := base64.Decode(e.data)
@@ -62,7 +64,7 @@ func (e *ENV) Decode(v any) error {
 
 	enc := e.enc.Get(e.kind)
 	if enc == nil {
-		return ErrNoEncoder
+		return errors.Prefix(strings.Join(strings.Space, "env", e.location, "kind", e.kind), ErrNoEncoder)
 	}
 
 	return enc.Decode(bytes.NewBuffer(data), v)

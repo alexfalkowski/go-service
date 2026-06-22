@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/cli"
+	"github.com/alexfalkowski/go-service/v2/config"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -53,6 +54,22 @@ func TestApplicationServerRunWithInvalidFlag(t *testing.T) {
 	)
 
 	require.Error(t, app.Run(t.Context()))
+}
+
+func TestApplicationServerRunWithMissingEnvConfig(t *testing.T) {
+	t.Setenv("MISSING_CONFIG", "")
+	test.SetupCLI("server", "-config", "env:MISSING_CONFIG")
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddServer("server", "Start the server.", test.Options()...)
+			cmd.AddConfig(strings.Empty)
+		},
+	)
+
+	err := app.Run(t.Context())
+	require.ErrorIs(t, err, config.ErrEnvMissing)
+	require.ErrorContains(t, err, "env MISSING_CONFIG")
 }
 
 func TestApplicationServerRunWithConfigFlag(t *testing.T) {

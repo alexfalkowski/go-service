@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -73,12 +74,14 @@ func (c *Default) find() (string, io.ReadCloser, error) {
 		"/etc/" + name,
 	}
 	extensions := []string{".yaml", ".yml", ".hjson", ".toml", ".json"}
+	var paths []string
 
 	for _, extension := range extensions {
 		file := name + extension
 
 		for _, dir := range dirs {
 			path := c.fs.Join(dir, file)
+			paths = append(paths, path)
 			if !c.fs.PathExists(path) {
 				continue
 			}
@@ -89,5 +92,8 @@ func (c *Default) find() (string, io.ReadCloser, error) {
 		}
 	}
 
-	return strings.Empty, nil, ErrLocationMissing
+	searched := strings.Join(", ", paths...)
+	context := strings.Join(strings.Space, "default config", name, "searched", searched)
+
+	return strings.Empty, nil, errors.Prefix(context, ErrLocationMissing)
 }
