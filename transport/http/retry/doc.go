@@ -1,7 +1,6 @@
 // Package retry provides HTTP retry middleware for go-service clients.
 //
 // The package exposes a transport-level retrying `http.RoundTripper` that:
-//   - applies a per-attempt timeout,
 //   - retries responses and HTTP status errors only for selected HTTP status codes,
 //   - keeps `retryablehttp.DefaultRetryPolicy` classification for transport errors,
 //   - replays request bodies on subsequent attempts when `req.GetBody` is available, and

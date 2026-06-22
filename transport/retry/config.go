@@ -24,10 +24,10 @@ const MaxAttempts uint64 = 10
 // Timeout and Backoff are typed durations encoded as Go duration strings in config
 // (see [time.ParseDuration]), such as "250ms", "5s", or "1m".
 type Config struct {
-	// Timeout is the per-attempt timeout duration.
+	// Timeout is a transport-specific timeout duration.
 	//
-	// When interpreted by a transport, each attempt is typically bounded
-	// independently (for example by deriving a per-attempt context deadline).
+	// Transports that support per-attempt deadlines use it to bound attempts independently.
+	// Other transports may rely on the caller's request context or client timeout instead.
 	//
 	// Value encoding: Go duration string (for example "250ms", "5s").
 	// A zero value applies time.DefaultTimeout. Negative values are invalid.
@@ -70,7 +70,7 @@ func (c *Config) MaxAttempts() uint64 {
 	return c.Attempts
 }
 
-// GetTimeout returns the configured per-attempt retry timeout.
+// GetTimeout returns the configured transport-specific retry timeout.
 //
 // A nil receiver or a non-positive value falls back to [time.DefaultTimeout].
 func (c *Config) GetTimeout() time.Duration {

@@ -84,6 +84,20 @@ func TestSafeErrorKeepsWrappedCoder(t *testing.T) {
 	require.Same(t, err, httpstatus.SafeError(http.StatusBadRequest, err))
 }
 
+func TestLocalError(t *testing.T) {
+	err := httpstatus.LocalError(httpstatus.SafeError(http.StatusTooManyRequests, test.ErrInvalid))
+
+	require.True(t, httpstatus.IsLocalError(err))
+	require.True(t, httpstatus.IsError(err))
+	require.ErrorIs(t, err, test.ErrInvalid)
+	require.Equal(t, http.StatusTooManyRequests, httpstatus.Code(err))
+	require.Equal(t, test.ErrInvalid.Error(), err.Error())
+}
+
+func TestLocalErrorAllowsNil(t *testing.T) {
+	require.NoError(t, httpstatus.LocalError(nil))
+}
+
 func TestSafeErrorUsesRequestEntityTooLargeForMaxBytesError(t *testing.T) {
 	err := httpstatus.SafeError(http.StatusBadRequest, &http.MaxBytesError{Limit: 1})
 

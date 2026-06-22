@@ -11,7 +11,7 @@
 //
 //   - Attempts: the maximum number of attempts for a single logical operation,
 //     including the initial attempt (so Attempts=1 means "no retries").
-//   - Timeout: a per-attempt timeout. Each attempt is bounded independently.
+//   - Timeout: a transport-specific timeout knob. Transports that support per-attempt deadlines bound each attempt independently.
 //   - Backoff: a delay inserted between failed attempts.
 //
 // Timeout and Backoff are typed durations. In config files they are encoded as
@@ -24,7 +24,7 @@
 // like this:
 //
 //   - Attempts limits how many times the operation will be tried.
-//   - Timeout is applied per attempt (usually by deriving a context with a deadline).
+//   - Timeout may be applied per attempt, depending on the transport.
 //   - Backoff is applied between attempts, often as a fixed sleep; some transports may
 //     apply additional logic (for example jitter) on top of this base value.
 //
@@ -40,7 +40,7 @@
 // A common convention is:
 //   - Attempts == 0: retries disabled using the transport's zero-value behavior.
 //   - Attempts == 1: retries disabled.
-//   - Timeout == 0: treated as "unspecified" and replaced with [time.DefaultTimeout].
+//   - Timeout == 0: treated as "unspecified" and replaced with [time.DefaultTimeout] by transports that use it.
 //   - Backoff == 0: treated as "unspecified" and replaced with DefaultBackoff.
 //
 // # Usage

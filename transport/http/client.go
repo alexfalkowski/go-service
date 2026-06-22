@@ -105,9 +105,9 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 
 // WithClientRetry enables retry behavior for outbound HTTP requests.
 //
-// When configured, the composed RoundTripper will apply per-attempt timeouts and retry failed requests
-// according to cfg (attempt count, backoff, and which status codes are considered retryable).
-// Optional policies decide whether a logical request is eligible for retry.
+// When configured, the composed RoundTripper will retry failed requests according to cfg (attempt count,
+// backoff, and which status codes are considered retryable). Optional policies decide whether a logical
+// request is eligible for retry.
 //
 // When no policy is provided, only side-effect-safe requests are eligible for retry: safe HTTP methods, or
 // requests carrying a request-id idempotency contract. Callers that need different behavior can pass an
@@ -203,9 +203,9 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 //
 //   - meta injection (User-Agent, Request-Id)
 //   - logger (optional)
+//   - retry (optional)
 //   - limiter (optional)
 //   - breaker (optional)
-//   - retry (optional)
 //   - token injection (optional)
 //   - compression (optional)
 //   - base transport
@@ -213,6 +213,7 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 // Notes:
 //   - [WithClientRoundTripper] short-circuits base transport selection and TLS config construction.
 //   - Token injection remains inside retry so a fresh token is generated for each retry attempt.
+//   - Retry wraps limiter and breaker so each retry attempt consumes quota and breaker capacity.
 //   - The limiter stays outside the breaker so local quota denials are not counted as upstream failures.
 func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	resolved := options(opts...)
@@ -230,16 +231,16 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 		hrt = token.NewRoundTripper(resolved.id, resolved.gen, hrt)
 	}
 
-	if resolved.retry != nil {
-		hrt = retry.NewRoundTripper(resolved.retry, hrt, resolved.retryPolicies...)
-	}
-
 	if resolved.breaker {
 		hrt = breaker.NewRoundTripper(hrt, resolved.breakerOptions...)
 	}
 
 	if resolved.limiter != nil {
 		hrt = limiter.NewRoundTripper(resolved.limiter, hrt)
+	}
+
+	if resolved.retry != nil {
+		hrt = retry.NewRoundTripper(resolved.retry, hrt, resolved.retryPolicies...)
 	}
 
 	if resolved.logger != nil {

@@ -1,8 +1,6 @@
 package retry
 
 import (
-	"fmt"
-
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/meta"
@@ -12,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
-	"github.com/alexfalkowski/go-sync"
 	retryable "github.com/hashicorp/go-retryablehttp"
 )
 
@@ -20,7 +17,6 @@ import (
 //
 // It describes the retry policy used by NewRoundTripper:
 //   - `Attempts`: maximum number of attempts including the initial attempt.
-//   - `Timeout`: per-attempt timeout duration.
 //   - `Backoff`: base delay between retries.
 type Config = config.Config
 
@@ -65,14 +61,10 @@ func IdempotentRequests(req *http.Request) bool {
 // `429 Too Many Requests` or `503 Service Unavailable`.
 var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 
-// ErrAttemptTimeout is the cause recorded when a retry attempt times out.
-var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout)
-
-// NewRoundTripper constructs a RoundTripper that applies per-attempt timeouts and retries.
+// NewRoundTripper constructs a RoundTripper that applies retries.
 //
 // The constructed RoundTripper wraps hrt and, for each request:
 //   - checks whether the request is eligible for retry using policies, and
-//   - applies a per-attempt timeout derived from `cfg.GetTimeout()`, and
 //   - retries responses and status errors with retryable HTTP status codes, and
 //   - retries recoverable transport errors using `retryablehttp.DefaultRetryPolicy`, and
 //   - waits a jittered backoff derived from `cfg.GetBackoff()` between attempts.
@@ -103,7 +95,6 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 		RoundTripper: hrt,
 		backoff:      cfg.GetBackoff(),
 		policy:       composePolicy(policies),
-		timeout:      cfg.GetTimeout(),
 		maxRetries:   cfg.MaxRetries(),
 	}
 }
@@ -111,7 +102,6 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 // RoundTripper wraps an underlying [http.RoundTripper] and retries requests according to its configuration.
 //
 // Each attempt:
-//   - runs the underlying [http.RoundTripper.RoundTrip] with a derived per-attempt timeout,
 //   - re-creates the request body for subsequent attempts when `req.GetBody` is available, and
 //   - retries only selected HTTP status codes for responses and status errors.
 //   - retries recoverable transport errors using `retryablehttp.DefaultRetryPolicy`.
@@ -124,14 +114,12 @@ type RoundTripper struct {
 	http.RoundTripper
 	policy     Policy
 	backoff    time.Duration
-	timeout    time.Duration
 	maxRetries uint64
 }
 
 // RoundTrip executes the request and retries according to the configured backoff policy.
 //
 // For each attempt:
-//   - it derives a child context with a timeout (`r.timeout`) and executes the underlying RoundTripper with it,
 //   - it clones the request and replays the body when needed,
 //   - it checks whether the response/status error carries a retryable HTTP status code, and
 //   - it uses `retryablehttp.DefaultRetryPolicy` for transport error classification, and
@@ -174,32 +162,25 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 }
 
 func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *roundTripAttempt) (*http.Response, error) {
-	attemptCtx, cancel := r.withAttemptTimeout(ctx)
-	defer cancel()
-
-	attemptReq, err := request(req, attemptCtx, attempt.attempt)
+	attemptReq, err := request(req, ctx, attempt.attempt)
 	if err != nil {
 		return nil, err
 	}
 
 	res, err := r.RoundTripper.RoundTrip(attemptReq)
-	if retryErr := attempt.retry(ctx, attemptCtx, req, res, err, r.backoff, r.maxRetries); retryErr != nil {
+	if retryErr := attempt.retry(ctx, req, res, err, r.backoff, r.maxRetries); retryErr != nil {
 		return nil, retryErr
 	}
 
 	return res, err
 }
 
-func (r *RoundTripper) withAttemptTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
-	return context.WithTimeoutCause(ctx, r.timeout, ErrAttemptTimeout)
-}
-
 type roundTripAttempt struct {
 	attempt uint64
 }
 
-func (a *roundTripAttempt) retry(ctx, attemptCtx context.Context, req *http.Request, res *http.Response, err error, backoff time.Duration, maxRetries uint64) error {
-	ok, retryErr := shouldRetryAttempt(ctx, attemptCtx, res, err)
+func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *http.Response, err error, backoff time.Duration, maxRetries uint64) error {
+	ok, retryErr := shouldRetryAttempt(ctx, res, err)
 	if !ok {
 		return nil
 	}
@@ -243,14 +224,9 @@ func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Requ
 	return clonedReq, nil
 }
 
-func shouldRetryAttempt(ctx, attemptCtx context.Context, res *http.Response, err error) (bool, error) {
+func shouldRetryAttempt(ctx context.Context, res *http.Response, err error) (bool, error) {
 	if err := ctx.Err(); err != nil {
 		return false, err
-	}
-
-	if err := attemptCtx.Err(); err != nil {
-		cause := context.Cause(attemptCtx)
-		return errors.Is(cause, ErrAttemptTimeout), cause
 	}
 
 	if isTransportError(res, err) {
@@ -258,6 +234,10 @@ func shouldRetryAttempt(ctx, attemptCtx context.Context, res *http.Response, err
 	}
 
 	if err != nil {
+		if status.IsLocalError(err) {
+			return false, err
+		}
+
 		return isRetryableStatusCode(status.Code(err)), err
 	}
 

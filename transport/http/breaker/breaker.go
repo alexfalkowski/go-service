@@ -121,10 +121,10 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 
 func localRejectionError(err error) error {
 	if errors.Is(err, breaker.ErrTooManyRequests) {
-		return status.SafeError(http.StatusTooManyRequests, err)
+		return status.LocalError(status.SafeError(http.StatusTooManyRequests, err))
 	}
 	if errors.Is(err, breaker.ErrOpenState) {
-		return status.ServiceUnavailableError(err)
+		return status.LocalError(status.ServiceUnavailableError(err))
 	}
 
 	return err
