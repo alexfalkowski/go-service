@@ -69,11 +69,12 @@ func (h *Webhook) Sign(req *http.Request) error {
 	}
 
 	originalBody := req.Body
+	defer body.Close(originalBody)
+
 	payload, bufferedBody, err := body.ReadAll(req)
 	if err != nil {
 		return err
 	}
-	defer body.Close(originalBody)
 
 	req.Body = bufferedBody
 	if req.Header == nil {
@@ -113,11 +114,12 @@ func (h *Webhook) Verify(req *http.Request) error {
 	}
 
 	originalBody := req.Body
+	defer body.Close(originalBody)
+
 	payload, bufferedBody, err := body.ReadAll(req)
 	if err != nil {
 		return err
 	}
-	defer body.Close(originalBody)
 
 	req.Body = bufferedBody
 
@@ -217,10 +219,7 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 	}
 
 	clonedReq := req.Clone(req.Context())
-	originalBody := clonedReq.Body
 	if err := r.hook.Sign(clonedReq); err != nil {
-		body.Close(originalBody)
-
 		return nil, err, false
 	}
 
