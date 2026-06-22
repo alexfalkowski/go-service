@@ -14,12 +14,9 @@ type DB = sql.DB
 
 // DBs is an alias of [driver.DBs].
 //
-// It represents the master/slave SQL pool collection used by go-service SQL
-// integrations.
-//
-// The value wraps the upstream master/slave pool collection and embeds it so
-// callers can use the usual pool helper methods while go-service-owned cleanup,
-// such as metric unregistration, stays attached to [DBs.Destroy].
+// It represents the writer/reader SQL pool collection used by go-service SQL
+// integrations. Callers choose a pool with [DBs.Reader] or [DBs.Writer] and use
+// standard-library [database/sql] methods on the returned pool.
 type DBs = driver.DBs
 
 // Rows aliases [database/sql.Rows].
@@ -36,14 +33,13 @@ func Open(driverName, dataSourceName string) (*DB, error) {
 	return sql.Open(driverName, dataSourceName)
 }
 
-// ConnectMasterSlaves is a thin wrapper around [driver.ConnectMasterSlaves].
+// ConnectWritersReaders is a thin wrapper around [driver.ConnectWritersReaders].
 //
-// It opens a master/slave SQL pool collection for a registered standard library [database/sql] driver
-// name and returns any per-DSN connection errors produced by the upstream helper.
+// It opens a writer/reader SQL pool collection for a registered standard library [database/sql] driver
+// name and returns any per-DSN open errors.
 //
 // The driver name must already be registered with the standard library [database/sql] driver registry.
-// The returned [DBs] value may contain zero or more master and slave
-// pools depending on the provided DSN lists.
-func ConnectMasterSlaves(name string, masterDSNs, slaveDSNs []string) (*DBs, []error) {
-	return driver.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
+// At least one writer or reader DSN must be configured.
+func ConnectWritersReaders(name string, writerDSNs, readerDSNs []string) (*DBs, []error) {
+	return driver.ConnectWritersReaders(name, writerDSNs, readerDSNs)
 }

@@ -303,11 +303,11 @@ func NewPGConfig() *pg.Config {
 }
 
 // NewPGConfigWithDSNs returns the Postgres config used by database-backed integration tests with explicit DSNs.
-func NewPGConfigWithDSNs(masters, slaves []sql.DSN) *pg.Config {
+func NewPGConfigWithDSNs(writers, readers []sql.DSN) *pg.Config {
 	return &pg.Config{
 		Config: &sql.Config{
-			Masters:         masters,
-			Slaves:          slaves,
+			Writers:         writers,
+			Readers:         readers,
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,
 			ConnMaxLifetime: time.Hour,

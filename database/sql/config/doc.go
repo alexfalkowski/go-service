@@ -12,13 +12,13 @@
 //
 // # DSNs and source strings
 //
-// Master and replica (slave) DSNs are configured via [DSN] entries. Each DSN URL is expressed as a
+// Writer and replica (reader) DSNs are configured via [DSN] entries. Each DSN URL is expressed as a
 // go-service "source string" (resolved via [github.com/alexfalkowski/go-service/v2/os.FS.ReadSource]), so it can be:
 //   - "env:NAME" to read from an environment variable,
 //   - "file:/path/to/dsn" to read from a file, or
 //   - any other value treated as a literal DSN.
 //
-// Enabled SQL configurations must provide at least one master or slave DSN, and each resolved DSN must be non-empty.
+// Enabled SQL configurations must provide at least one writer or reader DSN, and each resolved DSN must be non-empty.
 //
 // Start with [Config] and [DSN].
 package config

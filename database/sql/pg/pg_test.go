@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -70,7 +69,7 @@ func TestInvalidOpen(t *testing.T) {
 		name    string
 	}{
 		{
-			name: "invalid masters",
+			name: "invalid writers",
 			config: test.NewPGConfigWithDSNs(
 				[]config.DSN{{URL: test.FilePath("secrets/none")}},
 				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
@@ -78,7 +77,7 @@ func TestInvalidOpen(t *testing.T) {
 			wantErr: fs.ErrNotExist,
 		},
 		{
-			name: "invalid slaves",
+			name: "invalid readers",
 			config: test.NewPGConfigWithDSNs(
 				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
 				[]config.DSN{{URL: test.FilePath("secrets/none")}},
@@ -91,7 +90,7 @@ func TestInvalidOpen(t *testing.T) {
 			wantErr: driver.ErrNoDSNs,
 		},
 		{
-			name: "empty master dsn",
+			name: "empty writer dsn",
 			config: test.NewPGConfigWithDSNs(
 				[]config.DSN{{}},
 				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
@@ -99,7 +98,7 @@ func TestInvalidOpen(t *testing.T) {
 			wantErr: driver.ErrEmptyDSN,
 		},
 		{
-			name: "empty slave dsn",
+			name: "empty reader dsn",
 			config: test.NewPGConfigWithDSNs(
 				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
 				[]config.DSN{{URL: "env:PG_EMPTY_DSN"}},
@@ -123,7 +122,7 @@ func TestInvalidOpen(t *testing.T) {
 func TestConfiguredSQLPings(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil), test.WithWorldLoggerConfig("otlp"))
 
-	require.NoError(t, errors.Join(world.DB.Ping()...))
+	require.NoError(t, world.DB.Ping())
 }
 
 func TestConnectUsesPostgreSQLTelemetryOptions(t *testing.T) {
@@ -153,10 +152,10 @@ func TestOpenClosesDBsOnStop(t *testing.T) {
 	require.NotNil(t, db)
 
 	lc.RequireStart()
-	require.NoError(t, errors.Join(db.Ping()...))
+	require.NoError(t, db.Ping())
 
 	lc.RequireStop()
-	require.Error(t, errors.Join(db.Ping()...))
+	require.Error(t, db.Ping())
 }
 
 func TestDBQuery(t *testing.T) {
@@ -165,7 +164,10 @@ func TestDBQuery(t *testing.T) {
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
 	defer cleanup()
 
-	rows, err := world.DB.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+	reader, err := world.DB.Reader()
+	require.NoError(t, err)
+
+	rows, err := reader.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
 	require.NoError(t, err)
 
 	var count int
@@ -183,7 +185,10 @@ func TestDBExec(t *testing.T) {
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
 	defer cleanup()
 
-	result, err := world.DB.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
+	writer, err := world.DB.Writer()
+	require.NoError(t, err)
+
+	result, err := writer.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
 	require.NoError(t, err)
 
 	num, err := result.RowsAffected()
@@ -197,7 +202,10 @@ func TestDBCommitTransExec(t *testing.T) {
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
 	defer cleanup()
 
-	tx, err := world.DB.BeginTx(ctx, nil)
+	writer, err := world.DB.Writer()
+	require.NoError(t, err)
+
+	tx, err := writer.BeginTx(ctx, nil)
 	require.NoError(t, err)
 
 	//nolint:errcheck
@@ -223,7 +231,10 @@ func TestDBRollbackTransExec(t *testing.T) {
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
 	defer cleanup()
 
-	tx, err := world.DB.BeginTx(ctx, nil)
+	writer, err := world.DB.Writer()
+	require.NoError(t, err)
+
+	tx, err := writer.BeginTx(ctx, nil)
 	require.NoError(t, err)
 
 	result, err := tx.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
@@ -246,7 +257,10 @@ func TestStatementQuery(t *testing.T) {
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
 	defer cleanup()
 
-	_, stmt, err := world.DB.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
+	reader, err := world.DB.Reader()
+	require.NoError(t, err)
+
+	stmt, err := reader.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 	require.NoError(t, err)
 
 	defer stmt.Close()
@@ -269,7 +283,10 @@ func TestStatementExec(t *testing.T) {
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
 	defer cleanup()
 
-	_, stmt, err := world.DB.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
+	writer, err := world.DB.Writer()
+	require.NoError(t, err)
+
+	stmt, err := writer.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
 	require.NoError(t, err)
 
 	defer stmt.Close()
@@ -291,7 +308,10 @@ func TestTransStatementExec(t *testing.T) {
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
 	defer cleanup()
 
-	tx, err := world.DB.Begin()
+	writer, err := world.DB.Writer()
+	require.NoError(t, err)
+
+	tx, err := writer.Begin()
 	require.NoError(t, err)
 
 	//nolint:errcheck
@@ -322,7 +342,10 @@ func TestInvalidStatementQuery(t *testing.T) {
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
 	defer cleanup()
 
-	_, stmt, err := world.DB.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
+	reader, err := world.DB.Reader()
+	require.NoError(t, err)
+
+	stmt, err := reader.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 	require.NoError(t, err)
 
 	defer stmt.Close()
@@ -333,8 +356,8 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 func TestInvalidSQLPort(t *testing.T) {
 	cfg := &pg.Config{Config: &config.Config{
-		Masters:         []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
-		Slaves:          []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
+		Writers:         []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
+		Readers:         []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
 		MaxOpenConns:    5,
 		MaxIdleConns:    5,
 		ConnMaxLifetime: time.Hour,
@@ -352,6 +375,6 @@ func TestInvalidSQLPort(t *testing.T) {
 	require.NoError(t, err)
 
 	lc.RequireStart()
-	require.Error(t, errors.Join(db.Ping()...))
+	require.Error(t, db.Ping())
 	lc.RequireStop()
 }

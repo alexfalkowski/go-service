@@ -308,10 +308,10 @@ func verifyHooksConfig(t *testing.T, cfg *config.Config) {
 func verifySQLConfig(t *testing.T, cfg *config.Config) {
 	t.Helper()
 
-	require.Len(t, cfg.SQL.PG.Masters, 1)
-	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Masters[0].URL)
-	require.Len(t, cfg.SQL.PG.Slaves, 1)
-	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Slaves[0].URL)
+	require.Len(t, cfg.SQL.PG.Writers, 1)
+	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Writers[0].URL)
+	require.Len(t, cfg.SQL.PG.Readers, 1)
+	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Readers[0].URL)
 	require.Equal(t, 5, cfg.SQL.PG.MaxIdleConns)
 	require.Equal(t, 5, cfg.SQL.PG.MaxOpenConns)
 	require.Equal(t, time.Hour, cfg.SQL.PG.ConnMaxLifetime)

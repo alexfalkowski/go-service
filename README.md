@@ -397,21 +397,21 @@ Server commands created through `cli.Application.AddServer` include `runtime.Mod
 
 SQL root config is `database/sql.Config`, with Postgres under `sql.pg`.
 
-Postgres config embeds common pool + DSN config (`database/sql/config.Config`), including master/slave DSNs and pool sizes. Enabled SQL configs must set positive `max_open_conns` and `max_idle_conns`; `max_idle_conns` must not exceed `max_open_conns`.
+Postgres config embeds common pool + DSN config (`database/sql/config.Config`), including writer/reader DSNs and pool sizes. Enabled SQL configs must set positive `max_open_conns` and `max_idle_conns`; `max_idle_conns` must not exceed `max_open_conns`.
 
 `module.Server` and `module.Client` both include `sql.Module`, which currently wires PostgreSQL support via `database/sql/pg.Module`.
 
-Enablement is presence-based: a nil `sql` block or a nil `sql.pg` block disables SQL wiring. When enabled, the pgx stdlib driver is registered under the name `pg`, and master/slave DSNs are resolved using the source-string rules described above. Enabled PostgreSQL config must provide at least one non-empty `masters[].url` or `slaves[].url`. Driver instrumentation is installed when tracing or metrics are enabled, OpenTelemetry `database/sql` stats metrics are registered when metrics are enabled, and the resulting pools are closed on lifecycle stop.
+Enablement is presence-based: a nil `sql` block or a nil `sql.pg` block disables SQL wiring. When enabled, the pgx stdlib driver is registered under the name `pg`, and writer/reader DSNs are resolved using the source-string rules described above. Enabled PostgreSQL config must provide at least one non-empty `writers[].url` or `readers[].url`. Driver instrumentation is installed when tracing or metrics are enabled, OpenTelemetry `database/sql` stats metrics are registered when metrics are enabled, and the resulting pools are closed on lifecycle stop.
 
 Example (with source strings for DSNs):
 
 ```yaml
 sql:
   pg:
-    masters:
-      - url: env:PG_MASTER_DSN
-    slaves:
-      - url: env:PG_SLAVE_DSN
+    writers:
+      - url: env:PG_WRITER_DSN
+    readers:
+      - url: env:PG_READER_DSN
     max_open_conns: 5
     max_idle_conns: 5
     conn_max_lifetime: 1h
@@ -422,7 +422,7 @@ Example (literal DSN; not recommended for production secrets):
 ```yaml
 sql:
   pg:
-    masters:
+    writers:
       - url: postgres://user:pass@localhost:5432/dbname?sslmode=disable
     max_open_conns: 10
 ```
