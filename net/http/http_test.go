@@ -102,8 +102,11 @@ func TestSameOriginRedirect(t *testing.T) {
 		next string
 	}{
 		{name: "same origin", next: "https://example.com/next", want: nil},
+		{name: "same origin host case", next: "https://EXAMPLE.com/next", want: nil},
+		{name: "same origin default port", next: "https://example.com:443/next", want: nil},
 		{name: "different host", next: "https://other.example.com/next", want: http.ErrUseLastResponse},
 		{name: "different scheme", next: "http://example.com/next", want: http.ErrUseLastResponse},
+		{name: "different port", next: "https://example.com:444/next", want: http.ErrUseLastResponse},
 	}
 
 	prev, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/start", http.NoBody)
@@ -125,18 +128,40 @@ func TestSameOriginRedirect(t *testing.T) {
 }
 
 func TestSameOrigin(t *testing.T) {
+	tests := []struct {
+		name string
+		prev string
+		next string
+		want bool
+	}{
+		{name: "same origin", prev: "https://example.com/start", next: "https://example.com/next", want: true},
+		{name: "same origin host case", prev: "https://example.com/start", next: "https://EXAMPLE.com/next", want: true},
+		{name: "same origin https default port", prev: "https://example.com/start", next: "https://example.com:443/next", want: true},
+		{name: "same origin http default port", prev: "http://example.com/start", next: "http://example.com:80/next", want: true},
+		{name: "different host", prev: "https://example.com/start", next: "https://other.example.com/next", want: false},
+		{name: "different scheme", prev: "https://example.com/start", next: "http://example.com/next", want: false},
+		{name: "different port", prev: "https://example.com/start", next: "https://example.com:444/next", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			prev, err := url.Parse(tt.prev)
+			require.NoError(t, err)
+
+			next, err := url.Parse(tt.next)
+			require.NoError(t, err)
+
+			require.Equal(t, tt.want, http.SameOrigin(prev, next))
+		})
+	}
+
 	prev, err := url.Parse("https://example.com/start")
 	require.NoError(t, err)
 
-	same, err := url.Parse("https://example.com/next")
+	next, err := url.Parse("https://example.com/next")
 	require.NoError(t, err)
 
-	different, err := url.Parse("https://other.example.com/next")
-	require.NoError(t, err)
-
-	require.True(t, http.SameOrigin(prev, same))
-	require.False(t, http.SameOrigin(prev, different))
-	require.False(t, http.SameOrigin(nil, same))
+	require.False(t, http.SameOrigin(nil, next))
 	require.False(t, http.SameOrigin(prev, nil))
 }
 

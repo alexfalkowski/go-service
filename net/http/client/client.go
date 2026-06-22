@@ -268,7 +268,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	}
 
 	if isErrorStatus(response.StatusCode) {
-		return status.Error(response.StatusCode, strings.ToLower(http.StatusText(response.StatusCode)))
+		return status.Error(response.StatusCode, defaultErrorMessage(response.StatusCode))
 	}
 
 	if opts.HasResponse() {
@@ -282,6 +282,14 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 
 func isErrorStatus(code int) bool {
 	return code >= 400 && code <= 599
+}
+
+func defaultErrorMessage(code int) string {
+	if message := http.StatusText(code); !strings.IsEmpty(message) {
+		return strings.ToLower(message)
+	}
+
+	return status.DefaultMessage(code)
 }
 
 func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {

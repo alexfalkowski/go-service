@@ -76,6 +76,21 @@ func TestDoPreservesErrorMediaStatusCode(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, status.Code(err))
 }
 
+func TestDoUsesDefaultMessageForNonstandardErrorStatus(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.Header().Set(content.TypeKey, media.Text)
+		res.WriteHeader(http.StatusClientClosedRequest)
+	}))
+	defer server.Close()
+
+	c := client.NewClient(test.Content, test.Pool)
+
+	err := c.Get(t.Context(), server.URL, client.Options{})
+	require.Error(t, err)
+	require.EqualError(t, err, "http: client closed request")
+	require.Equal(t, http.StatusClientClosedRequest, status.Code(err))
+}
+
 func TestDoNormalizesErrorMediaSuccessStatusCode(t *testing.T) {
 	tests := []struct {
 		name string
