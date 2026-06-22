@@ -50,6 +50,19 @@ var RPCSystemNameGRPC = semconv.RPCSystemNameGRPC
 // predeclared attribute values such as DBSystemNamePostgreSQL.
 var DBSystemNameKey = semconv.DBSystemNameKey
 
+// DBClientConnectionPoolName returns a db.client.connection.pool.name attribute
+// with value name.
+//
+// This is a thin wrapper around [semconv.DBClientConnectionPoolName] and is
+// typically used when registering SQL connection-pool metrics.
+//
+// Parameters:
+//   - name: the connection pool name, unique within the instrumented
+//     application
+func DBClientConnectionPoolName(name string) attribute.KeyValue {
+	return semconv.DBClientConnectionPoolName(name)
+}
+
 // HostID returns a host.id attribute with value val.
 //
 // This is a thin wrapper around [semconv.HostID] and is typically used when

@@ -206,6 +206,14 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   replace those defaults unless a supported config/DI path exposes that option,
   raw SQL text is emitted by repository code, or the public API starts promising
   safe merging of arbitrary span options.
+- `github.com/linxGnu/mssqlx` transaction query helpers are known to drop
+  variadic arguments in `Tx.QueryContext`, `Txx.QueryContext`, and
+  `Txx.QueryxContext`. This repository intentionally does not patch vendored
+  dependencies or add repo-owned transaction wrapper types solely for that
+  upstream limitation. Do not flag parameterized transaction reads through those
+  helpers as a local reliability issue unless this repository replaces or wraps
+  the mssqlx transaction layer, a fixed upstream release is available and
+  intentionally adopted, or local code adds its own argument-dropping wrapper.
 - RSA public-key loading intentionally validates the repository's key-size
   policy and delegates deeper RSA parameter checks, such as public exponent
   usability, to the standard library operations that consume the key. Do not
