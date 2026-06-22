@@ -133,6 +133,8 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(logger.NewHandler(params.Name, params.Logger))
 	}
 
+	neg.Use(&recoveryHandler{})
+
 	if params.Verifier != nil {
 		neg.Use(token.NewHandler(params.Name, params.UserID, params.Verifier))
 	}
