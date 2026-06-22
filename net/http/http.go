@@ -162,13 +162,30 @@ func IgnoreRedirect(_ *Request, _ []*Request) error {
 	return ErrUseLastResponse
 }
 
-// SameOrigin reports whether prev and next use the same URL scheme and host.
+// SameOrigin reports whether prev and next use the same URL origin.
 func SameOrigin(prev, next *url.URL) bool {
 	if prev == nil || next == nil {
 		return false
 	}
 
-	return prev.Scheme == next.Scheme && prev.Host == next.Host
+	return strings.ToLower(prev.Scheme) == strings.ToLower(next.Scheme) &&
+		strings.ToLower(prev.Hostname()) == strings.ToLower(next.Hostname()) &&
+		originPort(prev) == originPort(next)
+}
+
+func originPort(u *url.URL) string {
+	if port := u.Port(); !strings.IsEmpty(port) {
+		return port
+	}
+
+	switch strings.ToLower(u.Scheme) {
+	case "http":
+		return "80"
+	case "https":
+		return "443"
+	default:
+		return strings.Empty
+	}
 }
 
 // IsCrossOriginRedirect reports whether req is a redirected request whose previous request used a different origin.
