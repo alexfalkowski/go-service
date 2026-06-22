@@ -14,7 +14,7 @@ import "github.com/alexfalkowski/go-service/v2/database/sql/pg"
 // *[Config] is treated as "SQL disabled". Driver-specific sub-configs are also pointers and are treated
 // as optional; downstream constructors typically return (nil, nil) when a required sub-config is nil.
 type Config struct {
-	// PG configures PostgreSQL support (master/slave DSNs and shared pool settings).
+	// PG configures PostgreSQL support (writer/reader DSNs and shared pool settings).
 	//
 	// PostgreSQL is the only SQL backend wired by this repository today.
 	PG *pg.Config `yaml:"pg,omitempty" json:"pg,omitempty" toml:"pg,omitempty"`

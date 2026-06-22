@@ -10,22 +10,22 @@ import (
 // It is intended to be embedded by driver-specific configuration types (for example PostgreSQL)
 // and consumed by the SQL wiring in this repository.
 //
-// [Config.Masters] and [Config.Slaves] contain DSNs (connection strings) expressed as go-service "source strings"
+// [Config.Writers] and [Config.Readers] contain DSNs (connection strings) expressed as go-service "source strings"
 // (literal values, `file:` paths, or `env:` references) that are resolved by [os.FS.ReadSource].
-// Enabled SQL configurations must provide at least one master or slave DSN, and each resolved DSN must be non-empty.
+// Enabled SQL configurations must provide at least one writer or reader DSN, and each resolved DSN must be non-empty.
 type Config struct {
-	// Masters is the set of primary (read-write) datasource DSNs.
+	// Writers is the set of primary (read-write) datasource DSNs.
 	//
 	// Each DSN URL is a "source string" resolved via [os.FS.ReadSource], so it can be:
 	//   - "env:NAME" to read the DSN from an environment variable,
 	//   - "file:/path/to/dsn" to read the DSN from a file, or
 	//   - any other value treated as a literal DSN string.
-	Masters []DSN `yaml:"masters,omitempty" json:"masters,omitempty" toml:"masters,omitempty"`
+	Writers []DSN `yaml:"writers,omitempty" json:"writers,omitempty" toml:"writers,omitempty"`
 
-	// Slaves is the set of replica (read-only) datasource DSNs.
+	// Readers is the set of replica (read-only) datasource DSNs.
 	//
-	// Each DSN URL is a "source string" resolved via [os.FS.ReadSource] (see [Config.Masters] for the supported formats).
-	Slaves []DSN `yaml:"slaves,omitempty" json:"slaves,omitempty" toml:"slaves,omitempty"`
+	// Each DSN URL is a "source string" resolved via [os.FS.ReadSource] (see [Config.Writers] for the supported formats).
+	Readers []DSN `yaml:"readers,omitempty" json:"readers,omitempty" toml:"readers,omitempty"`
 
 	// ConnMaxLifetime is the maximum amount of time a connection may be reused.
 	//

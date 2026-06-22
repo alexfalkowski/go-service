@@ -21,20 +21,19 @@ func Register() {
 	_ = driver.Register("pg", pgx.GetDefaultDriver(), options()...)
 }
 
-// Connect opens PostgreSQL master/slave connection pools.
+// Connect opens PostgreSQL writer/reader connection pools.
 //
 // Disabled behavior: if cfg is nil/disabled, Connect returns (nil, nil).
 //
 // Enabled behavior: Connect delegates to the shared SQL driver helper to:
-//   - resolve master and replica DSNs (expressed as go-service "source strings"),
-//   - require at least one non-empty master or replica DSN,
+//   - resolve writer and replica DSNs (expressed as go-service "source strings"),
+//   - require at least one non-empty writer or replica DSN,
 //   - connect using the previously registered driver name "pg",
 //   - register OpenTelemetry DB stats metrics when metrics are enabled, and
 //   - apply connection pool limits/lifetime.
 //
-// The returned type wraps the upstream master/slave pool collection and is
-// aliased by the root [github.com/alexfalkowski/go-service/v2/database/sql] package as [github.com/alexfalkowski/go-service/v2/database/sql.DBs] for higher-level
-// callers.
+// The returned type is aliased by the root [github.com/alexfalkowski/go-service/v2/database/sql] package as
+// [github.com/alexfalkowski/go-service/v2/database/sql.DBs] for higher-level callers.
 func Connect(fs *os.FS, cfg *Config) (*driver.DBs, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -43,7 +42,7 @@ func Connect(fs *os.FS, cfg *Config) (*driver.DBs, error) {
 	return driver.Connect("pg", fs, cfg.Config, options()...)
 }
 
-// Open opens PostgreSQL master/slave connection pools.
+// Open opens PostgreSQL writer/reader connection pools.
 //
 // Open preserves PostgreSQL's nil/disabled config semantics and then delegates
 // connection lifecycle ownership to the shared SQL driver helper.

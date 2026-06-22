@@ -13,14 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDBCheckerWithoutConnections(t *testing.T) {
-	db, errs := sql.ConnectMasterSlaves("pg", nil, nil)
-	require.Empty(t, errs)
-
-	check := checker.NewDBChecker(db, time.Second)
-	require.ErrorIs(t, check.Check(t.Context()), checker.ErrNoConnections)
-}
-
 func TestDBCheckerPingsWorldDB(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
@@ -36,15 +28,21 @@ func TestDBCheckerReturnsPingError(t *testing.T) {
 	require.Error(t, check.Check(t.Context()))
 }
 
-func TestDBCheckerPingsMastersAndSlaves(t *testing.T) {
-	db := newPingDB(t, []string{"master"}, []string{"slave"})
+func TestDBCheckerPingsWritersAndReaders(t *testing.T) {
+	db := newPingDB(t, []string{"writer"}, []string{"reader"})
 
 	check := checker.NewDBChecker(db, time.Second)
 	err := check.Check(t.Context())
-	require.ErrorIs(t, err, errMasterPing)
-	require.ErrorIs(t, err, errSlavePing)
-	require.Contains(t, err.Error(), "db master[0]")
-	require.Contains(t, err.Error(), "db slave[0]")
+	require.ErrorIs(t, err, errWriterPing)
+	require.ErrorIs(t, err, errReaderPing)
+	require.Contains(t, err.Error(), "db writer[0]")
+	require.Contains(t, err.Error(), "db reader[0]")
+}
+
+func TestDBCheckerReturnsNoConnections(t *testing.T) {
+	check := checker.NewDBChecker(&sql.DBs{}, time.Second)
+
+	require.ErrorIs(t, check.Check(t.Context()), checker.ErrNoConnections)
 }
 
 func TestDBCheckerReturnsTimeoutCause(t *testing.T) {
@@ -55,13 +53,13 @@ func TestDBCheckerReturnsTimeoutCause(t *testing.T) {
 }
 
 func TestDBCheckerReturnsTimeoutCauseWhenWaitingForConnection(t *testing.T) {
-	db := newPingDB(t, []string{"master"}, nil)
-	masters, _ := db.GetAllMasters()
-	require.Len(t, masters, 1)
+	db := newPingDB(t, []string{"writer"}, nil)
+	writers := db.Writers()
+	require.Len(t, writers, 1)
 
-	master := masters[0]
-	master.SetMaxOpenConns(1)
-	conn, err := master.Conn(t.Context())
+	writer := writers[0]
+	writer.SetMaxOpenConns(1)
+	conn, err := writer.Conn(t.Context())
 	require.NoError(t, err)
 	defer func() {
 		require.NoError(t, conn.Close())
@@ -72,15 +70,15 @@ func TestDBCheckerReturnsTimeoutCauseWhenWaitingForConnection(t *testing.T) {
 }
 
 var (
-	errMasterPing = errors.New("master ping")
-	errSlavePing  = errors.New("slave ping")
+	errWriterPing = errors.New("writer ping")
+	errReaderPing = errors.New("reader ping")
 )
 
-func newPingDB(t *testing.T, masters, slaves []string) *sql.DBs {
+func newPingDB(t *testing.T, writers, readers []string) *sql.DBs {
 	t.Helper()
 
 	driverName := registerPingDriver(t)
-	db, errs := sql.ConnectMasterSlaves(driverName, masters, slaves)
+	db, errs := sql.ConnectWritersReaders(driverName, writers, readers)
 	require.Empty(t, errs)
 	t.Cleanup(func() {
 		require.NoError(t, db.Destroy())
@@ -119,10 +117,10 @@ func (pingConn) Begin() (driver.Tx, error) {
 
 func (c pingConn) Ping(ctx context.Context) error {
 	switch c.name {
-	case "master":
-		return errMasterPing
-	case "slave":
-		return errSlavePing
+	case "writer":
+		return errWriterPing
+	case "reader":
+		return errReaderPing
 	case "timeout":
 		<-ctx.Done()
 		return context.Cause(ctx)

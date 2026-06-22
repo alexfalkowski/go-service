@@ -190,7 +190,12 @@ func upAccounts(ctx context.Context, db *sql.DBs) error {
 		created_at TIMESTAMP NOT NULL
 	);`
 
-	_, err := db.ExecContext(ctx, query)
+	writer, err := db.Writer()
+	if err != nil {
+		return err
+	}
+
+	_, err = writer.ExecContext(ctx, query)
 
 	return err
 }
@@ -201,7 +206,12 @@ func downAccounts(ctx context.Context, db *sql.DBs) error {
 
 	query := "DROP TABLE IF EXISTS accounts;"
 
-	_, err := db.ExecContext(ctx, query)
+	writer, err := db.Writer()
+	if err != nil {
+		return err
+	}
+
+	_, err = writer.ExecContext(ctx, query)
 
 	return err
 }

@@ -36,9 +36,9 @@ id:
   kind: uuid
 sql:
   pg:
-    masters:
+    writers:
       - url: file:../test/secrets/pg
-    slaves:
+    readers:
       - url: file:../test/secrets/pg
     max_open_conns: 5
     max_idle_conns: 5

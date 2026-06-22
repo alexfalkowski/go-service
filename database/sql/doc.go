@@ -10,22 +10,22 @@
 // is treated as "disabled". Driver-specific configs typically follow the same convention, and
 // constructors that depend on config often return (nil, nil) when disabled.
 //
-// # Master/slave pool wrapper
+// # Writer/reader pool wrapper
 //
-// This package also exposes the shared master/slave pool abstraction used by
+// This package also exposes the shared writer/reader pool abstraction used by
 // repository code:
-//   - [DBs], the go-service wrapper for the upstream pool collection type, and
-//   - [ConnectMasterSlaves], the go-service wrapper for opening those pools.
+//   - [DBs], the go-service writer/reader pool collection type, and
+//   - [ConnectWritersReaders], the go-service helper for opening those pools.
 //
-// This keeps internal code on a go-service import path instead of importing the
-// upstream helper package directly where the package graph allows it. The
-// wrapper embeds the upstream type so existing query/ping/pool helper methods
-// are still available, while go-service-owned cleanup remains attached to
-// [DBs.Destroy].
+// Callers choose the pool role explicitly with [DBs.Reader] or [DBs.Writer] and
+// then use standard-library [database/sql] methods on the returned pool.
 //
-// # Master/slave pools and telemetry
+// This keeps internal code on a go-service import path while go-service-owned
+// cleanup remains attached to [DBs.Destroy].
 //
-// Driver integrations typically open master/slave connection pools, configure pool limits/lifetimes,
+// # Writer/reader pools and telemetry
+//
+// Driver integrations typically open writer/reader connection pools, configure pool limits/lifetimes,
 // wrap drivers with OpenTelemetry instrumentation when tracing or metrics are enabled, and register
 // [database/sql] stats metrics when metrics are enabled.
 //

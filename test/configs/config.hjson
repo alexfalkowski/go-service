@@ -52,12 +52,12 @@
   }
   sql: {
     pg: {
-      masters: [
+      writers: [
         {
           url: "file:../test/secrets/pg"
         }
       ]
-      slaves: [
+      readers: [
         {
           url: "file:../test/secrets/pg"
         }
