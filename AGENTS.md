@@ -73,6 +73,16 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   source references, not raw passwords or credentials.
 - Nil pointer sub-configs usually mean "disabled".
 - Standard module wiring is the supported path. Do not flag hypothetical failures that require hand-wiring an incomplete DI graph unless the public API explicitly promises that custom construction mode.
+- Recommend Fx `optional:"true"` dependency tags only with concrete evidence
+  that a supported DI graph may omit that dependency. A nil check, "optional"
+  prose, or guarded hook installation is a lead, not enough by itself; verify
+  standard `module.Server`/`module.Client` wiring, CLI/server application
+  wiring, a config-disabled path, or existing supported test/user wiring where
+  the dependency can genuinely be absent. Directly composing an exported
+  lower-level module is not enough evidence unless a public contract explicitly
+  promises that module works standalone without the standard bundle. If the
+  standard module bundle always resolves the dependency and no such lower-level
+  contract exists, do not flag the missing optional tag.
 - `*os.FS` dependencies are provided by the supported DI wiring path and are
   expected to be non-nil there. Do not flag nil-`*os.FS` panics in token,
   crypto, config, or source-string loading paths based solely on manually
@@ -354,10 +364,14 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   by the runtime `Generate` and `Verify` paths. Do not flag missing startup
   warmup/validation for token key sources solely because bad, missing,
   unreadable, or malformed administrator-supplied key material can surface
-  during token issuance or verification. Report only concrete bugs such as
-  panics, accepted weak or wrong key types/sizes, secret leakage, ignored
-  documented token config validation, or a public API promise that token key
-  material is fully resolved before runtime token operations.
+  during token issuance or verification. Do not recommend duplicating runtime
+  token checks at startup merely to reject an empty or incomplete trusted key
+  set, including SSH `keys`, unless a supported config contract explicitly
+  promises that structural key usability is validated before runtime token
+  operations. Report only concrete bugs such as panics, accepted weak or wrong
+  key types/sizes, secret leakage, ignored documented token config validation,
+  or a public API promise that token key material is fully resolved before
+  runtime token operations.
 - Token tests should focus on repository-owned wrapper behavior. Do not flag or
   add tests that require hand-crafting upstream JWT/PASETO internals solely to
   prove library-owned parsing, signature, expiration, not-before, or

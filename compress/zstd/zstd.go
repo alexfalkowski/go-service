@@ -19,6 +19,9 @@ const decoderMaxMemory = bytes.MaxConfigSize
 // ErrDecoderSizeExceeded is returned by the underlying Zstandard decoder when decoded size exceeds its limit.
 var ErrDecoderSizeExceeded = zstd.ErrDecoderSizeExceeded
 
+// ErrWindowSizeExceeded is returned by the underlying Zstandard decoder when a frame window exceeds its limit.
+var ErrWindowSizeExceeded = zstd.ErrWindowSizeExceeded
+
 // NewCompressor constructs a Zstandard (zstd) compressor implementation.
 //
 // The returned value implements [github.com/alexfalkowski/go-service/v2/compress.Compressor].
@@ -55,7 +58,8 @@ func (c *Compressor) Compress(data []byte, size bytes.Size) ([]byte, error) {
 // An error is returned if data is not valid zstd-encoded content or the
 // decompressed data exceeds size. This implementation also returns
 // [github.com/alexfalkowski/go-service/v2/compress/errors.ErrTooLarge] for
-// negative limits, math.MaxInt64 limits, and zstd decoder-size limit errors.
+// negative limits, math.MaxInt64 limits, and zstd decoder size/window limit
+// errors.
 func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {
 	limit := size.Bytes()
 	if limit < 0 || limit == math.MaxInt64 {
@@ -73,7 +77,7 @@ func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {
 
 	decoded, _, err := io.ReadAll(io.LimitReader(decoder, limit+1))
 	if err != nil {
-		if errors.Is(err, ErrDecoderSizeExceeded) {
+		if errors.Is(err, ErrDecoderSizeExceeded) || errors.Is(err, ErrWindowSizeExceeded) {
 			return nil, fmt.Errorf("%w: %w", compress.ErrTooLarge, err)
 		}
 
