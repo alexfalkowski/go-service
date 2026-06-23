@@ -28,7 +28,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.10.0
-	github.com/jellydator/ttlcache/v3 v3.4.0
+	github.com/jellydator/ttlcache/v3 v3.4.1
 	github.com/klauspost/compress v1.18.6
 	github.com/lmittmann/tint v1.1.3
 	github.com/matoous/go-nanoid v1.5.1
