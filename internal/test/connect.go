@@ -22,7 +22,11 @@ func Connect(ctx context.Context, address string) (net.Conn, error) {
 		}
 
 		err = dialErr
-		time.Sleep(10 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(10 * time.Millisecond):
+		}
 	}
 
 	return nil, err
