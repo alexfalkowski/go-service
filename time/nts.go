@@ -2,6 +2,7 @@ package time
 
 import (
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/beevik/ntp"
 	"github.com/beevik/nts"
 )
 
@@ -14,8 +15,10 @@ import (
 // The address argument is passed through to the upstream NTS client implementation and is
 // typically a hostname (and possibly port) of an NTS-enabled server. If address is empty or
 // invalid, calls to Now will typically return an error.
-func NewNTSNetwork(address string) *NTSNetwork {
-	return &NTSNetwork{address: address}
+//
+// If timeout is zero, the upstream client's default timeout is used.
+func NewNTSNetwork(address string, timeout Duration) *NTSNetwork {
+	return &NTSNetwork{address: address, timeout: timeout}
 }
 
 // NTSNetwork implements Network by querying an NTS server and validating the response.
@@ -28,6 +31,7 @@ func NewNTSNetwork(address string) *NTSNetwork {
 // by the authenticated offset.
 type NTSNetwork struct {
 	address string
+	timeout Duration
 }
 
 // Now returns the current time as reported by the configured NTS server.
@@ -35,19 +39,20 @@ type NTSNetwork struct {
 // This method performs network I/O and validates the NTS response before returning.
 //
 // The algorithm is:
-//   - Establish a session ([nts.NewSession]).
-//   - Query the server (session.Query).
+//   - Establish a session ([nts.NewSessionWithOptions]).
+//   - Query the server (session.QueryWithOptions).
 //   - Validate the response (res.Validate).
 //   - Apply the server-provided clock offset to the local time.
 //
 // Any error returned by the underlying NTS library is wrapped/prefixed with "nts" for context.
 func (n *NTSNetwork) Now() (Time, error) {
-	session, err := nts.NewSession(n.address)
+	timeout := n.timeout.Duration()
+	session, err := nts.NewSessionWithOptions(n.address, &nts.SessionOptions{Timeout: timeout})
 	if err != nil {
 		return Time{}, n.prefix(err)
 	}
 
-	res, err := session.Query()
+	res, err := session.QueryWithOptions(&ntp.QueryOptions{Timeout: timeout})
 	if err != nil {
 		return Time{}, n.prefix(err)
 	}

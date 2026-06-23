@@ -30,9 +30,9 @@ func NewNetwork(cfg *Config) (Network, error) {
 
 	switch cfg.Kind {
 	case "ntp":
-		return NewNTPNetwork(cfg.Address), nil
+		return NewNTPNetwork(cfg.Address, cfg.Timeout), nil
 	case "nts":
-		return NewNTSNetwork(cfg.Address), nil
+		return NewNTSNetwork(cfg.Address, cfg.Timeout), nil
 	default:
 		return nil, ErrNotFound
 	}
