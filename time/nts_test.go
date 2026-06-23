@@ -7,7 +7,10 @@ import (
 )
 
 func TestValidNTS(t *testing.T) {
-	requireNetworkNow(t, &time.Config{Kind: "nts", Address: "time.cloudflare.com"})
+	requireAnyNetworkNow(t,
+		&time.Config{Kind: "nts", Address: "time.cloudflare.com", Timeout: 2 * time.Second},
+		&time.Config{Kind: "nts", Address: "nts.netnod.se", Timeout: 2 * time.Second},
+	)
 }
 
 func TestInvalidNTS(t *testing.T) {

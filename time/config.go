@@ -28,6 +28,11 @@ package time
 // The expected format is implementation-specific (for example a hostname or
 // pool name). If Address is empty or invalid, the provider will typically return
 // an error when Now is called.
+//
+// # Timeout
+//
+// Timeout bounds network operations performed by the selected provider. A zero
+// value uses the upstream client's default timeout.
 type Config struct {
 	// Kind selects the network time provider implementation (for example "ntp" or "nts").
 	//
@@ -39,6 +44,11 @@ type Config struct {
 	// The expected format is implementation-specific. For example, NTP may accept
 	// pool hostnames, and NTS may accept hostnames of NTS-enabled servers.
 	Address string `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
+
+	// Timeout bounds network operations performed by the selected provider.
+	//
+	// A zero value uses the upstream client's default timeout.
+	Timeout Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 }
 
 // IsEnabled reports whether network time configuration is present.
