@@ -1,0 +1,7 @@
+environment: production
+id:
+  kind: uuid
+time:
+  kind: ntp
+  address: pool.ntp.org
+  timeout: -1s
