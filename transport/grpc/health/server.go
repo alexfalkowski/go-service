@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-health/v2/watcher"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
@@ -93,7 +94,16 @@ func (s *Server) List(_ context.Context, _ *health.ListRequest) (*health.ListRes
 func (s *Server) Watch(req *health.Request, w health.WatchServer) error {
 	service := req.GetService()
 	if strings.IsEmpty(service) {
-		return s.watch(w, s.server.Watch("grpc"))
+		sub, err := s.server.Watch("grpc")
+		if err != nil {
+			if errors.Is(err, healthserver.ErrObserverNotFound) {
+				return s.sendUnknownStatus(w)
+			}
+
+			return status.SafeError(codes.Internal, err)
+		}
+
+		return s.watch(w, sub)
 	}
 
 	observer, err := s.server.Observer(service, "grpc")
