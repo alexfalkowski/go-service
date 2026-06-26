@@ -32,7 +32,7 @@ package time
 // # Timeout
 //
 // Timeout bounds network operations performed by the selected provider. A zero
-// value uses the upstream client's default timeout.
+// value uses the upstream client's default timeout. Negative values are invalid.
 type Config struct {
 	// Kind selects the network time provider implementation (for example "ntp" or "nts").
 	//
@@ -48,7 +48,8 @@ type Config struct {
 	// Timeout bounds network operations performed by the selected provider.
 	//
 	// A zero value uses the upstream client's default timeout.
-	Timeout Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
+	// Negative values are invalid.
+	Timeout Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty" validate:"gte=0"`
 }
 
 // IsEnabled reports whether network time configuration is present.

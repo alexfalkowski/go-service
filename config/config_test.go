@@ -78,6 +78,16 @@ func TestInvalidFileConfig(t *testing.T) {
 	}
 }
 
+func TestInvalidTimeTimeoutConfig(t *testing.T) {
+	set := flag.NewFlagSet("test")
+	set.AddConfig(test.FilePath("configs/invalid_time.config.yml"))
+
+	decoder := test.NewDecoder(set)
+
+	_, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.Error(t, err)
+}
+
 func TestValidEnvConfig(t *testing.T) {
 	tests := []struct {
 		name string
