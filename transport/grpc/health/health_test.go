@@ -393,6 +393,29 @@ func TestInvalidOverallWatch(t *testing.T) {
 	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
+func TestUnknownOverallWatch(t *testing.T) {
+	world := test.NewStartedWorld(t,
+		test.WithWorldGRPCHealth(test.Name.String(), test.StatusURL("200")),
+		test.WithWorldTelemetry("otlp"),
+	)
+	requireGRPCReady(t, world)
+
+	conn := test.RequireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := health.NewClient(conn)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	wc, err := client.Watch(ctx, &health.Request{})
+	require.NoError(t, err)
+
+	resp, err := wc.Recv()
+	require.NoError(t, err)
+	require.Equal(t, health.ServiceUnknown, resp.GetStatus())
+	requireWatchStaysOpenUntilCancel(t, cancel, wc)
+}
+
 func TestNotFoundWatch(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
