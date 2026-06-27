@@ -459,3 +459,9 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   because it is CI-owned; report only concrete breakage such as CI no longer
   starting the required service, waiting on the wrong port, or using a
   dependency that no longer satisfies the documented test dependency.
+- The `time` package intentionally exercises multiple live public NTP/NTS
+  providers in normal tests as smoke coverage for the network time adapters.
+  Do not flag those tests or the `make specs` CI path solely because they
+  perform internet/network time queries. Report only concrete breakage such as
+  all configured providers currently failing in CI, ignored timeouts, removed
+  provider redundancy, or a documented promise of hermetic/offline specs.
