@@ -56,7 +56,9 @@ func (c *Compressor) Compress(data []byte, size bytes.Size) ([]byte, error) {
 // Decompress returns the decompressed representation of data.
 //
 // An error is returned if data is not valid zstd-encoded content or the
-// decompressed data exceeds size. This implementation also returns
+// decompressed data exceeds size. The zstd decoder also uses the repository
+// [github.com/alexfalkowski/go-service/v2/bytes.MaxConfigSize] cap as its
+// maximum decoder memory/window limit. This implementation also returns
 // [github.com/alexfalkowski/go-service/v2/compress/errors.ErrTooLarge] for
 // negative limits, math.MaxInt64 limits, and zstd decoder size/window limit
 // errors.

@@ -22,11 +22,16 @@ import (
 // then applies pool settings (connection lifetime, max idle, and max open
 // connections).
 //
+// Like [database/sql.Open], this creates pool handles but does not ping the
+// database or verify network reachability. Call [DBs.Ping], [DBs.PingWriter],
+// [DBs.PingReader], or a health checker when startup/readiness must prove
+// connectivity.
+//
 // Preconditions:
 //   - cfg must be non-nil and already treated as enabled/validated by the caller.
 //
 // Failure behavior:
-//   - returns errors encountered while resolving DSNs or connecting,
+//   - returns errors encountered while resolving DSNs or creating pool handles,
 //   - returns [ErrEmptyDSN] when any configured DSN source resolves to empty bytes, and
 //   - returns [ErrNoDSNs] when neither writers nor readers are configured.
 //
@@ -67,6 +72,8 @@ func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config, opts ...t
 // previously registered driver name.
 //
 // It is a low-level helper for callers that already have resolved literal DSNs.
+// It creates pool handles with [database/sql.Open] and does not ping the
+// databases.
 func ConnectWritersReaders(name string, writerDSNs, readerDSNs []string) (*DBs, []error) {
 	if len(writerDSNs)+len(readerDSNs) == 0 {
 		return nil, []error{ErrNoDSNs}

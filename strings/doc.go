@@ -28,9 +28,8 @@
 //     strings it returns [Empty]. Concat concatenates without a separator.
 //
 //   - [CutColon]: a small helper that splits on the first ":" using [strings.Cut],
-//     returning the part before and after. If ":" is not present, "before" is
-//     the original input and "after" is empty. Callers that need the found flag
-//     should use [Cut] with ":" directly.
+//     returning the part before, the part after, and whether ":" was found. If
+//     ":" is not present, "before" is the original input and "after" is empty.
 //
 //   - [ToSnake] / [ToLowerCamel] / [ToDelimited]: common string case conversion
 //     helpers delegated to strcase.

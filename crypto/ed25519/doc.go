@@ -18,6 +18,6 @@
 //
 // If the decoded key material is valid but not Ed25519, key parsing helpers
 // return [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType] instead of panicking. Callers can use
-// [errors.Is](err, crypto.ErrInvalidKeyType) to detect that case while still
-// receiving wrapped context about the actual decoded type.
+// [errors.Is] with [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType] to detect that case while
+// still receiving wrapped context about the actual decoded type.
 package ed25519

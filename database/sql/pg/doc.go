@@ -17,10 +17,15 @@
 // # Writer/reader pools
 //
 // [Open] resolves writer and replica DSNs from configuration (DSNs are
-// expressed as go-service "source strings"), connects using the shared
-// writer/reader pool abstraction used by the repository, applies pool settings
-// (max lifetime/open/idle), and registers OpenTelemetry DB stats metrics when
-// metrics are enabled.
+// expressed as go-service "source strings"), creates pool handles using the
+// shared writer/reader pool abstraction used by the repository, applies pool
+// settings (max lifetime/open/idle), and registers OpenTelemetry DB stats
+// metrics when metrics are enabled.
+//
+// Pool creation follows the [database/sql.Open] contract and does not ping the
+// database or prove network reachability. Use the returned DBs Ping helpers or
+// [github.com/alexfalkowski/go-service/v2/health/checker.NewDBChecker] when
+// startup/readiness should verify connectivity.
 //
 // The package returns [github.com/alexfalkowski/go-service/v2/database/sql/driver.DBs], which is aliased by the root
 // [github.com/alexfalkowski/go-service/v2/database/sql] package as [github.com/alexfalkowski/go-service/v2/database/sql.DBs].
