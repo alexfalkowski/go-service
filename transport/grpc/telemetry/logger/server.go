@@ -12,7 +12,7 @@ import (
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that logs the RPC outcome.
 //
-// Operation RPC methods (health/metrics/etc.) bypass logging (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
+// Standard gRPC health methods bypass logging (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -54,7 +54,7 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that logs the RPC outcome.
 //
-// Operation RPC methods (health/metrics/etc.) bypass logging (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
+// Standard gRPC health methods bypass logging (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
 //
 // Logged attributes include:
 //   - system: "grpc"

@@ -28,9 +28,13 @@ func Register() {
 // Enabled behavior: Connect delegates to the shared SQL driver helper to:
 //   - resolve writer and replica DSNs (expressed as go-service "source strings"),
 //   - require at least one non-empty writer or replica DSN,
-//   - connect using the previously registered driver name "pg",
+//   - create pool handles using the previously registered driver name "pg",
 //   - register OpenTelemetry DB stats metrics when metrics are enabled, and
 //   - apply connection pool limits/lifetime.
+//
+// Pool creation follows the database/sql Open contract and does not ping the
+// database or verify network reachability. Call the returned DBs Ping helpers or
+// register a DB health checker when readiness must prove connectivity.
 //
 // The returned type is aliased by the root [github.com/alexfalkowski/go-service/v2/database/sql] package as
 // [github.com/alexfalkowski/go-service/v2/database/sql.DBs] for higher-level callers.

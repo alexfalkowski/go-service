@@ -35,7 +35,7 @@ type Server struct {
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
 //
-// Operation unary RPC methods (health/metrics/etc.) bypass limiting (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
+// Standard gRPC health unary methods bypass limiting (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
 // Stream RPCs do not bypass limiting because long-lived streams, such as health Watch, can hold server resources
 // until the client disconnects.
 //
