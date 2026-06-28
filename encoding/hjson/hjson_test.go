@@ -11,6 +11,8 @@ import (
 )
 
 func TestEncode(t *testing.T) {
+	t.Parallel()
+
 	encoder := hjson.NewEncoder()
 	buf := &bytes.Buffer{}
 
@@ -19,6 +21,8 @@ func TestEncode(t *testing.T) {
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	data, err := hjson.Marshal(&message{Test: "test"})
 	require.NoError(t, err)
 	require.Contains(t, string(data), "test")
@@ -29,12 +33,16 @@ func TestMarshalUnmarshal(t *testing.T) {
 }
 
 func TestMarshalReturnsError(t *testing.T) {
+	t.Parallel()
+
 	_, err := hjson.Marshal(func() {})
 
 	require.Error(t, err)
 }
 
 func TestEncodeReturnsError(t *testing.T) {
+	t.Parallel()
+
 	encoder := hjson.NewEncoder()
 	buf := &bytes.Buffer{}
 
@@ -42,12 +50,16 @@ func TestEncodeReturnsError(t *testing.T) {
 }
 
 func TestEncodeReturnsWriteError(t *testing.T) {
+	t.Parallel()
+
 	encoder := hjson.NewEncoder()
 
 	require.ErrorIs(t, encoder.Encode(test.ErrWriter{}, &message{Test: "test"}), test.ErrFailed)
 }
 
 func TestDecode(t *testing.T) {
+	t.Parallel()
+
 	encoder := hjson.NewEncoder()
 	msg := &message{}
 
@@ -56,6 +68,8 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecodeRejectsUnknownFields(t *testing.T) {
+	t.Parallel()
+
 	encoder := hjson.NewEncoder()
 	msg := &message{}
 
@@ -66,6 +80,8 @@ func TestDecodeRejectsUnknownFields(t *testing.T) {
 }
 
 func TestDecodeReturnsReadError(t *testing.T) {
+	t.Parallel()
+
 	encoder := hjson.NewEncoder()
 	msg := &message{}
 
@@ -73,6 +89,8 @@ func TestDecodeReturnsReadError(t *testing.T) {
 }
 
 func TestDecodeRejectsDuplicateKeys(t *testing.T) {
+	t.Parallel()
+
 	encoder := hjson.NewEncoder()
 	msg := &message{}
 
@@ -82,6 +100,8 @@ func TestDecodeRejectsDuplicateKeys(t *testing.T) {
 }
 
 func TestUnmarshalRejectsDuplicateKeys(t *testing.T) {
+	t.Parallel()
+
 	msg := &message{}
 
 	err := hjson.Unmarshal([]byte("{\n  test: first\n  test: second\n}\n"), msg)

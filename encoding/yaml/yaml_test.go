@@ -12,6 +12,8 @@ import (
 )
 
 func TestEncode(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -23,6 +25,8 @@ func TestEncode(t *testing.T) {
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	msg := map[string]string{"test": "test"}
 
 	data, err := yaml.Marshal(msg)
@@ -35,18 +39,24 @@ func TestMarshalUnmarshal(t *testing.T) {
 }
 
 func TestMarshalReturnsError(t *testing.T) {
+	t.Parallel()
+
 	_, err := yaml.Marshal(marshalError{})
 
 	require.ErrorIs(t, err, test.ErrFailed)
 }
 
 func TestEncodeReturnsError(t *testing.T) {
+	t.Parallel()
+
 	encoder := yaml.NewEncoder()
 
 	require.Error(t, encoder.Encode(test.ErrWriter{}, map[string]string{"test": "test"}))
 }
 
 func TestDecode(t *testing.T) {
+	t.Parallel()
+
 	encoder := yaml.NewEncoder()
 	var msg map[string]string
 
@@ -55,6 +65,8 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecodeRejectsUnknownFields(t *testing.T) {
+	t.Parallel()
+
 	encoder := yaml.NewEncoder()
 	msg := &message{}
 
@@ -65,11 +77,15 @@ func TestDecodeRejectsUnknownFields(t *testing.T) {
 }
 
 func TestDecodeRejectsTrailingDocument(t *testing.T) {
+	t.Parallel()
+
 	for _, input := range []string{
 		"test: test\n---\ntest: other",
 		"test: test\n---\n: invalid",
 	} {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
+
 			encoder := yaml.NewEncoder()
 			var msg map[string]string
 
@@ -81,6 +97,8 @@ func TestDecodeRejectsTrailingDocument(t *testing.T) {
 }
 
 func TestUnmarshalRejectsTrailingDocument(t *testing.T) {
+	t.Parallel()
+
 	var msg map[string]string
 
 	err := yaml.Unmarshal([]byte("test: test\n---\ntest: other"), &msg)

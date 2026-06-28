@@ -8,6 +8,8 @@ import (
 )
 
 func TestSplitPath(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name  string
 		path  string
@@ -27,6 +29,8 @@ func TestSplitPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			first, rest, ok := url.SplitPath(tt.path)
 			require.Equal(t, tt.first, first)
 			require.Equal(t, tt.rest, rest)

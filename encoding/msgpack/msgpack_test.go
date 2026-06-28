@@ -10,6 +10,8 @@ import (
 )
 
 func TestEncodeDecode(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -24,6 +26,8 @@ func TestEncodeDecode(t *testing.T) {
 }
 
 func TestEncodeReturnsError(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -33,6 +37,8 @@ func TestEncodeReturnsError(t *testing.T) {
 }
 
 func TestDecodeReturnsError(t *testing.T) {
+	t.Parallel()
+
 	encoder := msgpack.NewEncoder()
 
 	var actual map[string]string
@@ -40,6 +46,8 @@ func TestDecodeReturnsError(t *testing.T) {
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	msg := map[string]string{"test": "test"}
 
 	data, err := msgpack.Marshal(msg)
@@ -51,12 +59,16 @@ func TestMarshalUnmarshal(t *testing.T) {
 }
 
 func TestMarshalReturnsError(t *testing.T) {
+	t.Parallel()
+
 	_, err := msgpack.Marshal(func() {})
 
 	require.Error(t, err)
 }
 
 func TestDecodeRejectsTrailingValue(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -71,6 +83,8 @@ func TestDecodeRejectsTrailingValue(t *testing.T) {
 }
 
 func TestDecodeRejectsMalformedTrailingData(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -86,6 +100,8 @@ func TestDecodeRejectsMalformedTrailingData(t *testing.T) {
 }
 
 func TestUnmarshalRejectsTrailingValue(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -100,6 +116,8 @@ func TestUnmarshalRejectsTrailingValue(t *testing.T) {
 }
 
 func TestUnmarshalRejectsLargeTrailingHeader(t *testing.T) {
+	t.Parallel()
+
 	data, err := msgpack.Marshal(map[string]string{"test": "test"})
 	require.NoError(t, err)
 	data = append(data, 0xdd, 0xff, 0xff, 0xff, 0xff)
@@ -111,12 +129,16 @@ func TestUnmarshalRejectsLargeTrailingHeader(t *testing.T) {
 }
 
 func TestUnmarshalReturnsDecodeError(t *testing.T) {
+	t.Parallel()
+
 	var actual map[string]string
 
 	require.Error(t, msgpack.Unmarshal([]byte("junk"), &actual))
 }
 
 func TestUnmarshalRejectsMalformedTrailingData(t *testing.T) {
+	t.Parallel()
+
 	data, err := msgpack.Marshal(map[string]string{"test": "test"})
 	require.NoError(t, err)
 	data = append(data, []byte("junk")...)

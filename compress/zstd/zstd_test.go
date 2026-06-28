@@ -13,6 +13,8 @@ import (
 )
 
 func TestCompressor(t *testing.T) {
+	t.Parallel()
+
 	cmp := zstd.NewCompressor()
 	data := strings.Bytes("hello")
 	size := bytes.Size(len(data))
@@ -26,6 +28,8 @@ func TestCompressor(t *testing.T) {
 }
 
 func TestCompressRejectsTooLarge(t *testing.T) {
+	t.Parallel()
+
 	cmp := zstd.NewCompressor()
 
 	_, err := cmp.Compress(strings.Bytes("hello"), 4)
@@ -33,6 +37,8 @@ func TestCompressRejectsTooLarge(t *testing.T) {
 }
 
 func TestDecompressRejectsTooLarge(t *testing.T) {
+	t.Parallel()
+
 	cmp := zstd.NewCompressor()
 	data := strings.Bytes("hello")
 	compressed, err := cmp.Compress(data, bytes.KB)
@@ -43,6 +49,8 @@ func TestDecompressRejectsTooLarge(t *testing.T) {
 }
 
 func TestDecompressRejectsInvalidData(t *testing.T) {
+	t.Parallel()
+
 	cmp := zstd.NewCompressor()
 
 	_, err := cmp.Decompress(strings.Bytes("invalid"), bytes.KB)
@@ -51,6 +59,8 @@ func TestDecompressRejectsInvalidData(t *testing.T) {
 }
 
 func TestDecompressPreservesDecoderSizeError(t *testing.T) {
+	t.Parallel()
+
 	cmp := zstd.NewCompressor()
 
 	data := make([]byte, zstd.MinWindowSize+1)
@@ -63,6 +73,8 @@ func TestDecompressPreservesDecoderSizeError(t *testing.T) {
 }
 
 func TestDecompressAllowsWindowLargerThanOutputLimit(t *testing.T) {
+	t.Parallel()
+
 	cmp := zstd.NewCompressor()
 	data := make([]byte, 64<<10)
 	encoder, err := compress.NewWriter(nil, compress.WithWindowSize(128<<10), compress.WithSingleSegment(false))
@@ -76,6 +88,8 @@ func TestDecompressAllowsWindowLargerThanOutputLimit(t *testing.T) {
 }
 
 func TestDecompressRejectsInvalidLimits(t *testing.T) {
+	t.Parallel()
+
 	cmp := zstd.NewCompressor()
 	data := strings.Bytes("hello")
 	encoded, err := cmp.Compress(data, bytes.KB)
@@ -89,6 +103,8 @@ func TestDecompressRejectsInvalidLimits(t *testing.T) {
 		{name: "max int64", size: math.MaxInt64},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			decoded, err := cmp.Decompress(encoded, tt.size)
 			require.ErrorIs(t, err, errors.ErrTooLarge)
 			require.Nil(t, decoded)

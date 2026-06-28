@@ -13,6 +13,8 @@ import (
 )
 
 func TestEncoder(t *testing.T) {
+	t.Parallel()
+
 	encoder := encoding.NewEncoder()
 
 	buffer := test.Pool.Get()
@@ -34,6 +36,8 @@ func TestEncoder(t *testing.T) {
 }
 
 func TestDecodeResetsDestination(t *testing.T) {
+	t.Parallel()
+
 	encoder := encoding.NewEncoder()
 
 	buffer := test.Pool.Get()
@@ -46,6 +50,8 @@ func TestDecodeResetsDestination(t *testing.T) {
 }
 
 func TestInvalidTypedNilEncode(t *testing.T) {
+	t.Parallel()
+
 	encoder := encoding.NewEncoder()
 
 	err := encoder.Encode(io.Discard, (*bytes.Buffer)(nil))
@@ -53,18 +59,24 @@ func TestInvalidTypedNilEncode(t *testing.T) {
 }
 
 func TestEncodeReturnsWriteToError(t *testing.T) {
+	t.Parallel()
+
 	encoder := encoding.NewEncoder()
 
 	require.ErrorIs(t, encoder.Encode(io.Discard, test.ErrWriterTo{}), test.ErrFailed)
 }
 
 func TestDecodeReturnsReadFromError(t *testing.T) {
+	t.Parallel()
+
 	encoder := encoding.NewEncoder()
 
 	require.ErrorIs(t, encoder.Decode(bytes.NewBufferString("test"), errReaderFrom{}), test.ErrFailed)
 }
 
 func TestInvalidTypedNilDecode(t *testing.T) {
+	t.Parallel()
+
 	encoder := encoding.NewEncoder()
 
 	err := encoder.Decode(bytes.NewBufferString("test"), (*bytes.Buffer)(nil))

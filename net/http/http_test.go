@@ -17,6 +17,8 @@ import (
 )
 
 func TestMaxBytesHandler(t *testing.T) {
+	t.Parallel()
+
 	handler := http.MaxBytesHandler(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		_, _, err := io.ReadAll(req.Body)
 		var maxBytesError *http.MaxBytesError
@@ -34,10 +36,14 @@ func TestMaxBytesHandler(t *testing.T) {
 }
 
 func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
+	t.Parallel()
+
 	handler := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
 
 	for _, key := range []string{"read_timeout", "write_timeout", "idle_timeout", "read_header_timeout"} {
 		t.Run(key, func(t *testing.T) {
+			t.Parallel()
+
 			require.Panics(t, func() {
 				http.NewServer(options.Map{key: "-1s"}, time.Second, handler)
 			})
@@ -46,6 +52,8 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 }
 
 func TestProtocols(t *testing.T) {
+	t.Parallel()
+
 	protocols := http.Protocols()
 
 	require.True(t, protocols.HTTP1())
@@ -54,6 +62,8 @@ func TestProtocols(t *testing.T) {
 }
 
 func TestParseTime(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now().UTC()
 	value := now.Format(http.TimeFormat)
 
@@ -64,6 +74,8 @@ func TestParseTime(t *testing.T) {
 }
 
 func TestTransport(t *testing.T) {
+	t.Parallel()
+
 	cfg := &tls.Config{}
 
 	transport := http.Transport(cfg)
@@ -85,6 +97,8 @@ func TestTransport(t *testing.T) {
 }
 
 func TestNewServerSetsProtocols(t *testing.T) {
+	t.Parallel()
+
 	handler := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
 
 	server := http.NewServer(options.Map{}, time.Second, handler)
@@ -96,6 +110,8 @@ func TestNewServerSetsProtocols(t *testing.T) {
 }
 
 func TestSameOriginRedirect(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		want error
 		name string
@@ -114,6 +130,8 @@ func TestSameOriginRedirect(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			next, err := http.NewRequestWithContext(t.Context(), http.MethodGet, tt.next, http.NoBody)
 			require.NoError(t, err)
 			err = http.SameOriginRedirect(next, []*http.Request{prev})
@@ -128,6 +146,8 @@ func TestSameOriginRedirect(t *testing.T) {
 }
 
 func TestSameOrigin(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		prev string
@@ -145,6 +165,8 @@ func TestSameOrigin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			prev, err := url.Parse(tt.prev)
 			require.NoError(t, err)
 
@@ -166,6 +188,8 @@ func TestSameOrigin(t *testing.T) {
 }
 
 func TestIsCrossOriginRedirect(t *testing.T) {
+	t.Parallel()
+
 	prev, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/start", http.NoBody)
 	require.NoError(t, err)
 
@@ -184,6 +208,8 @@ func TestIsCrossOriginRedirect(t *testing.T) {
 }
 
 func TestClosingRoundTripperClosesBodyWhenRequested(t *testing.T) {
+	t.Parallel()
+
 	rt := http.ClosingRoundTripper(func(*http.Request) (*http.Response, error, bool) {
 		return nil, io.ErrUnexpectedEOF, true
 	})
@@ -198,6 +224,8 @@ func TestClosingRoundTripperClosesBodyWhenRequested(t *testing.T) {
 }
 
 func TestClosingRoundTripperLeavesDelegatedBodyOpen(t *testing.T) {
+	t.Parallel()
+
 	rt := http.ClosingRoundTripper(func(*http.Request) (*http.Response, error, bool) {
 		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil, false
 	})
@@ -212,11 +240,15 @@ func TestClosingRoundTripperLeavesDelegatedBodyOpen(t *testing.T) {
 }
 
 func TestIgnoreRedirect(t *testing.T) {
+	t.Parallel()
+
 	err := http.IgnoreRedirect(nil, nil)
 	require.ErrorIs(t, err, http.ErrUseLastResponse)
 }
 
 func TestParseServiceMethod(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		url     string
@@ -232,6 +264,8 @@ func TestParseServiceMethod(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			req := httptest.NewRequestWithContext(t.Context(), test.method, test.url, http.NoBody)
 			service, action := http.ParseServiceMethod(req)
 			require.Equal(t, test.service, service)

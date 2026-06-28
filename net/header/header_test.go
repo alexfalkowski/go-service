@@ -9,12 +9,16 @@ import (
 )
 
 func TestValidParseBearer(t *testing.T) {
+	t.Parallel()
+
 	value, err := header.ParseBearer("Bearer token")
 	require.NoError(t, err)
 	require.Equal(t, "token", value)
 }
 
 func TestForwardedIPs(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, [...]header.ForwardedIP{
 		{HTTP: "X-Real-Ip", GRPC: "x-real-ip"},
 		{HTTP: "CF-Connecting-Ip", GRPC: "cf-connecting-ip"},
@@ -24,17 +28,23 @@ func TestForwardedIPs(t *testing.T) {
 }
 
 func TestValidParseBearerWithLowercaseScheme(t *testing.T) {
+	t.Parallel()
+
 	value, err := header.ParseBearer("bearer token")
 	require.NoError(t, err)
 	require.Equal(t, "token", value)
 }
 
 func TestMissingParseBearer(t *testing.T) {
+	t.Parallel()
+
 	_, err := header.ParseBearer(strings.Empty)
 	require.ErrorIs(t, err, header.ErrInvalidAuthorization)
 }
 
 func TestParseBearerRejectsEmptyToken(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		header string
 		name   string
@@ -45,6 +55,8 @@ func TestParseBearerRejectsEmptyToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			_, err := header.ParseBearer(tt.header)
 			require.ErrorIs(t, err, header.ErrInvalidAuthorization)
 		})
@@ -52,11 +64,15 @@ func TestParseBearerRejectsEmptyToken(t *testing.T) {
 }
 
 func TestNotSupportedParseBearer(t *testing.T) {
+	t.Parallel()
+
 	_, err := header.ParseBearer("Bob token")
 	require.ErrorIs(t, err, header.ErrNotSupportedAuthorization)
 }
 
 func TestParseBearerRejectsBasic(t *testing.T) {
+	t.Parallel()
+
 	_, err := header.ParseBearer("Basic token")
 	require.ErrorIs(t, err, header.ErrNotSupportedAuthorization)
 }

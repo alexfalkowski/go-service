@@ -11,6 +11,8 @@ import (
 )
 
 func TestCompressorReturnsDataUnchanged(t *testing.T) {
+	t.Parallel()
+
 	cmp := none.NewCompressor()
 	data := strings.Bytes("hello")
 
@@ -24,6 +26,8 @@ func TestCompressorReturnsDataUnchanged(t *testing.T) {
 }
 
 func TestCompressRejectsTooLarge(t *testing.T) {
+	t.Parallel()
+
 	cmp := none.NewCompressor()
 
 	_, err := cmp.Compress(strings.Bytes("hello"), 4)
@@ -31,6 +35,8 @@ func TestCompressRejectsTooLarge(t *testing.T) {
 }
 
 func TestDecompressRejectsTooLarge(t *testing.T) {
+	t.Parallel()
+
 	cmp := none.NewCompressor()
 
 	_, err := cmp.Decompress(strings.Bytes("hello"), 4)

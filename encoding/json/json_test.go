@@ -11,6 +11,8 @@ import (
 )
 
 func TestEncode(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -22,6 +24,8 @@ func TestEncode(t *testing.T) {
 }
 
 func TestEncodeReturnsError(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -31,6 +35,8 @@ func TestEncodeReturnsError(t *testing.T) {
 }
 
 func TestDecode(t *testing.T) {
+	t.Parallel()
+
 	encoder := json.NewEncoder()
 	var msg map[string]string
 
@@ -39,6 +45,8 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecodeAcceptsTrailingWhitespace(t *testing.T) {
+	t.Parallel()
+
 	encoder := json.NewEncoder()
 	var msg map[string]string
 
@@ -47,6 +55,8 @@ func TestDecodeAcceptsTrailingWhitespace(t *testing.T) {
 }
 
 func TestDecodeRejectsUnknownFields(t *testing.T) {
+	t.Parallel()
+
 	encoder := json.NewEncoder()
 	msg := &message{}
 
@@ -57,11 +67,15 @@ func TestDecodeRejectsUnknownFields(t *testing.T) {
 }
 
 func TestDecodeRejectsTrailingData(t *testing.T) {
+	t.Parallel()
+
 	for _, input := range []string{
 		`{"test":"test"} garbage`,
 		`{"test":"test"}{"test":"other"}`,
 	} {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
+
 			encoder := json.NewEncoder()
 			var msg map[string]string
 
@@ -73,6 +87,8 @@ func TestDecodeRejectsTrailingData(t *testing.T) {
 }
 
 func TestMarshal(t *testing.T) {
+	t.Parallel()
+
 	msg := map[string]string{"test": "test"}
 
 	data, err := json.Marshal(msg)
@@ -82,12 +98,16 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestMarshalReturnsError(t *testing.T) {
+	t.Parallel()
+
 	_, err := json.Marshal(func() {})
 
 	require.Error(t, err)
 }
 
 func TestUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	var msg map[string]string
 
 	require.NoError(t, json.Unmarshal([]byte("{\"test\":\"test\"}"), &msg))
@@ -95,6 +115,8 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func TestUnmarshalRejectsTrailingData(t *testing.T) {
+	t.Parallel()
+
 	var msg map[string]string
 
 	err := json.Unmarshal([]byte("{\"test\":\"test\"}{\"extra\":\"value\"}"), &msg)

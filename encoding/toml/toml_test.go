@@ -11,6 +11,8 @@ import (
 )
 
 func TestEncode(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -22,6 +24,8 @@ func TestEncode(t *testing.T) {
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	msg := map[string]string{"test": "test"}
 
 	data, err := toml.Marshal(msg)
@@ -34,12 +38,16 @@ func TestMarshalUnmarshal(t *testing.T) {
 }
 
 func TestMarshalReturnsError(t *testing.T) {
+	t.Parallel()
+
 	_, err := toml.Marshal(func() {})
 
 	require.Error(t, err)
 }
 
 func TestEncodeReturnsError(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -49,6 +57,8 @@ func TestEncodeReturnsError(t *testing.T) {
 }
 
 func TestDecode(t *testing.T) {
+	t.Parallel()
+
 	encoder := toml.NewEncoder()
 	var msg map[string]string
 
@@ -57,6 +67,8 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecodeRejectsUndecodedMetadata(t *testing.T) {
+	t.Parallel()
+
 	encoder := toml.NewEncoder()
 	msg := &message{}
 

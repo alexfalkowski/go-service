@@ -9,6 +9,8 @@ import (
 )
 
 func TestEncodeUsesStandardPaddedBase64(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		expected string
 		name     string
@@ -23,12 +25,16 @@ func TestEncodeUsesStandardPaddedBase64(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, tt.expected, base64.Encode(tt.src))
 		})
 	}
 }
 
 func TestDecodeUsesStandardPaddedBase64(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		encoded  string
@@ -43,6 +49,8 @@ func TestDecodeUsesStandardPaddedBase64(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual, err := base64.Decode(tt.encoded)
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, actual)
@@ -51,6 +59,8 @@ func TestDecodeUsesStandardPaddedBase64(t *testing.T) {
 }
 
 func TestEncodedLenUsesStandardPadding(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		size     bytes.Size
@@ -65,6 +75,8 @@ func TestEncodedLenUsesStandardPadding(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, tt.expected, base64.EncodedLen(tt.size))
 		})
 	}

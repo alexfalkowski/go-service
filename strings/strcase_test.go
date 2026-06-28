@@ -8,6 +8,8 @@ import (
 )
 
 func TestCaseConversion(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		convert func() string
 		name    string
@@ -20,6 +22,8 @@ func TestCaseConversion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, test.want, test.convert())
 		})
 	}

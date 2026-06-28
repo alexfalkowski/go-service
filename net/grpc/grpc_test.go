@@ -11,10 +11,14 @@ import (
 )
 
 func TestStatusText(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, codes.Unauthenticated.String(), grpc.StatusText(codes.Unauthenticated))
 }
 
 func TestParseServiceMethod(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		full    string
@@ -29,6 +33,8 @@ func TestParseServiceMethod(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			service, method := grpc.ParseServiceMethod(test.full)
 			require.Equal(t, test.service, service)
 			require.Equal(t, test.method, method)
@@ -37,10 +43,14 @@ func TestParseServiceMethod(t *testing.T) {
 }
 
 func TestSetTrailer(t *testing.T) {
+	t.Parallel()
+
 	require.NoError(t, grpc.SetTrailer(t.Context(), nil))
 }
 
 func TestNewServerWithAdvancedOptions(t *testing.T) {
+	t.Parallel()
+
 	opts := options.Map{
 		"max_concurrent_streams":   "7",
 		"connection_timeout":       "250ms",
@@ -57,6 +67,8 @@ func TestNewServerWithAdvancedOptions(t *testing.T) {
 }
 
 func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
+	t.Parallel()
+
 	keys := []string{
 		"keepalive_enforcement_policy_ping_min_time",
 		"keepalive_max_connection_idle",
@@ -68,6 +80,8 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 
 	for _, key := range keys {
 		t.Run(key, func(t *testing.T) {
+			t.Parallel()
+
 			require.Panics(t, func() {
 				grpc.NewServer(options.Map{key: "-1s"}, time.Second)
 			})
@@ -76,6 +90,8 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 }
 
 func TestNewServerWithOverflowingAdvancedOptions(t *testing.T) {
+	t.Parallel()
+
 	require.Panics(t, func() {
 		grpc.NewServer(options.Map{"initial_window_size": "3GB"}, time.Second)
 	})

@@ -9,14 +9,20 @@ import (
 )
 
 func TestMustParseDuration(t *testing.T) {
+	t.Parallel()
+
 	require.Panics(t, func() { time.MustParseDuration("test") })
 }
 
 func TestDefaultTimeout(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, 30*time.Second, time.DefaultTimeout)
 }
 
 func TestDurationTextRoundTrip(t *testing.T) {
+	t.Parallel()
+
 	duration := 5*time.Second + 250*time.Millisecond
 
 	text, err := duration.MarshalText()
@@ -29,6 +35,8 @@ func TestDurationTextRoundTrip(t *testing.T) {
 }
 
 func TestDurationJSONRoundTrip(t *testing.T) {
+	t.Parallel()
+
 	duration := 3*time.Minute + 15*time.Second
 
 	data, err := json.Marshal(duration)
@@ -41,6 +49,8 @@ func TestDurationJSONRoundTrip(t *testing.T) {
 }
 
 func TestDurationUnmarshalTextInvalid(t *testing.T) {
+	t.Parallel()
+
 	var duration time.Duration
 
 	err := duration.UnmarshalText([]byte("not-a-duration"))
@@ -48,6 +58,8 @@ func TestDurationUnmarshalTextInvalid(t *testing.T) {
 }
 
 func TestDurationUnmarshalJSONInvalid(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name  string
 		input string
@@ -61,6 +73,8 @@ func TestDurationUnmarshalJSONInvalid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			var duration time.Duration
 
 			err := json.Unmarshal([]byte(tt.input), &duration)
@@ -70,6 +84,8 @@ func TestDurationUnmarshalJSONInvalid(t *testing.T) {
 }
 
 func TestDurationZeroValueEncoding(t *testing.T) {
+	t.Parallel()
+
 	var duration time.Duration
 
 	text, err := duration.MarshalText()

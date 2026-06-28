@@ -8,16 +8,22 @@ import (
 )
 
 func TestParseInvalidMediaType(t *testing.T) {
+	t.Parallel()
+
 	_, err := media.Parse("json")
 	require.ErrorIs(t, err, media.ErrInvalidType)
 }
 
 func TestParseInvalidMediaTypeParameter(t *testing.T) {
+	t.Parallel()
+
 	_, err := media.Parse("text/plain; charset")
 	require.ErrorIs(t, err, media.ErrInvalidType)
 }
 
 func TestParseNormalizesMediaTypeCase(t *testing.T) {
+	t.Parallel()
+
 	mediaType, err := media.Parse("Application/YAML; profile=test")
 
 	require.NoError(t, err)
@@ -27,6 +33,8 @@ func TestParseNormalizesMediaTypeCase(t *testing.T) {
 }
 
 func TestParseStripsVendorSubtypePrefix(t *testing.T) {
+	t.Parallel()
+
 	mediaType, err := media.Parse(media.MessagePack)
 
 	require.NoError(t, err)
@@ -35,6 +43,8 @@ func TestParseStripsVendorSubtypePrefix(t *testing.T) {
 }
 
 func TestTypeWithUTF8(t *testing.T) {
+	t.Parallel()
+
 	mediaType, err := media.Parse("TEXT/PLAIN; Charset=utf-8")
 
 	require.NoError(t, err)
@@ -42,10 +52,14 @@ func TestTypeWithUTF8(t *testing.T) {
 }
 
 func TestTypeByExtension(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, "image/svg+xml", media.TypeByExtension(".svg"))
 }
 
 func TestTypeWithUTF8Values(t *testing.T) {
+	t.Parallel()
+
 	for _, tc := range []struct {
 		name      string
 		mediaType string
@@ -60,6 +74,8 @@ func TestTypeWithUTF8Values(t *testing.T) {
 		{name: "msgpack", mediaType: media.MessagePack, expected: media.MessagePack},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			mediaType, err := media.Parse(tc.mediaType)
 
 			require.NoError(t, err)
