@@ -10,6 +10,8 @@ import (
 )
 
 func TestEncodeDecode(t *testing.T) {
+	t.Parallel()
+
 	encoder := gob.NewEncoder()
 
 	buffer := test.Pool.Get()
@@ -23,6 +25,8 @@ func TestEncodeDecode(t *testing.T) {
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	msg := map[string]string{"test": "test"}
 
 	data, err := gob.Marshal(msg)
@@ -34,12 +38,16 @@ func TestMarshalUnmarshal(t *testing.T) {
 }
 
 func TestMarshalReturnsError(t *testing.T) {
+	t.Parallel()
+
 	_, err := gob.Marshal(func() {})
 
 	require.Error(t, err)
 }
 
 func TestEncodeReturnsError(t *testing.T) {
+	t.Parallel()
+
 	encoder := gob.NewEncoder()
 
 	buffer := test.Pool.Get()
@@ -49,6 +57,8 @@ func TestEncodeReturnsError(t *testing.T) {
 }
 
 func TestDecodeReturnsError(t *testing.T) {
+	t.Parallel()
+
 	encoder := gob.NewEncoder()
 
 	var msg map[string]string
@@ -56,6 +66,8 @@ func TestDecodeReturnsError(t *testing.T) {
 }
 
 func TestDecodeRejectsTrailingValue(t *testing.T) {
+	t.Parallel()
+
 	encoder := gob.NewEncoder()
 
 	buffer := test.Pool.Get()
@@ -71,6 +83,8 @@ func TestDecodeRejectsTrailingValue(t *testing.T) {
 }
 
 func TestUnmarshalRejectsTrailingValue(t *testing.T) {
+	t.Parallel()
+
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 
@@ -84,6 +98,8 @@ func TestUnmarshalRejectsTrailingValue(t *testing.T) {
 }
 
 func TestDecodeRejectsMalformedTrailingData(t *testing.T) {
+	t.Parallel()
+
 	encoder := gob.NewEncoder()
 
 	buffer := test.Pool.Get()

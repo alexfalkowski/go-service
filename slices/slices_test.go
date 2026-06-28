@@ -10,6 +10,8 @@ import (
 )
 
 func TestAppendEmpty(t *testing.T) {
+	t.Parallel()
+
 	var writer *test.ErrWriter
 	var elem io.Writer = writer
 	var nilSlice []string
@@ -27,12 +29,16 @@ func TestAppendEmpty(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Empty(t, test.append())
 		})
 	}
 }
 
 func TestAppendNotZero(t *testing.T) {
+	t.Parallel()
+
 	integer := 2
 
 	tests := []struct {
@@ -48,12 +54,16 @@ func TestAppendNotZero(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.NotEmpty(t, test.append())
 		})
 	}
 }
 
 func TestBackward(t *testing.T) {
+	t.Parallel()
+
 	values := []string{}
 	for _, value := range slices.Backward([]string{"first", "second"}) {
 		values = append(values, value)
@@ -63,6 +73,8 @@ func TestBackward(t *testing.T) {
 }
 
 func TestElemFunc(t *testing.T) {
+	t.Parallel()
+
 	elems := []*string{new("test")}
 
 	tests := []struct {
@@ -76,6 +88,8 @@ func TestElemFunc(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			elem, ok := slices.ElemFunc(elems, func(value *string) bool { return *value == test.value })
 
 			require.Equal(t, test.found, ok)
@@ -91,6 +105,8 @@ func TestElemFunc(t *testing.T) {
 }
 
 func TestClip(t *testing.T) {
+	t.Parallel()
+
 	values := [...]string{"first", "second"}
 	first := slices.Clip(values[0:1])
 	second := values[1:2]
@@ -102,17 +118,25 @@ func TestClip(t *testing.T) {
 }
 
 func TestContains(t *testing.T) {
+	t.Parallel()
+
 	type names []string
 
 	t.Run("present", func(t *testing.T) {
+		t.Parallel()
+
 		require.True(t, slices.Contains(names{"alice", "bob"}, "bob"))
 	})
 
 	t.Run("missing", func(t *testing.T) {
+		t.Parallel()
+
 		require.False(t, slices.Contains(names{"alice", "bob"}, "eve"))
 	})
 
 	t.Run("empty", func(t *testing.T) {
+		t.Parallel()
+
 		require.False(t, slices.Contains(names{}, "alice"))
 	})
 }

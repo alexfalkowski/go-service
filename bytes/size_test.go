@@ -9,14 +9,20 @@ import (
 )
 
 func TestMustParseSize(t *testing.T) {
+	t.Parallel()
+
 	require.Panics(t, func() { bytes.MustParseSize("test") })
 }
 
 func TestDefaultSize(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, 4*bytes.MB, bytes.DefaultSize)
 }
 
 func TestSizeTextRoundTrip(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		text string
@@ -31,6 +37,8 @@ func TestSizeTextRoundTrip(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			text, err := tt.size.MarshalText()
 			require.NoError(t, err)
 			require.Equal(t, tt.text, string(text))
@@ -43,6 +51,8 @@ func TestSizeTextRoundTrip(t *testing.T) {
 }
 
 func TestSizeJSONRoundTrip(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		text string
@@ -54,6 +64,8 @@ func TestSizeJSONRoundTrip(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			data, err := json.Marshal(tt.size)
 			require.NoError(t, err)
 			require.Equal(t, tt.text, string(data))
@@ -66,6 +78,8 @@ func TestSizeJSONRoundTrip(t *testing.T) {
 }
 
 func TestSizeUnmarshalTextInvalid(t *testing.T) {
+	t.Parallel()
+
 	var size bytes.Size
 
 	err := size.UnmarshalText([]byte("not-a-size"))
@@ -73,6 +87,8 @@ func TestSizeUnmarshalTextInvalid(t *testing.T) {
 }
 
 func TestSizeUnmarshalJSONInvalid(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name  string
 		input string
@@ -87,6 +103,8 @@ func TestSizeUnmarshalJSONInvalid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			var size bytes.Size
 
 			err := json.Unmarshal([]byte(tt.input), &size)
@@ -96,6 +114,8 @@ func TestSizeUnmarshalJSONInvalid(t *testing.T) {
 }
 
 func TestSizeUnmarshalJSONWithWhitespace(t *testing.T) {
+	t.Parallel()
+
 	var size bytes.Size
 
 	err := json.Unmarshal([]byte(" \n\t\"64B\" \n\t"), &size)
@@ -104,6 +124,8 @@ func TestSizeUnmarshalJSONWithWhitespace(t *testing.T) {
 }
 
 func TestSizeZeroValueEncoding(t *testing.T) {
+	t.Parallel()
+
 	var size bytes.Size
 
 	text, err := size.MarshalText()

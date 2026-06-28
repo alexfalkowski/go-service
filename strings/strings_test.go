@@ -11,6 +11,8 @@ import (
 var testBytesSink []byte
 
 func TestBytes(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		s    string
@@ -21,6 +23,8 @@ func TestBytes(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := strings.Bytes(test.s)
 
 			require.Len(t, got, len(test.s))
@@ -43,6 +47,8 @@ func TestBytesDoesNotAllocate(t *testing.T) {
 }
 
 func TestIsEmpty(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		s    string
@@ -55,12 +61,16 @@ func TestIsEmpty(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, test.want, strings.IsEmpty(test.s))
 		})
 	}
 }
 
 func TestIsAnyEmpty(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		ss   []string
@@ -74,12 +84,16 @@ func TestIsAnyEmpty(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, test.want, strings.IsAnyEmpty(test.ss...))
 		})
 	}
 }
 
 func TestJoin(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		sep  string
@@ -93,12 +107,16 @@ func TestJoin(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, test.want, strings.Join(test.sep, test.ss...))
 		})
 	}
 }
 
 func TestConcat(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		want string
@@ -111,12 +129,16 @@ func TestConcat(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, test.want, strings.Concat(test.ss...))
 		})
 	}
 }
 
 func TestCutColon(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name       string
 		s          string
@@ -133,6 +155,8 @@ func TestCutColon(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			before, after, found := strings.CutColon(test.s)
 
 			require.Equal(t, test.wantBefore, before)
@@ -143,6 +167,8 @@ func TestCutColon(t *testing.T) {
 }
 
 func TestLastIndex(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name   string
 		s      string
@@ -156,12 +182,16 @@ func TestLastIndex(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, test.want, strings.LastIndex(test.s, test.substr))
 		})
 	}
 }
 
 func TestCount(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name   string
 		s      string
@@ -175,12 +205,16 @@ func TestCount(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, test.want, strings.Count(test.s, test.substr))
 		})
 	}
 }
 
 func TestReplaceAll(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		s    string
@@ -195,12 +229,16 @@ func TestReplaceAll(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, test.want, strings.ReplaceAll(test.s, test.old, test.new))
 		})
 	}
 }
 
 func TestTrim(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name   string
 		s      string
@@ -214,6 +252,8 @@ func TestTrim(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			require.Equal(t, test.want, strings.Trim(test.s, test.cutset))
 		})
 	}
