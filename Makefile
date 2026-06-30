@@ -48,9 +48,9 @@ net-http-benchmarks:
 http-content-benchmarks:
 	@$(MAKE) package=net/http/content benchtime=100x benchmark
 
-fuzztime_default := 5s
+fuzztime_default := 10000x
 
-# Run bounded fuzz tests. Set fuzztime=<duration> to override the default 5s per target.
+# Run bounded fuzz tests. Set fuzztime=<duration-or-count> to override the default 10000 executions per target.
 fuzzes: bytes-fuzz time-fuzz encoding-fuzz compress-fuzz net-fuzz
 
 bytes-fuzz:
