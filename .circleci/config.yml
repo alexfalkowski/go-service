@@ -76,6 +76,7 @@ jobs:
       - run: make generate-stale
       - run: make sec
       - run: make specs
+      - run: make fuzzes
       - run: make benchmarks
       - save_cache:
           name: save go build cache

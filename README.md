@@ -1306,10 +1306,10 @@ make net-http-benchmarks
 make http-content-benchmarks
 ```
 
-### Fuzz smoke tests
+### Fuzz tests
 
 ```sh
-make fuzz-smoke
+make fuzzes
 make bytes-fuzz
 make time-fuzz
 make encoding-fuzz
