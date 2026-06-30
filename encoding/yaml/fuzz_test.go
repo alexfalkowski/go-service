@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzUnmarshal explores the strict YAML decoder surface and verifies accepted map payloads round-trip.
 func FuzzUnmarshal(f *testing.F) {
 	f.Add([]byte("test: test"))
 	f.Add([]byte("test: ''"))

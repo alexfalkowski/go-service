@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// BenchmarkGenerators tracks generator cost for the ID kinds supported by configuration.
 func BenchmarkGenerators(b *testing.B) {
 	kinds := []string{
 		"ksuid",

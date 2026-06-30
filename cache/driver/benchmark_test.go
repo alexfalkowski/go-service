@@ -11,6 +11,8 @@ import (
 
 var driverSink driver.Driver
 
+// BenchmarkRedisTelemetry measures Redis driver construction overhead with telemetry disabled, partial,
+// and fully enabled.
 func BenchmarkRedisTelemetry(b *testing.B) {
 	bench := func(name string, setup func(testing.TB)) {
 		b.Run(name, func(b *testing.B) {

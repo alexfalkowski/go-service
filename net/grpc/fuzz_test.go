@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzParseServiceMethod explores gRPC telemetry service/method derivation for arbitrary full-method strings.
 func FuzzParseServiceMethod(f *testing.F) {
 	for _, full := range []string{
 		"/greet.v1.Greeter/SayHello",

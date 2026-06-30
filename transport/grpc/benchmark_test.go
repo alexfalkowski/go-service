@@ -20,6 +20,8 @@ func init() {
 	transportgrpc.Register(test.FS)
 }
 
+// BenchmarkGRPC compares the standard gRPC stack with the supported go-service server stack and telemetry layers.
+//
 //nolint:funlen
 func BenchmarkGRPC(b *testing.B) {
 	b.Run("std", func(b *testing.B) {

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzParseBearer explores Authorization header parsing while preserving supported error classification.
 func FuzzParseBearer(f *testing.F) {
 	for _, value := range []string{
 		"Bearer token",

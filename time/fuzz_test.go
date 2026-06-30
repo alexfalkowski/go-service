@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzDurationTextRoundTrip explores duration parsing and text marshaling used by config values.
 func FuzzDurationTextRoundTrip(f *testing.F) {
 	f.Add("0s")
 	f.Add("250ms")
@@ -34,6 +35,7 @@ func FuzzDurationTextRoundTrip(f *testing.F) {
 	})
 }
 
+// FuzzDurationJSONRoundTrip explores JSON duration parsing while preserving the text round-trip invariant.
 func FuzzDurationJSONRoundTrip(f *testing.F) {
 	f.Add([]byte(`"0s"`))
 	f.Add([]byte(`"250ms"`))

@@ -11,6 +11,7 @@ import (
 // benchmarkBytesSink keeps conversion results observable so benchmarks report real allocation costs.
 var benchmarkBytesSink []byte
 
+// BenchmarkStrings measures the allocation difference between ordinary string-to-byte copies and the unsafe helper.
 func BenchmarkStrings(b *testing.B) {
 	b.ReportAllocs()
 

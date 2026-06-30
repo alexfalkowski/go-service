@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzUnmarshal explores MessagePack decoder input space and verifies accepted map payloads round-trip.
 func FuzzUnmarshal(f *testing.F) {
 	for _, msg := range []map[string]string{
 		{},

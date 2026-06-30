@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzCompressor explores zstd compression round trips while preserving repository size-limit behavior.
 func FuzzCompressor(f *testing.F) {
 	f.Add([]byte(""), uint16(0))
 	f.Add([]byte("hello"), uint16(5))
@@ -35,6 +36,7 @@ func FuzzCompressor(f *testing.F) {
 	})
 }
 
+// FuzzDecompress explores malformed zstd input and the decoded-size limit invariant.
 func FuzzDecompress(f *testing.F) {
 	cmp := zstd.NewCompressor()
 	encoded, err := cmp.Compress([]byte("hello"), bytes.KB)

@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzParse explores media type parsing and normalization for request content negotiation.
 func FuzzParse(f *testing.F) {
 	for _, value := range []string{
 		"json",

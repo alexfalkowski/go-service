@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzParseServiceMethod explores HTTP telemetry service/method derivation for arbitrary paths and methods.
 func FuzzParseServiceMethod(f *testing.F) {
 	for _, seed := range []struct {
 		path   string

@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzUnmarshal explores the HJSON decoder surface, including duplicate-key handling, for accepted map payloads.
 func FuzzUnmarshal(f *testing.F) {
 	f.Add([]byte("{test: test}"))
 	f.Add([]byte("{test: ''}"))

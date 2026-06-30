@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzSplitPath explores slash-prefixed service/method path parsing used by HTTP and gRPC telemetry.
 func FuzzSplitPath(f *testing.F) {
 	for _, path := range []string{
 		"/service/method",

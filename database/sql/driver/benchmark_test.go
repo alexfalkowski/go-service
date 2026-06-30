@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// BenchmarkSQLTelemetry measures database/sql wrapper overhead with telemetry disabled, partial, and fully enabled.
 func BenchmarkSQLTelemetry(b *testing.B) {
 	bench := func(name string, setup func(testing.TB)) {
 		b.Run(name, func(b *testing.B) {
