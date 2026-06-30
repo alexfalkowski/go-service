@@ -1302,7 +1302,20 @@ make cache-benchmarks
 make bytes-benchmarks
 make strings-benchmarks
 make id-benchmarks
+make net-http-benchmarks
 make http-content-benchmarks
+```
+
+### Fuzz smoke tests
+
+```sh
+make fuzz-smoke
+make bytes-fuzz
+make time-fuzz
+make encoding-fuzz
+make compress-fuzz
+make net-fuzz
+make package=encoding/json name=FuzzUnmarshal fuzztime=10s fuzz
 ```
 
 ### Coverage reports

@@ -25,6 +25,8 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+// BenchmarkHTTP compares the standard HTTP stack with the supported go-service server stack and telemetry layers.
+//
 //nolint:funlen
 func BenchmarkHTTP(b *testing.B) {
 	b.Run("std", func(b *testing.B) {
@@ -218,6 +220,7 @@ func BenchmarkHTTP(b *testing.B) {
 	})
 }
 
+// BenchmarkMVC measures the supported MVC HTML rendering path through the HTTP transport stack.
 func BenchmarkMVC(b *testing.B) {
 	b.Run("html", func(b *testing.B) {
 		b.ReportAllocs()
@@ -250,6 +253,7 @@ func BenchmarkMVC(b *testing.B) {
 			closeResponse(b, resp)
 		}
 
+		b.StopTimer()
 		client.CloseIdleConnections()
 		world.RequireStop()
 	})
@@ -281,6 +285,8 @@ func startHTTPBenchmarkWorld(b *testing.B, world *test.World) {
 	require.NoError(b, conn.Close())
 }
 
+// BenchmarkRPC measures RPC client/server body encoding overhead across supported HTTP media types.
+//
 //nolint:funlen
 func BenchmarkRPC(b *testing.B) {
 	b.Run("text", func(b *testing.B) {
@@ -353,6 +359,8 @@ func BenchmarkRPC(b *testing.B) {
 	})
 }
 
+// BenchmarkRest measures REST client/server body encoding and static response overhead across supported media types.
+//
 //nolint:funlen
 func BenchmarkRest(b *testing.B) {
 	b.Run("text", func(b *testing.B) {

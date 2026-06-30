@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// BenchmarkClientTelemetry measures client request overhead with telemetry disabled, metrics-only, and tracing enabled.
 func BenchmarkClientTelemetry(b *testing.B) {
 	server := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
 	defer server.Close()

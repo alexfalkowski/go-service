@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzCompressor explores the common compression size-limit invariant for the no-op codec.
 func FuzzCompressor(f *testing.F) {
 	f.Add([]byte(""), uint16(0))
 	f.Add([]byte("hello"), uint16(5))

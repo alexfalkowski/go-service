@@ -12,6 +12,7 @@ import (
 // benchmarkMedia prevents the compiler from eliminating media negotiation work.
 var benchmarkMedia content.Media
 
+// BenchmarkNewFromMediaJSON tracks the exact media-type fast path used on hot request paths.
 func BenchmarkNewFromMediaJSON(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
@@ -19,6 +20,7 @@ func BenchmarkNewFromMediaJSON(b *testing.B) {
 	}
 }
 
+// BenchmarkNewFromRequestJSON tracks request header media negotiation overhead for a common JSON body.
 func BenchmarkNewFromRequestJSON(b *testing.B) {
 	req := httptest.NewRequestWithContext(b.Context(), "POST", "/hello", nil)
 	req.Header.Set(content.TypeKey, media.JSON)
@@ -29,6 +31,7 @@ func BenchmarkNewFromRequestJSON(b *testing.B) {
 	}
 }
 
+// BenchmarkNewFromMediaWithParameters tracks the parser path needed for parameterized media types.
 func BenchmarkNewFromMediaWithParameters(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {

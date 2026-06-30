@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzEncoder explores arbitrary byte streams through the repository's encode/decode byte-copy invariant.
 func FuzzEncoder(f *testing.F) {
 	f.Add([]byte(""))
 	f.Add([]byte("test"))

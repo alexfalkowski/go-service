@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// FuzzSizeTextRoundTrip explores human-readable size parsing and text marshaling used by config values.
 func FuzzSizeTextRoundTrip(f *testing.F) {
 	f.Add("0B")
 	f.Add("64B")
@@ -37,6 +38,7 @@ func FuzzSizeTextRoundTrip(f *testing.F) {
 	})
 }
 
+// FuzzSizeJSONRoundTrip explores JSON size parsing while preserving the text round-trip invariant.
 func FuzzSizeJSONRoundTrip(f *testing.F) {
 	f.Add([]byte(`"0B"`))
 	f.Add([]byte(`"64B"`))
