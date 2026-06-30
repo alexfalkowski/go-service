@@ -48,8 +48,8 @@ net-http-benchmarks:
 http-content-benchmarks:
 	@$(MAKE) package=net/http/content benchtime=100x benchmark
 
-# Run bounded fuzz smoke tests. Set fuzztime=<duration> to override the default 1s per target.
-fuzz-smoke: bytes-fuzz time-fuzz encoding-fuzz compress-fuzz net-fuzz
+# Run bounded fuzz tests. Set fuzztime=<duration> to override the default 1s per target.
+fuzzes: bytes-fuzz time-fuzz encoding-fuzz compress-fuzz net-fuzz
 
 bytes-fuzz:
 	@$(MAKE) package=bytes name=FuzzSizeTextRoundTrip fuzztime=$(or $(fuzztime),1s) fuzz
