@@ -48,41 +48,43 @@ net-http-benchmarks:
 http-content-benchmarks:
 	@$(MAKE) package=net/http/content benchtime=100x benchmark
 
-# Run bounded fuzz tests. Set fuzztime=<duration> to override the default 1s per target.
+fuzztime_default := 5s
+
+# Run bounded fuzz tests. Set fuzztime=<duration> to override the default 5s per target.
 fuzzes: bytes-fuzz time-fuzz encoding-fuzz compress-fuzz net-fuzz
 
 bytes-fuzz:
-	@$(MAKE) package=bytes name=FuzzSizeTextRoundTrip fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=bytes name=FuzzSizeJSONRoundTrip fuzztime=$(or $(fuzztime),1s) fuzz
+	@$(MAKE) package=bytes name=FuzzSizeTextRoundTrip fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=bytes name=FuzzSizeJSONRoundTrip fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
 
 time-fuzz:
-	@$(MAKE) package=time name=FuzzDurationTextRoundTrip fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=time name=FuzzDurationJSONRoundTrip fuzztime=$(or $(fuzztime),1s) fuzz
+	@$(MAKE) package=time name=FuzzDurationTextRoundTrip fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=time name=FuzzDurationJSONRoundTrip fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
 
 encoding-fuzz:
-	@$(MAKE) package=encoding/bytes name=FuzzEncoder fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=encoding/gob name=FuzzUnmarshal fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=encoding/hjson name=FuzzUnmarshal fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=encoding/json name=FuzzUnmarshal fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=encoding/msgpack name=FuzzUnmarshal fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=encoding/toml name=FuzzUnmarshal fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=encoding/yaml name=FuzzUnmarshal fuzztime=$(or $(fuzztime),1s) fuzz
+	@$(MAKE) package=encoding/bytes name=FuzzEncoder fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=encoding/gob name=FuzzUnmarshal fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=encoding/hjson name=FuzzUnmarshal fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=encoding/json name=FuzzUnmarshal fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=encoding/msgpack name=FuzzUnmarshal fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=encoding/toml name=FuzzUnmarshal fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=encoding/yaml name=FuzzUnmarshal fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
 
 compress-fuzz:
-	@$(MAKE) package=compress/none name=FuzzCompressor fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=compress/s2 name=FuzzCompressor fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=compress/s2 name=FuzzDecompress fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=compress/snappy name=FuzzCompressor fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=compress/snappy name=FuzzDecompress fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=compress/zstd name=FuzzCompressor fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=compress/zstd name=FuzzDecompress fuzztime=$(or $(fuzztime),1s) fuzz
+	@$(MAKE) package=compress/none name=FuzzCompressor fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=compress/s2 name=FuzzCompressor fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=compress/s2 name=FuzzDecompress fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=compress/snappy name=FuzzCompressor fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=compress/snappy name=FuzzDecompress fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=compress/zstd name=FuzzCompressor fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=compress/zstd name=FuzzDecompress fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
 
 net-fuzz:
-	@$(MAKE) package=net/grpc name=FuzzParseServiceMethod fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=net/header name=FuzzParseBearer fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=net/http name=FuzzParseServiceMethod fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=net/http/media name=FuzzParse fuzztime=$(or $(fuzztime),1s) fuzz
-	@$(MAKE) package=net/url name=FuzzSplitPath fuzztime=$(or $(fuzztime),1s) fuzz
+	@$(MAKE) package=net/grpc name=FuzzParseServiceMethod fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=net/header name=FuzzParseBearer fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=net/http name=FuzzParseServiceMethod fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=net/http/media name=FuzzParse fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
+	@$(MAKE) package=net/url name=FuzzSplitPath fuzztime=$(or $(fuzztime),$(fuzztime_default)) fuzz
 
 # Generate for tests.
 generate:
