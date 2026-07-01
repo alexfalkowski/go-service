@@ -3,6 +3,7 @@ package header
 import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"golang.org/x/net/http/httpguts"
 )
 
 // BearerAuthorization is the HTTP Authorization scheme name for Bearer token authentication.
@@ -14,20 +15,20 @@ import (
 // where <token> is an opaque access token (for example, a JWT).
 const BearerAuthorization = "Bearer"
 
-var (
-	// ForwardedIPs lists the forwarding headers used to derive a client IP address.
-	//
-	// Metadata extraction accepts these as trusted inputs, so callers should only rely on derived IPs behind
-	// trusted edge infrastructure that strips or overwrites client-supplied forwarding headers.
-	//
-	// The order reflects the preferred source when multiple headers are present.
-	ForwardedIPs = [...]ForwardedIP{
-		{HTTP: "X-Real-Ip", GRPC: "x-real-ip"},
-		{HTTP: "CF-Connecting-Ip", GRPC: "cf-connecting-ip"},
-		{HTTP: "True-Client-Ip", GRPC: "true-client-ip"},
-		{HTTP: "X-Forwarded-For", GRPC: "x-forwarded-for"},
-	}
+// ForwardedIPs lists the forwarding headers used to derive a client IP address.
+//
+// Metadata extraction accepts these as trusted inputs, so callers should only rely on derived IPs behind
+// trusted edge infrastructure that strips or overwrites client-supplied forwarding headers.
+//
+// The order reflects the preferred source when multiple headers are present.
+var ForwardedIPs = [...]ForwardedIP{
+	{HTTP: "X-Real-Ip", GRPC: "x-real-ip"},
+	{HTTP: "CF-Connecting-Ip", GRPC: "cf-connecting-ip"},
+	{HTTP: "True-Client-Ip", GRPC: "true-client-ip"},
+	{HTTP: "X-Forwarded-For", GRPC: "x-forwarded-for"},
+}
 
+var (
 	// ErrInvalidAuthorization is returned when an Authorization header cannot be parsed.
 	//
 	// This is returned when the header does not contain a scheme and value separated by a single ASCII space
@@ -52,6 +53,16 @@ type ForwardedIP struct {
 	// gRPC metadata is normalized to lowercase, so lowercase keys hit the direct
 	// metadata lookup path instead of falling back to case-insensitive scanning.
 	GRPC string
+}
+
+// ValidFieldName reports whether name is a valid HTTP header field name.
+func ValidFieldName(name string) bool {
+	return httpguts.ValidHeaderFieldName(name)
+}
+
+// ValidFieldValue reports whether value is a valid HTTP header field value.
+func ValidFieldValue(value string) bool {
+	return httpguts.ValidHeaderFieldValue(value)
 }
 
 // ParseBearer parses an HTTP Authorization header and returns its bearer token value.
