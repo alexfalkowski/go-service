@@ -163,32 +163,12 @@ func NewRetry() *retry.Config {
 
 // NewHTTPRetryConfig returns an HTTP retry config with shared retry mechanics.
 func NewHTTPRetryConfig(attempts uint64, backoff time.Duration, statusCodes ...int) *httpretry.Config {
-	return &httpretry.Config{
-		Config:      &retry.Config{Attempts: attempts, Backoff: backoff},
-		StatusCodes: statusCodes,
-	}
+	return httpretry.NewConfig(&retry.Config{Attempts: attempts, Backoff: backoff}, statusCodes...)
 }
 
 // NewGRPCRetryConfig returns a gRPC retry config with shared retry mechanics and a per-attempt timeout.
-func NewGRPCRetryConfig(attempts uint64, backoff time.Duration, cs ...codes.Code) *grpcretry.Config {
-	return &grpcretry.Config{
-		Config: &retry.Config{
-			Attempts: attempts,
-			Timeout:  time.Second,
-			Backoff:  backoff,
-		},
-		Codes: cs,
-	}
-}
-
-// NewHTTPClientRetryConfig returns an HTTP retry config from shared client retry config.
-func NewHTTPClientRetryConfig(cfg *retry.Config) *httpretry.Config {
-	return &httpretry.Config{Config: cfg}
-}
-
-// NewGRPCClientRetryConfig returns a gRPC retry config from shared client retry config.
-func NewGRPCClientRetryConfig(cfg *retry.Config) *grpcretry.Config {
-	return &grpcretry.Config{Config: cfg}
+func NewGRPCRetryConfig(attempts uint64, backoff time.Duration, codes ...codes.Code) *grpcretry.Config {
+	return grpcretry.NewConfig(&retry.Config{Attempts: attempts, Timeout: time.Second, Backoff: backoff}, codes...)
 }
 
 // NewTLSClientConfig returns the client certificate fixture used by secure transport tests.

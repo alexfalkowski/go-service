@@ -5,6 +5,20 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/retry"
 )
 
+// NewConfig returns a gRPC retry config from shared retry mechanics.
+//
+// If cfg is nil, NewConfig returns nil so client option wiring can preserve disabled retries.
+func NewConfig(cfg *retry.Config, codes ...codes.Code) *Config {
+	if cfg == nil {
+		return nil
+	}
+
+	return &Config{
+		Config: cfg,
+		Codes:  codes,
+	}
+}
+
 // Config configures retry behavior for gRPC unary client calls.
 //
 // It embeds shared retry mechanics and adds gRPC-specific failure classification.

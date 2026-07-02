@@ -13,6 +13,7 @@ import (
 	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
+	httpretry "github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/stretchr/testify/require"
 )
@@ -111,7 +112,7 @@ func TestRoundTripperRetriesThroughClientLimiter(t *testing.T) {
 	rt, err := transporthttp.NewRoundTripper(
 		transporthttp.WithClientRoundTripper(base),
 		transporthttp.WithClientLimiter(clientLimiter),
-		transporthttp.WithClientRetry(test.NewHTTPClientRetryConfig(test.FastRetryConfig)),
+		transporthttp.WithClientRetry(httpretry.NewConfig(test.FastRetryConfig)),
 		transporthttp.WithClientUserAgent(test.UserAgent),
 	)
 	require.NoError(t, err)
@@ -131,7 +132,7 @@ func TestRoundTripperRetriesThroughClientBreaker(t *testing.T) {
 	base := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
 	rt, err := transporthttp.NewRoundTripper(
 		transporthttp.WithClientRoundTripper(base),
-		transporthttp.WithClientRetry(test.NewHTTPClientRetryConfig(test.FastRetryConfig)),
+		transporthttp.WithClientRetry(httpretry.NewConfig(test.FastRetryConfig)),
 		transporthttp.WithClientBreaker(
 			breaker.WithSettings(breaker.Settings{
 				ReadyToTrip: func(counts breaker.Counts) bool {

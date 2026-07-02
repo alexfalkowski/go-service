@@ -1061,16 +1061,12 @@ When manually constructing HTTP or gRPC clients, pass a transport-specific retry
 shared retry mechanics and add protocol-specific failure classification:
 
 ```go
-httpRetry := &httpretry.Config{
-	Config:      sharedRetry,
-	StatusCodes: []int{429, 502, 503},
-}
-
-grpcRetry := &grpcretry.Config{
-	Config: sharedRetry,
-	Codes:  []codes.Code{codes.Unavailable, codes.ResourceExhausted},
-}
+httpRetry := httpretry.NewConfig(sharedRetry, 429, 502, 503)
+grpcRetry := grpcretry.NewConfig(sharedRetry, codes.Unavailable, codes.ResourceExhausted)
 ```
+
+`NewConfig` returns `nil` when the shared retry config is `nil`, preserving client-option wiring that
+disables retries by omitting retry config.
 
 `attempts` is the total number of attempts, including the initial call. A value
 of `0` or `1` means no retry beyond the first attempt; values above `10` are
