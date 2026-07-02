@@ -2,6 +2,20 @@ package retry
 
 import "github.com/alexfalkowski/go-service/v2/transport/retry"
 
+// NewConfig returns an HTTP retry config from shared retry mechanics.
+//
+// If cfg is nil, NewConfig returns nil so client option wiring can preserve disabled retries.
+func NewConfig(cfg *retry.Config, statusCodes ...int) *Config {
+	if cfg == nil {
+		return nil
+	}
+
+	return &Config{
+		Config:      cfg,
+		StatusCodes: statusCodes,
+	}
+}
+
 // Config configures retry behavior for outbound HTTP requests.
 //
 // It embeds shared retry mechanics and adds HTTP-specific failure classification.

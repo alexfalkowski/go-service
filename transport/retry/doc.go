@@ -46,9 +46,10 @@
 // # Usage
 //
 // Embed Config into larger service configuration when callers need shared retry mechanics.
-// Transport-specific retry configuration, such as HTTP or gRPC client retry config, embeds
-// Config and adds protocol-specific failure classification before it is passed to transport
-// wiring.
+// Transport-specific helpers, such as [github.com/alexfalkowski/go-service/v2/transport/http/retry.NewConfig]
+// and [github.com/alexfalkowski/go-service/v2/transport/grpc/retry.NewConfig], adapt Config into
+// transport-specific retry configuration with protocol-specific failure classification before it is passed to
+// transport wiring.
 //
 // Start with Config in config.go.
 package retry

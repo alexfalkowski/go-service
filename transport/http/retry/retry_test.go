@@ -25,6 +25,15 @@ func TestConfigRejectsInvalidStatusCodes(t *testing.T) {
 	require.Error(t, test.Validator.Struct(&retry.Config{StatusCodes: []int{600}}))
 }
 
+func TestNewConfigReturnsHTTPConfig(t *testing.T) {
+	cfg := &config.Config{Attempts: 2, Backoff: time.Millisecond}
+	retrying := retry.NewConfig(cfg, http.StatusBadGateway)
+
+	require.Same(t, cfg, retrying.Config)
+	require.Equal(t, []int{http.StatusBadGateway}, retrying.StatusCodes)
+	require.Nil(t, retry.NewConfig(nil))
+}
+
 func TestRoundTripperRetriesRetryableResponses(t *testing.T) {
 	tests := []struct {
 		name   string

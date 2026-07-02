@@ -14,9 +14,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	grpcbreaker "github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
+	grpcretry "github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	httpbreaker "github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
+	httpretry "github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/retry"
 )
 
@@ -58,7 +60,7 @@ func (c *Client) NewHTTP(os ...httpbreaker.Option) (*http.Client, error) {
 		http.WithClientLogger(c.Logger),
 		http.WithClientRoundTripper(c.RoundTripper),
 		http.WithClientBreaker(os...),
-		http.WithClientRetry(NewHTTPClientRetryConfig(c.Retry)),
+		http.WithClientRetry(httpretry.NewConfig(c.Retry)),
 		http.WithClientUserAgent(UserAgent),
 		http.WithClientTokenGenerator(UserID, c.Generator),
 		http.WithClientTimeout(time.Minute),
@@ -82,7 +84,7 @@ func (c *Client) NewGRPC(os ...grpcbreaker.Option) (*grpc.ClientConn, error) {
 		grpc.WithClientStreamInterceptors(),
 		grpc.WithClientLogger(c.Logger),
 		grpc.WithClientBreaker(os...),
-		grpc.WithClientRetry(NewGRPCClientRetryConfig(c.Retry)),
+		grpc.WithClientRetry(grpcretry.NewConfig(c.Retry)),
 		grpc.WithClientUserAgent(UserAgent),
 		grpc.WithClientTokenGenerator(UserID, c.Generator),
 		grpc.WithClientTimeout(time.Minute),

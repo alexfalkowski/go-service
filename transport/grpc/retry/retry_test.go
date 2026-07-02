@@ -21,6 +21,15 @@ func TestConfigRejectsInvalidCodes(t *testing.T) {
 	require.Error(t, test.Validator.Struct(test.NewGRPCRetryConfig(0, 0, codes.Code(17))))
 }
 
+func TestNewConfigReturnsGRPCConfig(t *testing.T) {
+	cfg := &config.Config{Attempts: 2, Backoff: time.Millisecond}
+	retrying := retry.NewConfig(cfg, codes.ResourceExhausted)
+
+	require.Same(t, cfg, retrying.Config)
+	require.Equal(t, []codes.Code{codes.ResourceExhausted}, retrying.Codes)
+	require.Nil(t, retry.NewConfig(nil))
+}
+
 func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(1, time.Millisecond))
 
