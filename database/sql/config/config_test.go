@@ -25,6 +25,11 @@ func TestConfigValidation(t *testing.T) {
 			err:  true,
 		},
 		{
+			name: "negative conn max idle time",
+			cfg:  &config.Config{ConnMaxIdleTime: -time.Second, MaxOpenConns: 1, MaxIdleConns: 1},
+			err:  true,
+		},
+		{
 			name: "negative max open conns",
 			cfg:  &config.Config{MaxOpenConns: -1, MaxIdleConns: 1},
 			err:  true,

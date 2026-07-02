@@ -43,6 +43,7 @@ sql:
       - url: file:../test/secrets/pg
     max_open_conns: 5
     max_idle_conns: 5
+    conn_max_idle_time: 30m
     conn_max_lifetime: 1h
 telemetry:
   logger:

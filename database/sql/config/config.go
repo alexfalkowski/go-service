@@ -32,6 +32,11 @@ type Config struct {
 	// In config files it is encoded as a Go duration string (for example "30s", "5m", "1h").
 	ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime,omitempty" json:"conn_max_lifetime,omitempty" toml:"conn_max_lifetime,omitempty" validate:"gte=0"`
 
+	// ConnMaxIdleTime is the maximum amount of time a connection may remain idle.
+	//
+	// In config files it is encoded as a Go duration string (for example "30s", "5m", "1h").
+	ConnMaxIdleTime time.Duration `yaml:"conn_max_idle_time,omitempty" json:"conn_max_idle_time,omitempty" toml:"conn_max_idle_time,omitempty" validate:"gte=0"`
+
 	// MaxOpenConns is the maximum number of open connections to the database.
 	MaxOpenConns int `yaml:"max_open_conns" json:"max_open_conns" toml:"max_open_conns" validate:"gt=0"`
 

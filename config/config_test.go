@@ -358,6 +358,7 @@ func verifySQLConfig(t *testing.T, cfg *config.Config) {
 	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Readers[0].URL)
 	require.Equal(t, 5, cfg.SQL.PG.MaxIdleConns)
 	require.Equal(t, 5, cfg.SQL.PG.MaxOpenConns)
+	require.Equal(t, 30*time.Minute, cfg.SQL.PG.ConnMaxIdleTime)
 	require.Equal(t, time.Hour, cfg.SQL.PG.ConnMaxLifetime)
 }
 
