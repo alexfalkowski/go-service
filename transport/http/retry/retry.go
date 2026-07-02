@@ -8,17 +8,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/body"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/retry"
+	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/time"
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 	retryable "github.com/hashicorp/go-retryablehttp"
 )
-
-// Config is an alias for [github.com/alexfalkowski/go-service/v2/transport/retry.Config].
-//
-// It describes the retry policy used by NewRoundTripper:
-//   - `Attempts`: maximum number of attempts including the initial attempt.
-//   - `Backoff`: base delay between retries.
-type Config = config.Config
 
 // Policy decides whether req is eligible for retry.
 //
@@ -96,6 +90,7 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 		backoff:      cfg.GetBackoff(),
 		policy:       composePolicy(policies),
 		maxRetries:   cfg.MaxRetries(),
+		statusCodes:  retryableStatusCodes(cfg),
 	}
 }
 
@@ -112,9 +107,11 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 // an explicit policy.
 type RoundTripper struct {
 	http.RoundTripper
-	policy     Policy
-	backoff    time.Duration
-	maxRetries uint64
+	policy Policy
+
+	statusCodes []int
+	backoff     time.Duration
+	maxRetries  uint64
 }
 
 // RoundTrip executes the request and retries according to the configured backoff policy.
@@ -149,7 +146,11 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 		return res, err, false
 	}
 
-	attempt := &roundTripAttempt{}
+	attempt := &roundTripAttempt{
+		backoff:     r.backoff,
+		maxRetries:  r.maxRetries,
+		statusCodes: r.statusCodes,
+	}
 
 	res, err, retrying := r.attempt(req.Context(), req, attempt)
 	if !retrying {
@@ -176,8 +177,8 @@ func (r *RoundTripper) retry(ctx context.Context, req *http.Request, attempt *ro
 		return res, err
 	}
 
-	backoff := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewConstant(r.backoff))
-	backoff = retry.WithMaxRetries(r.maxRetries, backoff)
+	backoff := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewConstant(attempt.backoff))
+	backoff = retry.WithMaxRetries(attempt.maxRetries, backoff)
 	return retry.DoValue(ctx, backoff, operation)
 }
 
@@ -188,7 +189,7 @@ func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *
 	}
 
 	res, err := r.RoundTripper.RoundTrip(attemptReq)
-	if retryErr := attempt.retry(ctx, req, res, err, r.backoff, r.maxRetries); retryErr != nil {
+	if retryErr := attempt.retry(ctx, req, res, err); retryErr != nil {
 		return nil, retryErr, true
 	}
 
@@ -196,11 +197,14 @@ func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *
 }
 
 type roundTripAttempt struct {
-	attempt uint64
+	statusCodes []int
+	attempt     uint64
+	backoff     time.Duration
+	maxRetries  uint64
 }
 
-func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *http.Response, err error, backoff time.Duration, maxRetries uint64) error {
-	ok, retryErr := shouldRetryAttempt(ctx, res, err)
+func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *http.Response, err error) error {
+	ok, retryErr := shouldRetryAttempt(ctx, res, err, a.statusCodes)
 	if !ok {
 		return nil
 	}
@@ -213,10 +217,10 @@ func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *ht
 		a.attempt++
 		return retryErr
 	}
-	if a.attempt >= maxRetries {
+	if a.attempt >= a.maxRetries {
 		return nil
 	}
-	if retryAfterDelayExceedsBackoff(res, backoff) {
+	if retryAfterDelayExceedsBackoff(res, a.backoff) {
 		return nil
 	}
 
@@ -244,7 +248,7 @@ func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Requ
 	return clonedReq, nil
 }
 
-func shouldRetryAttempt(ctx context.Context, res *http.Response, err error) (bool, error) {
+func shouldRetryAttempt(ctx context.Context, res *http.Response, err error, statusCodes []int) (bool, error) {
 	if err := ctx.Err(); err != nil {
 		return false, err
 	}
@@ -262,18 +266,33 @@ func shouldRetryAttempt(ctx context.Context, res *http.Response, err error) (boo
 			return false, err
 		}
 
-		return isRetryableStatusCode(status.Code(err)), err
+		return isRetryableStatusCode(status.Code(err), statusCodes), err
 	}
 
 	if res == nil {
 		return false, nil
 	}
 
-	return isRetryableStatusCode(res.StatusCode), nil
+	return isRetryableStatusCode(res.StatusCode, statusCodes), nil
 }
 
-func isRetryableStatusCode(code int) bool {
-	return code == http.StatusTooManyRequests || code == http.StatusServiceUnavailable
+func retryableStatusCodes(cfg *Config) []int {
+	if cfg == nil || len(cfg.StatusCodes) == 0 {
+		return []int{http.StatusTooManyRequests, http.StatusServiceUnavailable}
+	}
+
+	codes := make([]int, 0, len(cfg.StatusCodes))
+	for _, code := range cfg.StatusCodes {
+		if code >= http.StatusBadRequest && code <= http.StatusNetworkAuthenticationRequired {
+			codes = append(codes, code)
+		}
+	}
+
+	return codes
+}
+
+func isRetryableStatusCode(code int, statusCodes []int) bool {
+	return slices.Contains(statusCodes, code)
 }
 
 func isTransportError(res *http.Response, err error) bool {

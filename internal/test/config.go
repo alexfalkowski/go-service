@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/hooks"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
@@ -28,7 +29,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
+	grpcretry "github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
+	httpretry "github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/retry"
 )
@@ -37,6 +40,12 @@ const timeout = 2 * time.Second
 
 // Validator is the shared config validator used by test helpers.
 var Validator = config.NewValidator()
+
+// FastRetryConfig is a shared client retry config for tests that need one retry with minimal backoff.
+var FastRetryConfig = &retry.Config{
+	Backoff:  time.Nanosecond,
+	Attempts: 2,
+}
 
 // ConfigOptions contains long-lived server timeout defaults used in tests that
 // decode server configs from option maps.
@@ -150,6 +159,36 @@ func NewRetry() *retry.Config {
 		Backoff:  100 * time.Millisecond,
 		Attempts: 1,
 	}
+}
+
+// NewHTTPRetryConfig returns an HTTP retry config with shared retry mechanics.
+func NewHTTPRetryConfig(attempts uint64, backoff time.Duration, statusCodes ...int) *httpretry.Config {
+	return &httpretry.Config{
+		Config:      &retry.Config{Attempts: attempts, Backoff: backoff},
+		StatusCodes: statusCodes,
+	}
+}
+
+// NewGRPCRetryConfig returns a gRPC retry config with shared retry mechanics and a per-attempt timeout.
+func NewGRPCRetryConfig(attempts uint64, backoff time.Duration, cs ...codes.Code) *grpcretry.Config {
+	return &grpcretry.Config{
+		Config: &retry.Config{
+			Attempts: attempts,
+			Timeout:  time.Second,
+			Backoff:  backoff,
+		},
+		Codes: cs,
+	}
+}
+
+// NewHTTPClientRetryConfig returns an HTTP retry config from shared client retry config.
+func NewHTTPClientRetryConfig(cfg *retry.Config) *httpretry.Config {
+	return &httpretry.Config{Config: cfg}
+}
+
+// NewGRPCClientRetryConfig returns a gRPC retry config from shared client retry config.
+func NewGRPCClientRetryConfig(cfg *retry.Config) *grpcretry.Config {
+	return &grpcretry.Config{Config: cfg}
 }
 
 // NewTLSClientConfig returns the client certificate fixture used by secure transport tests.

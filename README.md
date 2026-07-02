@@ -1043,8 +1043,9 @@ The transport client wrappers include optional circuit breakers:
 
 ### Client retries
 
-HTTP and gRPC client retry config uses the shared `transport/retry.Config` shape. Config types that embed
-`config/client.Config`, such as `feature.Config`, use the `retry` block under that client config:
+Client config uses the shared `transport/retry.Config` shape for retry mechanics. Any config type that embeds
+`config/client.Config` has its own `retry` block under that client config. This example uses `feature.Config`
+only because it is one such client config:
 
 ```yaml
 feature:
@@ -1055,8 +1056,21 @@ feature:
     attempts: 3
 ```
 
-When manually constructing HTTP or gRPC clients, pass the decoded retry config to
-`transport/http.WithClientRetry(...)` or `transport/grpc.WithClientRetry(...)`.
+When manually constructing HTTP or gRPC clients, pass a transport-specific retry config to
+`transport/http.WithClientRetry(...)` or `transport/grpc.WithClientRetry(...)`. These configs embed the
+shared retry mechanics and add protocol-specific failure classification:
+
+```go
+httpRetry := &httpretry.Config{
+	Config:      sharedRetry,
+	StatusCodes: []int{429, 502, 503},
+}
+
+grpcRetry := &grpcretry.Config{
+	Config: sharedRetry,
+	Codes:  []codes.Code{codes.Unavailable, codes.ResourceExhausted},
+}
+```
 
 `attempts` is the total number of attempts, including the initial call. A value
 of `0` or `1` means no retry beyond the first attempt; values above `10` are
@@ -1068,6 +1082,12 @@ total elapsed time can include multiple attempt timeouts plus backoff unless the
 caller context ends first. HTTP retries do not create a retry-owned per-attempt
 timeout; bound outbound HTTP calls with the request context or
 `http.Client.Timeout`.
+
+HTTP `StatusCodes` and gRPC `Codes` are optional replacement lists for failure
+classification. When omitted, the default lists below apply. When set, only the
+configured values are retryable, so include the defaults as well when extending
+rather than replacing default behavior. HTTP values must be 4xx or 5xx status
+codes. gRPC values must be non-OK `codes.Code` values.
 
 Default retry policy is intentionally conservative:
 
