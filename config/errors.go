@@ -26,9 +26,8 @@ var (
 
 	// ErrInvalidConfig is returned when a decoded configuration value is considered empty.
 	//
-	// It is returned by NewConfig[T] when the decoded configuration does not populate any fields
-	// (as determined by structs.IsEmpty), which helps prevent accidentally starting with a zero-value
-	// configuration.
+	// It is returned by NewConfig[T] when the decoded configuration does not populate any fields,
+	// which helps prevent accidentally starting with a zero-value configuration.
 	ErrInvalidConfig = errors.New("config: invalid format")
 
 	// ErrInvalidSource is returned when an explicit configuration source uses an unsupported kind.
