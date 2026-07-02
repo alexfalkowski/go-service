@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
@@ -14,12 +15,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestConfigRejectsInvalidCodes(t *testing.T) {
+	require.NoError(t, test.Validator.Struct(test.NewGRPCRetryConfig(0, 0, codes.Unavailable)))
+	require.Error(t, test.Validator.Struct(test.NewGRPCRetryConfig(0, 0, codes.OK)))
+	require.Error(t, test.Validator.Struct(test.NewGRPCRetryConfig(0, 0, codes.Code(17))))
+}
+
 func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 1,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	})
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(1, time.Millisecond))
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/SayHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -32,11 +35,7 @@ func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 }
 
 func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsZero(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 0,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	})
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(0, time.Millisecond))
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -49,11 +48,7 @@ func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsZero(t *testing.T) {
 }
 
 func TestUnaryClientInterceptorClampsAttemptsAboveMax(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: config.MaxAttempts + 1,
-		Timeout:  time.Second,
-		Backoff:  time.Nanosecond,
-	})
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(config.MaxAttempts+1, time.Nanosecond))
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -66,11 +61,7 @@ func TestUnaryClientInterceptorClampsAttemptsAboveMax(t *testing.T) {
 }
 
 func TestUnaryClientInterceptorRetriesSafeMethodWhenAttemptsIsTwo(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	})
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond))
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -86,11 +77,38 @@ func TestUnaryClientInterceptorRetriesSafeMethodWhenAttemptsIsTwo(t *testing.T) 
 	require.Equal(t, 2, calls)
 }
 
-func TestUnaryClientInterceptorRetriesWithDefaultBackoff(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
+func TestUnaryClientInterceptorRetriesConfiguredCode(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond, codes.ResourceExhausted))
+
+	calls := 0
+	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		if calls == 1 {
+			return status.Error(codes.ResourceExhausted, "resource exhausted")
+		}
+
+		return nil
 	})
+
+	require.NoError(t, err)
+	require.Equal(t, 2, calls)
+}
+
+func TestUnaryClientInterceptorConfiguredCodesReplaceDefaults(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond, codes.ResourceExhausted))
+
+	calls := 0
+	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.Unavailable, "unavailable")
+	})
+
+	require.Error(t, err)
+	require.Equal(t, 1, calls)
+}
+
+func TestUnaryClientInterceptorRetriesWithDefaultBackoff(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, 0))
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -107,11 +125,7 @@ func TestUnaryClientInterceptorRetriesWithDefaultBackoff(t *testing.T) {
 }
 
 func TestUnaryClientInterceptorSetsDeadlineForEachAttempt(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	})
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond))
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
@@ -130,11 +144,7 @@ func TestUnaryClientInterceptorSetsDeadlineForEachAttempt(t *testing.T) {
 }
 
 func TestUnaryClientInterceptorDoesNotRetryUnsafeMethodByDefault(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	})
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond))
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/CreateBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -147,11 +157,7 @@ func TestUnaryClientInterceptorDoesNotRetryUnsafeMethodByDefault(t *testing.T) {
 }
 
 func TestUnaryClientInterceptorDoesNotRetryDataLossByDefault(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	})
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond))
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -174,11 +180,7 @@ func TestUnaryClientInterceptorDoesNotRetryContextStatusCodesByDefault(t *testin
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interceptor := retry.UnaryClientInterceptor(&config.Config{
-				Attempts: 2,
-				Timeout:  time.Second,
-				Backoff:  time.Millisecond,
-			})
+			interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond))
 
 			calls := 0
 			err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -193,11 +195,7 @@ func TestUnaryClientInterceptorDoesNotRetryContextStatusCodesByDefault(t *testin
 }
 
 func TestUnaryClientInterceptorDoesNotRetryWhenPolicyDeniesMethod(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	}, retry.StandardReadMethods)
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond), retry.StandardReadMethods)
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/CreateBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -220,11 +218,7 @@ func TestUnaryClientInterceptorRetriesWhenPolicyAllowsReadMethod(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interceptor := retry.UnaryClientInterceptor(&config.Config{
-				Attempts: 2,
-				Timeout:  time.Second,
-				Backoff:  time.Millisecond,
-			}, retry.StandardReadMethods)
+			interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond), retry.StandardReadMethods)
 
 			calls := 0
 			err := interceptor(t.Context(), tt.fullMethod, nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -257,11 +251,7 @@ func TestUnaryClientInterceptorComposesMultiplePolicies(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			interceptor := retry.UnaryClientInterceptor(&config.Config{
-				Attempts: 2,
-				Timeout:  time.Second,
-				Backoff:  time.Millisecond,
-			}, tt.policies...)
+			interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond), tt.policies...)
 
 			calls := 0
 			err := interceptor(t.Context(), "/test.Service/CreateBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -283,11 +273,7 @@ func TestUnaryClientInterceptorComposesMultiplePolicies(t *testing.T) {
 }
 
 func TestUnaryClientInterceptorRetriesWhenPolicyAllowsRequestID(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&config.Config{
-		Attempts: 2,
-		Timeout:  time.Second,
-		Backoff:  time.Millisecond,
-	}, retry.IdempotentMethods)
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond), retry.IdempotentMethods)
 
 	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
 	calls := 0

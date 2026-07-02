@@ -8,17 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/retry"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/slices"
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 )
-
-// Config is an alias for [github.com/alexfalkowski/go-service/v2/transport/retry.Config].
-//
-// It describes the retry policy for gRPC unary client calls, including:
-//   - `Attempts`: maximum number of attempts (initial call + retries).
-//   - `Timeout`: per-attempt timeout duration.
-//   - `Backoff`: backoff duration used by the chosen backoff strategy.
-type Config = config.Config
 
 // Policy decides whether a unary RPC is eligible for retry.
 //
@@ -60,8 +52,7 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 //   - It uses a jittered backoff duration derived from `cfg.GetBackoff()`.
 //
 // Failure classification:
-// Retries are only attempted for selected gRPC status codes. This implementation currently retries on
-// [codes.Unavailable].
+// Retries are only attempted for configured gRPC status codes. The default is [codes.Unavailable].
 //
 // Policy behavior:
 // When no policy is provided, only side-effect-safe unary RPCs are eligible for retry: AIP-style read methods,
@@ -77,14 +68,32 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 	policy := composePolicy(policies)
 	maxAttempts := cfg.MaxAttempts()
 	timeout := cfg.GetTimeout()
-	backoffDuration := cfg.GetBackoff()
+	backoff := cfg.GetBackoff()
+	codes := retryableCodes(cfg)
+
+	invoke := func(ctx context.Context, attempt func(context.Context) error) error {
+		if maxAttempts == 0 {
+			return attempt(ctx)
+		}
+
+		retries := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewConstant(backoff))
+		retries = retry.WithMaxRetries(maxAttempts-1, retries)
+		return retry.Do(ctx, retries, func(ctx context.Context) error {
+			err := attempt(ctx)
+			if err == nil || !isRetryableCode(status.Code(err), codes) {
+				return err
+			}
+
+			return retry.RetryableError(err)
+		})
+	}
 
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if !policy(ctx, fullMethod, req) {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
-		return invokeWithRetries(ctx, maxAttempts, backoffDuration, func(ctx context.Context) error {
+		return invoke(ctx, func(ctx context.Context) error {
 			attemptCtx, cancel := context.WithTimeout(ctx, timeout)
 			defer cancel()
 
@@ -93,21 +102,27 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 	}
 }
 
-func invokeWithRetries(ctx context.Context, maxAttempts uint64, backoffDuration time.Duration, attempt func(context.Context) error) error {
-	if maxAttempts == 0 {
-		return attempt(ctx)
+func retryableCodes(cfg *Config) []codes.Code {
+	if cfg == nil || len(cfg.Codes) == 0 {
+		return []codes.Code{codes.Unavailable}
 	}
 
-	retries := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewConstant(backoffDuration))
-	retries = retry.WithMaxRetries(maxAttempts-1, retries)
-	return retry.Do(ctx, retries, func(ctx context.Context) error {
-		err := attempt(ctx)
-		if err == nil || status.Code(err) != codes.Unavailable {
-			return err
+	codes := make([]codes.Code, 0, len(cfg.Codes))
+	for _, code := range cfg.Codes {
+		if isValidCode(code) {
+			codes = append(codes, code)
 		}
+	}
 
-		return retry.RetryableError(err)
-	})
+	return codes
+}
+
+func isRetryableCode(code codes.Code, codes []codes.Code) bool {
+	return slices.Contains(codes, code)
+}
+
+func isValidCode(code codes.Code) bool {
+	return code > codes.OK && code <= codes.Unauthenticated
 }
 
 func composePolicy(policies []Policy) Policy {
