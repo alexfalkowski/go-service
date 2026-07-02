@@ -185,8 +185,8 @@ The library provides a helper `config.NewConfig[T]` which:
 - rejects an “empty” decoded value (guards against starting with a zero-value config)
 - validates the decoded config
 
-Because empty detection compares the decoded value with the zero value, `T` must be comparable. Config
-types containing maps, slices, or other non-comparable fields should use a custom decode/empty-check path.
+Empty detection uses zero-value semantics and supports config types containing maps, slices, or other
+non-comparable fields.
 
 Example:
 

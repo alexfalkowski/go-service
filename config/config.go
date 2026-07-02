@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/ptr"
-	"github.com/alexfalkowski/go-service/v2/structs"
+	"github.com/alexfalkowski/go-service/v2/reflect"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/access"
@@ -29,22 +29,19 @@ import (
 //
 // After decoding, NewConfig enforces two additional invariants:
 //
-//  1. Empty detection: if the decoded value is considered empty (see [structs.IsEmpty]), NewConfig returns
-//     ErrInvalidConfig. This guards against accidentally starting with a zero-value configuration when the
-//     input is missing or does not populate any fields.
-//     Because this comparison uses the zero value of T, T must be comparable. Config types that contain
-//     slices, maps, or other non-comparable fields should use a custom decode/empty-check path instead.
+//  1. Empty detection: if the decoded value is zero, NewConfig returns ErrInvalidConfig. This guards against
+//     accidentally starting with a zero-value configuration when the input is missing or does not populate any fields.
 //
 //  2. Validation: the decoded value is validated using the provided Validator (go-playground/validator).
 //     Any validation errors are returned to the caller.
 //
 // On success, NewConfig returns the validated configuration value.
-func NewConfig[T comparable](decoder Decoder, validator *Validator) (*T, error) {
+func NewConfig[T any](decoder Decoder, validator *Validator) (*T, error) {
 	config := ptr.Zero[T]()
 	if err := decoder.Decode(config); err != nil {
 		return nil, err
 	}
-	if structs.IsEmpty(config) {
+	if reflect.IsZero(*config) {
 		return nil, ErrInvalidConfig
 	}
 	if err := validator.Struct(config); err != nil {

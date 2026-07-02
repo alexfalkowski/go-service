@@ -260,6 +260,18 @@ func TestNewConfigRejectsEmptyDecodedConfig(t *testing.T) {
 	require.ErrorIs(t, err, config.ErrInvalidConfig)
 }
 
+func TestNewConfigSupportsNonComparableConfig(t *testing.T) {
+	cfg, err := config.NewConfig[mapConfig](decoderFunc(func(v any) error {
+		conf := v.(*mapConfig)
+		conf.Values = map[string]string{"tenant": "test"}
+
+		return nil
+	}), test.Validator)
+
+	require.NoError(t, err)
+	require.Equal(t, map[string]string{"tenant": "test"}, cfg.Values)
+}
+
 func verifyConfig(t *testing.T, cfg *config.Config) {
 	t.Helper()
 
@@ -438,4 +450,8 @@ type decoderFunc func(any) error
 
 func (f decoderFunc) Decode(v any) error {
 	return f(v)
+}
+
+type mapConfig struct {
+	Values map[string]string `yaml:"values,omitempty" json:"values,omitempty" toml:"values,omitempty"`
 }
