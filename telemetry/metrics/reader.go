@@ -62,7 +62,7 @@ func newReader(name env.Name, cfg *Config) (metric.Reader, error) {
 		if err != nil {
 			return nil, prefix(err)
 		}
-		return metric.NewPeriodicReader(exporter), nil
+		return metric.NewPeriodicReader(exporter, periodicReaderOptions(cfg)...), nil
 	case "prometheus":
 		exporter, err := prometheus.New(prometheus.WithNamespace(name.String()))
 		if err != nil {
@@ -72,4 +72,16 @@ func newReader(name env.Name, cfg *Config) (metric.Reader, error) {
 	default:
 		return nil, ErrNotFound
 	}
+}
+
+func periodicReaderOptions(cfg *Config) []metric.PeriodicReaderOption {
+	opts := make([]metric.PeriodicReaderOption, 0, 2)
+	if cfg.Interval > 0 {
+		opts = append(opts, metric.WithInterval(cfg.Interval.Duration()))
+	}
+	if cfg.Timeout > 0 {
+		opts = append(opts, metric.WithTimeout(cfg.Timeout.Duration()))
+	}
+
+	return opts
 }

@@ -62,12 +62,22 @@ url = "file:../test/secrets/pg"
 kind = "text"
 level = "info"
 
+[telemetry.attributes]
+"k8s.namespace.name" = "payments"
+"service.instance.id" = "instance-1"
+
 [telemetry.metrics]
 kind = "prometheus"
+interval = "30s"
+timeout = "5s"
 
 [telemetry.tracer]
 kind = "otlp"
 url = "http://localhost:4318/v1/traces"
+
+[telemetry.tracer.sampler]
+kind = "ratio"
+ratio = 0.25
 
 [telemetry.tracer.headers]
 Authorization = "file:../test/secrets/telemetry"

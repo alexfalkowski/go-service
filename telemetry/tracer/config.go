@@ -15,6 +15,12 @@ type Config struct {
 	// exporter (for example via header.Map.Secrets or header.Map.MustSecrets).
 	Headers header.Map `yaml:"headers,omitempty" json:"headers,omitempty" toml:"headers,omitempty"`
 
+	// Sampler configures trace head sampling.
+	//
+	// A nil or empty sampler preserves the OpenTelemetry SDK default sampler and
+	// SDK environment handling. When set, it overrides those defaults.
+	Sampler *SamplerConfig `yaml:"sampler,omitempty" json:"sampler,omitempty" toml:"sampler,omitempty"`
+
 	// Kind selects the tracer/exporter implementation.
 	//
 	// An empty kind means tracing is not configured. This package supports "otlp" and
@@ -33,5 +39,25 @@ type Config struct {
 //
 // A nil *[Config] or empty Kind indicates tracing is disabled.
 func (c *Config) IsEnabled() bool {
+	return c != nil && c.Kind != ""
+}
+
+// SamplerConfig configures trace head sampling.
+type SamplerConfig struct {
+	// Kind selects the sampler implementation.
+	//
+	// Supported values are "always_on", "always_off", and "ratio".
+	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty" validate:"omitempty,oneof=always_on always_off ratio"`
+
+	// Ratio is the fraction used by the ratio sampler when starting root traces.
+	//
+	// Values must be between 0 and 1, inclusive. A zero ratio drops new root
+	// traces and a ratio of 1 samples every new root trace. Incoming parent
+	// sampling decisions are preserved.
+	Ratio float64 `yaml:"ratio,omitempty" json:"ratio,omitempty" toml:"ratio,omitempty" validate:"gte=0,lte=1"`
+}
+
+// IsEnabled reports whether sampler configuration is present.
+func (c *SamplerConfig) IsEnabled() bool {
 	return c != nil && c.Kind != ""
 }

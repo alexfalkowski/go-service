@@ -26,6 +26,7 @@ var Module = di.Module(
 	di.Constructor(environmentConfig), di.Constructor(cacheConfig),
 	di.Constructor(debugConfig), di.Constructor(idConfig), di.Constructor(timeConfig),
 	di.Constructor(pgConfig), di.Constructor(featureConfig), di.Constructor(hooksConfig),
+	di.Constructor(attributeMap),
 	di.Constructor(loggerConfig), di.Constructor(tracerConfig), di.Constructor(metricsConfig),
 	di.Constructor(accessConfig), di.Constructor(grpcConfig), di.Constructor(httpConfig),
 )

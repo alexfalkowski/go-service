@@ -8,7 +8,8 @@
 //
 // The provider is configured with a Resource describing the running service instance,
 // including standard service identity attributes (host ID, service name, service version,
-// and deployment environment name).
+// and deployment environment name) plus any configured resource attributes. Fixed
+// service identity attributes take precedence on duplicate keys.
 //
 // # Enablement model
 //
@@ -39,6 +40,10 @@
 //
 // The supported kind is "otlp". Unknown non-empty kinds cause Register to return
 // ErrNotFound.
+//
+// [Config.Sampler] optionally configures head sampling. When omitted, Register
+// preserves the OpenTelemetry SDK default sampler and SDK sampler environment
+// handling. When set, it overrides those defaults.
 //
 // The exporter request headers are provided by [Config.Headers]. Header values may be
 // configured as go-service "source strings" (for example "env:NAME", "file:/path", or a

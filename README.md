@@ -486,10 +486,18 @@ Telemetry config root is `telemetry.Config`:
 
 ```yaml
 telemetry:
+  attributes:
+    k8s.namespace.name: payments
+    service.instance.id: instance-1
   logger: ...
   metrics: ...
   tracer: ...
 ```
+
+`attributes` are plain OpenTelemetry resource labels attached to logs, metrics,
+and traces. They are not source strings. Fixed go-service identity attributes
+such as `host.id`, `service.name`, `service.version`, and
+`deployment.environment.name` take precedence if the same key is configured.
 
 ### Logging
 
@@ -568,9 +576,14 @@ telemetry:
   metrics:
     kind: otlp
     url: http://localhost:9009/otlp/v1/metrics
+    interval: 30s
+    timeout: 5s
     headers:
       Authorization: env:OTLP_METRICS_AUTH
 ```
+
+`interval` and `timeout` apply only to OTLP push metrics. When either value is
+unset or zero, the OpenTelemetry SDK default is used.
 
 ### Tracing
 
@@ -581,12 +594,27 @@ telemetry:
   tracer:
     kind: otlp
     url: http://localhost:4318/v1/traces
+    sampler:
+      kind: ratio
+      ratio: 0.25
     headers:
       Authorization: env:OTLP_TRACES_AUTH
 ```
 
 > [!NOTE]
 > Current tracer wiring exports via OTLP/HTTP when `telemetry.tracer.kind` is `otlp` and `url` is configured.
+>
+> Supported sampler kinds:
+>
+> - `always_on`: record every trace.
+> - `always_off`: drop every trace.
+> - `ratio`: follow an incoming parent span's sampled decision when the request
+>   already has trace context; otherwise record the configured fraction of new
+>   root traces. Set `ratio` between `0` and `1`, where `0` drops new root
+>   traces and `1` records all new root traces.
+>
+> When `sampler` is omitted, go-service preserves the OpenTelemetry SDK default
+> sampler and SDK sampler environment handling.
 
 ### Telemetry libraries used
 

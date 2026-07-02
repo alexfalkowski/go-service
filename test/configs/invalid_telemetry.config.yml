@@ -1,0 +1,10 @@
+telemetry:
+  metrics:
+    kind: otlp
+    interval: -1s
+    timeout: -1s
+  tracer:
+    kind: otlp
+    sampler:
+      kind: ratio
+      ratio: 1.1

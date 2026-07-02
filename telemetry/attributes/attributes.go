@@ -2,14 +2,15 @@ package attributes
 
 import (
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
 )
 
 // SchemaURL is the OpenTelemetry semantic conventions schema URL used by this package.
 //
 // It is an alias of [semconv.SchemaURL] and is typically passed to
-// [go.opentelemetry.io/otel/sdk/resource.NewWithAttributes] to declare which semantic-convention schema version
-// the provided attributes follow.
+// [resource.NewWithAttributes] to declare which semantic-convention schema
+// version the provided attributes follow.
 const SchemaURL = semconv.SchemaURL
 
 // Key aliases [attribute.Key] for callers that want to work with OpenTelemetry
@@ -25,6 +26,18 @@ type Key = attribute.Key
 //
 // Functions in this package return KeyValue-compatible values.
 type KeyValue = attribute.KeyValue
+
+// Resource aliases [resource.Resource] for callers that want to exchange
+// OpenTelemetry resources through this package without importing the SDK
+// resource package directly.
+type Resource = resource.Resource
+
+// Map contains configured OpenTelemetry resource attributes.
+//
+// Values are plain labels, not go-service source strings. Provider identity
+// attributes added by [NewResource] take precedence over duplicate configured
+// keys.
+type Map map[string]string
 
 // DBSystemNamePostgreSQL identifies PostgreSQL as the value of the
 // db.system.name semantic-convention attribute.
@@ -122,4 +135,24 @@ func DeploymentEnvironmentName(env string) attribute.KeyValue {
 	}
 
 	return semconv.DeploymentEnvironmentNameDevelopment
+}
+
+// NewResource constructs the OpenTelemetry resource used by go-service providers.
+//
+// Configured resource attributes are added first, then the fixed go-service
+// identity attributes are appended so they win on duplicate keys.
+func NewResource(attrs Map, id, name, version, environment string) *Resource {
+	resourceAttrs := make([]attribute.KeyValue, 0, len(attrs)+4)
+	for key, value := range attrs {
+		resourceAttrs = append(resourceAttrs, attribute.String(key, value))
+	}
+
+	resourceAttrs = append(resourceAttrs,
+		HostID(id),
+		ServiceName(name),
+		ServiceVersion(version),
+		DeploymentEnvironmentName(environment),
+	)
+
+	return resource.NewWithAttributes(SchemaURL, resourceAttrs...)
 }

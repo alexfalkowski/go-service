@@ -10,7 +10,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	sdk "go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/resource"
 )
 
 var (
@@ -29,12 +28,15 @@ type MeterProviderParams struct {
 	// meter provider with the application.
 	Lifecycle di.Lifecycle
 
-	// Config enables metrics when non-nil and supplies exporter settings.
-	Config *Config
-
 	// Reader is the SDK reader/exporter that NewMeterProvider will attach to the provider.
 	// A nil reader disables metrics even when Config is set.
 	Reader sdk.Reader
+
+	// Config enables metrics when non-nil and supplies exporter settings.
+	Config *Config
+
+	// Attributes are optional OpenTelemetry resource attributes attached to metrics.
+	Attributes attributes.Map `optional:"true"`
 
 	// ID is the host identifier used for the resource's host.id attribute.
 	ID env.ID
@@ -71,12 +73,12 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		return noopProvider
 	}
 
-	attrs := resource.NewWithAttributes(
-		attributes.SchemaURL,
-		attributes.HostID(params.ID.String()),
-		attributes.ServiceName(params.Name.String()),
-		attributes.ServiceVersion(params.Version.String()),
-		attributes.DeploymentEnvironmentName(params.Environment.String()),
+	attrs := attributes.NewResource(
+		params.Attributes,
+		params.ID.String(),
+		params.Name.String(),
+		params.Version.String(),
+		params.Environment.String(),
 	)
 	provider := sdk.NewMeterProvider(sdk.WithReader(params.Reader), sdk.WithResource(attrs))
 	setMeterProvider(provider, true)

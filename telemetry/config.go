@@ -1,6 +1,7 @@
 package telemetry
 
 import (
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
@@ -21,6 +22,14 @@ import (
 // own enable/disable semantics based on their specific config (for example nil
 // config or an empty kind).
 type Config struct {
+	// Attributes are OpenTelemetry resource attributes attached to all configured
+	// telemetry providers.
+	//
+	// Values are plain resource labels, not source strings. Fixed service identity
+	// attributes such as service.name and service.version take precedence over
+	// duplicate keys.
+	Attributes attributes.Map `yaml:"attributes,omitempty" json:"attributes,omitempty" toml:"attributes,omitempty"`
+
 	// Logger configures application/system logging output and exporters.
 	Logger *logger.Config `yaml:"logger,omitempty" json:"logger,omitempty" toml:"logger,omitempty"`
 

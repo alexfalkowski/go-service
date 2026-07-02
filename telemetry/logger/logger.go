@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 )
 
 const (
@@ -96,6 +97,10 @@ type LoggerParams struct {
 	//
 	// A nil Config disables logging and causes NewLogger to return (nil, nil).
 	Config *Config
+
+	// Attributes are optional OpenTelemetry resource attributes attached to
+	// exporter-backed logs.
+	Attributes attributes.Map `optional:"true"`
 
 	// ID identifies the host or instance emitting logs.
 	//

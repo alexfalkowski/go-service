@@ -57,6 +57,7 @@ func TestValidHomeFileConfig(t *testing.T) {
 func TestInvalidFileConfig(t *testing.T) {
 	files := []string{
 		test.FilePath("configs/invalid.yml"),
+		test.FilePath("configs/invalid_telemetry.config.yml"),
 		test.FilePath("configs/invalid_trace.yml"),
 		test.FilePath("configs/missing.yml"),
 		test.FilePath("configs/script.sh"),
@@ -367,9 +368,15 @@ func verifyTelemetryConfig(t *testing.T, cfg *config.Config) {
 
 	require.Equal(t, "text", cfg.Telemetry.Logger.Kind)
 	require.Equal(t, "info", cfg.Telemetry.Logger.Level)
+	require.Equal(t, "payments", cfg.Telemetry.Attributes["k8s.namespace.name"])
+	require.Equal(t, "instance-1", cfg.Telemetry.Attributes["service.instance.id"])
 	require.Equal(t, "prometheus", cfg.Telemetry.Metrics.Kind)
+	require.Equal(t, 30*time.Second, cfg.Telemetry.Metrics.Interval)
+	require.Equal(t, 5*time.Second, cfg.Telemetry.Metrics.Timeout)
 	require.Equal(t, "http://localhost:4318/v1/traces", cfg.Telemetry.Tracer.URL)
 	require.Equal(t, "otlp", cfg.Telemetry.Tracer.Kind)
+	require.Equal(t, "ratio", cfg.Telemetry.Tracer.Sampler.Kind)
+	require.InDelta(t, 0.25, cfg.Telemetry.Tracer.Sampler.Ratio, 0.001)
 }
 
 func verifyTimeConfig(t *testing.T, cfg *config.Config) {
