@@ -94,6 +94,14 @@ func (d *DBs) SetConnMaxLifetime(v time.Duration) {
 	}
 }
 
+// SetConnMaxIdleTime sets the maximum amount of time a connection may remain idle
+// across all pools.
+func (d *DBs) SetConnMaxIdleTime(v time.Duration) {
+	for _, db := range d.databases() {
+		db.SetConnMaxIdleTime(v.Duration())
+	}
+}
+
 // SetMaxIdleConns sets the maximum number of idle connections across all pools.
 func (d *DBs) SetMaxIdleConns(v int) {
 	for _, db := range d.databases() {

@@ -360,6 +360,7 @@ func TestInvalidSQLPort(t *testing.T) {
 		Readers:         []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
 		MaxOpenConns:    5,
 		MaxIdleConns:    5,
+		ConnMaxIdleTime: 30 * time.Minute,
 		ConnMaxLifetime: time.Hour,
 	}}
 

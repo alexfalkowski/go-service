@@ -109,6 +109,7 @@ func connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Optio
 		return nil, err
 	}
 
+	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
 	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
 	db.SetMaxOpenConns(cfg.MaxOpenConns)

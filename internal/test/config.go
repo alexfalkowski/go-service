@@ -329,6 +329,7 @@ func NewPGConfigWithDSNs(writers, readers []sql.DSN) *pg.Config {
 			Readers:         readers,
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,
+			ConnMaxIdleTime: 30 * time.Minute,
 			ConnMaxLifetime: time.Hour,
 		},
 	}
