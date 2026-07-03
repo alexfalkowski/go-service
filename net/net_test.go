@@ -40,6 +40,12 @@ func TestSplitAndJoinHostPort(t *testing.T) {
 	require.Equal(t, "localhost:9000", net.JoinHostPort(host, port))
 }
 
+func TestLookupPort(t *testing.T) {
+	port, err := net.LookupPort(t.Context(), "tcp", "9000")
+	require.NoError(t, err)
+	require.Equal(t, 9000, port)
+}
+
 func TestSplitNetworkAddress(t *testing.T) {
 	network, address, ok := net.SplitNetworkAddress("tcp://localhost:9000")
 	require.True(t, ok)

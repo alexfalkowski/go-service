@@ -1,6 +1,9 @@
 package tracer
 
-import "github.com/alexfalkowski/go-service/v2/telemetry/header"
+import (
+	"github.com/alexfalkowski/go-service/v2/telemetry/header"
+	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
+)
 
 // Config configures OpenTelemetry tracing export.
 type Config struct {
@@ -24,15 +27,22 @@ type Config struct {
 	// Kind selects the tracer/exporter implementation.
 	//
 	// An empty kind means tracing is not configured. This package supports "otlp" and
-	// wires an OTLP/HTTP exporter for that kind.
-	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+	// wires an OTLP exporter for that kind.
+	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty" validate:"omitempty,oneof=otlp"`
+
+	// Protocol selects the OTLP transport protocol.
+	//
+	// Supported values are "http" and "grpc". When empty, "http" is used.
+	// This field only applies when Kind is "otlp".
+	Protocol string `yaml:"protocol,omitempty" json:"protocol,omitempty" toml:"protocol,omitempty" validate:"omitempty,oneof=http grpc"`
 
 	// URL is the destination endpoint for the selected Kind, when applicable.
 	//
-	// For "otlp", this is the required OTLP/HTTP traces endpoint URL. It must be a
-	// valid HTTP URL. Standard OpenTelemetry endpoint environment variables are not used as fallbacks;
+	// For "otlp" over HTTP, this is the required OTLP/HTTP traces endpoint URL.
+	// For "otlp" over gRPC, this is the required collector host:port endpoint.
+	// Standard OpenTelemetry endpoint environment variables are not used as fallbacks;
 	// configure this value explicitly through go-service config.
-	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty" validate:"omitempty,http_url"`
+	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 }
 
 // IsEnabled reports whether tracing is configured.
@@ -40,6 +50,17 @@ type Config struct {
 // A nil *[Config] or empty Kind indicates tracing is disabled.
 func (c *Config) IsEnabled() bool {
 	return c != nil && c.Kind != ""
+}
+
+// GetProtocol returns the configured OTLP transport protocol.
+//
+// A nil receiver or an empty value falls back to OTLP/HTTP.
+func (c *Config) GetProtocol() string {
+	if c == nil || c.Protocol == "" {
+		return otlp.ProtocolHTTP
+	}
+
+	return c.Protocol
 }
 
 // SamplerConfig configures trace head sampling.

@@ -17,6 +17,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/net/url"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
@@ -29,7 +30,9 @@ import (
 )
 
 func init() {
-	telemetry.Register()
+	propagator, err := telemetry.NewPropagator(nil)
+	runtime.Must(err)
+	telemetry.RegisterPropagation(propagator)
 	grpc.Register(FS)
 	http.Register(FS)
 	Encoder.Register("error", NewEncoder(ErrFailed))

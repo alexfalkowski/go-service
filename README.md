@@ -501,6 +501,7 @@ telemetry:
     service.instance.id: instance-1
   logger: ...
   metrics: ...
+  propagation: ...
   tracer: ...
 ```
 
@@ -508,6 +509,36 @@ telemetry:
 and traces. They are not source strings. Fixed go-service identity attributes
 such as `host.id`, `service.name`, `service.version`, and
 `deployment.environment.name` take precedence if the same key is configured.
+
+### Propagation
+
+OpenTelemetry context propagation defaults to W3C Trace Context plus W3C Baggage
+for extraction and injection:
+
+```yaml
+telemetry:
+  propagation:
+    formats:
+      - tracecontext
+      - baggage
+```
+
+Mixed tracing estates can enable additional formats:
+
+```yaml
+telemetry:
+  propagation:
+    formats:
+      - tracecontext
+      - baggage
+      - b3
+```
+
+Supported propagators are `tracecontext`, `baggage`, `b3`, `b3multi`, and
+`none`. Use `none` only as the sole value for `formats`.
+
+B3 uses the upstream B3 propagator, which supports both single-header and
+multi-header B3 formats.
 
 ### Logging
 
@@ -548,6 +579,7 @@ telemetry:
   logger:
     kind: otlp
     level: info
+    protocol: http
     url: http://localhost:4318/v1/logs
     headers:
       Authorization: env:OTLP_LOGS_AUTH
@@ -559,6 +591,8 @@ telemetry:
 
 > [!WARNING]
 > OTLP exporters reject non-loopback `http://` endpoints when headers are configured. Use HTTPS for remote collectors that require authorization headers; cleartext with headers is accepted only for local loopback endpoints.
+>
+> OTLP/gRPC exporters use `protocol: grpc` and a `host:port` endpoint such as `localhost:4317`. Header-bearing remote gRPC endpoints are rejected until TLS configuration is supported for OTLP/gRPC exporters.
 >
 > OTLP exporter endpoints must be set in go-service config fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and `telemetry.tracer.url`. Standard OpenTelemetry endpoint environment variables such as `OTEL_EXPORTER_OTLP_ENDPOINT` are not used as fallback sources.
 
@@ -585,6 +619,7 @@ When Prometheus is enabled on HTTP transport, metrics are exposed at `/<name>/me
 telemetry:
   metrics:
     kind: otlp
+    protocol: http
     url: http://localhost:9009/otlp/v1/metrics
     interval: 30s
     timeout: 5s
@@ -603,6 +638,7 @@ Tracing supports OTLP exporter config:
 telemetry:
   tracer:
     kind: otlp
+    protocol: http
     url: http://localhost:4318/v1/traces
     sampler:
       kind: ratio
@@ -612,7 +648,8 @@ telemetry:
 ```
 
 > [!NOTE]
-> Current tracer wiring exports via OTLP/HTTP when `telemetry.tracer.kind` is `otlp` and `url` is configured.
+> OTLP exporters default to `protocol: http`. Set `protocol: grpc` and use a
+> `host:port` `url`, such as `localhost:4317`, to export through OTLP/gRPC.
 >
 > Supported sampler kinds:
 >

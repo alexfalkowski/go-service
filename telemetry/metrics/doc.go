@@ -31,7 +31,7 @@
 //
 // [Config.Kind] selects the reader/exporter implementation. This package typically supports:
 //
-//   - "otlp": uses an OTLP/HTTP metrics exporter and a periodic reader.
+//   - "otlp": uses an OTLP metrics exporter and a periodic reader.
 //   - "prometheus": uses the Prometheus exporter/reader with a namespace derived from
 //     the service name.
 //
@@ -39,6 +39,8 @@
 //
 // For "otlp", [Config.Interval] and [Config.Timeout] configure the periodic
 // reader export cadence. Zero values preserve the OpenTelemetry SDK defaults.
+// [Config.Protocol] selects the OTLP transport protocol. The empty value uses
+// OTLP/HTTP. Set "grpc" to use OTLP/gRPC with a host:port endpoint.
 //
 // # OTLP endpoint security
 //
@@ -46,6 +48,8 @@
 // rejected to avoid sending credential-bearing headers over cleartext transport.
 // Use "https://" for external collectors. Local development collectors on
 // "localhost" or loopback IP addresses may use "http://".
+// Header-bearing remote OTLP/gRPC endpoints are rejected until TLS configuration
+// is supported for OTLP/gRPC exporters.
 //
 // # Global provider installation
 //

@@ -41,6 +41,12 @@ func TestLoggerAllowsUserLevelAttr(t *testing.T) {
 	})
 }
 
+func TestConfigGetProtocol(t *testing.T) {
+	require.Equal(t, otlp.ProtocolHTTP, (*logger.Config)(nil).GetProtocol())
+	require.Equal(t, otlp.ProtocolHTTP, (&logger.Config{}).GetProtocol())
+	require.Equal(t, otlp.ProtocolGRPC, (&logger.Config{Protocol: otlp.ProtocolGRPC}).GetProtocol())
+}
+
 func TestMetaTruncatesLongValues(t *testing.T) {
 	value := strings.Repeat("a", 2048)
 	ctx := meta.WithAttributes(
@@ -165,6 +171,51 @@ func TestInvalidOTLPEndpoint(t *testing.T) {
 	cfg := &logger.Config{
 		Kind: "otlp",
 		URL:  "http://collector.example.com/v1/logs",
+		Headers: header.Map{
+			"Authorization": "Bearer token",
+		},
+	}
+	params := logger.LoggerParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}
+
+	_, err := logger.NewLogger(params)
+	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+}
+
+func TestOTLPGRPCLogger(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &logger.Config{
+		Kind:     "otlp",
+		Protocol: "grpc",
+		URL:      "localhost:4317",
+	}
+	params := logger.LoggerParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}
+
+	log, err := logger.NewLogger(params)
+	require.NoError(t, err)
+	require.NotNil(t, log)
+	require.NoError(t, lc.Stop(t.Context()))
+}
+
+func TestInvalidOTLPGRPCEndpoint(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &logger.Config{
+		Kind:     "otlp",
+		Protocol: "grpc",
+		URL:      "collector.example.com:4317",
 		Headers: header.Map{
 			"Authorization": "Bearer token",
 		},

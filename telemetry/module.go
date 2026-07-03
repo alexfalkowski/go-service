@@ -18,10 +18,12 @@ import (
 //   - tracing ([github.com/alexfalkowski/go-service/v2/telemetry/tracer.Module]), and
 //   - OpenTelemetry internal error handling ([github.com/alexfalkowski/go-service/v2/telemetry/errors.Module]).
 //
-// In addition, Module registers [Register], which configures the global
-// OpenTelemetry TextMapPropagator (W3C Trace Context + W3C Baggage). This affects
-// context extraction/injection performed by instrumentation that relies on the
-// global propagator (for example HTTP/gRPC instrumentation).
+// In addition, Module constructs [NewPropagator] and registers it with
+// [RegisterPropagation], which configures the global OpenTelemetry
+// TextMapPropagator. By default this uses W3C Trace Context plus W3C Baggage
+// for extraction and injection. This affects context extraction/injection
+// performed by instrumentation that relies on the global propagator (for example
+// HTTP/gRPC instrumentation).
 //
 // Note: This module wires providers/exporters and global configuration. It does
 // not itself create spans/metrics/log records; instrumentation elsewhere in your
@@ -31,5 +33,6 @@ var Module = di.Module(
 	metrics.Module,
 	tracer.Module,
 	errors.Module,
-	di.Register(Register),
+	di.Constructor(NewPropagator),
+	di.Register(RegisterPropagation),
 )

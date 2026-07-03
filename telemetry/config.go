@@ -15,6 +15,7 @@ import (
 //
 //   - Logger configures application/system logging and any configured log exporters.
 //   - Metrics configures metrics collection/readers/exporters.
+//   - Propagation configures context propagation formats.
 //   - Tracer configures distributed tracing (spans) and exporters.
 //
 // Enablement is intentionally modeled as presence: a nil *[Config] indicates that
@@ -35,6 +36,9 @@ type Config struct {
 
 	// Metrics configures metrics collection and exporting.
 	Metrics *metrics.Config `yaml:"metrics,omitempty" json:"metrics,omitempty" toml:"metrics,omitempty"`
+
+	// Propagation configures OpenTelemetry context propagation.
+	Propagation *PropagationConfig `yaml:"propagation,omitempty" json:"propagation,omitempty" toml:"propagation,omitempty"`
 
 	// Tracer configures distributed tracing (spans) and exporting.
 	Tracer *tracer.Config `yaml:"tracer,omitempty" json:"tracer,omitempty" toml:"tracer,omitempty"`

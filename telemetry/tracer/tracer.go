@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-sync"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	sdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -113,7 +114,7 @@ type TracerParams struct {
 //
 // When tracing is configured with kind "otlp", Register:
 //
-//  1. Creates an OTLP/HTTP trace exporter using [Config.URL] and [Config.Headers].
+//  1. Creates an OTLP trace exporter using [Config.Protocol], [Config.URL], and [Config.Headers].
 //  2. Creates an OpenTelemetry resource describing the running service.
 //  3. Installs a [go.opentelemetry.io/otel/sdk/trace.TracerProvider] globally.
 //  4. Appends lifecycle hooks to start the exporter on application start and to
@@ -131,17 +132,11 @@ func Register(params TracerParams) error {
 
 	switch params.Config.Kind {
 	case "otlp":
-		if err := otlp.ValidateEndpoint(params.Config.URL, params.Config.Headers); err != nil {
+		if err := otlp.ValidateEndpoint(params.Config.GetProtocol(), params.Config.URL, params.Config.Headers); err != nil {
 			return prefix(err)
 		}
 
-		opts := []otlptracehttp.Option{otlptracehttp.WithHeaders(params.Config.Headers)}
-		if !strings.IsEmpty(params.Config.URL) {
-			opts = append(opts, otlptracehttp.WithEndpointURL(params.Config.URL))
-		}
-
-		client := otlptracehttp.NewClient(opts...)
-		exporter := otlptrace.NewUnstarted(client)
+		exporter := newOTLPExporter(params.Config)
 		attrs := attributes.NewResource(
 			params.Attributes,
 			params.ID.String(),
@@ -179,6 +174,23 @@ func Register(params TracerParams) error {
 		return nil
 	default:
 		return ErrNotFound
+	}
+}
+
+func newOTLPExporter(cfg *Config) *otlptrace.Exporter {
+	switch cfg.GetProtocol() {
+	case otlp.ProtocolGRPC:
+		opts := []otlptracegrpc.Option{otlptracegrpc.WithHeaders(cfg.Headers), otlptracegrpc.WithInsecure()}
+		if !strings.IsEmpty(cfg.URL) {
+			opts = append(opts, otlptracegrpc.WithEndpoint(cfg.URL))
+		}
+		return otlptrace.NewUnstarted(otlptracegrpc.NewClient(opts...))
+	default:
+		opts := []otlptracehttp.Option{otlptracehttp.WithHeaders(cfg.Headers)}
+		if !strings.IsEmpty(cfg.URL) {
+			opts = append(opts, otlptracehttp.WithEndpointURL(cfg.URL))
+		}
+		return otlptrace.NewUnstarted(otlptracehttp.NewClient(opts...))
 	}
 }
 

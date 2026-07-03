@@ -77,8 +77,12 @@ kind = "prometheus"
 interval = "30s"
 timeout = "5s"
 
+[telemetry.propagation]
+formats = ["tracecontext", "baggage", "b3"]
+
 [telemetry.tracer]
 kind = "otlp"
+protocol = "http"
 url = "http://localhost:4318/v1/traces"
 
 [telemetry.tracer.sampler]

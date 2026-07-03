@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
+	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
@@ -22,21 +23,28 @@ type Config struct {
 	//
 	// Supported kinds depend on what the service links in, but this package typically supports:
 	//
-	//   - "otlp": export metrics via OpenTelemetry OTLP/HTTP using a periodic reader.
+	//   - "otlp": export metrics via OpenTelemetry OTLP using a periodic reader.
 	//   - "prometheus": expose metrics via the Prometheus exporter/reader.
 	//
 	// If Kind is unknown, reader construction will return an error (see the metrics package's
 	// ErrNotFound).
-	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty" validate:"omitempty,oneof=otlp prometheus"`
+
+	// Protocol selects the OTLP transport protocol.
+	//
+	// Supported values are "http" and "grpc". When empty, "http" is used.
+	// This field only applies when Kind is "otlp".
+	Protocol string `yaml:"protocol,omitempty" json:"protocol,omitempty" toml:"protocol,omitempty" validate:"omitempty,oneof=http grpc"`
 
 	// URL is the destination endpoint for the selected Kind, when applicable.
 	//
-	// For "otlp", this is the required OTLP/HTTP metrics endpoint URL. It must be a
-	// valid HTTP URL. Standard OpenTelemetry endpoint environment variables are not used as fallbacks;
+	// For "otlp" over HTTP, this is the required OTLP/HTTP metrics endpoint URL.
+	// For "otlp" over gRPC, this is the required collector host:port endpoint.
+	// Standard OpenTelemetry endpoint environment variables are not used as fallbacks;
 	// configure this value explicitly through go-service config.
 	//
 	// For "prometheus", URL is typically ignored by the exporter/reader implementation.
-	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty" validate:"omitempty,http_url"`
+	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 
 	// Interval is the OTLP periodic export interval.
 	//
@@ -61,4 +69,15 @@ func (c *Config) IsEnabled() bool {
 // IsPrometheus reports whether the configured Kind is "prometheus".
 func (c *Config) IsPrometheus() bool {
 	return c.Kind == "prometheus"
+}
+
+// GetProtocol returns the configured OTLP transport protocol.
+//
+// A nil receiver or an empty value falls back to OTLP/HTTP.
+func (c *Config) GetProtocol() string {
+	if c == nil || c.Protocol == "" {
+		return otlp.ProtocolHTTP
+	}
+
+	return c.Protocol
 }

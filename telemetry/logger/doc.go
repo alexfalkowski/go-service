@@ -20,7 +20,7 @@
 // [Config.Kind] selects the handler/exporter implementation. This package typically
 // supports the following kinds:
 //
-//   - "otlp": exports logs via OpenTelemetry OTLP/HTTP and bridges slog to OTel
+//   - "otlp": exports logs via OpenTelemetry OTLP and bridges slog to OTel
 //   - "json": writes JSON logs to stdout
 //   - "text": writes text logs to stdout
 //   - "tint": writes colorized logs to stdout (using tint)
@@ -56,6 +56,8 @@
 // rejected to avoid sending credential-bearing headers over cleartext transport.
 // Use "https://" for external collectors. Local development collectors on
 // "localhost" or loopback IP addresses may use "http://".
+// Header-bearing remote OTLP/gRPC endpoints are rejected until TLS configuration
+// is supported for OTLP/gRPC exporters.
 //
 // # Notes
 //
