@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/crypto"
 	"github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
@@ -49,27 +50,27 @@ func TestValid(t *testing.T) {
 	dec, err = rsa.NewDecryptor(gen, test.PEM, cfg)
 	require.NoError(t, err)
 
-	ciphertext, err := enc.Encrypt(strings.Bytes("test"))
+	ciphertext, err := enc.Encrypt(crypto.Message{Data: strings.Bytes("test")})
 	require.NoError(t, err)
 
-	plaintext, err := dec.Decrypt(ciphertext)
+	plaintext, err := dec.Decrypt(crypto.Message{Data: ciphertext})
 	require.NoError(t, err)
 	require.Equal(t, "test", bytes.String(plaintext))
 
 	privateKey, err := cfg.PrivateKey(test.PEM)
 	require.NoError(t, err)
 
-	plaintext, err = rsa.DecryptOAEP(gen, privateKey, ciphertext)
+	plaintext, err = rsa.DecryptOAEP(gen, privateKey, crypto.Message{Data: ciphertext})
 	require.NoError(t, err)
 	require.Equal(t, "test", bytes.String(plaintext))
 
 	publicKey, err := cfg.PublicKey(test.PEM)
 	require.NoError(t, err)
 
-	ciphertext, err = rsa.EncryptOAEP(gen, publicKey, strings.Bytes("test"))
+	ciphertext, err = rsa.EncryptOAEP(gen, publicKey, crypto.Message{Data: strings.Bytes("test")})
 	require.NoError(t, err)
 
-	plaintext, err = dec.Decrypt(ciphertext)
+	plaintext, err = dec.Decrypt(crypto.Message{Data: ciphertext})
 	require.NoError(t, err)
 	require.Equal(t, "test", bytes.String(plaintext))
 
@@ -129,11 +130,11 @@ func TestInvalid(t *testing.T) {
 		dec, err := rsa.NewDecryptor(gen, test.PEM, cfg)
 		require.NoError(t, err)
 
-		ciphertext, err := enc.Encrypt(strings.Bytes("test"))
+		ciphertext, err := enc.Encrypt(crypto.Message{Data: strings.Bytes("test")})
 		require.NoError(t, err)
 
 		ciphertext = append(ciphertext, byte('w'))
-		_, err = dec.Decrypt(ciphertext)
+		_, err = dec.Decrypt(crypto.Message{Data: ciphertext})
 		require.Error(t, err)
 	})
 
@@ -143,9 +144,39 @@ func TestInvalid(t *testing.T) {
 		dec, err := rsa.NewDecryptor(gen, test.PEM, test.NewRSA())
 		require.NoError(t, err)
 
-		_, err = dec.Decrypt(strings.Bytes("test"))
+		_, err = dec.Decrypt(crypto.Message{Data: strings.Bytes("test")})
 		require.Error(t, err)
 	})
+}
+
+func TestEncryptorAuthenticatesMetadata(t *testing.T) {
+	gen := rand.NewGenerator(rand.NewReader())
+	cfg := test.NewRSA()
+
+	enc, err := rsa.NewEncryptor(gen, test.PEM, cfg)
+	require.NoError(t, err)
+
+	dec, err := rsa.NewDecryptor(gen, test.PEM, cfg)
+	require.NoError(t, err)
+
+	ciphertext, err := enc.Encrypt(crypto.Message{
+		Data: strings.Bytes("test"),
+		Meta: strings.Bytes("tenant=acme"),
+	})
+	require.NoError(t, err)
+
+	plaintext, err := dec.Decrypt(crypto.Message{
+		Data: ciphertext,
+		Meta: strings.Bytes("tenant=acme"),
+	})
+	require.NoError(t, err)
+	require.Equal(t, "test", bytes.String(plaintext))
+
+	_, err = dec.Decrypt(crypto.Message{
+		Data: ciphertext,
+		Meta: strings.Bytes("tenant=other"),
+	})
+	require.Error(t, err)
 }
 
 func TestInvalidKey(t *testing.T) {

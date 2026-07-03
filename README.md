@@ -1157,6 +1157,11 @@ crypto:
 > - Ed25519 expects PKIX `PUBLIC KEY` and PKCS#8 `PRIVATE KEY` PEM blocks.
 > - SSH keys must be Ed25519 SSH keys: public keys use `authorized_keys` format and private keys use SSH private key format.
 
+AES and RSA encryption APIs accept `crypto.Message`. `Data` is encrypted or
+decrypted, while `Meta` is authenticated context that must match during
+decryption. AES-GCM uses `Meta` as associated data; RSA-OAEP uses it as the
+OAEP label.
+
 ### Crypto Dependencies
 
 ![Dependencies](./assets/crypto.png)

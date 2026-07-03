@@ -3,7 +3,8 @@ package rsa
 import (
 	"crypto/rsa"
 
-	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v2/crypto/message"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -22,7 +23,7 @@ func NewEncryptor(generator *rand.Generator, decoder *pem.Decoder, cfg *Config) 
 		return nil, nil
 	}
 	if strings.IsEmpty(cfg.Public) {
-		return nil, crypto.ErrMissingKey
+		return nil, errors.ErrMissingKey
 	}
 
 	pub, err := cfg.PublicKey(decoder)
@@ -39,17 +40,18 @@ type Encryptor struct {
 	publicKey *rsa.PublicKey
 }
 
-// Encrypt encrypts msg using RSA-OAEP with SHA-512 and returns the ciphertext.
+// Encrypt encrypts msg.Data using RSA-OAEP with SHA-512 and returns the ciphertext.
 //
 // OAEP parameters:
 //   - hash: SHA-512
-//   - label: nil
+//   - label: msg.Meta
 //
-// The message must fit RSA-OAEP's plaintext limit for the public key size:
+// msg.Meta is authenticated context and must be supplied unchanged to Decrypt.
+// msg.Data must fit RSA-OAEP's plaintext limit for the public key size:
 // modulus bytes minus two SHA-512 digest lengths minus two bytes. For this
 // package's default 4096-bit keys, the maximum plaintext size is 382 bytes.
 //
 // The randomness source is the injected generator's reader.
-func (e *Encryptor) Encrypt(msg []byte) ([]byte, error) {
+func (e *Encryptor) Encrypt(msg message.Message) ([]byte, error) {
 	return EncryptOAEP(e.generator, e.publicKey, msg)
 }

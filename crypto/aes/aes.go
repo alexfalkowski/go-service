@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v2/crypto/message"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -66,14 +67,15 @@ type Cipher struct {
 	aead cipher.AEAD
 }
 
-// Encrypt encrypts msg using AES-GCM and returns nonce||ciphertext.
+// Encrypt encrypts msg.Data using AES-GCM and returns nonce||ciphertext.
 //
 // A fresh nonce is generated for each call and is prefixed to the returned byte slice so Decrypt can recover it.
 // The returned slice includes the GCM authentication tag as produced by [cipher.AEAD.Seal].
+// msg.Meta is authenticated as AES-GCM associated data and must be supplied unchanged to Decrypt.
 //
 // Errors are returned if plaintext exceeds AES-GCM's per-nonce maximum or nonce generation fails.
-func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
-	if int64(len(msg)) > maxGCMPlaintextSize {
+func (c *Cipher) Encrypt(msg message.Message) ([]byte, error) {
+	if int64(len(msg.Data)) > maxGCMPlaintextSize {
 		return nil, ErrInvalidPlaintextLength
 	}
 
@@ -82,25 +84,25 @@ func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return c.aead.Seal(nonce, nonce, msg, nil), nil
+	return c.aead.Seal(nonce, nonce, msg.Data, msg.Meta), nil
 }
 
 // Decrypt decrypts a value produced by Encrypt.
 //
-// The msg parameter must be in the format nonce||ciphertext, where nonce length is determined by the
-// underlying AEAD (GCM) nonce size.
+// The msg.Data field must be in the format nonce||ciphertext, where nonce length is determined by the
+// underlying AEAD (GCM) nonce size. msg.Meta must match the metadata supplied to Encrypt.
 //
 // Errors:
-//   - ErrInvalidLength if msg is shorter than the required nonce size.
-//   - Any error returned by the underlying AEAD if authentication fails or if msg is malformed.
-func (c *Cipher) Decrypt(msg []byte) ([]byte, error) {
+//   - ErrInvalidLength if msg.Data is shorter than the required nonce size.
+//   - Any error returned by the underlying AEAD if authentication fails or if msg.Data is malformed.
+func (c *Cipher) Decrypt(msg message.Message) ([]byte, error) {
 	size := c.aead.NonceSize()
-	if len(msg) < size {
+	if len(msg.Data) < size {
 		return nil, ErrInvalidLength
 	}
 
-	nonce, text := msg[:size], msg[size:]
-	return c.aead.Open(nil, nonce, text, nil)
+	nonce, text := msg.Data[:size], msg.Data[size:]
+	return c.aead.Open(nil, nonce, text, msg.Meta)
 }
 
 func newAEAD(key []byte) (cipher.AEAD, error) {

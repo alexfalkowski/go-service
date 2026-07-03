@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/crypto"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
 	"github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
@@ -32,10 +33,10 @@ func TestValidCipher(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, cipher)
 
-	enc, err := cipher.Encrypt(strings.Bytes("test"))
+	enc, err := cipher.Encrypt(crypto.Message{Data: strings.Bytes("test")})
 	require.NoError(t, err)
 
-	d, err := cipher.Decrypt(enc)
+	d, err := cipher.Decrypt(crypto.Message{Data: enc})
 	require.NoError(t, err)
 	require.Equal(t, "test", bytes.String(d))
 
@@ -88,7 +89,7 @@ func TestInvalidCipher(t *testing.T) {
 		cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
 		require.NoError(t, err)
 
-		_, err = cipher.Encrypt(strings.Bytes("test"))
+		_, err = cipher.Encrypt(crypto.Message{Data: strings.Bytes("test")})
 		require.Error(t, err)
 	})
 
@@ -98,11 +99,11 @@ func TestInvalidCipher(t *testing.T) {
 		cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
 		require.NoError(t, err)
 
-		enc, err := cipher.Encrypt(strings.Bytes("test"))
+		enc, err := cipher.Encrypt(crypto.Message{Data: strings.Bytes("test")})
 		require.NoError(t, err)
 		enc = append(enc, byte('w'))
 
-		_, err = cipher.Decrypt(enc)
+		_, err = cipher.Decrypt(crypto.Message{Data: enc})
 		require.Error(t, err)
 	})
 
@@ -112,9 +113,35 @@ func TestInvalidCipher(t *testing.T) {
 		cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
 		require.NoError(t, err)
 
-		_, err = cipher.Decrypt(strings.Bytes("test"))
+		_, err = cipher.Decrypt(crypto.Message{Data: strings.Bytes("test")})
 		require.ErrorIs(t, err, aes.ErrInvalidLength)
 	})
+}
+
+func TestCipherAuthenticatesMetadata(t *testing.T) {
+	gen := rand.NewGenerator(rand.NewReader())
+
+	cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
+	require.NoError(t, err)
+
+	enc, err := cipher.Encrypt(crypto.Message{
+		Data: strings.Bytes("test"),
+		Meta: strings.Bytes("tenant=acme"),
+	})
+	require.NoError(t, err)
+
+	d, err := cipher.Decrypt(crypto.Message{
+		Data: enc,
+		Meta: strings.Bytes("tenant=acme"),
+	})
+	require.NoError(t, err)
+	require.Equal(t, "test", bytes.String(d))
+
+	_, err = cipher.Decrypt(crypto.Message{
+		Data: enc,
+		Meta: strings.Bytes("tenant=other"),
+	})
+	require.Error(t, err)
 }
 
 func TestEncryptUsesRawNonceBytes(t *testing.T) {
@@ -123,7 +150,7 @@ func TestEncryptUsesRawNonceBytes(t *testing.T) {
 	cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
 	require.NoError(t, err)
 
-	enc, err := cipher.Encrypt(strings.Bytes("test"))
+	enc, err := cipher.Encrypt(crypto.Message{Data: strings.Bytes("test")})
 	require.NoError(t, err)
 	require.Equal(t, make([]byte, 12), enc[:12])
 }
