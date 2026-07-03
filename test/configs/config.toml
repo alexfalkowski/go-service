@@ -47,7 +47,11 @@ timeout = "1s"
 attempts = 3
 
 [hooks]
-secret = "file:../test/secrets/hooks"
+key = "current"
+
+[hooks.secrets]
+current = "file:../test/secrets/hooks"
+previous = "file:../test/secrets/hooks_previous"
 
 [id]
 kind = "uuid"

@@ -6,8 +6,7 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //
 // It provides constructors for:
 //   - *[Generator] (via [NewGenerator]), which generates new secret values suitable for Standard Webhooks, and
-//   - *[github.com/standard-webhooks/standard-webhooks/libraries/go.Webhook] (via [NewHook]), which
-//     constructs a webhook instance from configuration.
+//   - *[Hook] (via [NewHook]), which constructs a signer/verifier from configuration.
 //
 // Disabled behavior: if hooks configuration is disabled (nil *[Config]), [NewHook] returns (nil, nil) so
 // downstream consumers can treat webhook verification/signing as optional.

@@ -1,20 +1,17 @@
 package hooks
 
-import "github.com/alexfalkowski/go-service/v2/os"
-
 // Config configures Standard Webhooks secret loading.
 type Config struct {
-	// Secret is a "source string" that resolves to the shared Standard Webhooks secret.
+	// Secrets contains named Standard Webhooks secrets trusted for verification.
 	//
-	// It supports the go-service source string pattern implemented by [os.FS.ReadSource]:
-	//   - "env:NAME" to read the secret from an environment variable,
-	//   - "file:/path/to/secret" to read the secret from a file, or
-	//   - any other value treated as the literal secret.
+	// Key selects the active secret used for signing.
+	// Verification accepts signatures from every configured secret.
+	Secrets Secrets `yaml:"secrets,omitempty" json:"secrets,omitempty" toml:"secrets,omitempty"`
+
+	// Key is the active secret id used for signing.
 	//
-	// The resolved value is passed to the Standard Webhooks constructor. It must be accepted by that
-	// constructor, such as the literal value returned by [Generator.Generate] or the same value with the
-	// Standard Webhooks `whsec_` prefix. Security note: keep this secret private and avoid logging it.
-	Secret string `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
+	// The selected entry must exist in Secrets.
+	Key string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
 }
 
 // IsEnabled reports whether hooks configuration is present.
@@ -24,9 +21,10 @@ func (c *Config) IsEnabled() bool {
 	return c != nil
 }
 
-// GetSecret resolves and returns the webhook secret bytes using the configured Secret source.
-//
-// It delegates to [os.FS.ReadSource] with [Config.Secret] and returns any read/resolve error from that operation.
-func (c *Config) GetSecret(fs *os.FS) ([]byte, error) {
-	return fs.ReadSource(c.Secret)
+// Secrets maps secret ids to Standard Webhooks secret source strings.
+type Secrets map[string]string
+
+// Get returns the secret with id.
+func (s Secrets) Get(id string) string {
+	return s[id]
 }

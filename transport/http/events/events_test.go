@@ -80,6 +80,33 @@ func TestSendNotReceive(t *testing.T) {
 	require.Nil(t, world.Event)
 }
 
+func TestReceiveAcceptsPreviousWebhookSecret(t *testing.T) {
+	mux := http.NewServeMux()
+	receiver := transportevents.NewReceiver(mux, httphooks.NewWebhook(newRotatingHook(t), nil))
+	var received *events.Event
+	receiver.Register(t.Context(), "/events", func(_ context.Context, e events.Event) events.Result {
+		received = &e
+		return nil
+	})
+
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
+	sender := transportevents.NewSender(
+		httphooks.NewWebhook(newSingleHook(t, webhookSecret("b3RoZXI=")), &test.IDSequenceGenerator{IDs: []string{"id-1"}}),
+	)
+
+	e := events.NewEvent()
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
+
+	result := sender.Send(events.ContextWithTarget(t.Context(), server.URL+"/events"), e)
+	test.RequireACK(t, result)
+	require.NotNil(t, received)
+	require.Equal(t, "test", bytes.String(received.Data()))
+}
+
 func TestReceiveCanReportProcessingFailure(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 	world.Receiver.Register(t.Context(), "/events", func(_ context.Context, _ events.Event) events.Result {
@@ -229,4 +256,41 @@ func sendWithDeadline(t *testing.T, opts ...transportevents.SenderOption) (time.
 	test.RequireACK(t, result)
 
 	return start, <-deadlines
+}
+
+func newRotatingHook(t *testing.T) *hooks.Hook {
+	t.Helper()
+
+	hook, err := hooks.NewHook(test.FS, &hooks.Config{
+		Key: "current",
+		Secrets: hooks.Secrets{
+			"current":  webhookSecret("dGVzdA=="),
+			"previous": webhookSecret("b3RoZXI="),
+		},
+	})
+	require.NoError(t, err)
+
+	return hook
+}
+
+func newSingleHook(t *testing.T, secret string) *hooks.Hook {
+	t.Helper()
+
+	hook, err := hooks.NewHook(test.FS, newHookConfig(secret))
+	require.NoError(t, err)
+
+	return hook
+}
+
+func newHookConfig(secret string) *hooks.Config {
+	return &hooks.Config{
+		Key: "current",
+		Secrets: hooks.Secrets{
+			"current": secret,
+		},
+	}
+}
+
+func webhookSecret(secret string) string {
+	return "whsec_" + secret
 }

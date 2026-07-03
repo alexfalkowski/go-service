@@ -354,7 +354,11 @@ func verifyIDConfig(t *testing.T, cfg *config.Config) {
 func verifyHooksConfig(t *testing.T, cfg *config.Config) {
 	t.Helper()
 
-	require.Equal(t, "file:../test/secrets/hooks", cfg.Hooks.Secret)
+	require.Equal(t, "current", cfg.Hooks.Key)
+	current := cfg.Hooks.Secrets.Get("current")
+	require.Equal(t, "file:../test/secrets/hooks", current)
+	previous := cfg.Hooks.Secrets.Get("previous")
+	require.Equal(t, "file:../test/secrets/hooks_previous", previous)
 }
 
 func verifySQLConfig(t *testing.T, cfg *config.Config) {

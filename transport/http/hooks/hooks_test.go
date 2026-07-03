@@ -4,33 +4,31 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
+	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"github.com/stretchr/testify/require"
 )
 
 func TestVerify(t *testing.T) {
-	hook := hooks.NewWebhook(nil, nil)
+	hook := httphooks.NewWebhook(nil, nil)
 	req := &http.Request{Body: &test.ErrReaderCloser{}}
 
 	require.NoError(t, hook.Verify(req))
 }
 
 func TestSign(t *testing.T) {
-	hook := hooks.NewWebhook(nil, nil)
+	hook := httphooks.NewWebhook(nil, nil)
 	req := &http.Request{Body: &test.ErrReaderCloser{}}
 
 	require.NoError(t, hook.Sign(req))
 }
 
 func TestSignOverwritesHeaders(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
-	require.NoError(t, err)
-
-	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1", "id-2"}})
+	hook := httphooks.NewWebhook(newHook(t), &test.IDSequenceGenerator{IDs: []string{"id-1", "id-2"}})
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
 
 	require.NoError(t, hook.Sign(req))
@@ -42,10 +40,7 @@ func TestSignOverwritesHeaders(t *testing.T) {
 }
 
 func TestSignClosesOriginalBody(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
-	require.NoError(t, err)
-
-	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	hook := httphooks.NewWebhook(newHook(t), &test.IDSequenceGenerator{IDs: []string{"id-1"}})
 	body := &test.TrackedBody{Reader: strings.NewReader("body")}
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", body)
 
@@ -54,10 +49,7 @@ func TestSignClosesOriginalBody(t *testing.T) {
 }
 
 func TestVerifyClosesOriginalBody(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
-	require.NoError(t, err)
-
-	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	hook := httphooks.NewWebhook(newHook(t), &test.IDSequenceGenerator{IDs: []string{"id-1"}})
 	signReq := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", strings.NewReader("body"))
 	require.NoError(t, hook.Sign(signReq))
 
@@ -70,10 +62,7 @@ func TestVerifyClosesOriginalBody(t *testing.T) {
 }
 
 func TestSignAndVerifyNilBody(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
-	require.NoError(t, err)
-
-	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	hook := httphooks.NewWebhook(newHook(t), &test.IDSequenceGenerator{IDs: []string{"id-1"}})
 	req := &http.Request{Header: make(http.Header)}
 
 	require.NoError(t, hook.Sign(req))
@@ -85,10 +74,7 @@ func TestSignAndVerifyNilBody(t *testing.T) {
 }
 
 func TestSignHandlesNilRequestHeader(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
-	require.NoError(t, err)
-
-	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	hook := httphooks.NewWebhook(newHook(t), &test.IDSequenceGenerator{IDs: []string{"id-1"}})
 	req := &http.Request{Body: http.NoBody}
 
 	require.NoError(t, hook.Sign(req))
@@ -99,8 +85,8 @@ func TestSignHandlesNilRequestHeader(t *testing.T) {
 }
 
 func TestRoundTripper(t *testing.T) {
-	hook := hooks.NewWebhook(nil, nil)
-	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	hook := httphooks.NewWebhook(nil, nil)
+	rt := httphooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
 	}))
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", &test.ErrReaderCloser{})
@@ -111,11 +97,8 @@ func TestRoundTripper(t *testing.T) {
 }
 
 func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
-	require.NoError(t, err)
-
-	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
-	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	hook := httphooks.NewWebhook(newHook(t), &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	rt := httphooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookID))
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookSignature))
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookTimestamp))
@@ -133,11 +116,8 @@ func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
 }
 
 func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
-	require.NoError(t, err)
-
-	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
-	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	hook := httphooks.NewWebhook(newHook(t), &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	rt := httphooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookID))
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookSignature))
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookTimestamp))
@@ -154,12 +134,9 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 }
 
 func TestRoundTripperDoesNotSignCrossOriginRedirect(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
-	require.NoError(t, err)
-
-	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	hook := httphooks.NewWebhook(newHook(t), &test.IDSequenceGenerator{IDs: []string{"id-1"}})
 	called := false
-	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	rt := httphooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		called = true
 		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
 	}))
@@ -181,7 +158,7 @@ func TestRoundTripperDoesNotSignCrossOriginRedirect(t *testing.T) {
 
 func TestRoundTripperWithNilHookDelegatesCrossOriginRedirect(t *testing.T) {
 	called := false
-	rt := hooks.NewRoundTripper(nil, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	rt := httphooks.NewRoundTripper(nil, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		called = true
 		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
 	}))
@@ -199,12 +176,9 @@ func TestRoundTripperWithNilHookDelegatesCrossOriginRedirect(t *testing.T) {
 }
 
 func TestRoundTripperClosesBodyOnSignError(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
-	require.NoError(t, err)
-
-	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	hook := httphooks.NewWebhook(newHook(t), &test.IDSequenceGenerator{IDs: []string{"id-1"}})
 	called := false
-	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+	rt := httphooks.NewRoundTripper(hook, test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
 		called = true
 		return nil, nil
 	}))
@@ -219,7 +193,7 @@ func TestRoundTripperClosesBodyOnSignError(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
-	handler := hooks.NewHandler(nil)
+	handler := httphooks.NewHandler(nil)
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
 	res := httptest.NewRecorder()
 	called := false
@@ -234,6 +208,15 @@ func TestHandler(t *testing.T) {
 
 type errTrackedBody struct {
 	*test.TrackedBody
+}
+
+func newHook(t *testing.T) *hooks.Hook {
+	t.Helper()
+
+	hook, err := hooks.NewHook(test.FS, test.NewHook())
+	require.NoError(t, err)
+
+	return hook
 }
 
 func (*errTrackedBody) Read([]byte) (int, error) {

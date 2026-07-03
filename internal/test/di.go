@@ -18,6 +18,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/health"
 	healthchecker "github.com/alexfalkowski/go-service/v2/health/checker"
+	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/module"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
@@ -31,7 +32,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	httptoken "github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/open-feature/go-sdk/openfeature"
-	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
 // NoopLifecycle is a [di.Lifecycle] test double that ignores appended hooks.
@@ -143,7 +143,7 @@ func invokeMeter(_ metrics.Meter) {}
 
 func invokeFeatureClient(_ *openfeature.Client) {}
 
-func invokeWebhooks(_ *webhooks.Webhook, _ *events.Receiver) {}
+func invokeWebhooks(_ *hooks.Hook, _ *events.Receiver) {}
 
 func invokeEnvironment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 

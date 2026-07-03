@@ -4,10 +4,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/hooks"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	eventhooks "github.com/alexfalkowski/go-service/v2/transport/http/events/hooks"
 	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
-	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,7 +30,7 @@ func TestHandlerWithNilHook(t *testing.T) {
 }
 
 func TestHandlerRejectsBinaryCloudEventsWithWebhook(t *testing.T) {
-	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	webhook, err := hooks.NewHook(test.FS, test.NewHook())
 	require.NoError(t, err)
 
 	called := false

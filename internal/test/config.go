@@ -146,7 +146,10 @@ func NewHMAC() *hmac.Config {
 // NewHook returns webhook verification config backed by the shared hook secret fixture.
 func NewHook() *hooks.Config {
 	return &hooks.Config{
-		Secret: FilePath("secrets/hooks"),
+		Key: "current",
+		Secrets: hooks.Secrets{
+			"current": FilePath("secrets/hooks"),
+		},
 	}
 }
 

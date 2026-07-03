@@ -3,12 +3,13 @@ package hooks
 import (
 	"strconv"
 
+	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/body"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/time"
-	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
+	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
 // NewWebhook constructs a Webhook signer/verifier.
@@ -22,7 +23,7 @@ import (
 //
 // Signing requires a non-nil generator. Passing a nil generator is valid for verification-only use, but
 // calling [Webhook.Sign] or using the signing [RoundTripper] with a nil generator will panic.
-func NewWebhook(hook *hooks.Webhook, generator id.Generator) *Webhook {
+func NewWebhook(hook *hooks.Hook, generator id.Generator) *Webhook {
 	if hook == nil {
 		return nil
 	}
@@ -37,10 +38,10 @@ func NewWebhook(hook *hooks.Webhook, generator id.Generator) *Webhook {
 //   - request body buffering with restoration of `req.Body`
 //   - consistent header setting for webhook id, signature, and timestamp
 //
-// The underlying `hook` must be configured with your shared secret(s) as required by the Standard Webhooks library.
+// The underlying `hook` must be configured with your shared secret(s).
 // The `generator` is used to mint webhook ids during signing.
 type Webhook struct {
-	hook      *hooks.Webhook
+	hook      *hooks.Hook
 	generator id.Generator
 }
 
@@ -82,11 +83,14 @@ func (h *Webhook) Sign(req *http.Request) error {
 	}
 	now := time.Now()
 	id := h.generator.Generate()
-	signature, _ := h.hook.Sign(id, now, payload)
+	signature, err := h.hook.Sign(id, now, payload)
+	if err != nil {
+		return err
+	}
 
-	req.Header.Set(hooks.HeaderWebhookID, id)
-	req.Header.Set(hooks.HeaderWebhookSignature, signature)
-	req.Header.Set(hooks.HeaderWebhookTimestamp, strconv.FormatInt(now.Unix(), 10))
+	req.Header.Set(webhooks.HeaderWebhookID, id)
+	req.Header.Set(webhooks.HeaderWebhookSignature, signature)
+	req.Header.Set(webhooks.HeaderWebhookTimestamp, strconv.FormatInt(now.Unix(), 10))
 
 	return nil
 }
