@@ -57,8 +57,11 @@ func TestValidHomeFileConfig(t *testing.T) {
 func TestInvalidFileConfig(t *testing.T) {
 	files := []string{
 		test.FilePath("configs/invalid.yml"),
+		test.FilePath("configs/invalid_logger_kind.yml"),
+		test.FilePath("configs/invalid_metrics_kind.yml"),
 		test.FilePath("configs/invalid_telemetry.config.yml"),
 		test.FilePath("configs/invalid_trace.yml"),
+		test.FilePath("configs/invalid_tracer_kind.yml"),
 		test.FilePath("configs/missing.yml"),
 		test.FilePath("configs/script.sh"),
 		test.FilePath("config.go"),
@@ -377,8 +380,10 @@ func verifyTelemetryConfig(t *testing.T, cfg *config.Config) {
 	require.Equal(t, "prometheus", cfg.Telemetry.Metrics.Kind)
 	require.Equal(t, 30*time.Second, cfg.Telemetry.Metrics.Interval)
 	require.Equal(t, 5*time.Second, cfg.Telemetry.Metrics.Timeout)
+	require.Equal(t, []string{"tracecontext", "baggage", "b3"}, cfg.Telemetry.Propagation.Formats)
 	require.Equal(t, "http://localhost:4318/v1/traces", cfg.Telemetry.Tracer.URL)
 	require.Equal(t, "otlp", cfg.Telemetry.Tracer.Kind)
+	require.Equal(t, "http", cfg.Telemetry.Tracer.Protocol)
 	require.Equal(t, "ratio", cfg.Telemetry.Tracer.Sampler.Kind)
 	require.InDelta(t, 0.25, cfg.Telemetry.Tracer.Sampler.Ratio, 0.001)
 }

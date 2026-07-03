@@ -9,22 +9,18 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/sdk/log"
 )
 
 func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
-	if err := otlp.ValidateEndpoint(params.Config.URL, params.Config.Headers); err != nil {
+	if err := otlp.ValidateEndpoint(params.Config.GetProtocol(), params.Config.URL, params.Config.Headers); err != nil {
 		return nil, err
 	}
 
-	opts := []otlploghttp.Option{otlploghttp.WithHeaders(params.Config.Headers)}
-	if !strings.IsEmpty(params.Config.URL) {
-		opts = append(opts, otlploghttp.WithEndpointURL(params.Config.URL))
-	}
-
-	exporter, err := otlploghttp.New(context.Background(), opts...)
+	exporter, err := newOtlpExporter(params.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +49,23 @@ func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
 	handler := otelslog.NewHandler(params.Name.String(), otelslog.WithLoggerProvider(provider))
 
 	return slog.New(&levelHandler{handler: handler, level: level(params.Config)}), nil
+}
+
+func newOtlpExporter(cfg *Config) (log.Exporter, error) {
+	switch cfg.GetProtocol() {
+	case otlp.ProtocolGRPC:
+		opts := []otlploggrpc.Option{otlploggrpc.WithHeaders(cfg.Headers), otlploggrpc.WithInsecure()}
+		if !strings.IsEmpty(cfg.URL) {
+			opts = append(opts, otlploggrpc.WithEndpoint(cfg.URL))
+		}
+		return otlploggrpc.New(context.Background(), opts...)
+	default:
+		opts := []otlploghttp.Option{otlploghttp.WithHeaders(cfg.Headers)}
+		if !strings.IsEmpty(cfg.URL) {
+			opts = append(opts, otlploghttp.WithEndpointURL(cfg.URL))
+		}
+		return otlploghttp.New(context.Background(), opts...)
+	}
 }
 
 type levelHandler struct {

@@ -3,7 +3,7 @@
 // # What it does
 //
 // When configured with kind "otlp", Register configures and installs a process-wide
-// OpenTelemetry TracerProvider (via otel.SetTracerProvider) backed by an OTLP/HTTP
+// OpenTelemetry TracerProvider (via otel.SetTracerProvider) backed by an OTLP
 // exporter.
 //
 // The provider is configured with a Resource describing the running service instance,
@@ -24,9 +24,9 @@
 // spans using this provider.
 //
 // This package does not configure propagation. Propagation is configured at the top-level
-// telemetry package ([Register]), which sets the global TextMapPropagator used for
-// context extraction/injection on supported transports (HTTP/gRPC) when instrumentation
-// uses the global propagator.
+// telemetry package ([github.com/alexfalkowski/go-service/v2/telemetry.RegisterPropagation]), which sets the global
+// TextMapPropagator used for context extraction/injection on supported transports
+// (HTTP/gRPC) when instrumentation uses the global propagator.
 //
 // # Lifecycle behavior
 //
@@ -40,6 +40,9 @@
 //
 // The supported kind is "otlp". Unknown non-empty kinds cause Register to return
 // ErrNotFound.
+//
+// [Config.Protocol] selects the OTLP transport protocol. The empty value uses
+// OTLP/HTTP. Set "grpc" to use OTLP/gRPC with a host:port endpoint.
 //
 // [Config.Sampler] optionally configures head sampling. When omitted, Register
 // preserves the OpenTelemetry SDK default sampler and SDK sampler environment
@@ -55,4 +58,6 @@
 // rejected to avoid sending credential-bearing headers over cleartext transport.
 // Use "https://" for external collectors. Local development collectors on
 // "localhost" or loopback IP addresses may use "http://".
+// Header-bearing remote OTLP/gRPC endpoints are rejected until TLS configuration
+// is supported for OTLP/gRPC exporters.
 package tracer

@@ -61,8 +61,14 @@ telemetry:
     kind: prometheus
     interval: 30s
     timeout: 5s
+  propagation:
+    formats:
+      - tracecontext
+      - baggage
+      - b3
   tracer:
     kind: otlp
+    protocol: http
     url: http://localhost:4318/v1/traces
     sampler:
       kind: ratio

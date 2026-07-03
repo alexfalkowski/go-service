@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
@@ -49,16 +50,11 @@ func NewReader(lc di.Lifecycle, name env.Name, cfg *Config) (metric.Reader, erro
 func newReader(name env.Name, cfg *Config) (metric.Reader, error) {
 	switch cfg.Kind {
 	case "otlp":
-		if err := otlp.ValidateEndpoint(cfg.URL, cfg.Headers); err != nil {
+		if err := otlp.ValidateEndpoint(cfg.GetProtocol(), cfg.URL, cfg.Headers); err != nil {
 			return nil, prefix(err)
 		}
 
-		opts := []otlpmetrichttp.Option{otlpmetrichttp.WithHeaders(cfg.Headers)}
-		if !strings.IsEmpty(cfg.URL) {
-			opts = append(opts, otlpmetrichttp.WithEndpointURL(cfg.URL))
-		}
-
-		exporter, err := otlpmetrichttp.New(context.Background(), opts...)
+		exporter, err := newOTLPExporter(cfg)
 		if err != nil {
 			return nil, prefix(err)
 		}
@@ -71,6 +67,23 @@ func newReader(name env.Name, cfg *Config) (metric.Reader, error) {
 		return exporter, nil
 	default:
 		return nil, ErrNotFound
+	}
+}
+
+func newOTLPExporter(cfg *Config) (metric.Exporter, error) {
+	switch cfg.GetProtocol() {
+	case otlp.ProtocolGRPC:
+		opts := []otlpmetricgrpc.Option{otlpmetricgrpc.WithHeaders(cfg.Headers), otlpmetricgrpc.WithInsecure()}
+		if !strings.IsEmpty(cfg.URL) {
+			opts = append(opts, otlpmetricgrpc.WithEndpoint(cfg.URL))
+		}
+		return otlpmetricgrpc.New(context.Background(), opts...)
+	default:
+		opts := []otlpmetrichttp.Option{otlpmetrichttp.WithHeaders(cfg.Headers)}
+		if !strings.IsEmpty(cfg.URL) {
+			opts = append(opts, otlpmetrichttp.WithEndpointURL(cfg.URL))
+		}
+		return otlpmetrichttp.New(context.Background(), opts...)
 	}
 }
 

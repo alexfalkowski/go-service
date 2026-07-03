@@ -51,6 +51,7 @@ telemetry:
     kind: prometheus
   tracer:
     kind: otlp
+    protocol: wrong
     url: "this is not a URL"
     headers:
       Authorization: file:../test/secrets/telemetry

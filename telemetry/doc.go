@@ -20,8 +20,9 @@
 //
 //   - Config: a single configuration root that embeds logging/metrics/tracing
 //     configuration.
-//   - Register: a small initialization hook that configures global OpenTelemetry propagation.
-//   - Module: an Fx module that composes telemetry submodules and applies Register.
+//   - NewPropagator and RegisterPropagation: construction and registration for
+//     global OpenTelemetry propagation.
+//   - Module: an Fx module that composes telemetry submodules and applies RegisterPropagation.
 //
 // # Configuration
 //
@@ -30,6 +31,7 @@
 //
 //   - Logger (*[github.com/alexfalkowski/go-service/v2/telemetry/logger.Config])
 //   - Metrics (*[github.com/alexfalkowski/go-service/v2/telemetry/metrics.Config])
+//   - Propagation (*[PropagationConfig])
 //   - Tracer (*[github.com/alexfalkowski/go-service/v2/telemetry/tracer.Config])
 //
 // A nil Config typically means "telemetry disabled" at the top level, while
@@ -47,30 +49,37 @@
 // headers. When headers are configured, non-loopback "http://" endpoints are rejected to avoid sending
 // credential-bearing headers over cleartext transport. Use "https://" for external collectors. Local
 // development collectors on "localhost" or loopback IP addresses may use "http://".
+// OTLP/gRPC exporters use host:port endpoints. Header-bearing remote gRPC endpoints are rejected until
+// TLS configuration is supported for OTLP/gRPC exporters.
 //
 // OTLP endpoints must be supplied through go-service config fields such as telemetry.logger.url,
 // telemetry.metrics.url, and telemetry.tracer.url. Standard OpenTelemetry endpoint environment variables
 // such as OTEL_EXPORTER_OTLP_ENDPOINT are not used as fallback sources by this package.
 //
-// # Global propagation (Register)
+// # Global propagation
 //
-// Register configures the global OpenTelemetry TextMapPropagator to a composite
-// propagator containing:
+// NewPropagator constructs an OpenTelemetry TextMapPropagator. When propagation
+// config is nil or empty, it defaults to the W3C propagators:
 //
 //   - W3C Trace Context ([propagation.TraceContext])
 //   - W3C Baggage ([propagation.Baggage])
 //
+// [PropagationConfig] can configure the propagation formats. Supported
+// propagator names are "tracecontext", "baggage", "b3", "b3multi", and
+// "none". RegisterPropagation installs a constructed propagator globally.
+//
 // This affects context extraction/injection for supported transports
 // (HTTP/gRPC) when instrumentation uses the global propagator.
 //
-// Register is intended to be called once during startup (for example via Module).
+// RegisterPropagation is intended to be called once during startup (for example
+// via Module).
 //
 // # Dependency injection (Module)
 //
 // Module is an Fx module that wires the telemetry submodules into an
 // application. In particular it composes the logger/metrics/tracer/error-handler
-// modules and registers Register so propagation is configured as part of
-// application startup.
+// modules, constructs NewPropagator, and registers RegisterPropagation so
+// propagation is configured as part of application startup.
 //
 // Module does not itself create spans/metrics/log records; it wires
 // providers/exporters and global configuration so instrumentation elsewhere in

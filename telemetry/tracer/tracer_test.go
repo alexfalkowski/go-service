@@ -60,6 +60,12 @@ func TestConfigIsEnabled(t *testing.T) {
 	require.True(t, (&tracer.Config{Kind: "otlp"}).IsEnabled())
 }
 
+func TestConfigGetProtocol(t *testing.T) {
+	require.Equal(t, otlp.ProtocolHTTP, (*tracer.Config)(nil).GetProtocol())
+	require.Equal(t, otlp.ProtocolHTTP, (&tracer.Config{}).GetProtocol())
+	require.Equal(t, otlp.ProtocolGRPC, (&tracer.Config{Protocol: otlp.ProtocolGRPC}).GetProtocol())
+}
+
 func TestRegisterStopResetsGlobalProvider(t *testing.T) {
 	t.Cleanup(func() {
 		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
@@ -182,6 +188,44 @@ func TestRegisterInvalidOTLPEndpoint(t *testing.T) {
 		Config: &tracer.Config{
 			Kind: "otlp",
 			URL:  "http://collector.example.com/v1/traces",
+			Headers: header.Map{
+				"Authorization": "Bearer token",
+			},
+		},
+	})
+
+	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+}
+
+func TestRegisterOTLPGRPCExporter(t *testing.T) {
+	t.Cleanup(func() {
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+	})
+
+	err := tracer.Register(tracer.TracerParams{
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config: &tracer.Config{
+			Kind:     "otlp",
+			Protocol: "grpc",
+			URL:      "localhost:4317",
+		},
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+
+	require.NoError(t, err)
+	require.True(t, tracer.IsEnabled())
+}
+
+func TestRegisterInvalidOTLPGRPCEndpoint(t *testing.T) {
+	err := tracer.Register(tracer.TracerParams{
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config: &tracer.Config{
+			Kind:     "otlp",
+			Protocol: "grpc",
+			URL:      "collector.example.com:4317",
 			Headers: header.Map{
 				"Authorization": "Bearer token",
 			},

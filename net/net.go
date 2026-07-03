@@ -104,6 +104,12 @@ func SplitHostPort(addr string) (string, string, error) {
 	return net.SplitHostPort(addr)
 }
 
+// LookupPort returns the port number for network and service.
+func LookupPort(ctx context.Context, network, service string) (int, error) {
+	resolver := &net.Resolver{}
+	return resolver.LookupPort(ctx, network, service)
+}
+
 // JoinHostPort combines host and port into a network address.
 func JoinHostPort(host, port string) string {
 	return net.JoinHostPort(host, port)

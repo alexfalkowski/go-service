@@ -28,5 +28,6 @@ var Module = di.Module(
 	di.Constructor(pgConfig), di.Constructor(featureConfig), di.Constructor(hooksConfig),
 	di.Constructor(attributeMap),
 	di.Constructor(loggerConfig), di.Constructor(tracerConfig), di.Constructor(metricsConfig),
+	di.Constructor(propagationConfig),
 	di.Constructor(accessConfig), di.Constructor(grpcConfig), di.Constructor(httpConfig),
 )
