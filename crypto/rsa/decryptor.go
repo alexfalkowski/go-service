@@ -3,7 +3,8 @@ package rsa
 import (
 	"crypto/rsa"
 
-	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v2/crypto/message"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -22,7 +23,7 @@ func NewDecryptor(generator *rand.Generator, decoder *pem.Decoder, cfg *Config) 
 		return nil, nil
 	}
 	if strings.IsEmpty(cfg.Private) {
-		return nil, crypto.ErrMissingKey
+		return nil, errors.ErrMissingKey
 	}
 
 	pri, err := cfg.PrivateKey(decoder)
@@ -42,14 +43,15 @@ type Decryptor struct {
 	privateKey *rsa.PrivateKey
 }
 
-// Decrypt decrypts msg using RSA-OAEP with SHA-512 and returns the plaintext.
+// Decrypt decrypts msg.Data using RSA-OAEP with SHA-512 and returns the plaintext.
 //
 // OAEP parameters:
 //   - hash: SHA-512
-//   - label: nil
+//   - label: msg.Meta
 //
+// msg.Meta must match the metadata supplied to Encrypt.
 // The injected generator is passed through for API consistency, but RSA-OAEP decryption ignores
 // the randomness parameter.
-func (d *Decryptor) Decrypt(msg []byte) ([]byte, error) {
+func (d *Decryptor) Decrypt(msg message.Message) ([]byte, error) {
 	return DecryptOAEP(d.generator, d.privateKey, msg)
 }

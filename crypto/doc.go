@@ -11,6 +11,7 @@
 //
 // The root package intentionally stays small:
 //   - it defines the top-level [Config] used to enable/configure crypto subsystems, and
+//   - it re-exports [Message] for encryption APIs that bind data to metadata, and
 //   - it exports an Fx/Dig module that wires the supported crypto implementations.
 //
 // # Configuration conventions
