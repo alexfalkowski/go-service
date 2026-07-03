@@ -3,6 +3,7 @@ package tracer_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
@@ -80,6 +81,90 @@ func TestRegisterStopResetsGlobalProvider(t *testing.T) {
 	require.NoError(t, lc.Stop(t.Context()))
 
 	require.False(t, tracer.IsEnabled())
+}
+
+func TestRegisterSampler(t *testing.T) {
+	t.Cleanup(func() {
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+	})
+
+	tests := []struct {
+		sampler       *tracer.SamplerConfig
+		ctx           func(context.Context) context.Context
+		name          string
+		wantRecording bool
+	}{
+		{
+			name:          "always on",
+			sampler:       &tracer.SamplerConfig{Kind: "always_on"},
+			wantRecording: true,
+		},
+		{
+			name:    "always off",
+			sampler: &tracer.SamplerConfig{Kind: "always_off"},
+		},
+		{
+			name:    "ratio zero",
+			sampler: &tracer.SamplerConfig{Kind: "ratio", Ratio: 0},
+		},
+		{
+			name:          "ratio one",
+			sampler:       &tracer.SamplerConfig{Kind: "ratio", Ratio: 1},
+			wantRecording: true,
+		},
+		{
+			name:          "ratio keeps sampled parent",
+			sampler:       &tracer.SamplerConfig{Kind: "ratio", Ratio: 0},
+			ctx:           withSampledRemoteParent,
+			wantRecording: true,
+		},
+		{
+			name:    "ratio keeps unsampled parent",
+			sampler: &tracer.SamplerConfig{Kind: "ratio", Ratio: 1},
+			ctx:     withUnsampledRemoteParent,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			if tt.ctx != nil {
+				ctx = tt.ctx(ctx)
+			}
+
+			requireSamplerRecording(t, tt.sampler, ctx, tt.wantRecording)
+		})
+	}
+}
+
+func TestRegisterInvalidSampler(t *testing.T) {
+	tests := []struct {
+		sampler *tracer.SamplerConfig
+		name    string
+	}{
+		{name: "invalid kind", sampler: &tracer.SamplerConfig{Kind: "wrong"}},
+		{name: "negative ratio", sampler: &tracer.SamplerConfig{Kind: "ratio", Ratio: -0.1}},
+		{name: "ratio above one", sampler: &tracer.SamplerConfig{Kind: "ratio", Ratio: 1.1}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tracer.Register(tracer.TracerParams{
+				Lifecycle: fxtest.NewLifecycle(t),
+				Config: &tracer.Config{
+					Kind:    "otlp",
+					URL:     "https://localhost:4318/v1/traces",
+					Sampler: tt.sampler,
+				},
+				ID:          test.ID,
+				Name:        test.Name,
+				Version:     test.Version,
+				Environment: test.Environment,
+			})
+
+			require.ErrorIs(t, err, tracer.ErrInvalidSampler)
+		})
+	}
 }
 
 func TestRegisterInvalidKind(t *testing.T) {
@@ -160,4 +245,43 @@ func TestRegisterMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 	})
 
 	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
+}
+
+func withSampledRemoteParent(ctx context.Context) context.Context {
+	return tracer.ContextWithRemoteSpanContext(ctx, tracer.NewSpanContext(tracer.SpanContextConfig{
+		TraceID:    tracer.TraceID{1},
+		SpanID:     tracer.SpanID{1},
+		TraceFlags: tracer.FlagsSampled,
+		Remote:     true,
+	}))
+}
+
+func requireSamplerRecording(t *testing.T, sampler *tracer.SamplerConfig, ctx context.Context, want bool) {
+	t.Helper()
+
+	require.NoError(t, tracer.Register(tracer.TracerParams{
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config: &tracer.Config{
+			Kind:    "otlp",
+			URL:     "https://localhost:4318/v1/traces",
+			Sampler: sampler,
+		},
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}))
+
+	_, span := tracer.GetProvider().Tracer(test.Name.String()).Start(ctx, "request")
+	defer span.End()
+
+	require.Equal(t, want, span.IsRecording())
+}
+
+func withUnsampledRemoteParent(ctx context.Context) context.Context {
+	return tracer.ContextWithRemoteSpanContext(ctx, tracer.NewSpanContext(tracer.SpanContextConfig{
+		TraceID: tracer.TraceID{1},
+		SpanID:  tracer.SpanID{1},
+		Remote:  true,
+	}))
 }

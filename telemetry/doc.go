@@ -36,6 +36,11 @@
 // subpackages may also support their own enable/disable semantics (for example
 // nil config or empty kind).
 //
+// [Config.Attributes] attaches plain OpenTelemetry resource labels to configured
+// logs, metrics, and traces. These values are not source strings. Fixed
+// go-service identity attributes such as service.name and service.version take
+// precedence over duplicate configured keys.
+//
 // # OTLP endpoint security
 //
 // Logger, metrics, and tracer OTLP exporters may send per-signal Headers fields as outbound request

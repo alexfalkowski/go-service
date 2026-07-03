@@ -1,6 +1,9 @@
 package metrics
 
-import "github.com/alexfalkowski/go-service/v2/telemetry/header"
+import (
+	"github.com/alexfalkowski/go-service/v2/telemetry/header"
+	"github.com/alexfalkowski/go-service/v2/time"
+)
 
 // Config configures OpenTelemetry metrics export.
 type Config struct {
@@ -34,6 +37,18 @@ type Config struct {
 	//
 	// For "prometheus", URL is typically ignored by the exporter/reader implementation.
 	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty" validate:"omitempty,http_url"`
+
+	// Interval is the OTLP periodic export interval.
+	//
+	// A zero value keeps the OpenTelemetry SDK default. Negative values are
+	// invalid. This field only applies when Kind is "otlp".
+	Interval time.Duration `yaml:"interval,omitempty" json:"interval,omitempty" toml:"interval,omitempty" validate:"gte=0"`
+
+	// Timeout is the OTLP periodic export timeout.
+	//
+	// A zero value keeps the OpenTelemetry SDK default. Negative values are
+	// invalid. This field only applies when Kind is "otlp".
+	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty" validate:"gte=0"`
 }
 
 // IsEnabled reports whether metrics configuration is present.

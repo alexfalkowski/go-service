@@ -46,14 +46,22 @@ sql:
     conn_max_idle_time: 30m
     conn_max_lifetime: 1h
 telemetry:
+  attributes:
+    k8s.namespace.name: payments
+    service.instance.id: instance-1
   logger:
     kind: text
     level: info
   metrics:
     kind: prometheus
+    interval: 30s
+    timeout: 5s
   tracer:
     kind: otlp
     url: http://localhost:4318/v1/traces
+    sampler:
+      kind: ratio
+      ratio: 0.25
     headers:
       Authorization: file:../test/secrets/telemetry
 time:

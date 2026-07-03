@@ -2,10 +2,18 @@ package config
 
 import (
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 )
+
+func attributeMap(cfg *Config) attributes.Map {
+	if cfg.Telemetry.IsEnabled() {
+		return cfg.Telemetry.Attributes
+	}
+	return nil
+}
 
 func loggerConfig(cfg *Config, fs *os.FS) *logger.Config {
 	if cfg.Telemetry.IsEnabled() && cfg.Telemetry.Logger.IsEnabled() {

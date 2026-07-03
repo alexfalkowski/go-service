@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-sync"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
@@ -30,11 +29,40 @@ type SpanExporter = sdk.SpanExporter
 // Provider is an alias for [trace.TracerProvider].
 type Provider = trace.TracerProvider
 
+// SpanContext is an alias for [trace.SpanContext].
+type SpanContext = trace.SpanContext
+
+// SpanContextConfig is an alias for [trace.SpanContextConfig].
+type SpanContextConfig = trace.SpanContextConfig
+
+// SpanID is an alias for [trace.SpanID].
+type SpanID = trace.SpanID
+
 // SDKProvider is an alias for [go.opentelemetry.io/otel/sdk/trace.TracerProvider].
 type SDKProvider = sdk.TracerProvider
 
+// TraceFlags is an alias for [trace.TraceFlags].
+type TraceFlags = trace.TraceFlags
+
+// TraceID is an alias for [trace.TraceID].
+type TraceID = trace.TraceID
+
 // ProviderOption is an alias for [go.opentelemetry.io/otel/sdk/trace.TracerProviderOption].
 type ProviderOption = sdk.TracerProviderOption
+
+// FlagsSampled is an alias for [trace.FlagsSampled].
+const FlagsSampled = trace.FlagsSampled
+
+// ContextWithRemoteSpanContext returns a copy of parent with sc set as the
+// current remote span context.
+func ContextWithRemoteSpanContext(parent context.Context, sc SpanContext) context.Context {
+	return trace.ContextWithRemoteSpanContext(parent, sc)
+}
+
+// NewSpanContext constructs a SpanContext from config.
+func NewSpanContext(config SpanContextConfig) SpanContext {
+	return trace.NewSpanContext(config)
+}
 
 // NewProvider constructs an OpenTelemetry SDK tracer provider.
 func NewProvider(opts ...ProviderOption) *SDKProvider {
@@ -63,6 +91,9 @@ type TracerParams struct {
 
 	// Config enables tracing when non-nil and supplies exporter settings.
 	Config *Config
+
+	// Attributes are optional OpenTelemetry resource attributes attached to traces.
+	Attributes attributes.Map `optional:"true"`
 
 	// ID is the host identifier used for the resource's host.id attribute.
 	ID env.ID
@@ -111,15 +142,24 @@ func Register(params TracerParams) error {
 
 		client := otlptracehttp.NewClient(opts...)
 		exporter := otlptrace.NewUnstarted(client)
-		attrs := resource.NewWithAttributes(
-			attributes.SchemaURL,
-			attributes.HostID(params.ID.String()),
-			attributes.ServiceName(params.Name.String()),
-			attributes.ServiceVersion(params.Version.String()),
-			attributes.DeploymentEnvironmentName(params.Environment.String()),
+		attrs := attributes.NewResource(
+			params.Attributes,
+			params.ID.String(),
+			params.Name.String(),
+			params.Version.String(),
+			params.Environment.String(),
 		)
 
-		provider := sdk.NewTracerProvider(sdk.WithResource(attrs), sdk.WithBatcher(exporter))
+		providerOpts := []sdk.TracerProviderOption{sdk.WithResource(attrs), sdk.WithBatcher(exporter)}
+		sampler, err := newSampler(params.Config.Sampler)
+		if err != nil {
+			return prefix(err)
+		}
+		if sampler != nil {
+			providerOpts = append(providerOpts, sdk.WithSampler(sampler))
+		}
+
+		provider := sdk.NewTracerProvider(providerOpts...)
 		setProvider(provider, true)
 
 		params.Lifecycle.Append(di.Hook{
@@ -145,4 +185,24 @@ func Register(params TracerParams) error {
 // IsEnabled reports whether this package has registered tracing as enabled.
 func IsEnabled() bool {
 	return enabled.Load()
+}
+
+func newSampler(cfg *SamplerConfig) (sdk.Sampler, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+	if cfg.Ratio < 0 || cfg.Ratio > 1 {
+		return nil, ErrInvalidSampler
+	}
+
+	switch cfg.Kind {
+	case "always_on":
+		return sdk.AlwaysSample(), nil
+	case "always_off":
+		return sdk.NeverSample(), nil
+	case "ratio":
+		return sdk.ParentBased(sdk.TraceIDRatioBased(cfg.Ratio)), nil
+	default:
+		return nil, ErrInvalidSampler
+	}
 }

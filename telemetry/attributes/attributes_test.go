@@ -7,6 +7,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestResourceMergesConfiguredAttributesWithIdentity(t *testing.T) {
+	t.Parallel()
+
+	resource := attributes.NewResource(
+		attributes.Map{
+			"k8s.namespace.name":                                 "payments",
+			string(attributes.HostID("").Key):                    "configured",
+			string(attributes.ServiceName("").Key):               "configured",
+			string(attributes.ServiceVersion("").Key):            "configured",
+			string(attributes.DeploymentEnvironmentName("").Key): "configured",
+		},
+		"host-id",
+		"service-name",
+		"service-version",
+		"prod",
+	)
+	attrs := resourceAttributes(resource.Attributes())
+
+	require.Equal(t, "payments", attrs["k8s.namespace.name"])
+	require.Equal(t, "host-id", attrs["host.id"])
+	require.Equal(t, "service-name", attrs["service.name"])
+	require.Equal(t, "service-version", attrs["service.version"])
+	require.Equal(t, "production", attrs["deployment.environment.name"])
+}
+
 func TestDeploymentEnvironmentName(t *testing.T) {
 	t.Parallel()
 
@@ -38,4 +63,12 @@ func TestDeploymentEnvironmentName(t *testing.T) {
 			require.Equal(t, tt.expected, attribute.Value.AsString())
 		})
 	}
+}
+
+func resourceAttributes(attrs []attributes.KeyValue) map[string]string {
+	values := make(map[string]string)
+	for _, attr := range attrs {
+		values[string(attr.Key)] = attr.Value.AsString()
+	}
+	return values
 }

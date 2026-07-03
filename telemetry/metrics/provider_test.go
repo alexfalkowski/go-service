@@ -1,11 +1,15 @@
 package metrics_test
 
 import (
+	"net/http/httptest"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/time"
+	sync "github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -85,16 +89,21 @@ func TestMeterProviderStopResetsGlobalState(t *testing.T) {
 	require.NotEqual(t, provider, metrics.GetMeterProvider())
 }
 
-func TestMeterProviderResourceAttributes(t *testing.T) {
+func TestMeterProviderAttributes(t *testing.T) {
 	t.Cleanup(func() {
 		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
 	})
 
 	reader := metrics.NewManualReader()
 	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   fxtest.NewLifecycle(t),
-		Config:      &metrics.Config{},
-		Reader:      reader,
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config:    &metrics.Config{},
+		Reader:    reader,
+		Attributes: attributes.Map{
+			"k8s.namespace.name":                      "payments",
+			string(attributes.ServiceName("").Key):    "configured",
+			string(attributes.ServiceVersion("").Key): "configured",
+		},
 		ID:          test.ID,
 		Name:        test.Name,
 		Version:     test.Version,
@@ -112,6 +121,50 @@ func TestMeterProviderResourceAttributes(t *testing.T) {
 	require.Equal(t, test.Name.String(), attrs[attributes.ServiceName("").Key])
 	require.Equal(t, test.Version.String(), attrs[attributes.ServiceVersion("").Key])
 	require.Equal(t, "development", attrs[attributes.DeploymentEnvironmentName("").Key])
+	require.Equal(t, "payments", attrs[attributes.Key("k8s.namespace.name")])
+}
+
+func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
+	t.Cleanup(func() {
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+	})
+
+	var exports sync.Int64
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		exports.Add(1)
+		res.WriteHeader(http.StatusOK)
+	}))
+	t.Cleanup(server.Close)
+
+	lc := fxtest.NewLifecycle(t)
+	cfg := &metrics.Config{
+		Kind:     "otlp",
+		URL:      server.URL,
+		Interval: 20 * time.Millisecond,
+		Timeout:  time.Second,
+	}
+	reader, err := metrics.NewReader(lc, test.Name, cfg)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_ = reader.Shutdown(t.Context())
+	})
+
+	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		Reader:      reader,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+	counter, err := provider.Meter(test.Name.String()).Int64Counter("requests")
+	require.NoError(t, err)
+	counter.Add(t.Context(), 1)
+
+	require.Eventually(t, func() bool {
+		return exports.Load() > 0
+	}, (2 * time.Second).Duration(), (20 * time.Millisecond).Duration())
 }
 
 func resourceAttributes(rm metrics.ResourceMetrics) map[attributes.Key]string {

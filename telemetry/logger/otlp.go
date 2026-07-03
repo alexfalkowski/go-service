@@ -12,7 +12,6 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/sdk/log"
-	"go.opentelemetry.io/otel/sdk/resource"
 )
 
 func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
@@ -30,12 +29,12 @@ func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
 		return nil, err
 	}
 
-	attrs := resource.NewWithAttributes(
-		attributes.SchemaURL,
-		attributes.HostID(params.ID.String()),
-		attributes.ServiceName(params.Name.String()),
-		attributes.ServiceVersion(params.Version.String()),
-		attributes.DeploymentEnvironmentName(params.Environment.String()),
+	attrs := attributes.NewResource(
+		params.Attributes,
+		params.ID.String(),
+		params.Name.String(),
+		params.Version.String(),
+		params.Environment.String(),
 	)
 
 	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(exporter)), log.WithResource(attrs))

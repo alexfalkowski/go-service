@@ -37,6 +37,9 @@
 //
 // If [Config.Kind] is unknown, NewReader returns [ErrNotFound].
 //
+// For "otlp", [Config.Interval] and [Config.Timeout] configure the periodic
+// reader export cadence. Zero values preserve the OpenTelemetry SDK defaults.
+//
 // # OTLP endpoint security
 //
 // When [Config.Headers] is non-empty, non-loopback "http://" OTLP endpoints are
@@ -64,6 +67,8 @@
 //   - deployment.environment.name
 //
 // These values come from go-service env types provided via DI.
+// Additional configured resource attributes are also attached, with the fixed
+// identity attributes taking precedence on duplicate keys.
 //
 // # Lifecycle behavior
 //
