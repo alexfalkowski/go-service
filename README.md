@@ -300,6 +300,10 @@ cache:
 > - `max_size` limits encoded cache values before compression, after compression, and after decompression. A zero value uses the default `4MB`.
 > - `max_entries` limits entries retained by bounded in-memory cache drivers. A zero value uses the default `1024`; negative values are invalid.
 > - `options` is backend-specific and decoded as `map[string]any`.
+> - Configure each cache backend for a specific service or purpose. For Redis, use a dedicated database, endpoint, or deployment-level key namespace in the connection/configuration instead of sharing one general cache for unrelated data.
+
+> [!WARNING]
+> `Cache.Flush` follows backend semantics; for Redis it clears the selected database.
 
 ---
 
