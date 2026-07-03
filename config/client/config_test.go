@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,6 +21,14 @@ func TestConfig(t *testing.T) {
 
 func TestConfigRejectsNegativeTimeout(t *testing.T) {
 	cfg := &client.Config{Timeout: -time.Second}
+	require.Error(t, test.Validator.Struct(cfg))
+}
+
+func TestConfigRejectsNegativeBreakerDurations(t *testing.T) {
+	cfg := &client.Config{Breaker: &breaker.Config{Interval: -time.Second}}
+	require.Error(t, test.Validator.Struct(cfg))
+
+	cfg = &client.Config{Breaker: &breaker.Config{Timeout: -time.Second}}
 	require.Error(t, test.Validator.Struct(cfg))
 }
 

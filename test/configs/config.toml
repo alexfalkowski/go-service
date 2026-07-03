@@ -35,6 +35,12 @@ private = "file:../test/secrets/ssh_private"
 address = "localhost:9000"
 timeout = "10s"
 
+[feature.breaker]
+max_requests = 2
+interval = "15s"
+timeout = "5s"
+consecutive_failures = 4
+
 [feature.retry]
 backoff = "100ms"
 timeout = "1s"

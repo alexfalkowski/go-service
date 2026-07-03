@@ -33,21 +33,20 @@ type ClientOption interface {
 type clientOpts struct {
 	gen              token.Generator
 	generator        id.Generator
+	breaker          *breaker.Config
 	security         *tls.Config
-	logger           *logger.Logger
 	retry            *retry.Config
-	retryPolicies    []retry.Policy
+	logger           *logger.Logger
 	limiter          *limiter.Client
 	userAgent        env.UserAgent
 	id               env.UserID
 	opts             []grpc.DialOption
 	unary            []grpc.UnaryClientInterceptor
 	stream           []grpc.StreamClientInterceptor
-	breakerOptions   []breaker.Option
+	retryPolicies    []retry.Policy
 	keepalivePing    time.Duration
 	keepaliveTimeout time.Duration
 	timeout          time.Duration
-	breaker          bool
 	compression      bool
 }
 
@@ -126,15 +125,13 @@ func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {
 	})
 }
 
-// WithClientBreaker enables circuit breaking for unary client calls.
+// WithClientBreaker enables circuit breaking for unary client calls from cfg.
 //
-// Circuit breakers are keyed per RPC full method name. Failure accounting is controlled by the
-// breaker options (for example, which gRPC status codes count as failures). Streaming callers should
-// use a custom stream interceptor for stream-specific breaker behavior.
-func WithClientBreaker(opts ...breaker.Option) ClientOption {
+// Circuit breakers are keyed per RPC full method name. Failure accounting is controlled by cfg.
+// Streaming callers should use a custom stream interceptor for stream-specific breaker behavior.
+func WithClientBreaker(cfg *breaker.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.breaker = true
-		o.breakerOptions = opts
+		o.breaker = cfg
 	})
 }
 
@@ -352,8 +349,8 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 		unary = append(unary, limiter.UnaryClientInterceptor(resolved.limiter))
 	}
 
-	if resolved.breaker {
-		unary = append(unary, breaker.UnaryClientInterceptor(resolved.breakerOptions...))
+	if resolved.breaker != nil {
+		unary = append(unary, breaker.UnaryClientInterceptor(resolved.breaker.Options()...))
 	}
 
 	if resolved.gen != nil {

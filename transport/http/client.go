@@ -29,20 +29,19 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	gen            token.Generator
-	generator      id.Generator
-	roundTripper   http.RoundTripper
-	limiter        *limiter.Client
-	retry          *retry.Config
-	retryPolicies  []retry.Policy
-	tls            *tls.Config
-	logger         *logger.Logger
-	userAgent      env.UserAgent
-	id             env.UserID
-	breakerOptions []breaker.Option
-	timeout        time.Duration
-	breaker        bool
-	compression    bool
+	gen           token.Generator
+	generator     id.Generator
+	roundTripper  http.RoundTripper
+	tls           *tls.Config
+	retry         *retry.Config
+	limiter       *limiter.Client
+	logger        *logger.Logger
+	breaker       *breaker.Config
+	userAgent     env.UserAgent
+	id            env.UserID
+	retryPolicies []retry.Policy
+	timeout       time.Duration
+	compression   bool
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -121,16 +120,14 @@ func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {
 	})
 }
 
-// WithClientBreaker enables circuit breaking for outbound HTTP requests.
+// WithClientBreaker enables circuit breaking for outbound HTTP requests from cfg.
 //
 // Circuit breakers are applied in a RoundTripper wrapper. Breaker instances are keyed per request
 // (by method + host) so that failures are isolated by downstream destination.
-// Failure classification is controlled by breaker options (for example, which HTTP status codes count
-// as failures).
-func WithClientBreaker(options ...breaker.Option) ClientOption {
+// Failure classification is controlled by cfg.
+func WithClientBreaker(cfg *breaker.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.breaker = true
-		o.breakerOptions = options
+		o.breaker = cfg
 	})
 }
 
@@ -231,8 +228,8 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 		hrt = token.NewRoundTripper(resolved.id, resolved.gen, hrt)
 	}
 
-	if resolved.breaker {
-		hrt = breaker.NewRoundTripper(hrt, resolved.breakerOptions...)
+	if resolved.breaker != nil {
+		hrt = breaker.NewRoundTripper(hrt, resolved.breaker.Options()...)
 	}
 
 	if resolved.limiter != nil {

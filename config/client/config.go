@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/retry"
 )
@@ -24,6 +25,9 @@ type Config struct {
 
 	// Retry configures client-side retry behavior for outbound requests.
 	Retry *retry.Config `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`
+
+	// Breaker configures client-side circuit breaker behavior for outbound requests.
+	Breaker *breaker.Config `yaml:"breaker,omitempty" json:"breaker,omitempty" toml:"breaker,omitempty"`
 
 	// Options provides client/transport-specific options as key-value pairs.
 	Options options.Map `yaml:"options,omitempty" json:"options,omitempty" toml:"options,omitempty"`

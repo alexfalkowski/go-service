@@ -10,15 +10,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/stretchr/testify/require"
 )
 
 // RequireGRPCConn returns a gRPC client connection from world or fails the test.
-func RequireGRPCConn(tb testing.TB, world *World, opts ...breaker.Option) *grpc.ClientConn {
+func RequireGRPCConn(tb testing.TB, world *World) *grpc.ClientConn {
 	tb.Helper()
 
-	conn, err := world.NewGRPC(opts...)
+	conn, err := world.NewGRPC()
 	require.NoError(tb, err)
 
 	return conn

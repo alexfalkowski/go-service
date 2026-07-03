@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport"
+	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
@@ -25,6 +26,7 @@ type worldOpts struct {
 	rt            http.RoundTripper
 	generator     token.Generator
 	logger        *logger.Logger
+	breaker       *breaker.Config
 	clientLimiter *limiter.Config
 	serverLimiter *limiter.Config
 	pg            *pg.Config
@@ -104,6 +106,13 @@ func WithWorldTelemetry(kind string) WorldOption {
 func WithWorldClientLimiter(config *limiter.Config) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.clientLimiter = config
+	})
+}
+
+// WithWorldBreaker installs the provided client-side circuit breaker config.
+func WithWorldBreaker(config *breaker.Config) WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.breaker = config
 	})
 }
 
