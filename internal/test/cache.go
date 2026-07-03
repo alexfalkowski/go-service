@@ -73,7 +73,9 @@ func RequireCacheRoundTrip(tb testing.TB, cfg *config.Config, persist, get any) 
 	world := NewStartedWorld(tb, WithWorldCacheConfig(cfg))
 
 	require.NoError(tb, world.Persist(tb.Context(), "test", persist, time.Minute))
-	require.NoError(tb, world.Get(tb.Context(), "test", get))
+	ok, err := world.Get(tb.Context(), "test", get)
+	require.NoError(tb, err)
+	require.True(tb, ok)
 	RequireCacheValue(tb, get)
 	require.NoError(tb, world.Remove(tb.Context(), "test"))
 }

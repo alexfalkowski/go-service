@@ -14,27 +14,28 @@ var cache *Cache
 // Once registered, package-level helpers like [Get] and [Persist] will delegate to the registered
 // *[Cache] instance.
 //
-// If c is nil, the helpers behave as if caching is disabled (they return zero values / act as no-ops).
+// If c is nil, the helpers behave as if caching is disabled: [Get] returns nil, false, nil and
+// [Persist] is a no-op.
 func Register(c *Cache) {
 	cache = c
 }
 
-// Get loads a cached value for key into a newly allocated value of type T and returns it.
+// Get loads a cached value for key into a newly allocated value of type T and reports whether a value was found.
 //
 // Semantics:
-//   - If caching is disabled (no cache registered), [Get] returns a zero-value *T and a nil error.
-//   - If the cache driver reports a miss/expired entry, [Get] returns a zero-value *T and a nil error.
+//   - If caching is disabled (no cache registered), [Get] returns nil, false, and a nil error.
+//   - If the cache driver reports a miss/expired entry, [Get] returns a zero-value *T, false, and a nil error.
 //   - If a non-miss error occurs (for example decode failure or driver error), [Get] returns the
-//     zero-value *T along with that error.
-//
-// The returned pointer is always non-nil.
-func Get[T any](ctx context.Context, key string) (*T, error) {
-	value := ptr.Zero[T]()
+//     zero-value *T, false, along with that error.
+func Get[T any](ctx context.Context, key string) (*T, bool, error) {
 	if cache == nil {
-		return value, nil
+		return nil, false, nil
 	}
 
-	return value, cache.Get(ctx, key, value)
+	value := ptr.Zero[T]()
+	ok, err := cache.Get(ctx, key, value)
+
+	return value, ok, err
 }
 
 // Persist stores value under key with the provided TTL.

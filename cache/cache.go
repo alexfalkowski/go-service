@@ -59,11 +59,11 @@ func NewCache(params CacheParams) *Cache {
 	}
 
 	return &Cache{
-		cm:     params.Compressor,
-		em:     params.Encoder,
-		cfg:    params.Config,
-		pool:   params.Pool,
-		driver: params.Driver,
+		compress: params.Compressor,
+		encoding: params.Encoder,
+		config:   params.Config,
+		pool:     params.Pool,
+		driver:   params.Driver,
 	}
 }
 
@@ -80,42 +80,11 @@ func NewCache(params CacheParams) *Cache {
 //
 // Compression is selected from configuration, falling back to "none" when unknown/unavailable.
 type Cache struct {
-	cm     *compress.Map
-	em     *encoding.Map
-	cfg    *config.Config
-	pool   *sync.BufferPool
-	driver driver.Driver
-}
-
-// maxSizeWriter enforces the cache encoded-size limit at the writer boundary.
-// It prevents encoders from growing the intermediate buffer past max_size before
-// compression gets its own chance to validate the payload.
-type maxSizeWriter struct {
-	writer  io.Writer
-	max     int64
-	written int64
-}
-
-func (w *maxSizeWriter) Write(data []byte) (int, error) {
-	remaining := w.max - w.written
-	if int64(len(data)) > remaining {
-		if remaining <= 0 {
-			return 0, compresserrors.ErrTooLarge
-		}
-
-		n, err := w.writer.Write(data[:int(remaining)])
-		w.written += int64(n)
-		if err != nil {
-			return n, err
-		}
-
-		return n, compresserrors.ErrTooLarge
-	}
-
-	n, err := w.writer.Write(data)
-	w.written += int64(n)
-
-	return n, err
+	compress *compress.Map
+	encoding *encoding.Map
+	config   *config.Config
+	pool     *sync.BufferPool
+	driver   driver.Driver
 }
 
 // Flush removes cached data according to the underlying driver's flush semantics.
@@ -135,23 +104,27 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 	return c.driver.Delete(ctx, c.driverKey(key))
 }
 
-// Get loads a cached value for key into value.
+// Get loads a cached value for key into value and reports whether a value was found.
 //
-// Cache misses are not treated as errors: if the entry is missing or expired, Get returns nil and
-// leaves value unchanged.
+// Cache misses are not treated as errors: if the entry is missing or expired, Get returns
+// false, nil and leaves value unchanged.
 //
 // The value parameter should be a pointer to the destination value (for example *MyStruct).
-func (c *Cache) Get(ctx context.Context, key string, value any) error {
+func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 	val, err := c.driver.Fetch(ctx, c.driverKey(key))
 	if err != nil {
 		if drivererrors.IsMissingError(err) || drivererrors.IsExpiredError(err) {
-			return nil
+			return false, nil
 		}
 
-		return err
+		return false, err
 	}
 
-	return c.decode(val, value)
+	if err := c.decode(val, value); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // Persist stores value under key with the provided TTL.
@@ -178,7 +151,7 @@ func (c *Cache) encode(value any) (string, error) {
 	buf := c.pool.Get()
 	defer c.pool.Put(buf)
 
-	maxSize := c.cfg.GetMaxSize()
+	maxSize := c.config.GetMaxSize()
 	writer := &maxSizeWriter{writer: buf, max: maxSize.Bytes()}
 	if err := c.writeEncoder(value).Encode(writer, value); err != nil {
 		return strings.Empty, err
@@ -199,7 +172,7 @@ func (c *Cache) encode(value any) (string, error) {
 }
 
 func (c *Cache) decode(value string, field any) error {
-	maxSize := c.cfg.GetMaxSize()
+	maxSize := c.config.GetMaxSize()
 	if maxSize.Bytes() <= maxBase64EncodedLenInput && int64(len(value)) > base64.EncodedLen(maxSize) {
 		return compresserrors.ErrTooLarge
 	}
@@ -219,12 +192,12 @@ func (c *Cache) decode(value string, field any) error {
 }
 
 func (c *Cache) compressor() compress.Compressor {
-	return c.cm.Get(c.compressorKind())
+	return c.compress.Get(c.compressorKind())
 }
 
 func (c *Cache) compressorKind() string {
-	if cmp := c.cm.Get(c.cfg.Compressor); cmp != nil {
-		return c.cfg.Compressor
+	if cmp := c.compress.Get(c.config.Compressor); cmp != nil {
+		return c.config.Compressor
 	}
 
 	return "none"
@@ -233,9 +206,9 @@ func (c *Cache) compressorKind() string {
 func (c *Cache) readEncoder(value any) encoding.Encoder {
 	switch value.(type) {
 	case io.ReaderFrom:
-		return c.em.Get("plain")
+		return c.encoding.Get("plain")
 	case proto.Message:
-		return c.em.Get("proto")
+		return c.encoding.Get("proto")
 	default:
 		return c.configuredEncoder()
 	}
@@ -244,21 +217,21 @@ func (c *Cache) readEncoder(value any) encoding.Encoder {
 func (c *Cache) writeEncoder(value any) encoding.Encoder {
 	switch value.(type) {
 	case io.WriterTo:
-		return c.em.Get("plain")
+		return c.encoding.Get("plain")
 	case proto.Message:
-		return c.em.Get("proto")
+		return c.encoding.Get("proto")
 	default:
 		return c.configuredEncoder()
 	}
 }
 
 func (c *Cache) configuredEncoder() encoding.Encoder {
-	return c.em.Get(c.encoderKind())
+	return c.encoding.Get(c.encoderKind())
 }
 
 func (c *Cache) encoderKind() string {
-	if enc := c.em.Get(c.cfg.Encoder); enc != nil {
-		return c.cfg.Encoder
+	if enc := c.encoding.Get(c.config.Encoder); enc != nil {
+		return c.config.Encoder
 	}
 
 	return "json"

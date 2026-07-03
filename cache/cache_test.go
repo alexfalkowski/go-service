@@ -39,8 +39,9 @@ func TestGenericValidCache(t *testing.T) {
 
 	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
 
-	value, err := cache.Get[string](t.Context(), "test")
+	value, ok, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
+	require.True(t, ok)
 	require.Equal(t, "hello?", *value)
 
 	require.NoError(t, world.Remove(t.Context(), "test"))
@@ -73,8 +74,9 @@ func TestModuleRegistersGenericCache(t *testing.T) {
 
 	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
 
-	value, err := cache.Get[string](t.Context(), "test")
+	value, ok, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
+	require.True(t, ok)
 	require.Equal(t, "hello?", *value)
 }
 
@@ -83,9 +85,50 @@ func TestGenericDisabledCache(t *testing.T) {
 
 	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
 
-	value, err := cache.Get[string](t.Context(), "test")
+	value, ok, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
+	require.False(t, ok)
+	require.Nil(t, value)
+}
+
+func TestGenericGetValidEmptyCache(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+
+	require.NoError(t, cache.Persist(t.Context(), "test", new(""), time.Minute))
+
+	value, ok, err := cache.Get[string](t.Context(), "test")
+	require.NoError(t, err)
+	require.True(t, ok)
 	require.Equal(t, strings.Empty, *value)
+
+	require.NoError(t, world.Remove(t.Context(), "test"))
+}
+
+func TestGenericGetMissingCache(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+
+	value, ok, err := cache.Get[string](t.Context(), "missing")
+	require.NoError(t, err)
+	require.False(t, ok)
+	require.Equal(t, strings.Empty, *value)
+
+	require.NoError(t, world.Remove(t.Context(), "missing"))
+}
+
+func TestGenericGetDisabledCache(t *testing.T) {
+	cache.Register(nil)
+	t.Cleanup(func() {
+		cache.Register(nil)
+	})
+
+	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
+
+	value, ok, err := cache.Get[string](t.Context(), "test")
+	require.NoError(t, err)
+	require.False(t, ok)
+	require.Nil(t, value)
 }
 
 func TestMaxSizeOnPersist(t *testing.T) {
@@ -125,7 +168,7 @@ func TestMaxSizeOnGet(t *testing.T) {
 
 	cfg.MaxSize = 4
 
-	err := world.Get(t.Context(), "test", ptr.Zero[string]())
+	_, err := world.Get(t.Context(), "test", ptr.Zero[string]())
 	require.ErrorIs(t, err, compresserrors.ErrTooLarge)
 }
 
@@ -138,7 +181,9 @@ func TestMaxSizeOnGetAllowsEncodedValueLargerThanLimit(t *testing.T) {
 	)
 
 	value := ptr.Zero[string]()
-	require.NoError(t, world.Get(t.Context(), "test", value))
+	ok, err := world.Get(t.Context(), "test", value)
+	require.NoError(t, err)
+	require.True(t, ok)
 	require.Equal(t, "ok", *value)
 }
 
@@ -150,7 +195,7 @@ func TestMaxSizeOnGetRejectsEncodedValueTooLarge(t *testing.T) {
 		test.WithWorldCacheDriver(&test.Cache{Value: base64.Encode(make([]byte, 7))}),
 	)
 
-	err := world.Get(t.Context(), "test", ptr.Zero[string]())
+	_, err := world.Get(t.Context(), "test", ptr.Zero[string]())
 	require.ErrorIs(t, err, compresserrors.ErrTooLarge)
 }
 
@@ -163,7 +208,9 @@ func TestMaxSizeOnGetAllowsHugeConfiguredLimit(t *testing.T) {
 	)
 
 	value := ptr.Zero[string]()
-	require.NoError(t, world.Get(t.Context(), "test", value))
+	ok, err := world.Get(t.Context(), "test", value)
+	require.NoError(t, err)
+	require.True(t, ok)
 	require.Equal(t, "ok", *value)
 }
 
@@ -201,7 +248,9 @@ func TestGetMissesAfterCacheFormatChange(t *testing.T) {
 				test.WithWorldCacheDriver(drv),
 			)
 			value := "unchanged"
-			require.NoError(t, reader.Get(t.Context(), "test", &value))
+			ok, err := reader.Get(t.Context(), "test", &value)
+			require.NoError(t, err)
+			require.False(t, ok)
 			require.Equal(t, "unchanged", value)
 		})
 	}
@@ -215,8 +264,9 @@ func TestExpiredCache(t *testing.T) {
 	// Simulate expiry.
 	time.Sleep(time.Second)
 
-	_, err := cache.Get[string](t.Context(), "test")
+	_, ok, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
+	require.False(t, ok)
 
 	require.NoError(t, world.Remove(t.Context(), "test"))
 }
@@ -272,7 +322,9 @@ func TestErroneousSave(t *testing.T) {
 		require.NoError(t, world.Persist(t.Context(), "test", &test.ReadFromOnly{Name: "hello?"}, time.Minute))
 
 		var get test.Request
-		require.NoError(t, world.Get(t.Context(), "test", &get))
+		ok, err := world.Get(t.Context(), "test", &get)
+		require.NoError(t, err)
+		require.True(t, ok)
 		require.Equal(t, "hello?", get.Name)
 	})
 }
@@ -296,7 +348,8 @@ func TestErroneousGet(t *testing.T) {
 				test.WithWorldCacheDriver(tt.driver),
 			)
 
-			require.Error(t, world.Get(t.Context(), "test", ptr.Zero[string]()))
+			_, err := world.Get(t.Context(), "test", ptr.Zero[string]())
+			require.Error(t, err)
 		})
 	}
 }
@@ -307,11 +360,39 @@ func TestWriteToOnlyUsesConfiguredEncoderOnGet(t *testing.T) {
 	require.NoError(t, world.Persist(t.Context(), "test", &test.Request{Name: "hello?"}, time.Minute))
 
 	get := &test.WriteToOnly{}
-	require.NoError(t, world.Get(t.Context(), "test", get))
+	ok, err := world.Get(t.Context(), "test", get)
+	require.NoError(t, err)
+	require.True(t, ok)
 	require.Equal(t, "hello?", get.Name)
 }
 
-func TestMissingCache(t *testing.T) {
+func TestGetValidEmptyStringCache(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
+
+	require.NoError(t, world.Persist(t.Context(), "test", new(""), time.Minute))
+
+	value := "existing"
+	ok, err := world.Get(t.Context(), "test", &value)
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, strings.Empty, value)
+}
+
+func TestGetValidEmptyBufferCache(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
+
+	require.NoError(t, world.Persist(t.Context(), "test", bytes.NewBufferString(strings.Empty), time.Minute))
+
+	value := bytes.NewBufferString("existing")
+	ok, err := world.Get(t.Context(), "test", value)
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Empty(t, value.Bytes())
+}
+
+func TestGetMissingCache(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}
 
@@ -335,11 +416,13 @@ func TestMissingCache(t *testing.T) {
 	})
 	value := "existing"
 
-	require.NoError(t, c.Get(t.Context(), "missing", &value))
+	ok, err := c.Get(t.Context(), "missing", &value)
+	require.NoError(t, err)
+	require.False(t, ok)
 	require.Equal(t, "existing", value)
 }
 
-func TestExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
+func TestGetExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
 	cfg := &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}
 	c := cache.NewCache(cache.CacheParams{
 		Config:     cfg,
@@ -350,7 +433,9 @@ func TestExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
 	})
 	value := "existing"
 
-	require.NoError(t, c.Get(t.Context(), "expired", &value))
+	ok, err := c.Get(t.Context(), "expired", &value)
+	require.NoError(t, err)
+	require.False(t, ok)
 	require.Equal(t, "existing", value)
 }
 

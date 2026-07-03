@@ -9,8 +9,8 @@
 //
 // In addition to the instance API on *[Cache], this package exposes package-level generic helpers
 // ([Get] and [Persist]). Those helpers are nil-safe after [Register] has been called (via DI wiring in
-// [Module]), and they become no-ops / return zero values when caching is disabled. In the standard
-// service composition this registration is performed for you by the module graph.
+// [Module]). When caching is disabled, [Persist] is a no-op and [Get] returns nil, false, nil. In the
+// standard service composition this registration is performed for you by the module graph.
 //
 // # Value encoding
 //
