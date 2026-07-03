@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
+	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	grpcbreaker "github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
@@ -45,6 +46,8 @@ type Client struct {
 	Generator token.Generator
 	// Retry configures client retries.
 	Retry *retry.Config
+	// Breaker configures client circuit breakers.
+	Breaker *breaker.Config
 	// HTTPLimiter limits outbound HTTP requests.
 	HTTPLimiter *httplimiter.Client
 	// GRPCLimiter limits outbound gRPC requests.
@@ -55,11 +58,11 @@ type Client struct {
 
 // NewHTTP returns an HTTP client configured with the world's logger, retry policy,
 // token generator, limiter, and optional compression.
-func (c *Client) NewHTTP(os ...httpbreaker.Option) (*http.Client, error) {
+func (c *Client) NewHTTP() (*http.Client, error) {
 	opts := []http.ClientOption{
 		http.WithClientLogger(c.Logger),
 		http.WithClientRoundTripper(c.RoundTripper),
-		http.WithClientBreaker(os...),
+		http.WithClientBreaker(httpbreaker.NewConfig(c.Breaker)),
 		http.WithClientRetry(httpretry.NewConfig(c.Retry)),
 		http.WithClientUserAgent(UserAgent),
 		http.WithClientTokenGenerator(UserID, c.Generator),
@@ -78,12 +81,12 @@ func (c *Client) NewHTTP(os ...httpbreaker.Option) (*http.Client, error) {
 
 // NewGRPC returns a gRPC client connection configured with the world's interceptors,
 // retry policy, token generator, limiter, and optional compression.
-func (c *Client) NewGRPC(os ...grpcbreaker.Option) (*grpc.ClientConn, error) {
+func (c *Client) NewGRPC() (*grpc.ClientConn, error) {
 	opts := []grpc.ClientOption{
 		grpc.WithClientUnaryInterceptors(),
 		grpc.WithClientStreamInterceptors(),
 		grpc.WithClientLogger(c.Logger),
-		grpc.WithClientBreaker(os...),
+		grpc.WithClientBreaker(grpcbreaker.NewConfig(c.Breaker)),
 		grpc.WithClientRetry(grpcretry.NewConfig(c.Retry)),
 		grpc.WithClientUserAgent(UserAgent),
 		grpc.WithClientTokenGenerator(UserID, c.Generator),

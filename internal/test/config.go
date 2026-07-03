@@ -28,6 +28,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/alexfalkowski/go-service/v2/transport"
+	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	grpcretry "github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
@@ -159,6 +160,11 @@ func NewRetry() *retry.Config {
 		Backoff:  100 * time.Millisecond,
 		Attempts: 1,
 	}
+}
+
+// NewBreaker returns a client breaker config with a consecutive failure threshold.
+func NewBreaker(consecutiveFailures uint32) *breaker.Config {
+	return &breaker.Config{ConsecutiveFailures: consecutiveFailures}
 }
 
 // NewHTTPRetryConfig returns an HTTP retry config with shared retry mechanics.

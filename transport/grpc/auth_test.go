@@ -1,7 +1,6 @@
 package grpc_test
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
@@ -14,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/stretchr/testify/require"
 )
 
@@ -198,33 +196,6 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 	require.Contains(t, err.Error(), grpc.StatusText(codes.Unauthenticated))
-}
-
-func TestBreakerAuthUnary(t *testing.T) {
-	world := test.NewStartedWorld(t,
-		test.WithWorldTelemetry("otlp"),
-		test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
-		test.WithWorldCompression(),
-		test.WithWorldGRPC(),
-	)
-
-	conn := test.RequireGRPCConn(t, world,
-		breaker.WithSettings(breaker.Settings{}),
-		breaker.WithFailureCodes(codes.Unauthenticated),
-	)
-	defer conn.Close()
-
-	client := v1.NewGreeterServiceClient(conn)
-	req := &v1.SayHelloRequest{Name: "test"}
-
-	var err error
-	for i := range 10 {
-		t.Run("attempt-"+strconv.Itoa(i+1), func(t *testing.T) {
-			_, err = client.SayHello(t.Context(), req)
-		})
-	}
-
-	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
 func TestValidAuthStream(t *testing.T) {

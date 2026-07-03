@@ -5,17 +5,13 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
-	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSecure(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("prometheus"), test.WithWorldHTTP(), test.WithWorldHello())
 
-	client, err := world.NewHTTP(
-		breaker.WithSettings(breaker.Settings{}),
-		breaker.WithFailureStatuses(http.StatusInternalServerError),
-	)
+	client, err := world.NewHTTP()
 	require.NoError(t, err)
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, world.PathServerURL("https", "hello"), http.NoBody)

@@ -314,6 +314,7 @@ The `feature.Config` embeds client-side config (`config/client.Config`), so it s
 - `address`
 - `timeout`
 - `retry`
+- `breaker`
 - `limiter`
 - `tls`
 - `token`
@@ -325,6 +326,11 @@ Example:
 feature:
   address: localhost:9000
   timeout: 10s
+  breaker:
+    max_requests: 2
+    interval: 15s
+    timeout: 5s
+    consecutive_failures: 4
   retry:
     backoff: 100ms
     timeout: 1s
@@ -1073,6 +1079,42 @@ The transport client wrappers include optional circuit breakers:
   - Scope is per `fullMethod`.
   - Default failure codes are `Unavailable`, `DeadlineExceeded`, `ResourceExhausted`, and `Internal`.
   - Errors with other gRPC codes are treated as successful for breaker accounting.
+
+Client config uses the shared `transport/breaker.Config` shape for breaker mechanics. Any config type that
+embeds `config/client.Config` has its own `breaker` block under that client config. This example uses
+`feature.Config` only because it is one such client config:
+
+```yaml
+feature:
+  address: localhost:9000
+  breaker:
+    max_requests: 2
+    interval: 15s
+    timeout: 5s
+    consecutive_failures: 4
+```
+
+When manually constructing HTTP or gRPC clients, pass a transport-specific breaker config to
+`transport/http.WithClientBreaker(...)` or `transport/grpc.WithClientBreaker(...)`. These configs
+embed the shared breaker mechanics and add protocol-specific failure classification:
+
+```go
+httpBreaker := httpbreaker.NewConfig(sharedBreaker, 429, 502, 503)
+grpcBreaker := grpcbreaker.NewConfig(sharedBreaker, codes.Unavailable, codes.ResourceExhausted)
+```
+
+`NewConfig` returns `nil` when the shared breaker config is `nil`, preserving client-option wiring that
+disables breakers by omitting breaker config.
+
+`max_requests` controls half-open probe concurrency. `interval` controls the
+closed-state count reset window. `timeout` controls how long the breaker stays
+open before allowing half-open probes. `consecutive_failures` controls when the
+breaker opens. Zero values keep the package defaults.
+
+HTTP `StatusCodes` and gRPC `Codes` are optional replacement lists for failure
+classification. When omitted, the default lists above apply. When set, only the
+configured values count as breaker failures, so include the defaults as well
+when extending rather than replacing default behavior.
 
 ### Client retries
 

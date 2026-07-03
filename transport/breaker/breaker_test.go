@@ -49,6 +49,36 @@ func TestDefaultSettings(t *testing.T) {
 	}
 }
 
+func TestConfig(t *testing.T) {
+	require.False(t, (*breaker.Config)(nil).IsEnabled())
+	require.True(t, (&breaker.Config{}).IsEnabled())
+}
+
+func TestConfigSettings(t *testing.T) {
+	settings := (&breaker.Config{
+		MaxRequests:         2,
+		Interval:            15 * time.Second,
+		Timeout:             5 * time.Second,
+		ConsecutiveFailures: 4,
+	}).Settings()
+
+	require.Equal(t, uint32(2), settings.MaxRequests)
+	require.Equal(t, (15 * time.Second).Duration(), settings.Interval)
+	require.Equal(t, (5 * time.Second).Duration(), settings.Timeout)
+	require.False(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 3}))
+	require.True(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 4}))
+}
+
+func TestConfigSettingsDefaults(t *testing.T) {
+	settings := (*breaker.Config)(nil).Settings()
+
+	require.Equal(t, breaker.DefaultSettings.MaxRequests, settings.MaxRequests)
+	require.Equal(t, breaker.DefaultSettings.Interval, settings.Interval)
+	require.Equal(t, breaker.DefaultSettings.Timeout, settings.Timeout)
+	require.False(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 4}))
+	require.True(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 5}))
+}
+
 func TestNewCircuitBreaker(t *testing.T) {
 	errFailed := errors.New("failed")
 	cb := breaker.NewCircuitBreaker(breaker.Settings{

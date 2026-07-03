@@ -41,6 +41,20 @@ func TestInsecureUnary(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
+func TestCompressionUnary(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldGRPC(), test.WithWorldCompression())
+
+	conn := test.RequireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
+
+	resp, err := client.SayHello(t.Context(), req)
+	require.NoError(t, err)
+	require.Equal(t, "Hello test", resp.GetMessage())
+}
+
 func TestSecureUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC(), test.WithWorldSecure())
 
@@ -93,6 +107,21 @@ func TestServerRecoversUnaryPanic(t *testing.T) {
 	resp, err := client.SayHello(t.Context(), &v1.SayHelloRequest{Name: "test"})
 	require.NoError(t, err)
 	require.Equal(t, "Hello test", resp.GetMessage())
+}
+
+func TestBreakerUnary(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldGRPC(), test.WithWorldBreaker(test.NewBreaker(1)))
+
+	conn := test.RequireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	_, err := client.SayHello(t.Context(), &v1.SayHelloRequest{Name: "panic"})
+	require.Equal(t, codes.Internal, status.Code(err))
+
+	_, err = client.SayHello(t.Context(), &v1.SayHelloRequest{Name: "test"})
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
 func TestServerRecoversStreamPanic(t *testing.T) {

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
@@ -11,6 +12,27 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/stretchr/testify/require"
 )
+
+func TestUnaryClientInterceptorUsesConfigFailureCodes(t *testing.T) {
+	interceptor := breaker.UnaryClientInterceptor(
+		breaker.NewConfig(test.NewBreaker(1), codes.InvalidArgument).Options()...,
+	)
+
+	calls := 0
+	invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.InvalidArgument, "invalid")
+	}
+
+	err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
+	require.Error(t, err)
+	require.Equal(t, codes.InvalidArgument, status.Code(err))
+
+	err = interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+	require.Equal(t, 1, calls)
+}
 
 func TestUnaryClientInterceptorDoesNotOpenOnNonFailureCode(t *testing.T) {
 	interceptor := breaker.UnaryClientInterceptor(

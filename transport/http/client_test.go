@@ -133,14 +133,10 @@ func TestRoundTripperRetriesThroughClientBreaker(t *testing.T) {
 	rt, err := transporthttp.NewRoundTripper(
 		transporthttp.WithClientRoundTripper(base),
 		transporthttp.WithClientRetry(httpretry.NewConfig(test.FastRetryConfig)),
-		transporthttp.WithClientBreaker(
-			breaker.WithSettings(breaker.Settings{
-				ReadyToTrip: func(counts breaker.Counts) bool {
-					return counts.ConsecutiveFailures >= 1
-				},
-			}),
-			breaker.WithFailureStatuses(http.StatusServiceUnavailable),
-		),
+		transporthttp.WithClientBreaker(breaker.NewConfig(
+			test.NewBreaker(1),
+			http.StatusServiceUnavailable,
+		)),
 	)
 	require.NoError(t, err)
 

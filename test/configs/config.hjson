@@ -37,6 +37,12 @@
   }
   feature: {
     address: "localhost:9000"
+    breaker: {
+      max_requests: 2
+      interval: "15s"
+      timeout: "5s"
+      consecutive_failures: 4
+    }
     retry: {
       backoff: "100ms"
       timeout: "1s"
