@@ -3,15 +3,16 @@
 // This package integrates the Standard Webhooks Go library ([github.com/standard-webhooks/standard-webhooks/libraries/go])
 // by providing:
 //
-//   - configuration for the shared webhook secret used by Standard Webhooks signers/verifiers (see [Config]),
-//     loaded via the go-service "source string" pattern (resolved by
+//   - configuration for the named webhook secret set used by Standard Webhooks
+//     signers/verifiers (see [Config]), loaded via the
+//     go-service "source string" pattern (resolved by
 //     [github.com/alexfalkowski/go-service/v2/os.FS.ReadSource]), and
 //
-//   - constructors for creating Standard Webhooks webhook instances (see [NewHook]) and generating new secrets (see [Generator]).
+//   - constructors for creating Standard Webhooks hooks (see [NewHook]) and generating new secrets (see [Generator]).
 //
 // # Secrets and source strings
 //
-// The secret configured in [Config.Secret] is a "source string" and may be:
+// Each value in [Config.Secrets] is a "source string" and may be:
 //
 //   - "env:NAME" to read the secret from an environment variable,
 //   - "file:/path/to/secret" to read the secret from a file, or
@@ -21,6 +22,11 @@
 // secrets are rejected by this package, while non-empty secrets must use a format accepted by the
 // Standard Webhooks constructor. The [Generator] output is accepted directly as a literal secret. Keep
 // this value private and avoid logging it.
+//
+// [Config.Key] selects the active entry in [Config.Secrets] used for signing.
+// Verification accepts signatures from every configured secret
+// because Standard Webhooks signs a message id, timestamp, and payload, but does
+// not include a signing key id that could select one secret directly.
 //
 // # Downstream integrations
 //

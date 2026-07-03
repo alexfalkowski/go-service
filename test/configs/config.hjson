@@ -51,7 +51,11 @@
     timeout: "10s"
   }
   hooks: {
-    secret: "file:../test/secrets/hooks"
+    key: current
+    secrets: {
+      current: "file:../test/secrets/hooks"
+      previous: "file:../test/secrets/hooks_previous"
+    }
   }
   id: {
     kind: uuid

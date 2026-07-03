@@ -31,7 +31,9 @@ feature:
     attempts: 3
   timeout: 10s
 hooks:
-  secret: file:../test/secrets/hooks
+  key: current
+  secrets:
+    current: file:../test/secrets/hooks
 id:
   kind: uuid
 sql:

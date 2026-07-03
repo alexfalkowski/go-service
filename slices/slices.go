@@ -1,6 +1,7 @@
 package slices
 
 import (
+	"cmp"
 	"iter"
 	"slices"
 
@@ -78,6 +79,13 @@ func Clone[S ~[]E, E any](slice S) S {
 // It is a thin wrapper around the standard library [slices.Collect].
 func Collect[E any](seq iter.Seq[E]) []E {
 	return slices.Collect(seq)
+}
+
+// Sort sorts a slice of any ordered type in ascending order.
+//
+// It is a thin wrapper around the standard library [slices.Sort].
+func Sort[S ~[]E, E cmp.Ordered](slice S) {
+	slices.Sort(slice)
 }
 
 // Contains reports whether v is present in slice.
