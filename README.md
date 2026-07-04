@@ -974,9 +974,11 @@ Supported stacks include:
 CloudEvents HTTP wiring lives under `transport/http/events`: use
 `NewReceiver(...).Register(...)` to receive events on a POST route and
 `NewSender(...).Send(...)` with `net/http/events.ContextWithTarget(...)` to
-send events. The sender uses structured HTTP encoding. Webhook-protected
-receivers also require structured encoding and reject binary-mode CloudEvents
-with `ce-*` headers before signature verification.
+send events. The sender uses structured HTTP encoding by default; configure
+`WithSenderEncoding(SenderEncodingBinary)` for outbound integrations that
+require binary-mode CloudEvents. Webhook-protected receivers require structured
+encoding and reject binary-mode CloudEvents with `ce-*` headers before
+signature verification.
 
 ### HTTP content types
 

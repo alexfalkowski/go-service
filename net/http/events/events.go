@@ -62,6 +62,11 @@ func SendStructured(ctx context.Context, client Client, event Event) Result {
 	return client.Send(binding.WithForceStructured(ctx), event)
 }
 
+// SendBinary sends event using binary CloudEvents encoding.
+func SendBinary(ctx context.Context, client Client, event Event) Result {
+	return client.Send(binding.WithForceBinary(ctx), event)
+}
+
 // ContextWithTarget returns a context with the CloudEvents target set.
 func ContextWithTarget(ctx context.Context, target string) context.Context {
 	return cloudevents.ContextWithTarget(ctx, target)

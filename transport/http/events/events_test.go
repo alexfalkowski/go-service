@@ -191,6 +191,48 @@ func TestSenderUsesStructuredEncoding(t *testing.T) {
 	require.Contains(t, body, `"type":"example.type"`)
 }
 
+func TestSenderUsesBinaryEncoding(t *testing.T) {
+	contentTypes := make(chan string, 1)
+	specVersions := make(chan string, 1)
+	ids := make(chan string, 1)
+	sources := make(chan string, 1)
+	types := make(chan string, 1)
+	bodies := make(chan string, 1)
+	readErrors := make(chan error, 1)
+
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		data, _, err := io.ReadAll(req.Body)
+		contentTypes <- req.Header.Get("Content-Type")
+		specVersions <- req.Header.Get("Ce-Specversion")
+		ids <- req.Header.Get("Ce-Id")
+		sources <- req.Header.Get("Ce-Source")
+		types <- req.Header.Get("Ce-Type")
+		bodies <- bytes.String(data)
+		readErrors <- err
+
+		res.WriteHeader(http.StatusNoContent)
+	}))
+	t.Cleanup(server.Close)
+
+	sender := transportevents.NewSender(nil, transportevents.WithSenderEncoding(transportevents.SenderEncodingBinary))
+
+	e := events.NewEvent()
+	e.SetID("event-1")
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
+
+	result := sender.Send(events.ContextWithTarget(t.Context(), server.URL+"/events"), e)
+	require.NoError(t, <-readErrors)
+	test.RequireACK(t, result)
+	require.Equal(t, events.TextPlain, <-contentTypes)
+	require.Equal(t, "1.0", <-specVersions)
+	require.Equal(t, "event-1", <-ids)
+	require.Equal(t, "example/uri", <-sources)
+	require.Equal(t, "example.type", <-types)
+	require.Equal(t, "test", <-bodies)
+}
+
 func TestSenderUsesDefaultTimeout(t *testing.T) {
 	start, deadline := sendWithDeadline(t)
 	remaining := time.Duration(deadline.Sub(start))
