@@ -10,7 +10,7 @@ require (
 	github.com/XSAM/otelsql v0.42.0
 	github.com/alexfalkowski/go-health/v2 v2.33.0
 	github.com/alexfalkowski/go-sync v1.27.0
-	github.com/arl/statsviz v0.8.0
+	github.com/arl/statsviz v0.8.1
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
 	github.com/beevik/nts v0.3.0
