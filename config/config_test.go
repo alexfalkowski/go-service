@@ -388,6 +388,10 @@ func verifyTelemetryConfig(t *testing.T, cfg *config.Config) {
 	require.Equal(t, "http://localhost:4318/v1/traces", cfg.Telemetry.Tracer.URL)
 	require.Equal(t, "otlp", cfg.Telemetry.Tracer.Kind)
 	require.Equal(t, "http", cfg.Telemetry.Tracer.Protocol)
+	require.Equal(t, "file:../test/certs/rootCA.pem", cfg.Telemetry.Tracer.TLS.CA)
+	require.Equal(t, "file:../test/certs/client-cert.pem", cfg.Telemetry.Tracer.TLS.Cert)
+	require.Equal(t, "file:../test/certs/client-key.pem", cfg.Telemetry.Tracer.TLS.Key)
+	require.Equal(t, "collector.example.com", cfg.Telemetry.Tracer.TLS.ServerName)
 	require.Equal(t, "ratio", cfg.Telemetry.Tracer.Sampler.Kind)
 	require.InDelta(t, 0.25, cfg.Telemetry.Tracer.Sampler.Ratio, 0.001)
 }

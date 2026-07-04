@@ -49,8 +49,8 @@
 // headers. When headers are configured, non-loopback "http://" endpoints are rejected to avoid sending
 // credential-bearing headers over cleartext transport. Use "https://" for external collectors. Local
 // development collectors on "localhost" or loopback IP addresses may use "http://".
-// OTLP/gRPC exporters use host:port endpoints. Header-bearing remote gRPC endpoints are rejected until
-// TLS configuration is supported for OTLP/gRPC exporters.
+// OTLP/gRPC exporters use host:port endpoints. Header-bearing remote gRPC endpoints
+// require the signal's TLS config; loopback gRPC endpoints may still use cleartext.
 //
 // OTLP endpoints must be supplied through go-service config fields such as telemetry.logger.url,
 // telemetry.metrics.url, and telemetry.tracer.url. Standard OpenTelemetry endpoint environment variables

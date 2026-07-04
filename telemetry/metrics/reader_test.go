@@ -3,6 +3,7 @@ package metrics_test
 import (
 	"testing"
 
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
@@ -15,7 +16,7 @@ func TestInvalidReader(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &metrics.Config{Kind: "wrong"}
 
-	_, err := metrics.NewReader(lc, test.Name, cfg)
+	_, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
 	require.Error(t, err)
 }
 
@@ -27,7 +28,12 @@ func TestConfigGetProtocol(t *testing.T) {
 
 func TestReaderShutdownIgnoresAlreadyShutdownReader(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
-	reader, err := metrics.NewReader(lc, test.Name, &metrics.Config{Kind: "prometheus"})
+	reader, err := metrics.NewReader(metrics.ReaderParams{
+		Lifecycle: lc,
+		Config:    &metrics.Config{Kind: "prometheus"},
+		FS:        test.FS,
+		Name:      test.Name,
+	})
 	require.NoError(t, err)
 
 	lc.RequireStart()
@@ -46,7 +52,7 @@ func TestInvalidOTLPEndpoint(t *testing.T) {
 		},
 	}
 
-	_, err := metrics.NewReader(lc, test.Name, cfg)
+	_, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
 
@@ -58,7 +64,7 @@ func TestOTLPGRPCReader(t *testing.T) {
 		URL:      "localhost:4317",
 	}
 
-	reader, err := metrics.NewReader(lc, test.Name, cfg)
+	reader, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
 	require.NoError(t, err)
 	require.NotNil(t, reader)
 	require.NoError(t, reader.Shutdown(t.Context()))
@@ -75,8 +81,26 @@ func TestInvalidOTLPGRPCEndpoint(t *testing.T) {
 		},
 	}
 
-	_, err := metrics.NewReader(lc, test.Name, cfg)
+	_, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+}
+
+func TestOTLPGRPCReaderWithTLSHeaders(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &metrics.Config{
+		Kind:     "otlp",
+		Protocol: "grpc",
+		URL:      "collector.example.com:4317",
+		TLS:      &tls.Config{ServerName: "collector.example.com"},
+		Headers: header.Map{
+			"Authorization": "Bearer token",
+		},
+	}
+
+	reader, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
+	require.NoError(t, err)
+	require.NotNil(t, reader)
+	require.NoError(t, reader.Shutdown(t.Context()))
 }
 
 func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
@@ -91,6 +115,6 @@ func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 		},
 	}
 
-	_, err := metrics.NewReader(lc, test.Name, cfg)
+	_, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
 	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
 }

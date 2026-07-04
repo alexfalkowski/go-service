@@ -143,7 +143,7 @@ func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
 		Interval: 20 * time.Millisecond,
 		Timeout:  time.Second,
 	}
-	reader, err := metrics.NewReader(lc, test.Name, cfg)
+	reader, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_ = reader.Shutdown(t.Context())

@@ -3,8 +3,10 @@ package logger
 import (
 	"log/slog"
 
+	"github.com/alexfalkowski/go-service/v2/config/client"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
@@ -16,11 +18,16 @@ import (
 )
 
 func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
-	if err := otlp.ValidateEndpoint(params.Config.GetProtocol(), params.Config.URL, params.Config.Headers); err != nil {
+	if err := otlp.ValidateEndpoint(otlp.Endpoint{
+		Protocol: params.Config.GetProtocol(),
+		Address:  params.Config.URL,
+		Headers:  params.Config.Headers,
+		TLS:      params.Config.TLS,
+	}); err != nil {
 		return nil, err
 	}
 
-	exporter, err := newOtlpExporter(params.Config)
+	exporter, err := newOtlpExporter(params)
 	if err != nil {
 		return nil, err
 	}
@@ -51,18 +58,27 @@ func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
 	return slog.New(&levelHandler{handler: handler, level: level(params.Config)}), nil
 }
 
-func newOtlpExporter(cfg *Config) (log.Exporter, error) {
-	switch cfg.GetProtocol() {
+func newOtlpExporter(params LoggerParams) (log.Exporter, error) {
+	switch params.Config.GetProtocol() {
 	case otlp.ProtocolGRPC:
-		opts := []otlploggrpc.Option{otlploggrpc.WithHeaders(cfg.Headers), otlploggrpc.WithInsecure()}
-		if !strings.IsEmpty(cfg.URL) {
-			opts = append(opts, otlploggrpc.WithEndpoint(cfg.URL))
+		opts := []otlploggrpc.Option{otlploggrpc.WithHeaders(params.Config.Headers)}
+		if params.Config.TLS == nil {
+			opts = append(opts, otlploggrpc.WithInsecure())
+		} else {
+			conf, err := client.NewConfig(params.FS, params.Config.TLS)
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts, otlploggrpc.WithTLSCredentials(grpc.NewTLS(conf)))
+		}
+		if !strings.IsEmpty(params.Config.URL) {
+			opts = append(opts, otlploggrpc.WithEndpoint(params.Config.URL))
 		}
 		return otlploggrpc.New(context.Background(), opts...)
 	default:
-		opts := []otlploghttp.Option{otlploghttp.WithHeaders(cfg.Headers)}
-		if !strings.IsEmpty(cfg.URL) {
-			opts = append(opts, otlploghttp.WithEndpointURL(cfg.URL))
+		opts := []otlploghttp.Option{otlploghttp.WithHeaders(params.Config.Headers)}
+		if !strings.IsEmpty(params.Config.URL) {
+			opts = append(opts, otlploghttp.WithEndpointURL(params.Config.URL))
 		}
 		return otlploghttp.New(context.Background(), opts...)
 	}

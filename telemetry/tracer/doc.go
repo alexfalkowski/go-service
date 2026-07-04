@@ -58,6 +58,6 @@
 // rejected to avoid sending credential-bearing headers over cleartext transport.
 // Use "https://" for external collectors. Local development collectors on
 // "localhost" or loopback IP addresses may use "http://".
-// Header-bearing remote OTLP/gRPC endpoints are rejected until TLS configuration
-// is supported for OTLP/gRPC exporters.
+// Header-bearing remote OTLP/gRPC endpoints require [Config.TLS]; loopback gRPC
+// endpoints may still use cleartext.
 package tracer

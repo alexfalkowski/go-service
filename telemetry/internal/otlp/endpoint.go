@@ -4,6 +4,7 @@ import (
 	"net/netip"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/url"
@@ -30,24 +31,41 @@ var ErrInvalidProtocol = errors.New("otlp: invalid protocol")
 // non-local cleartext endpoint.
 var ErrInsecureEndpoint = errors.New("otlp: insecure endpoint")
 
+// Endpoint describes an explicitly configured OTLP endpoint.
+type Endpoint struct {
+	// TLS configures TLS for gRPC exporters.
+	TLS *tls.Config
+
+	// Headers contains metadata sent to the OTLP collector.
+	Headers map[string]string
+
+	// Protocol selects the OTLP exporter protocol.
+	Protocol string
+
+	// Address is the configured OTLP destination.
+	//
+	// HTTP exporters expect a URL. gRPC exporters expect host:port.
+	Address string
+}
+
 // ValidateEndpoint validates an explicitly configured OTLP endpoint.
-func ValidateEndpoint(protocol, endpoint string, headers map[string]string) error {
-	if strings.IsEmpty(endpoint) {
+func ValidateEndpoint(endpoint Endpoint) error {
+	if strings.IsEmpty(endpoint.Address) {
 		return ErrMissingEndpoint
 	}
 
-	switch protocol {
+	switch endpoint.Protocol {
 	case ProtocolHTTP:
-		return validateHTTP(endpoint, headers)
+		return validateHTTP(endpoint)
 	case ProtocolGRPC:
-		return validateGRPC(endpoint, headers)
+		return validateGRPC(endpoint)
 	default:
 		return ErrInvalidProtocol
 	}
 }
 
-func validateHTTP(rawURL string, headers map[string]string) error {
-	u, err := url.Parse(rawURL)
+func validateHTTP(endpoint Endpoint) error {
+	u, err := url.Parse(endpoint.Address)
 	if err != nil {
 		return err
 	}
@@ -56,15 +74,15 @@ func validateHTTP(rawURL string, headers map[string]string) error {
 		return ErrInvalidEndpoint
 	}
 
-	if u.Scheme != "http" || len(headers) == 0 || isLoopback(u.Hostname()) {
+	if u.Scheme != "http" || len(endpoint.Headers) == 0 || isLoopback(u.Hostname()) {
 		return nil
 	}
 
 	return ErrInsecureEndpoint
 }
 
-func validateGRPC(endpoint string, headers map[string]string) error {
-	host, port, err := net.SplitHostPort(endpoint)
+func validateGRPC(endpoint Endpoint) error {
+	host, port, err := net.SplitHostPort(endpoint.Address)
 	if err != nil || strings.IsEmpty(host) {
 		return ErrInvalidEndpoint
 	}
@@ -72,7 +90,7 @@ func validateGRPC(endpoint string, headers map[string]string) error {
 		return ErrInvalidEndpoint
 	}
 
-	if len(headers) == 0 || isLoopback(host) {
+	if len(endpoint.Headers) == 0 || endpoint.TLS != nil || isLoopback(host) {
 		return nil
 	}
 

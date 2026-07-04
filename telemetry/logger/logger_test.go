@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -231,6 +232,33 @@ func TestInvalidOTLPGRPCEndpoint(t *testing.T) {
 
 	_, err := logger.NewLogger(params)
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+}
+
+func TestOTLPGRPCLoggerWithTLSHeaders(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &logger.Config{
+		Kind:     "otlp",
+		Protocol: "grpc",
+		URL:      "collector.example.com:4317",
+		TLS:      &tls.Config{ServerName: "collector.example.com"},
+		Headers: header.Map{
+			"Authorization": "Bearer token",
+		},
+	}
+	params := logger.LoggerParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		FS:          test.FS,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}
+
+	log, err := logger.NewLogger(params)
+	require.NoError(t, err)
+	require.NotNil(t, log)
+	require.NoError(t, lc.Stop(t.Context()))
 }
 
 func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {

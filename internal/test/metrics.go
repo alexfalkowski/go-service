@@ -123,7 +123,7 @@ func NewPrometheusMeterProvider(lc di.Lifecycle) (metrics.MeterProvider, error) 
 
 // NewMeterProvider creates a meter provider with a reader registered on the supplied lifecycle.
 func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) (metrics.MeterProvider, error) {
-	r, err := metrics.NewReader(lc, Name, config)
+	r, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: config, FS: FS, Name: Name})
 	if err != nil {
 		return nil, err
 	}

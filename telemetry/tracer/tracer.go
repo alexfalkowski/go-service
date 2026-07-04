@@ -1,9 +1,12 @@
 package tracer
 
 import (
+	"github.com/alexfalkowski/go-service/v2/config/client"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
@@ -93,6 +96,9 @@ type TracerParams struct {
 	// Config enables tracing when non-nil and supplies exporter settings.
 	Config *Config
 
+	// FS resolves TLS source strings for OTLP/gRPC exporters.
+	FS *os.FS
+
 	// Attributes are optional OpenTelemetry resource attributes attached to traces.
 	Attributes attributes.Map `optional:"true"`
 
@@ -132,11 +138,19 @@ func Register(params TracerParams) error {
 
 	switch params.Config.Kind {
 	case "otlp":
-		if err := otlp.ValidateEndpoint(params.Config.GetProtocol(), params.Config.URL, params.Config.Headers); err != nil {
+		if err := otlp.ValidateEndpoint(otlp.Endpoint{
+			Protocol: params.Config.GetProtocol(),
+			Address:  params.Config.URL,
+			Headers:  params.Config.Headers,
+			TLS:      params.Config.TLS,
+		}); err != nil {
 			return prefix(err)
 		}
 
-		exporter := newOTLPExporter(params.Config)
+		exporter, err := newOTLPExporter(params)
+		if err != nil {
+			return prefix(err)
+		}
 		attrs := attributes.NewResource(
 			params.Attributes,
 			params.ID.String(),
@@ -177,20 +191,29 @@ func Register(params TracerParams) error {
 	}
 }
 
-func newOTLPExporter(cfg *Config) *otlptrace.Exporter {
-	switch cfg.GetProtocol() {
+func newOTLPExporter(params TracerParams) (*otlptrace.Exporter, error) {
+	switch params.Config.GetProtocol() {
 	case otlp.ProtocolGRPC:
-		opts := []otlptracegrpc.Option{otlptracegrpc.WithHeaders(cfg.Headers), otlptracegrpc.WithInsecure()}
-		if !strings.IsEmpty(cfg.URL) {
-			opts = append(opts, otlptracegrpc.WithEndpoint(cfg.URL))
+		opts := []otlptracegrpc.Option{otlptracegrpc.WithHeaders(params.Config.Headers)}
+		if params.Config.TLS == nil {
+			opts = append(opts, otlptracegrpc.WithInsecure())
+		} else {
+			conf, err := client.NewConfig(params.FS, params.Config.TLS)
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts, otlptracegrpc.WithTLSCredentials(grpc.NewTLS(conf)))
 		}
-		return otlptrace.NewUnstarted(otlptracegrpc.NewClient(opts...))
+		if !strings.IsEmpty(params.Config.URL) {
+			opts = append(opts, otlptracegrpc.WithEndpoint(params.Config.URL))
+		}
+		return otlptrace.NewUnstarted(otlptracegrpc.NewClient(opts...)), nil
 	default:
-		opts := []otlptracehttp.Option{otlptracehttp.WithHeaders(cfg.Headers)}
-		if !strings.IsEmpty(cfg.URL) {
-			opts = append(opts, otlptracehttp.WithEndpointURL(cfg.URL))
+		opts := []otlptracehttp.Option{otlptracehttp.WithHeaders(params.Config.Headers)}
+		if !strings.IsEmpty(params.Config.URL) {
+			opts = append(opts, otlptracehttp.WithEndpointURL(params.Config.URL))
 		}
-		return otlptrace.NewUnstarted(otlptracehttp.NewClient(opts...))
+		return otlptrace.NewUnstarted(otlptracehttp.NewClient(opts...)), nil
 	}
 }
 
