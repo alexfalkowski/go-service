@@ -286,6 +286,14 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   external edge, gateway, ingress, load balancer, or service mesh limiter when
   those attempts need quota enforcement.
 - The built-in transport limiter is intentionally in-memory and per-process. Treat it as a last-resort local safeguard; prefer external edge/gateway/ingress/load-balancer/service-mesh limiting for production abuse protection.
+- go-service is a microservices framework; browser-facing concerns such as
+  CORS are expected to live at a BFF, API gateway, ingress, CDN, or other edge
+  layer. Do not flag missing built-in CORS/preflight support solely because
+  browser clients cannot call authenticated service endpoints cross-origin
+  through the standard HTTP stack. Report only concrete bugs where a public API
+  promises browser-direct support, an existing edge/BFF integration is broken,
+  or the repo adds first-class CORS/pre-auth middleware semantics and violates
+  them.
 - Transport limiter `max_keys` intentionally caps the number of
   caller-derived keys that get independent in-memory buckets. Additional
   distinct keys share one overflow bucket; do not flag this as accidental key
