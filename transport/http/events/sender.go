@@ -16,6 +16,9 @@ import (
 //
 // If no round tripper is configured via [WithSenderRoundTripper], it uses the default HTTP transport.
 //
+// The sender uses structured CloudEvents HTTP encoding by default. Use [WithSenderEncoding] to select binary
+// encoding for outbound integrations that require it.
+//
 // The sender follows only same-origin redirects. Cross-origin redirects are returned to the caller instead
 // of being followed so webhook signatures are not minted for redirected origins.
 //
@@ -28,15 +31,20 @@ func NewSender(hook *hooks.Webhook, opts ...SenderOption) *Sender {
 	httpClient.CheckRedirect = http.SameOriginRedirect
 
 	sender := events.NewClient(*httpClient)
-	return &Sender{client: sender}
+	return &Sender{client: sender, encoding: resolved.encoding}
 }
 
-// Sender wraps a CloudEvents client and forces structured HTTP encoding for outbound events.
+// Sender wraps a CloudEvents client and sends outbound events using its configured HTTP encoding.
 type Sender struct {
-	client events.Client
+	client   events.Client
+	encoding SenderEncoding
 }
 
-// Send transmits event using structured CloudEvents encoding.
+// Send transmits event using the configured CloudEvents HTTP encoding.
 func (s *Sender) Send(ctx context.Context, event events.Event) events.Result {
+	if s.encoding == SenderEncodingBinary {
+		return events.SendBinary(ctx, s.client, event)
+	}
+
 	return events.SendStructured(ctx, s.client, event)
 }

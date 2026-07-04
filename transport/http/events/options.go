@@ -5,10 +5,19 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
+// SenderEncoding selects the CloudEvents HTTP encoding used by a sender.
+type SenderEncoding uint8
+
+// SenderEncodingStructured sends CloudEvents using structured HTTP encoding.
+const SenderEncodingStructured SenderEncoding = 0
+
+// SenderEncodingBinary sends CloudEvents using binary HTTP encoding.
+const SenderEncodingBinary SenderEncoding = 1
+
 // SenderOption configures a CloudEvents HTTP sender.
 //
-// Sender options control how the CloudEvents client is constructed, primarily by selecting the underlying
-// HTTP transport used to send events.
+// Sender options control how the CloudEvents client sends events, including the underlying HTTP transport and
+// CloudEvents HTTP encoding.
 type SenderOption interface {
 	apply(opts *senderOptions)
 }
@@ -16,6 +25,7 @@ type SenderOption interface {
 type senderOptions struct {
 	roundTripper http.RoundTripper
 	timeout      time.Duration
+	encoding     SenderEncoding
 }
 
 type senderOptionFunc func(*senderOptions)
@@ -40,6 +50,16 @@ func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 func WithSenderTimeout(timeout time.Duration) SenderOption {
 	return senderOptionFunc(func(o *senderOptions) {
 		o.timeout = timeout
+	})
+}
+
+// WithSenderEncoding configures the CloudEvents HTTP encoding used when sending events.
+//
+// The default is [SenderEncodingStructured].
+// Webhook-protected go-service receivers require structured encoding and reject binary-mode CloudEvents.
+func WithSenderEncoding(encoding SenderEncoding) SenderOption {
+	return senderOptionFunc(func(o *senderOptions) {
+		o.encoding = encoding
 	})
 }
 
