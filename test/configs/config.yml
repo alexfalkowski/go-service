@@ -73,6 +73,11 @@ telemetry:
     kind: otlp
     protocol: http
     url: http://localhost:4318/v1/traces
+    tls:
+      ca: file:../test/certs/rootCA.pem
+      cert: file:../test/certs/client-cert.pem
+      key: file:../test/certs/client-key.pem
+      server_name: collector.example.com
     sampler:
       kind: ratio
       ratio: 0.25

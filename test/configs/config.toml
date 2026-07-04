@@ -89,6 +89,12 @@ kind = "otlp"
 protocol = "http"
 url = "http://localhost:4318/v1/traces"
 
+[telemetry.tracer.tls]
+ca = "file:../test/certs/rootCA.pem"
+cert = "file:../test/certs/client-cert.pem"
+key = "file:../test/certs/client-key.pem"
+server_name = "collector.example.com"
+
 [telemetry.tracer.sampler]
 kind = "ratio"
 ratio = 0.25

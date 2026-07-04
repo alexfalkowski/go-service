@@ -602,9 +602,28 @@ telemetry:
 > [!WARNING]
 > OTLP exporters reject non-loopback `http://` endpoints when headers are configured. Use HTTPS for remote collectors that require authorization headers; cleartext with headers is accepted only for local loopback endpoints.
 >
-> OTLP/gRPC exporters use `protocol: grpc` and a `host:port` endpoint such as `localhost:4317`. Header-bearing remote gRPC endpoints are rejected until TLS configuration is supported for OTLP/gRPC exporters.
+> OTLP/gRPC exporters use `protocol: grpc` and a `host:port` endpoint such as `localhost:4317`. Header-bearing remote gRPC endpoints require the signal's `tls` config; loopback gRPC endpoints may still use cleartext.
 >
 > OTLP exporter endpoints must be set in go-service config fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and `telemetry.tracer.url`. Standard OpenTelemetry endpoint environment variables such as `OTEL_EXPORTER_OTLP_ENDPOINT` are not used as fallback sources.
+
+Remote OTLP/gRPC exporters can use the same TLS source-string model as other go-service clients:
+
+```yaml
+telemetry:
+  tracer:
+    kind: otlp
+    protocol: grpc
+    url: collector.example.com:4317
+    tls:
+      ca: file:/etc/otel/ca.pem
+      cert: file:/etc/otel/client.crt
+      key: file:/etc/otel/client.key
+      server_name: collector.example.com
+    headers:
+      Authorization: env:OTLP_TRACES_AUTH
+```
+
+Use the same `tls` shape under `telemetry.logger` or `telemetry.metrics` when those signals export through OTLP/gRPC.
 
 ### Metrics
 

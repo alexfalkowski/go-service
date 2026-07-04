@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
@@ -233,6 +234,33 @@ func TestRegisterInvalidOTLPGRPCEndpoint(t *testing.T) {
 	})
 
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+}
+
+func TestRegisterOTLPGRPCExporterWithTLSHeaders(t *testing.T) {
+	t.Cleanup(func() {
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+	})
+
+	err := tracer.Register(tracer.TracerParams{
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config: &tracer.Config{
+			Kind:     "otlp",
+			Protocol: "grpc",
+			URL:      "collector.example.com:4317",
+			TLS:      &tls.Config{ServerName: "collector.example.com"},
+			Headers: header.Map{
+				"Authorization": "Bearer token",
+			},
+		},
+		FS:          test.FS,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+
+	require.NoError(t, err)
+	require.True(t, tracer.IsEnabled())
 }
 
 func TestRegisterOTLPEndpointLoopbackIPs(t *testing.T) {

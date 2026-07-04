@@ -1,6 +1,7 @@
 package tracer
 
 import (
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 )
@@ -17,6 +18,12 @@ type Config struct {
 	// resolution is performed by the consumer that prepares configuration for use by the
 	// exporter (for example via header.Map.Secrets or header.Map.MustSecrets).
 	Headers header.Map `yaml:"headers,omitempty" json:"headers,omitempty" toml:"headers,omitempty"`
+
+	// TLS configures OTLP/gRPC client transport security.
+	//
+	// This only applies when Kind is "otlp" and Protocol is "grpc". A non-nil
+	// config enables TLS; Cert, Key, and CA values use go-service source strings.
+	TLS *tls.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 
 	// Sampler configures trace head sampling.
 	//

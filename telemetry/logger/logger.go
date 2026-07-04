@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 )
 
@@ -97,6 +98,9 @@ type LoggerParams struct {
 	//
 	// A nil Config disables logging and causes NewLogger to return (nil, nil).
 	Config *Config
+
+	// FS resolves TLS source strings for OTLP/gRPC exporters.
+	FS *os.FS
 
 	// Attributes are optional OpenTelemetry resource attributes attached to
 	// exporter-backed logs.
