@@ -4,15 +4,15 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that logs the RPC outcome.
 //
-// Standard gRPC health methods bypass logging (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
+// Standard gRPC health methods bypass logging (see [github.com/alexfalkowski/go-service/v2/net/grpc/health.IsMethodName]).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -29,7 +29,7 @@ import (
 // telemetry.
 func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsOperationMethod(info.FullMethod) {
+		if health.IsMethodName(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -54,7 +54,7 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that logs the RPC outcome.
 //
-// Standard gRPC health methods bypass logging (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
+// Standard gRPC health methods bypass logging (see [github.com/alexfalkowski/go-service/v2/net/grpc/health.IsMethodName]).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -71,7 +71,7 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 // telemetry.
 func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsOperationMethod(info.FullMethod) {
+		if health.IsMethodName(info.FullMethod) {
 			return handler(srv, stream)
 		}
 

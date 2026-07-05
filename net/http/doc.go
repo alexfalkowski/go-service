@@ -8,7 +8,7 @@
 //   - NewServer, which builds an [http.Server] using configured timeouts and protocol settings,
 //   - NewTelemetryHandler, which wraps a handler with OpenTelemetry server instrumentation when tracing or
 //     metrics are enabled,
-//   - Handle/HandleFunc, which register handlers on a mux,
+//   - Router, which registers handlers on a mux together with route policy used by transport middleware,
 //   - Pattern and ParseServiceMethod, which help standardize route naming for telemetry.
 //
 // Server construction reads timeout keys from options.Map (`read_timeout`, `write_timeout`,

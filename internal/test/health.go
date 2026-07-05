@@ -13,27 +13,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// RegisterHealth wires the standard HTTP health routes onto mux for tests.
+// RegisterHealth wires the standard HTTP health routes onto router for tests.
 //
 // It delegates to [github.com/alexfalkowski/go-service/v2/transport/http/health.Register] using the shared test service name and the
 // provided health server so integration-style tests can exercise the same route registration
 // path used in production wiring.
-func RegisterHealth(mux *http.ServeMux, server *server.Server, drain *netserver.Drain) {
+func RegisterHealth(router *http.Router, server *server.Server, drain *netserver.Drain) {
 	params := httphealth.RegisterParams{
 		Name:   Name,
 		Server: server,
-		Mux:    mux,
+		Router: router,
 		Drain:  drain,
 	}
 
 	httphealth.Register(params)
 }
 
-// RegisterHTTPHealth creates and registers the HTTP health routes on the world's mux.
+// RegisterHTTPHealth creates and registers the HTTP health routes on the world's router.
 func (w *World) RegisterHTTPHealth(name, url string, observations ...HealthObservation) *server.Server {
 	server := w.HealthServer(name, url)
 	w.observeHealth(server, name, observations...)
-	RegisterHealth(w.Mux, server, w.Drain)
+	RegisterHealth(w.Router, server, w.Drain)
 	w.HTTPHealth = server
 
 	return server

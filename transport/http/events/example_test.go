@@ -12,7 +12,8 @@ import (
 
 func ExampleReceiver_Register() {
 	mux := http.NewServeMux()
-	receiver := transportevents.NewReceiver(mux, nil)
+	router := http.NewRouter(mux, http.NewRoutePolicy())
+	receiver := transportevents.NewReceiver(router, nil)
 	receiver.Register(context.Background(), "/events", func(_ context.Context, event events.Event) events.Result {
 		fmt.Println(event.Type())
 		return nil

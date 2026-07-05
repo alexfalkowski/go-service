@@ -989,7 +989,9 @@ send events. The sender uses structured HTTP encoding by default; configure
 `WithSenderEncoding(SenderEncodingBinary)` for outbound integrations that
 require binary-mode CloudEvents. Webhook-protected receivers require structured
 encoding and reject binary-mode CloudEvents with `ce-*` headers before
-signature verification.
+signature verification. Receiver registration marks the event route as
+unauthenticated for transport token/access middleware so webhook verification can
+act as the event authentication boundary.
 
 ### HTTP content types
 

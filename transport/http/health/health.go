@@ -17,15 +17,15 @@ import (
 //   - `/livez` (liveness)
 //   - `/readyz` (readiness)
 //
-// Server and Mux are required. Register assumes both are already constructed by the surrounding Fx graph.
+// Server and Router are required. Register assumes both are already constructed by the surrounding Fx graph.
 type RegisterParams struct {
 	di.In
 
 	// Server stores the named health observers queried by the HTTP handlers.
 	Server *health.Server
 
-	// Mux is the HTTP serve mux the health handlers are registered on.
-	Mux *http.ServeMux
+	// Router registers health handlers and operation route policy.
+	Router *http.Router
 
 	// Drain tracks whether the server lifecycle has started shutting down.
 	Drain *server.Drain
@@ -56,7 +56,7 @@ func Register(params RegisterParams) {
 }
 
 func resister(pattern string, params RegisterParams) {
-	params.Mux.HandleFunc("GET "+http.Pattern(params.Name, pattern), func(res http.ResponseWriter, req *http.Request) {
+	params.Router.HandleOperationFunc("GET "+http.Pattern(params.Name, pattern), func(res http.ResponseWriter, req *http.Request) {
 		if pattern == "/readyz" {
 			if err := params.Drain.Error(); err != nil {
 				_ = status.WriteError(res, status.ServiceUnavailableError(err))

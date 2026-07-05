@@ -29,9 +29,10 @@
 // the server as "not enabled".
 //
 // The server middleware chain typically includes metadata extraction, optional logging, optional token
-// verification, and optional rate limiting. Health and metrics paths are treated as ignorable by some
-// middleware (for example, token verification and rate limiting), so they do not require auth and do
-// not consume limiter capacity by default.
+// verification, and optional rate limiting. Route policy from [RoutePolicy] controls middleware bypasses:
+// registered operation routes such as health and metrics do not require auth and do not consume limiter
+// capacity by default, while registered unauthenticated routes bypass token verification and access control
+// only.
 //
 // # Client wiring
 //

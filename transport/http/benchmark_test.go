@@ -72,19 +72,20 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ReportAllocs()
 
 		mux := transporthttp.NewServeMux()
+		policy := transporthttp.NewRoutePolicy()
 		mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 		lc := fxtest.NewLifecycle(b)
 		cfg := test.NewInsecureTransportConfig()
 
 		h, err := transporthttp.NewServer(transporthttp.ServerParams{
-			Shutdowner: test.NewShutdowner(),
-			Mux:        mux,
-			Pool:       test.Pool,
-			Config:     cfg.HTTP,
-			Name:       test.Name,
-			UserAgent:  test.UserAgent,
-			Version:    test.Version,
-			ID:         uuid.NewGenerator(),
+			Shutdowner:  test.NewShutdowner(),
+			Mux:         mux,
+			Pool:        test.Pool,
+			Config:      cfg.HTTP,
+			UserAgent:   test.UserAgent,
+			Version:     test.Version,
+			ID:          uuid.NewGenerator(),
+			RoutePolicy: policy,
 		})
 		require.NoError(b, err)
 		cfg.HTTP.Address = test.BoundAddress(cfg.HTTP.Address, h.GetService().String())
@@ -119,6 +120,7 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ReportAllocs()
 
 		mux := transporthttp.NewServeMux()
+		policy := transporthttp.NewRoutePolicy()
 		mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 		lc := fxtest.NewLifecycle(b)
 		logger, err := logger.NewLogger(logger.LoggerParams{})
@@ -126,15 +128,15 @@ func BenchmarkHTTP(b *testing.B) {
 		cfg := test.NewInsecureTransportConfig()
 
 		h, err := transporthttp.NewServer(transporthttp.ServerParams{
-			Shutdowner: test.NewShutdowner(),
-			Mux:        mux,
-			Pool:       test.Pool,
-			Config:     cfg.HTTP,
-			Logger:     logger,
-			Name:       test.Name,
-			UserAgent:  test.UserAgent,
-			Version:    test.Version,
-			ID:         uuid.NewGenerator(),
+			Shutdowner:  test.NewShutdowner(),
+			Mux:         mux,
+			Pool:        test.Pool,
+			Config:      cfg.HTTP,
+			Logger:      logger,
+			UserAgent:   test.UserAgent,
+			Version:     test.Version,
+			ID:          uuid.NewGenerator(),
+			RoutePolicy: policy,
 		})
 		require.NoError(b, err)
 		cfg.HTTP.Address = test.BoundAddress(cfg.HTTP.Address, h.GetService().String())
@@ -170,6 +172,7 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ReportAllocs()
 
 		mux := transporthttp.NewServeMux()
+		policy := transporthttp.NewRoutePolicy()
 		mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 		lc := fxtest.NewLifecycle(b)
 		logger, err := logger.NewLogger(logger.LoggerParams{})
@@ -179,15 +182,15 @@ func BenchmarkHTTP(b *testing.B) {
 		test.RegisterTracer(lc, nil)
 
 		h, err := transporthttp.NewServer(transporthttp.ServerParams{
-			Shutdowner: test.NewShutdowner(),
-			Mux:        mux,
-			Pool:       test.Pool,
-			Config:     cfg.HTTP,
-			Logger:     logger,
-			Name:       test.Name,
-			UserAgent:  test.UserAgent,
-			Version:    test.Version,
-			ID:         uuid.NewGenerator(),
+			Shutdowner:  test.NewShutdowner(),
+			Mux:         mux,
+			Pool:        test.Pool,
+			Config:      cfg.HTTP,
+			Logger:      logger,
+			UserAgent:   test.UserAgent,
+			Version:     test.Version,
+			ID:          uuid.NewGenerator(),
+			RoutePolicy: policy,
 		})
 		require.NoError(b, err)
 		cfg.HTTP.Address = test.BoundAddress(cfg.HTTP.Address, h.GetService().String())

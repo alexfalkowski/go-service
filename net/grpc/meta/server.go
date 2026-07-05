@@ -7,10 +7,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/slices"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -41,7 +42,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 	serviceVersion := version.String()
 
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsOperationMethod(info.FullMethod) {
+		if health.IsMethodName(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -95,7 +96,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 		// Operation streams still need metadata for limiting, but they keep the same auth bypass as unary
 		// operation methods.
 		var auth meta.Value
-		if strings.IsOperationMethod(info.FullMethod) {
+		if health.IsMethodName(info.FullMethod) {
 			auth = meta.Blank()
 		} else {
 			a, err := serverAuthorization(ctx)

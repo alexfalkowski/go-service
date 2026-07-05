@@ -54,9 +54,6 @@ type ServerParams struct {
 	// Logger enables HTTP server logging middleware when non-nil.
 	Logger *logger.Logger
 
-	// Name is the service name used to identify service-owned operational endpoints.
-	Name env.Name
-
 	// UserAgent is the service user agent used by metadata middleware.
 	UserAgent env.UserAgent
 
@@ -68,6 +65,9 @@ type ServerParams struct {
 
 	// ID generates request IDs when one is not already present.
 	ID id.Generator
+
+	// RoutePolicy stores route policy used by transport middleware.
+	RoutePolicy *http.RoutePolicy
 
 	// Limiter enables server-side rate limiting middleware when non-nil.
 	Limiter *limiter.Server
@@ -105,8 +105,9 @@ type ServerParams struct {
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - gzip compression wrapping the final mux handler, including not-found fallbacks ([github.com/klauspost/compress/gzhttp.GzipHandler] with [http.NewNotFoundHandler])
 //
-// Token verification and rate limiting middleware typically treat "ignorable" paths (health/metrics/etc.)
-// as bypassable, so those endpoints do not require auth and do not consume limiter capacity by default.
+// Route policy from `params.RoutePolicy` controls middleware bypasses. Registered operation routes
+// (health/metrics/etc.) bypass logging, token verification, rate limiting, and access control.
+// Registered unauthenticated routes bypass token verification and access control only.
 //
 // TLS:
 //
@@ -127,24 +128,24 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	neg := NewChainedHandlers()
-	neg.Use(meta.NewHandler(params.Name, params.UserAgent, params.Version, params.ID, params.Mux))
+	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID, params.Mux))
 
 	if params.Logger != nil {
-		neg.Use(logger.NewHandler(params.Name, params.Logger))
+		neg.Use(logger.NewHandler(params.RoutePolicy, params.Logger))
 	}
 
 	neg.Use(&recoveryHandler{})
 
 	if params.Verifier != nil {
-		neg.Use(token.NewHandler(params.Name, params.UserID, params.Verifier))
+		neg.Use(token.NewHandler(params.RoutePolicy, params.UserID, params.Verifier))
 	}
 
 	if params.Limiter != nil {
-		neg.Use(limiter.NewHandler(params.Name, params.Limiter))
+		neg.Use(limiter.NewHandler(params.RoutePolicy, params.Limiter))
 	}
 
 	if params.Access != nil {
-		neg.Use(token.NewAccessHandler(params.Name, params.Access))
+		neg.Use(token.NewAccessHandler(params.RoutePolicy, params.Access))
 	}
 
 	neg.Use(body.NewHandler(params.Config.GetMaxReceiveSize().Bytes()))

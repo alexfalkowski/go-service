@@ -7,11 +7,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
@@ -57,7 +58,7 @@ type Verifier token.Verifier
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that verifies Authorization tokens.
 //
-// Standard gRPC health methods bypass verification (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
+// Standard gRPC health methods bypass verification (see [github.com/alexfalkowski/go-service/v2/net/grpc/health.IsMethodName]).
 //
 // The interceptor expects an Authorization value to have been extracted into the context by the metadata
 // interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.UnaryServerInterceptor]). It verifies the token using verifier, scoping
@@ -71,7 +72,7 @@ type Verifier token.Verifier
 // Callers should only install this interceptor when verifier is non-nil.
 func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsOperationMethod(info.FullMethod) {
+		if health.IsMethodName(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -89,7 +90,7 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that verifies Authorization tokens.
 //
-// Standard gRPC health methods bypass verification (see [github.com/alexfalkowski/go-service/v2/net/grpc/strings.IsOperationMethod]).
+// Standard gRPC health methods bypass verification (see [github.com/alexfalkowski/go-service/v2/net/grpc/health.IsMethodName]).
 //
 // The interceptor expects an Authorization value to have been extracted into the stream context by the
 // metadata interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.StreamServerInterceptor]). It verifies the token using verifier,
@@ -103,7 +104,7 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 // Callers should only install this interceptor when verifier is non-nil.
 func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsOperationMethod(info.FullMethod) {
+		if health.IsMethodName(info.FullMethod) {
 			return handler(srv, stream)
 		}
 
@@ -130,7 +131,7 @@ func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServer
 // [codes.Internal].
 func UnaryAccessServerInterceptor(controller access.Controller) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsOperationMethod(info.FullMethod) {
+		if health.IsMethodName(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -157,7 +158,7 @@ func UnaryAccessServerInterceptor(controller access.Controller) grpc.UnaryServer
 // [codes.Internal].
 func StreamAccessServerInterceptor(controller access.Controller) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsOperationMethod(info.FullMethod) {
+		if health.IsMethodName(info.FullMethod) {
 			return handler(srv, stream)
 		}
 

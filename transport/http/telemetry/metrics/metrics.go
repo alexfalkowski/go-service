@@ -7,7 +7,7 @@ import (
 	prometheus "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// Register registers the Prometheus metrics endpoint on mux when metrics are enabled and Prometheus is selected.
+// Register registers the Prometheus metrics endpoint on router when metrics are enabled and Prometheus is selected.
 //
 // Routing:
 // The handler is registered as a GET route using the pattern built from `http.Pattern(name, "/metrics")`.
@@ -19,8 +19,8 @@ import (
 //
 // Handler:
 // The handler is provided by `promhttp.Handler()` and serves the Prometheus text exposition format.
-func Register(name env.Name, cfg *metrics.Config, mux *http.ServeMux) {
+func Register(name env.Name, cfg *metrics.Config, router *http.Router) {
 	if cfg.IsEnabled() && cfg.IsPrometheus() {
-		mux.Handle("GET "+http.Pattern(name, "/metrics"), prometheus.Handler())
+		router.HandleOperation("GET "+http.Pattern(name, "/metrics"), prometheus.Handler())
 	}
 }

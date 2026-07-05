@@ -31,6 +31,8 @@ type Server struct {
 	Access access.Controller
 	// Mux holds HTTP routes registered by tests.
 	Mux *http.ServeMux
+	// RoutePolicy stores route policy used by HTTP middleware.
+	RoutePolicy *http.RoutePolicy
 	// HTTPServer is populated when RegisterHTTP is true.
 	HTTPServer *http.Server
 	// GRPCServer is populated when RegisterGRPC is true.
@@ -83,7 +85,8 @@ func (s *Server) Register() error {
 			Limiter:  s.HTTPLimiter,
 			Handlers: []http.ChainedHandler{&EmptyHandler{}},
 			Verifier: s.Verifier, Access: s.Access, ID: s.Generator, UserID: UserID,
-			Name: Name, UserAgent: UserAgent, Version: Version,
+			UserAgent: UserAgent, Version: Version,
+			RoutePolicy: s.RoutePolicy,
 		}
 
 		httpServer, err := http.NewServer(params)

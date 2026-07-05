@@ -82,7 +82,8 @@ func TestSendNotReceive(t *testing.T) {
 
 func TestReceiveAcceptsPreviousWebhookSecret(t *testing.T) {
 	mux := http.NewServeMux()
-	receiver := transportevents.NewReceiver(mux, httphooks.NewWebhook(newRotatingHook(t), nil))
+	router := http.NewRouter(mux, http.NewRoutePolicy())
+	receiver := transportevents.NewReceiver(router, httphooks.NewWebhook(newRotatingHook(t), nil))
 	var received *events.Event
 	receiver.Register(t.Context(), "/events", func(_ context.Context, e events.Event) events.Result {
 		received = &e
@@ -123,6 +124,27 @@ func TestReceiveCanReportProcessingFailure(t *testing.T) {
 	result := world.Sender.Send(ctx, e)
 	test.RequireNACK(t, result)
 	require.Nil(t, world.Event)
+}
+
+func TestReceiveBypassesTransportTokenAuth(t *testing.T) {
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldHTTP(),
+		test.WithWorldToken(nil, test.NewVerifier("transport-token")),
+	)
+	world.RegisterEvents(t.Context())
+
+	e := events.NewEvent()
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
+
+	result := world.Sender.Send(world.EventsContext(t.Context()), e)
+
+	test.RequireACK(t, result)
+	require.NotNil(t, world.Event)
+	event := world.Event
+	require.Equal(t, "test", bytes.String(event.Data()))
 }
 
 func TestSenderWithWebhookDoesNotFollowCrossOriginRedirect(t *testing.T) {

@@ -9,8 +9,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/net/http/strings"
 	"github.com/alexfalkowski/go-service/v2/slices"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewHandler constructs server-side metadata middleware for HTTP requests.
@@ -19,8 +19,8 @@ import (
 // It is designed to be used early in the server middleware chain so downstream middleware and handlers can
 // rely on a populated context (for example, logging, auth, rate limiting, and tracing). When mux is non-nil,
 // the handler uses it to resolve the matched route pattern before downstream middleware runs.
-func NewHandler(name env.Name, userAgent env.UserAgent, version env.Version, generator id.Generator, mux *http.ServeMux) *Handler {
-	return &Handler{name: name, userAgent: userAgent, serviceVersion: version.String(), generator: generator, mux: mux}
+func NewHandler(userAgent env.UserAgent, version env.Version, generator id.Generator, mux *http.ServeMux) *Handler {
+	return &Handler{userAgent: userAgent, serviceVersion: version.String(), generator: generator, mux: mux}
 }
 
 // Handler extracts request metadata and stores it in the request context.
@@ -31,14 +31,11 @@ func NewHandler(name env.Name, userAgent env.UserAgent, version env.Version, gen
 type Handler struct {
 	generator      id.Generator
 	mux            *http.ServeMux
-	name           env.Name
 	userAgent      env.UserAgent
 	serviceVersion string
 }
 
 // ServeHTTP extracts metadata from req and stores it in the request context.
-//
-// Ignorable paths (health/metrics/etc.) bypass extraction.
 //
 // Response headers:
 //   - "Service-Version" is set to the configured service version.
@@ -60,11 +57,6 @@ type Handler struct {
 // If the Authorization header is present but cannot be parsed (unsupported scheme or invalid format),
 // it writes an HTTP 400 error response and does not call next.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsOperationPath(h.name, req.URL.Path) {
-		next(res, req)
-		return
-	}
-
 	ctx := req.Context()
 	userAgent := serverUserAgent(ctx, req, h.userAgent)
 
