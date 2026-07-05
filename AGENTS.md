@@ -131,6 +131,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 - `cli.RunCode` returns `os.ExitCodeSuccess` on success, preserves non-zero
   shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
   returns `os.ExitCodeFailure`.
+- `cli.Application.AddClient` intentionally models short-lived client command
+  work as DI/Fx startup work. Client commands may perform their main action
+  from constructors or lifecycle `OnStart` hooks, then stop the graph
+  immediately after startup completes. Do not flag the absence of a separate
+  post-DI command-task API solely because command work lives in `OnStart`; this
+  is the supported pattern, as used by downstream client templates. Report only
+  concrete broken behavior such as incorrect error propagation, ignored
+  shutdown exit codes, lifecycle ordering bugs, or a documented command
+  contract that cannot be expressed with the DI lifecycle.
 - `cli.Application.Run` intentionally sanitizes Go test harness `-test.*`
   arguments before handing `os.Args` to the command runner because this
   repository commonly exercises CLI applications through Go test binaries. Do
@@ -202,6 +211,12 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   `go-units.FromHumanSize` does not parse; that is accepted upstream behavior
   unless this repository adds a strict round-trip promise for those values.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
+- Redis cache isolation should use Redis URL database selection, such as
+  `/0` through `/15`, a dedicated endpoint, or deployment-level isolation. Do
+  not flag missing service-name key namespacing or prefix-scoped Redis
+  `Cache.Flush`; implementing that cleanup requires client-side key iteration,
+  while the supported Redis flush behavior is `FLUSHDB` against the selected
+  database.
 - PostgreSQL DSN security options, including TLS/`sslmode`, are intentionally
   part of the DSN supplied by the service configuration. `database/sql/pg`
   passes resolved DSNs through to pgx and does not impose repository-level DSN
@@ -388,6 +403,14 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   local validation logic or a public contract beyond upstream library behavior.
 - `telemetry/header.Map.MustSecrets` can panic if secret resolution fails during config projection.
 - Health registration helpers require `*net/http.ServeMux`.
+- Health checks intentionally use go-health registration and observer mapping
+  directly. Service code may colocate `server.Register` and `server.Observe`
+  calls in one DI function for `healthz`, `livez`, `readyz`, and `grpc`
+  observers. Do not flag the absence of a standard health probe composition
+  helper solely because observer names are hand-mapped; report only concrete
+  broken behavior such as missing documented endpoints, ignored observer
+  errors, wrong probe names, or a public API promise that standard probes are
+  auto-composed.
 - Shared metadata, header, and string helpers live under `net/...`, not `transport/...`.
 - `vendor/` is gitignored and regenerated via `make dep`.
 - HTTP webhook verification buffers `req.Body` intentionally for signature checks.

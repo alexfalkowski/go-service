@@ -62,20 +62,32 @@
   }
   sql: {
     pg: {
-      writers: [
-        {
-          url: "file:../test/secrets/pg"
+      reader: {
+        dsns: [
+          {
+            url: "file:../test/secrets/pg"
+          }
+        ]
+        settings: {
+          max_open_conns: 8
+          max_idle_conns: 4
+          conn_max_idle_time: "20m"
+          conn_max_lifetime: "1h"
         }
-      ]
-      readers: [
-        {
-          url: "file:../test/secrets/pg"
+      }
+      writer: {
+        dsns: [
+          {
+            url: "file:../test/secrets/pg"
+          }
+        ]
+        settings: {
+          max_open_conns: 3
+          max_idle_conns: 2
+          conn_max_idle_time: "10m"
+          conn_max_lifetime: "30m"
         }
-      ]
-      max_open_conns: 5
-      max_idle_conns: 5
-      conn_max_idle_time: "30m"
-      conn_max_lifetime: "1h"
+      }
     }
   }
   telemetry: {

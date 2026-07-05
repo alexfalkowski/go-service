@@ -5,28 +5,48 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// Config contains shared [github.com/alexfalkowski/go-service/v2/database/sql] connection pool configuration.
+// Config contains shared [github.com/alexfalkowski/go-service/v2/database/sql] connection pool settings.
 //
 // It is intended to be embedded by driver-specific configuration types (for example PostgreSQL)
 // and consumed by the SQL wiring in this repository.
 //
-// [Config.Writers] and [Config.Readers] contain DSNs (connection strings) expressed as go-service "source strings"
-// (literal values, `file:` paths, or `env:` references) that are resolved by [os.FS.ReadSource].
-// Enabled SQL configurations must provide at least one writer or reader DSN, and each resolved DSN must be non-empty.
+// [Config.Reader] and [Config.Writer] contain role-specific pools. Each pool
+// owns its DSNs and its pool settings. DSNs are connection strings
+// expressed as go-service "source strings" (literal values, `file:` paths, or
+// `env:` references) that are resolved by [os.FS.ReadSource]. Enabled SQL
+// configurations must provide at least one writer or reader DSN, and each
+// resolved DSN must be non-empty.
 type Config struct {
-	// Writers is the set of primary (read-write) datasource DSNs.
+	// Reader is the replica (read-only) datasource pool.
+	Reader *Pool `yaml:"reader,omitempty" json:"reader,omitempty" toml:"reader,omitempty" validate:"omitempty"`
+
+	// Writer is the primary (read-write) datasource pool.
+	Writer *Pool `yaml:"writer,omitempty" json:"writer,omitempty" toml:"writer,omitempty" validate:"omitempty"`
+}
+
+// IsEnabled reports whether SQL configuration is present.
+//
+// By convention, a nil *[Config] is treated as "SQL disabled".
+func (c *Config) IsEnabled() bool {
+	return c != nil
+}
+
+// Pool contains DSNs and connection pool settings for a SQL role.
+type Pool struct {
+	// Settings configures connection pool behavior for this role.
+	Settings *PoolSettings `yaml:"settings,omitempty" json:"settings,omitempty" toml:"settings,omitempty" validate:"required"`
+
+	// DSNs is the set of datasource names for this role.
 	//
 	// Each DSN URL is a "source string" resolved via [os.FS.ReadSource], so it can be:
 	//   - "env:NAME" to read the DSN from an environment variable,
 	//   - "file:/path/to/dsn" to read the DSN from a file, or
 	//   - any other value treated as a literal DSN string.
-	Writers []DSN `yaml:"writers,omitempty" json:"writers,omitempty" toml:"writers,omitempty"`
+	DSNs []DSN `yaml:"dsns,omitempty" json:"dsns,omitempty" toml:"dsns,omitempty"`
+}
 
-	// Readers is the set of replica (read-only) datasource DSNs.
-	//
-	// Each DSN URL is a "source string" resolved via [os.FS.ReadSource] (see [Config.Writers] for the supported formats).
-	Readers []DSN `yaml:"readers,omitempty" json:"readers,omitempty" toml:"readers,omitempty"`
-
+// PoolSettings contains SQL connection pool settings for a role.
+type PoolSettings struct {
 	// ConnMaxLifetime is the maximum amount of time a connection may be reused.
 	//
 	// In config files it is encoded as a Go duration string (for example "30s", "5m", "1h").
@@ -42,13 +62,6 @@ type Config struct {
 
 	// MaxIdleConns is the maximum number of connections in the idle connection pool.
 	MaxIdleConns int `yaml:"max_idle_conns" json:"max_idle_conns" toml:"max_idle_conns" validate:"gt=0,ltefield=MaxOpenConns"`
-}
-
-// IsEnabled reports whether SQL configuration is present.
-//
-// By convention, a nil *[Config] is treated as "SQL disabled".
-func (c *Config) IsEnabled() bool {
-	return c != nil
 }
 
 // DSN is a SQL datasource name (connection string) configuration.

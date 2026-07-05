@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // DBs contains writer and reader SQL connection pools.
@@ -84,36 +83,6 @@ func (d *DBs) Destroy() error {
 	errs = append(errs, closeAll(d.databases())...)
 
 	return errors.Join(errs...)
-}
-
-// SetConnMaxLifetime sets the maximum amount of time a connection may be reused
-// across all pools.
-func (d *DBs) SetConnMaxLifetime(v time.Duration) {
-	for _, db := range d.databases() {
-		db.SetConnMaxLifetime(v.Duration())
-	}
-}
-
-// SetConnMaxIdleTime sets the maximum amount of time a connection may remain idle
-// across all pools.
-func (d *DBs) SetConnMaxIdleTime(v time.Duration) {
-	for _, db := range d.databases() {
-		db.SetConnMaxIdleTime(v.Duration())
-	}
-}
-
-// SetMaxIdleConns sets the maximum number of idle connections across all pools.
-func (d *DBs) SetMaxIdleConns(v int) {
-	for _, db := range d.databases() {
-		db.SetMaxIdleConns(v)
-	}
-}
-
-// SetMaxOpenConns sets the maximum number of open connections across all pools.
-func (d *DBs) SetMaxOpenConns(v int) {
-	for _, db := range d.databases() {
-		db.SetMaxOpenConns(v)
-	}
 }
 
 func (d *DBs) databases() []*sql.DB {

@@ -7,7 +7,7 @@
 //   - [Register], which wraps a concrete [database/sql/driver.Driver] with OpenTelemetry
 //     instrumentation and installs it in the global [database/sql] driver registry.
 //   - [Open], which resolves DSNs from go-service source strings, creates writer/reader pools,
-//     applies pool settings, registers DB stats metrics, and closes those pools on lifecycle stop.
+//     applies each role's pool settings, registers DB stats metrics, and closes those pools on lifecycle stop.
 //
 // Pool creation follows the [database/sql.Open] contract: it may not establish a
 // network connection immediately. Use [github.com/alexfalkowski/go-service/v2/database/sql/driver.DBs.Ping],

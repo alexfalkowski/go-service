@@ -38,13 +38,20 @@ id:
   kind: uuid
 sql:
   pg:
-    writers:
-      - url: file:../test/secrets/pg
-    readers:
-      - url: file:../test/secrets/pg
-    max_open_conns: 5
-    max_idle_conns: 5
-    conn_max_lifetime: 1h
+    reader:
+      dsns:
+        - url: file:../test/secrets/pg
+      settings:
+        max_open_conns: 5
+        max_idle_conns: 5
+        conn_max_lifetime: 1h
+    writer:
+      dsns:
+        - url: file:../test/secrets/pg
+      settings:
+        max_open_conns: 5
+        max_idle_conns: 5
+        conn_max_lifetime: 1h
 telemetry:
   logger:
     kind: text

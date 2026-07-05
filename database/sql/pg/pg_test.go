@@ -69,18 +69,18 @@ func TestInvalidOpen(t *testing.T) {
 		name    string
 	}{
 		{
-			name: "invalid writers",
+			name: "invalid writer",
 			config: test.NewPGConfigWithDSNs(
-				[]config.DSN{{URL: test.FilePath("secrets/none")}},
 				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
+				[]config.DSN{{URL: test.FilePath("secrets/none")}},
 			),
 			wantErr: fs.ErrNotExist,
 		},
 		{
-			name: "invalid readers",
+			name: "invalid reader",
 			config: test.NewPGConfigWithDSNs(
-				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
 				[]config.DSN{{URL: test.FilePath("secrets/none")}},
+				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
 			),
 			wantErr: fs.ErrNotExist,
 		},
@@ -92,16 +92,16 @@ func TestInvalidOpen(t *testing.T) {
 		{
 			name: "empty writer dsn",
 			config: test.NewPGConfigWithDSNs(
-				[]config.DSN{{}},
 				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
+				[]config.DSN{{}},
 			),
 			wantErr: driver.ErrEmptyDSN,
 		},
 		{
 			name: "empty reader dsn",
 			config: test.NewPGConfigWithDSNs(
-				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
 				[]config.DSN{{URL: "env:PG_EMPTY_DSN"}},
+				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
 			),
 			wantErr: driver.ErrEmptyDSN,
 		},
@@ -356,12 +356,8 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 func TestInvalidSQLPort(t *testing.T) {
 	cfg := &pg.Config{Config: &config.Config{
-		Writers:         []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
-		Readers:         []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
-		MaxOpenConns:    5,
-		MaxIdleConns:    5,
-		ConnMaxIdleTime: 30 * time.Minute,
-		ConnMaxLifetime: time.Hour,
+		Reader: newPool(test.FilePath("secrets/pg_invalid")),
+		Writer: newPool(test.FilePath("secrets/pg_invalid")),
 	}}
 
 	lc := fxtest.NewLifecycle(t)
@@ -378,4 +374,16 @@ func TestInvalidSQLPort(t *testing.T) {
 	lc.RequireStart()
 	require.Error(t, db.Ping())
 	lc.RequireStop()
+}
+
+func newPool(url string) *config.Pool {
+	return &config.Pool{
+		DSNs: []config.DSN{{URL: url}},
+		Settings: &config.PoolSettings{
+			MaxOpenConns:    5,
+			MaxIdleConns:    5,
+			ConnMaxIdleTime: 30 * time.Minute,
+			ConnMaxLifetime: time.Hour,
+		},
+	}
 }

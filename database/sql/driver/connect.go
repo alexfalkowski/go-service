@@ -19,8 +19,7 @@ import (
 // It resolves DSNs from cfg using the provided filesystem (DSNs are configured
 // as go-service "source strings"), opens writer and reader pools, registers
 // OpenTelemetry DB stats metrics for each pool when metrics are enabled, and
-// then applies pool settings (connection lifetime, max idle, and max open
-// connections).
+// then applies each role's pool settings.
 //
 // Like [database/sql.Open], this creates pool handles but does not ping the
 // database or verify network reachability. Call [DBs.Ping], [DBs.PingWriter],
@@ -33,7 +32,7 @@ import (
 // Failure behavior:
 //   - returns errors encountered while resolving DSNs or creating pool handles,
 //   - returns [ErrEmptyDSN] when any configured DSN source resolves to empty bytes, and
-//   - returns [ErrNoDSNs] when neither writers nor readers are configured.
+//   - returns [ErrNoDSNs] when neither writer nor reader DSNs are configured.
 //
 // The returned DBs owns repository lifecycle cleanup such as DB stats metric
 // unregistration.
@@ -94,12 +93,12 @@ func ConnectWritersReaders(name string, writerDSNs, readerDSNs []string) (*DBs, 
 }
 
 func connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Option) (*DBs, error) {
-	writers, err := resolveDSNs(fs, cfg.Writers)
+	readers, err := resolveDSNs(fs, cfg.Reader)
 	if err != nil {
 		return nil, err
 	}
 
-	readers, err := resolveDSNs(fs, cfg.Readers)
+	writers, err := resolveDSNs(fs, cfg.Writer)
 	if err != nil {
 		return nil, err
 	}
@@ -109,18 +108,33 @@ func connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Optio
 		return nil, err
 	}
 
-	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
-	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
-	db.SetMaxIdleConns(cfg.MaxIdleConns)
-	db.SetMaxOpenConns(cfg.MaxOpenConns)
+	applyPoolSettings(db.Readers(), cfg.Reader)
+	applyPoolSettings(db.Writers(), cfg.Writer)
 
 	return db, nil
 }
 
-func resolveDSNs(fs *os.FS, dsns []config.DSN) ([]string, error) {
-	resolved := make([]string, len(dsns))
+func applyPoolSettings(databases []*sql.DB, pool *config.Pool) {
+	if pool == nil || pool.Settings == nil {
+		return
+	}
 
-	for i, dsn := range dsns {
+	for _, db := range databases {
+		db.SetConnMaxIdleTime(pool.Settings.ConnMaxIdleTime.Duration())
+		db.SetConnMaxLifetime(pool.Settings.ConnMaxLifetime.Duration())
+		db.SetMaxIdleConns(pool.Settings.MaxIdleConns)
+		db.SetMaxOpenConns(pool.Settings.MaxOpenConns)
+	}
+}
+
+func resolveDSNs(fs *os.FS, pool *config.Pool) ([]string, error) {
+	if pool == nil {
+		return nil, nil
+	}
+
+	resolved := make([]string, len(pool.DSNs))
+
+	for i, dsn := range pool.DSNs {
 		url, err := dsn.GetURL(fs)
 		if err != nil {
 			return nil, err
