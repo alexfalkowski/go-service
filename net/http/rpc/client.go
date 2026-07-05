@@ -28,6 +28,7 @@ type ClientOption interface {
 type clientOpts struct {
 	roundTripper http.RoundTripper
 	contentType  string
+	accept       string
 	timeout      time.Duration
 }
 
@@ -50,11 +51,21 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 // WithClientContentType sets the Content-Type used for requests made by the RPC client.
 //
 // This value is passed through to the underlying content-aware HTTP client and is used to select the
-// encoder/decoder for request/response bodies. Typical values include "application/json",
-// "application/hjson", or go-service protobuf media types.
+// request encoder. Typical values include "application/json", "application/hjson", or go-service
+// protobuf media types.
 func WithClientContentType(ct string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.contentType = ct
+	})
+}
+
+// WithClientAccept sets the Accept media type used for responses from the RPC client.
+//
+// This value is passed through to the underlying content-aware HTTP client and sent as the request
+// Accept header.
+func WithClientAccept(accept string) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.accept = accept
 	})
 }
 
@@ -85,13 +96,14 @@ func NewClient(url string, opts ...ClientOption) *Client {
 		client.WithRedirect(client.RedirectIgnore),
 	)
 
-	return &Client{client: client, url: url, contentType: os.contentType}
+	return &Client{client: client, url: url, contentType: os.contentType, accept: os.accept}
 }
 
 // Client is an RPC client that issues POST requests using the configured content codecs.
 type Client struct {
 	client      *client.Client
 	contentType string
+	accept      string
 	url         string
 }
 
@@ -103,7 +115,8 @@ type Client struct {
 //
 // Content-Type behavior:
 // The request Content-Type is set to c.contentType and is used to select encoders/decoders via
-// the underlying content-aware client.
+// the underlying content-aware client. When configured, Accept is sent as the response media
+// preference and fallback decoder selection.
 //
 // The res parameter is typically a pointer to the destination value (for example *MyResponse).
 func (c *Client) Post(ctx context.Context, path string, req, res any) error {
@@ -114,7 +127,7 @@ func (c *Client) Post(ctx context.Context, path string, req, res any) error {
 		return ErrInvalidResponse
 	}
 
-	opts := client.Options{ContentType: c.contentType, Request: req, Response: res}
+	opts := client.Options{ContentType: c.contentType, Accept: c.accept, Request: req, Response: res}
 	return c.client.Post(ctx, c.url+path, opts)
 }
 

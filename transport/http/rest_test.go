@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
 
@@ -129,6 +130,33 @@ func TestRestRequestWithContent(t *testing.T) {
 			require.Equal(t, "Hello test", resp.Greeting)
 		})
 	}
+}
+
+func TestRestRequestUsesAcceptForResponse(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+
+	test.RegisterRequestHandlers("/hello", test.RestRequestContent)
+
+	body := test.Pool.Get()
+	defer test.Pool.Put(body)
+	require.NoError(t, test.Encoder.Get("json").Encode(body, &test.Request{Name: "Bob"}))
+	header := http.Header{}
+	header.Set(content.TypeKey, media.JSON)
+	header.Set(content.AcceptKey, media.YAML)
+
+	res, responseBody, err := world.ResponseWithBody(
+		t.Context(),
+		world.NamedServerURL("http", "hello"),
+		http.MethodPost,
+		header,
+		body,
+	)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, media.YAML, res.Header.Get(content.TypeKey))
+	var response test.Response
+	require.NoError(t, test.Encoder.Get("yaml").Decode(strings.NewReader(responseBody), &response))
+	require.Equal(t, "Hello Bob", response.Greeting)
 }
 
 func TestRestInvalidStatusCode(t *testing.T) {

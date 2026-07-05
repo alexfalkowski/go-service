@@ -1,8 +1,6 @@
 package client
 
 import (
-	"cmp"
-
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
@@ -117,10 +115,11 @@ func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOp
 	return &Client{client: client, content: content, pool: pool, maxResponseSize: clientOptions.maxResponseSize.Bytes()}
 }
 
-// Options describes the request/response payloads and content type for a single call.
+// Options describes the request/response payloads and media types for a single call.
 //
-// ContentType is used to select an encoder/decoder via net/http/content. Typical values are media
-// types like "application/json" or go-service specific protobuf media types.
+// ContentType is used to select the request encoder via net/http/content. Accept is used to request
+// a distinct response media type.
+// Typical values are media types like "application/json" or go-service specific protobuf media types.
 //
 // Request and Response are optional:
 //   - If Request is non-nil, it is encoded into the request body.
@@ -135,8 +134,11 @@ type Options struct {
 	Response any
 
 	// ContentType is the request Content-Type used for encoding and the fallback decoder selection
-	// when the response does not provide a Content-Type header.
+	// when Accept and the response Content-Type header are not set.
 	ContentType string
+
+	// Accept is the response Accept media type sent on the request.
+	Accept string
 }
 
 // HasRequest reports whether a request payload is set.
@@ -203,6 +205,7 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 //
 // Request headers:
 //   - The request Content-Type header is set to the negotiated media type.
+//   - The request Accept header is set when opts.Accept is non-empty.
 //
 // Response handling:
 //   - The response body is read into an internal buffer up to the configured response size limit.
@@ -210,7 +213,7 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 //     error message and returned as a net/http/status error.
 //   - Otherwise, if the status code is in the 4xx/5xx range, a generic status error is returned.
 //   - Otherwise, if opts.Response is non-nil, the response body is decoded into it using the encoder
-//     selected by the response Content-Type (falling back to opts.ContentType if absent).
+//     selected by the response Content-Type (falling back to opts.ContentType).
 //
 // Notes:
 //   - Callers may pass the zero Options value when no request/response bodies are needed.
@@ -238,6 +241,9 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	}
 
 	request.Header.Set(content.TypeKey, requestMedia.String())
+	if !strings.IsEmpty(opts.Accept) {
+		request.Header.Set(content.AcceptKey, opts.Accept)
+	}
 
 	response, err := c.client.Do(request)
 	if err != nil {
@@ -253,11 +259,8 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 		return err
 	}
 
-	// If for some reason the server does not return it, default to opts.
-	contentType := cmp.Or(response.Header.Get(content.TypeKey), opts.ContentType)
-
 	// The server handlers return text/error to indicate an error.
-	responseMedia := c.content.NewFromMedia(contentType)
+	responseMedia := c.content.NewFromMedia(responseContentType(response.Header, opts))
 	if responseMedia.IsError() {
 		code := response.StatusCode
 		if !isErrorStatus(code) {
@@ -290,6 +293,14 @@ func defaultErrorMessage(code int) string {
 	}
 
 	return status.DefaultMessage(code)
+}
+
+func responseContentType(header http.Header, opts Options) string {
+	if contentType := header.Get(content.TypeKey); !strings.IsEmpty(contentType) {
+		return contentType
+	}
+
+	return opts.ContentType
 }
 
 func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {

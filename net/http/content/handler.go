@@ -21,7 +21,8 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 //
 // Content negotiation:
 // Request-body decoding uses the request Content-Type, falling back to JSON when Content-Type is absent or
-// unknown. The response Content-Type header is set to the negotiated media type.
+// unknown. Response encoding uses the request Accept header, falling back to Content-Type when Accept is
+// absent. The response Content-Type header is set to the negotiated response media type.
 //
 // Errors:
 // If request decoding fails, NewRequestHandler converts the decode error into a 400 Bad Request using
@@ -81,7 +82,7 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		mediaType := cont.NewFromRequest(req)
+		mediaType := cont.NewFromAccept(req)
 		ctx = meta.WithContent(ctx, req, res, mediaType.Encoder)
 		res.Header().Set(TypeKey, mediaType.WithUTF8())
 

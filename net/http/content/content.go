@@ -53,6 +53,21 @@ func (c *Content) NewFromRequest(req *http.Request) Media {
 	return c.newRequestMedia(mediaType)
 }
 
+// NewFromAccept parses the first request Accept media type and returns a matching Media.
+//
+// If Accept is not set, it falls back to Content-Type.
+//
+// If parsing fails, it falls back to JSON.
+// If the internal error media type is selected, it falls back to plain text.
+func (c *Content) NewFromAccept(req *http.Request) Media {
+	mediaType := firstMediaType(req.Header.Get(AcceptKey))
+	if strings.IsEmpty(mediaType) {
+		mediaType = req.Header.Get(TypeKey)
+	}
+
+	return c.newRequestMedia(mediaType)
+}
+
 // NewFromContentType parses the request Content-Type header and returns a matching Media.
 //
 // If parsing fails, it falls back to JSON.

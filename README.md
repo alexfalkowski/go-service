@@ -993,7 +993,7 @@ signature verification.
 
 ### HTTP content types
 
-The HTTP REST and RPC helpers decode request bodies from the request `Content-Type`, falling back to JSON when `Content-Type` is absent or unknown. Response encoding uses the negotiated media type, falling back to the first `Accept` media type when `Content-Type` is absent.
+The HTTP REST and RPC helpers decode request bodies from the request `Content-Type`, falling back to JSON when `Content-Type` is absent or unknown. Response encoding uses the first `Accept` media type when present, falling back to the request `Content-Type` when `Accept` is absent. Client helpers can set `ContentType` for the request body and `Accept` for an independent response format.
 
 Built-in text/object payload media types include:
 

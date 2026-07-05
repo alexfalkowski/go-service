@@ -16,8 +16,8 @@
 // and [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler], which:
 //   - decode request bodies (where applicable) from Content-Type, falling back to JSON when
 //     Content-Type is absent or unknown, and
-//   - encode responses using the negotiated media type, falling back to the first Accept media type
-//     when Content-Type is absent.
+//   - encode responses using the first Accept media type, falling back to Content-Type when
+//     Accept is absent.
 //
 // Errors are written using net/http/status helpers.
 //

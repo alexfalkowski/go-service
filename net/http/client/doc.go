@@ -4,8 +4,8 @@
 //   - request/response body encoding/decoding via [github.com/alexfalkowski/go-service/v2/net/http/content.Content], and
 //   - consistent error handling via [github.com/alexfalkowski/go-service/v2/net/http/status].
 //
-// The wrapper is intended for service-to-service HTTP calls where the payload format is negotiated
-// explicitly via Content-Type (for example application/json or application/hjson).
+// The wrapper is intended for service-to-service HTTP calls where request payload format is selected
+// explicitly via Content-Type and response payload format can be requested separately via Accept.
 //
 // # Options and behavior
 //
@@ -20,7 +20,8 @@
 // Each call uses an [Options] value describing:
 //   - Request: request payload model (optional)
 //   - Response: response payload model (optional)
-//   - ContentType: media type used to select an encoder/decoder
+//   - ContentType: request media type used to select the request encoder
+//   - Accept: response media type used for the Accept header
 //
 // If Request is set, it is encoded into the request body.
 // If Response is set, it is decoded from the response body on non-error responses.

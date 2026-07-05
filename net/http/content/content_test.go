@@ -47,6 +47,27 @@ func TestNewFromRequestPrefersContentType(t *testing.T) {
 	require.Same(t, test.Encoder.Get("toml"), media.Encoder)
 }
 
+func TestNewFromAcceptPrefersAccept(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.TypeKey, media.TOML)
+	req.Header.Set(content.AcceptKey, media.YAML)
+
+	media := test.Content.NewFromAccept(req)
+
+	require.Equal(t, "yaml", media.Subtype())
+	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
+}
+
+func TestNewFromAcceptFallsBackToContentType(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.TypeKey, media.TOML)
+
+	media := test.Content.NewFromAccept(req)
+
+	require.Equal(t, "toml", media.Subtype())
+	require.Same(t, test.Encoder.Get("toml"), media.Encoder)
+}
+
 func TestNewFromRequestFallsBackToAccept(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 	req.Header.Set(content.AcceptKey, "application/yaml, application/toml")
