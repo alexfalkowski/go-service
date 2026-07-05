@@ -29,7 +29,7 @@ executors:
         command: -server.http-listen-port=9009 -auth.multitenancy-enabled=false -ingester.ring.replication-factor=1
   release:
     docker:
-      - image: alexfalkowski/release:8.20
+      - image: alexfalkowski/release:8.21
   alpine:
     docker:
       - image: alpine:latest
