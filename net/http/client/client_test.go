@@ -155,6 +155,33 @@ func TestDoUsesMsgPack(t *testing.T) {
 	require.Equal(t, "Hello Bob", response.Greeting)
 }
 
+func TestDoSendsAccept(t *testing.T) {
+	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		var request test.Request
+		require.Equal(t, media.JSON, req.Header.Get(content.TypeKey))
+		require.Equal(t, media.YAML, req.Header.Get(content.AcceptKey))
+		require.NoError(t, test.Encoder.Get("json").Decode(req.Body, &request))
+		body := bytes.NewBuffer(nil)
+		require.NoError(t, test.Encoder.Get("yaml").Encode(body, &test.Response{Greeting: "Hello " + request.Name}))
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     http.Header{content.TypeKey: []string{media.YAML}},
+			Body:       io.NopCloser(body),
+		}, nil
+	})))
+
+	var response test.Response
+	err := c.Post(t.Context(), "http://example.com", client.Options{
+		ContentType: media.JSON,
+		Accept:      media.YAML,
+		Request:     &test.Request{Name: "Bob"},
+		Response:    &response,
+	})
+	require.NoError(t, err)
+	require.Equal(t, "Hello Bob", response.Greeting)
+}
+
 func TestDoDetachesRequestBodyFromResponseBuffer(t *testing.T) {
 	var body io.ReadCloser
 	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {

@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewRequestHandlerPrefersContentType(t *testing.T) {
+func TestNewRequestHandlerUsesAcceptForResponse(t *testing.T) {
 	handler := content.NewRequestHandler(test.Content, func(_ context.Context, req *test.Request) (*test.Response, error) {
 		return &test.Response{Greeting: "Hello " + req.Name}, nil
 	})
@@ -28,8 +28,10 @@ func TestNewRequestHandlerPrefersContentType(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, media.JSON, res.Header().Get(content.TypeKey))
-	require.JSONEq(t, `{"Greeting":"Hello Bob","Meta":null}`, res.Body.String())
+	require.Equal(t, media.YAML, res.Header().Get(content.TypeKey))
+	var response test.Response
+	require.NoError(t, test.Encoder.Get("yaml").Decode(res.Body, &response))
+	require.Equal(t, "Hello Bob", response.Greeting)
 }
 
 func TestNewRequestHandlerRejectsUnsafeBinaryRequestBody(t *testing.T) {

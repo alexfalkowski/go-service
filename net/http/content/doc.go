@@ -9,9 +9,10 @@
 // media subtype (e.g. "json", "hjson", "yaml", "toml", "proto").
 //
 // [Content] can derive a [Media] from either:
-//   - an incoming HTTP request's Content-Type header, falling back to Accept ([NewFromRequest]),
-//   - an incoming HTTP request's Content-Type header ([NewFromContentType]), or
-//   - a raw media type string ([NewFromMedia]).
+//   - an incoming HTTP request's Content-Type header, falling back to Accept ([Content.NewFromRequest]),
+//   - an incoming HTTP request's Accept header, falling back to Content-Type ([Content.NewFromAccept]),
+//   - an incoming HTTP request's Content-Type header ([Content.NewFromContentType]), or
+//   - a raw media type string ([Content.NewFromMedia]).
 //
 // # Error payloads
 //

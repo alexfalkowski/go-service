@@ -70,8 +70,8 @@ func RouteRequest[Req any, Res any](pattern string, handler content.RequestHandl
 // Route registers a handler under pattern that encodes a response.
 //
 // The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content.NewHandler], which:
-//   - selects an encoder based on the request Content-Type, falling back to the first Accept media type when
-//     Content-Type is absent, and
+//   - selects an encoder based on the first Accept media type, falling back to Content-Type when
+//     Accept is absent, and
 //   - encodes the returned response model using the negotiated media type.
 //
 // Registration:
