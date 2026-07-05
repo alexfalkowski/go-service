@@ -5,14 +5,15 @@
 //
 // # Pool configuration
 //
-// The top-level [Config] models common connection pool settings such as:
+// [Config] models reader and writer [Pool] values. Each pool owns both its
+// datasource names and its complete [PoolSettings], including:
 //   - maximum connection lifetime,
 //   - max open connections, and
 //   - max idle connections.
 //
 // # DSNs and source strings
 //
-// Writer and replica (reader) DSNs are configured via [DSN] entries. Each DSN URL is expressed as a
+// Reader and writer DSNs are configured through [Pool.DSNs]. Each DSN URL is expressed as a
 // go-service "source string" (resolved via [github.com/alexfalkowski/go-service/v2/os.FS.ReadSource]), so it can be:
 //   - "env:NAME" to read from an environment variable,
 //   - "file:/path/to/dsn" to read from a file, or
@@ -20,5 +21,5 @@
 //
 // Enabled SQL configurations must provide at least one writer or reader DSN, and each resolved DSN must be non-empty.
 //
-// Start with [Config] and [DSN].
+// Start with [Config], [Pool], [PoolSettings], and [DSN].
 package config

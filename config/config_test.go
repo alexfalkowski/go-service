@@ -364,14 +364,18 @@ func verifyHooksConfig(t *testing.T, cfg *config.Config) {
 func verifySQLConfig(t *testing.T, cfg *config.Config) {
 	t.Helper()
 
-	require.Len(t, cfg.SQL.PG.Writers, 1)
-	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Writers[0].URL)
-	require.Len(t, cfg.SQL.PG.Readers, 1)
-	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Readers[0].URL)
-	require.Equal(t, 5, cfg.SQL.PG.MaxIdleConns)
-	require.Equal(t, 5, cfg.SQL.PG.MaxOpenConns)
-	require.Equal(t, 30*time.Minute, cfg.SQL.PG.ConnMaxIdleTime)
-	require.Equal(t, time.Hour, cfg.SQL.PG.ConnMaxLifetime)
+	require.Len(t, cfg.SQL.PG.Reader.DSNs, 1)
+	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Reader.DSNs[0].URL)
+	require.Equal(t, 4, cfg.SQL.PG.Reader.Settings.MaxIdleConns)
+	require.Equal(t, 8, cfg.SQL.PG.Reader.Settings.MaxOpenConns)
+	require.Equal(t, 20*time.Minute, cfg.SQL.PG.Reader.Settings.ConnMaxIdleTime)
+	require.Equal(t, time.Hour, cfg.SQL.PG.Reader.Settings.ConnMaxLifetime)
+	require.Len(t, cfg.SQL.PG.Writer.DSNs, 1)
+	require.Equal(t, "file:../test/secrets/pg", cfg.SQL.PG.Writer.DSNs[0].URL)
+	require.Equal(t, 2, cfg.SQL.PG.Writer.Settings.MaxIdleConns)
+	require.Equal(t, 3, cfg.SQL.PG.Writer.Settings.MaxOpenConns)
+	require.Equal(t, 10*time.Minute, cfg.SQL.PG.Writer.Settings.ConnMaxIdleTime)
+	require.Equal(t, 30*time.Minute, cfg.SQL.PG.Writer.Settings.ConnMaxLifetime)
 }
 
 func verifyTelemetryConfig(t *testing.T, cfg *config.Config) {

@@ -25,8 +25,9 @@
 //
 // # Writer/reader pools and telemetry
 //
-// Driver integrations typically open writer/reader connection pools, configure pool limits/lifetimes,
-// wrap drivers with OpenTelemetry instrumentation when tracing or metrics are enabled, and register
+// Driver integrations typically open writer/reader connection pools, configure
+// role-specific pool limits/lifetimes, wrap drivers with OpenTelemetry
+// instrumentation when tracing or metrics are enabled, and register
 // [database/sql] stats metrics when metrics are enabled.
 //
 // Start with [Module] and [Config].

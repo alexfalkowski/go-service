@@ -20,7 +20,7 @@ func TestOpenUnregistersDBStatsMetrics(t *testing.T) {
 
 	lc := fxtest.NewLifecycle(t)
 	db, err := driver.Open(lc, driverName, test.FS, &config.Config{
-		Writers: []config.DSN{{URL: "benchmark"}},
+		Writer: newPool(1),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, db)
@@ -48,7 +48,7 @@ func TestConnectDestroyUnregistersDBStatsMetrics(t *testing.T) {
 	driverName := test.RegisterBenchmarkSQLDriver(t, "test-sql-")
 
 	db, err := driver.Connect(driverName, test.FS, &config.Config{
-		Writers: []config.DSN{{URL: "benchmark"}},
+		Writer: newPool(1),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, db)
@@ -65,7 +65,7 @@ func TestConnectUsesTelemetryOptionsForDBStatsMetrics(t *testing.T) {
 	driverName := test.RegisterBenchmarkSQLDriver(t, "test-sql-")
 
 	db, err := driver.Connect(driverName, test.FS, &config.Config{
-		Writers: []config.DSN{{URL: "benchmark"}},
+		Writer: newPool(1),
 	}, telemetry.WithAttributes(attributes.DBSystemNamePostgreSQL))
 	require.NoError(t, err)
 	require.NotNil(t, db)
@@ -110,7 +110,7 @@ func TestConnectUnregistersReaderDBStatsMetrics(t *testing.T) {
 	driverName := test.RegisterBenchmarkSQLDriver(t, "test-sql-")
 
 	db, err := driver.Connect(driverName, test.FS, &config.Config{
-		Readers: []config.DSN{{URL: "benchmark"}},
+		Reader: newPool(1),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, db)
@@ -126,9 +126,8 @@ func TestConnectAppliesPoolSettings(t *testing.T) {
 	driverName := test.RegisterBenchmarkSQLDriver(t, "test-sql-")
 
 	db, err := driver.Connect(driverName, test.FS, &config.Config{
-		Writers:      []config.DSN{{URL: "benchmark"}},
-		Readers:      []config.DSN{{URL: "benchmark"}},
-		MaxOpenConns: 3,
+		Reader: newPool(3),
+		Writer: newPool(3),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, db)
@@ -145,9 +144,41 @@ func TestConnectAppliesPoolSettings(t *testing.T) {
 	require.Equal(t, 3, readers[0].Stats().MaxOpenConnections)
 }
 
+func TestConnectAppliesRolePoolSettings(t *testing.T) {
+	driverName := test.RegisterBenchmarkSQLDriver(t, "test-sql-")
+
+	db, err := driver.Connect(driverName, test.FS, &config.Config{
+		Reader: newPool(7),
+		Writer: newPool(5),
+	})
+	require.NoError(t, err)
+	require.NotNil(t, db)
+	defer func() {
+		require.NoError(t, db.Destroy())
+	}()
+
+	writers := db.Writers()
+	require.Len(t, writers, 1)
+	require.Equal(t, 5, writers[0].Stats().MaxOpenConnections)
+
+	readers := db.Readers()
+	require.Len(t, readers, 1)
+	require.Equal(t, 7, readers[0].Stats().MaxOpenConnections)
+}
+
 func TestConnectWritersReadersReturnsErrors(t *testing.T) {
 	db, errs := driver.ConnectWritersReaders("missing-driver", []string{"benchmark"}, nil)
 
 	require.Nil(t, db)
 	require.Error(t, errors.Join(errs...))
+}
+
+func newPool(maxOpenConns int) *config.Pool {
+	return &config.Pool{
+		DSNs: []config.DSN{{URL: "benchmark"}},
+		Settings: &config.PoolSettings{
+			MaxOpenConns: maxOpenConns,
+			MaxIdleConns: maxOpenConns,
+		},
+	}
 }

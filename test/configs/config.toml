@@ -56,16 +56,22 @@ previous = "file:../test/secrets/hooks_previous"
 [id]
 kind = "uuid"
 
-[sql.pg]
-max_open_conns = 5
-max_idle_conns = 5
-conn_max_idle_time = "30m"
+[sql.pg.reader.settings]
+max_open_conns = 8
+max_idle_conns = 4
+conn_max_idle_time = "20m"
 conn_max_lifetime = "1h"
 
-[[sql.pg.writers]]
+[[sql.pg.reader.dsns]]
 url = "file:../test/secrets/pg"
 
-[[sql.pg.readers]]
+[sql.pg.writer.settings]
+max_open_conns = 3
+max_idle_conns = 2
+conn_max_idle_time = "10m"
+conn_max_lifetime = "30m"
+
+[[sql.pg.writer.dsns]]
 url = "file:../test/secrets/pg"
 
 [telemetry.logger]
