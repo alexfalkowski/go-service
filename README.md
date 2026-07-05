@@ -1246,6 +1246,11 @@ Default retry policy is intentionally conservative:
 - gRPC retries AIP-style read methods named `Get*` or `List*`, or calls with a `Request-Id`.
 - gRPC retries only `Unavailable` by default.
 
+HTTP retryable responses with a valid `Retry-After` delay greater than the
+minimum jittered backoff suppress another attempt and return the current
+response. gRPC retryable status errors with `google.rpc RetryInfo.retry_delay`
+use the same suppression policy.
+
 `Request-Id` identifies the logical request, not an individual wire attempt.
 Services that allow retried writes should treat it as the idempotency key and
 deduplicate repeated attempts when duplicate processing would be unsafe.

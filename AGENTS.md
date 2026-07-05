@@ -158,6 +158,14 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   path that demonstrates `Serve` is invoked after `Stop`/`GracefulStop` and
   causes an incorrect exit code.
 - `telemetry.Register()` installs the global OpenTelemetry propagator.
+- OTLP exporter endpoints intentionally come from explicit go-service config
+  fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and
+  `telemetry.tracer.url`. Standard OpenTelemetry endpoint environment variables
+  such as `OTEL_EXPORTER_OTLP_ENDPOINT` are not fallback sources and should not
+  be projected into config by default. Operators that want env-managed endpoints
+  should set the go-service config values through their deployment/config
+  source; do not flag missing automatic `OTEL_*` endpoint projection as a
+  feature gap unless the documented support boundary changes.
 - Telemetry logger, metrics, and tracer setup installs process-global
   OpenTelemetry providers. Do not flag provider globals leaking after DI startup
   failure solely because lifecycle `OnStop` does not run; supported service

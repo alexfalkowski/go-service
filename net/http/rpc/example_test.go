@@ -17,9 +17,12 @@ func ExampleClient_Post() {
 	mux := http.NewServeMux()
 	pool := sync.NewBufferPool()
 	rpc.Register(rpc.RegisterParams{
-		Mux:     mux,
-		Content: exampleContent(pool),
-		Pool:    pool,
+		Mux: mux,
+		Content: content.NewContent(
+			encoding.NewMap(encoding.MapParams{JSON: json.NewEncoder()}),
+			pool,
+		),
+		Pool: pool,
 	})
 
 	rpc.Route("/hello", func(_ context.Context, req *exampleRequest) (*exampleResponse, error) {
@@ -45,11 +48,4 @@ type exampleRequest struct {
 
 type exampleResponse struct {
 	Message string `json:"message"`
-}
-
-func exampleContent(pool *sync.BufferPool) *content.Content {
-	return content.NewContent(
-		encoding.NewMap(encoding.MapParams{JSON: json.NewEncoder()}),
-		pool,
-	)
 }

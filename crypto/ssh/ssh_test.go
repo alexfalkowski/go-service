@@ -85,7 +85,9 @@ func TestInvalidConfig(t *testing.T) {
 }
 
 func TestInvalidPublicKeyConfig(t *testing.T) {
-	public := sshPublic(t)
+	data, err := test.FS.ReadSource(test.FilePath("secrets/ssh_public"))
+	require.NoError(t, err)
+	public := bytes.String(data)
 
 	t.Run("invalid verifier public key", func(t *testing.T) {
 		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: test.FilePath("secrets/redis")})
@@ -213,13 +215,4 @@ func TestInvalidKeyType(t *testing.T) {
 		_, signerErr = ssh.NewSigner(test.FS, &ssh.Config{Private: test.FilePath("secrets/rsa_private")})
 	})
 	require.ErrorIs(t, signerErr, errors.ErrInvalidKeyType)
-}
-
-func sshPublic(t *testing.T) string {
-	t.Helper()
-
-	data, err := test.FS.ReadSource(test.FilePath("secrets/ssh_public"))
-	require.NoError(t, err)
-
-	return bytes.String(data)
 }

@@ -115,7 +115,10 @@ func TestMeterProviderAttributes(t *testing.T) {
 
 	rm := metrics.ResourceMetrics{}
 	require.NoError(t, reader.Collect(t.Context(), &rm))
-	attrs := resourceAttributes(rm)
+	attrs := make(map[attributes.Key]string)
+	for _, attr := range rm.Resource.Attributes() {
+		attrs[attr.Key] = attr.Value.AsString()
+	}
 
 	require.Equal(t, test.ID.String(), attrs[attributes.HostID("").Key])
 	require.Equal(t, test.Name.String(), attrs[attributes.ServiceName("").Key])
@@ -165,12 +168,4 @@ func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
 	require.Eventually(t, func() bool {
 		return exports.Load() > 0
 	}, (2 * time.Second).Duration(), (20 * time.Millisecond).Duration())
-}
-
-func resourceAttributes(rm metrics.ResourceMetrics) map[attributes.Key]string {
-	attrs := make(map[attributes.Key]string)
-	for _, attr := range rm.Resource.Attributes() {
-		attrs[attr.Key] = attr.Value.AsString()
-	}
-	return attrs
 }

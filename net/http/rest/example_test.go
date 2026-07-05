@@ -17,9 +17,12 @@ func ExampleGet() {
 	mux := http.NewServeMux()
 	pool := sync.NewBufferPool()
 	rest.Register(rest.RegisterParams{
-		Mux:     mux,
-		Content: exampleContent(pool),
-		Pool:    pool,
+		Mux: mux,
+		Content: content.NewContent(
+			encoding.NewMap(encoding.MapParams{JSON: json.NewEncoder()}),
+			pool,
+		),
+		Pool: pool,
 	})
 
 	rest.Get("/hello", func(context.Context) (*exampleResponse, error) {
@@ -42,11 +45,4 @@ func ExampleGet() {
 
 type exampleResponse struct {
 	Message string `json:"message"`
-}
-
-func exampleContent(pool *sync.BufferPool) *content.Content {
-	return content.NewContent(
-		encoding.NewMap(encoding.MapParams{JSON: json.NewEncoder()}),
-		pool,
-	)
 }

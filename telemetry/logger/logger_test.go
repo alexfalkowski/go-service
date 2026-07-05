@@ -63,7 +63,14 @@ func TestMetaTruncatesLongValues(t *testing.T) {
 }
 
 func TestMetaTruncatesLongValuesAtUTF8Boundary(t *testing.T) {
-	maxLength := metaValueLength(t, strings.Repeat("a", 2048))
+	ctx := meta.WithAttributes(
+		t.Context(),
+		meta.WithRequestID(meta.String(strings.Repeat("a", 2048))),
+	)
+	attrs := logger.Meta(ctx)
+	require.Len(t, attrs, 1)
+
+	maxLength := len(attrs[0].Value.String())
 	prefix := strings.Repeat("a", maxLength-1)
 
 	for _, tt := range []struct {
@@ -315,17 +322,4 @@ func TestOTLPLoggerUsesConfiguredLevel(t *testing.T) {
 	require.NotPanics(t, func() {
 		child.ErrorContext(ctx, "exported")
 	})
-}
-
-func metaValueLength(t *testing.T, value string) int {
-	t.Helper()
-
-	ctx := meta.WithAttributes(
-		t.Context(),
-		meta.WithRequestID(meta.String(value)),
-	)
-	attrs := logger.Meta(ctx)
-
-	require.Len(t, attrs, 1)
-	return len(attrs[0].Value.String())
 }

@@ -23,7 +23,7 @@
 //
 //   - a status code (codes.Code), and
 //   - a human-readable message,
-//   - optionally, structured details (not handled by this package).
+//   - optionally, structured details.
 //
 // Clients can inspect errors to extract the status code and decide how to react
 // (retry, surface a user-facing error, map to HTTP status codes, etc.).
@@ -33,6 +33,17 @@
 // Use Error to create an error with a specific gRPC code:
 //
 //	err := status.Error(codes.NotFound, "widget does not exist")
+//
+// Use New when a caller needs a Status value before converting it to an error,
+// for example to attach structured details:
+//
+//	s, err := status.New(codes.Unavailable, "retry later").WithDetails(&status.RetryInfo{
+//		RetryDelay: status.NewDuration(delay),
+//	})
+//	if err != nil {
+//		return err
+//	}
+//	return s.Err()
 //
 // Use Errorf when the client-visible message should be formatted:
 //
@@ -73,6 +84,9 @@
 //     constants (OK, NotFound, Unavailable, etc.).
 //   - google.golang.org/grpc/status is the upstream implementation; this package
 //     forwards directly to it.
+//   - RetryInfo and NewDuration expose the protobuf detail types used by
+//     go-service retry behavior without requiring transport packages to import
+//     protobuf packages directly.
 //
 // # Client-visible messages
 //
@@ -84,8 +98,9 @@
 // # Non-goals
 //
 // This package intentionally exposes only the small subset of the upstream
-// status API that go-service uses broadly: Code, FromError, Error, Errorf,
-// SafeError, SafeErrorf, and the Status type alias. Higher-level code that
-// needs additional constructors or richer structured-detail helpers should use
-// the upstream status package directly.
+// status API and structured detail types that go-service uses broadly: Code,
+// FromError, New, Error, Errorf, SafeError, SafeErrorf, Status, RetryInfo, and
+// NewDuration. Higher-level code that needs unrelated structured-detail helpers
+// should add a narrow go-service alias here before reaching through to upstream
+// packages from transport code.
 package status

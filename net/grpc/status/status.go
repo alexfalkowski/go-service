@@ -50,13 +50,22 @@ func FromError(err error) (*Status, bool) {
 	return status.FromError(err)
 }
 
+// New returns a Status with code c and message msg.
+//
+// This forwards to [google.golang.org/grpc/status.New]. Use it when callers
+// need a status value, for example to attach structured details before calling
+// Err.
+func New(c codes.Code, msg string) *Status {
+	return status.New(c, msg)
+}
+
 // Error constructs a gRPC status error with code c and message msg.
 //
 // The returned error is suitable to be returned from a gRPC handler so the runtime can send the
 // corresponding status code and message to the client. The message is client-visible by design.
 //
-// For structured status details (protobuf Any details), use the upstream status
-// API directly (for example [status.New](...).WithDetails(...)).
+// For structured status details, use [New] and local detail aliases such as
+// [RetryInfo] before calling Err.
 func Error(c codes.Code, msg string) error {
 	if c == codes.OK {
 		return nil
