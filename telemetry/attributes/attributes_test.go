@@ -23,7 +23,10 @@ func TestResourceMergesConfiguredAttributesWithIdentity(t *testing.T) {
 		"service-version",
 		"prod",
 	)
-	attrs := resourceAttributes(resource.Attributes())
+	attrs := make(map[string]string)
+	for _, attr := range resource.Attributes() {
+		attrs[string(attr.Key)] = attr.Value.AsString()
+	}
 
 	require.Equal(t, "payments", attrs["k8s.namespace.name"])
 	require.Equal(t, "host-id", attrs["host.id"])
@@ -63,12 +66,4 @@ func TestDeploymentEnvironmentName(t *testing.T) {
 			require.Equal(t, tt.expected, attribute.Value.AsString())
 		})
 	}
-}
-
-func resourceAttributes(attrs []attributes.KeyValue) map[string]string {
-	values := make(map[string]string)
-	for _, attr := range attrs {
-		values[string(attr.Key)] = attr.Value.AsString()
-	}
-	return values
 }

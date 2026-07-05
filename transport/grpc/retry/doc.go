@@ -9,5 +9,9 @@
 // request-id identifies the logical request and is stable across retry attempts, so services that retry writes
 // should deduplicate by request-id. Callers that need different retry eligibility can pass an explicit policy.
 //
+// RetryInfo handling: when a retryable gRPC status error includes google.rpc RetryInfo with a retry_delay
+// greater than the minimum jittered backoff, the error is returned without another attempt. Missing, zero, or
+// shorter retry_delay values do not suppress a retry.
+//
 // Start with [Config] and [UnaryClientInterceptor].
 package retry

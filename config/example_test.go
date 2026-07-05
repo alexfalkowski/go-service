@@ -37,10 +37,12 @@ func ExampleNewConfig() {
 	flags.AddConfig("file:" + path)
 
 	decoder := config.NewDecoder(config.DecoderParams{
-		Flags:   flags,
-		Encoder: exampleEncodingMap(),
-		FS:      fs,
-		Name:    env.Name("payments"),
+		Flags: flags,
+		Encoder: encoding.NewMap(encoding.MapParams{
+			YAML: yaml.NewEncoder(),
+		}),
+		FS:   fs,
+		Name: env.Name("payments"),
 	})
 
 	cfg, err := config.NewConfig[exampleConfig](decoder, config.NewValidator())
@@ -50,10 +52,4 @@ func ExampleNewConfig() {
 
 	fmt.Println(cfg.Name)
 	// Output: payments
-}
-
-func exampleEncodingMap() *encoding.Map {
-	return encoding.NewMap(encoding.MapParams{
-		YAML: yaml.NewEncoder(),
-	})
 }

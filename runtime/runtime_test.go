@@ -25,20 +25,19 @@ func TestRecover(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := recoverPanic(tt.value)
+			var err error
+			func() {
+				defer func() {
+					if recovered := recover(); recovered != nil {
+						err = runtime.ConvertRecover(recovered)
+					}
+				}()
+
+				panic(tt.value)
+			}()
 
 			require.Error(t, err)
 			require.Equal(t, tt.message, err.Error())
 		})
 	}
-}
-
-func recoverPanic(value any) (err error) {
-	defer func() {
-		if recovered := recover(); recovered != nil {
-			err = runtime.ConvertRecover(recovered)
-		}
-	}()
-
-	panic(value)
 }

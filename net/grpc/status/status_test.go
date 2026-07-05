@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,6 +33,20 @@ func TestFromErrorUnknown(t *testing.T) {
 	s, ok := status.FromError(errors.New("plain error"))
 	require.False(t, ok)
 	require.Equal(t, codes.Unknown, s.Code())
+}
+
+func TestNewWithRetryInfo(t *testing.T) {
+	s, err := status.New(codes.Unavailable, "retry later").WithDetails(&status.RetryInfo{
+		RetryDelay: status.NewDuration(time.Second),
+	})
+	require.NoError(t, err)
+
+	details := s.Details()
+	require.Len(t, details, 1)
+
+	retryInfo, ok := details[0].(*status.RetryInfo)
+	require.True(t, ok)
+	require.Equal(t, time.Second.Duration(), retryInfo.GetRetryDelay().AsDuration())
 }
 
 func TestErrorf(t *testing.T) {

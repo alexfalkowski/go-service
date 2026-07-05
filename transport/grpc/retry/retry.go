@@ -83,6 +83,9 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 			if err == nil || !isRetryableCode(status.Code(err), codes) {
 				return err
 			}
+			if retryInfoDelayExceedsBackoff(err, backoff) {
+				return err
+			}
 
 			return retry.RetryableError(err)
 		})
