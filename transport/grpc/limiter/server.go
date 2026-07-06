@@ -115,8 +115,11 @@ func (s *serverStream) RecvMsg(m any) error {
 		return err
 	}
 
-	setStreamHeader(s, decision)
+	// The stream open interceptor already emitted the quota metadata, and gRPC appends rather than
+	// overwrites header/trailer values, so re-emitting per message only bloats the response. Emit
+	// again only on rejection so clients still observe the terminating quota state.
 	if !decision.Allowed() {
+		setStreamHeader(s, decision)
 		return limitError()
 	}
 
@@ -129,8 +132,9 @@ func (s *serverStream) SendMsg(m any) error {
 		return err
 	}
 
-	setStreamHeader(s, decision)
+	// See RecvMsg: the quota metadata is emitted once at stream open, and again only on rejection.
 	if !decision.Allowed() {
+		setStreamHeader(s, decision)
 		return limitError()
 	}
 
