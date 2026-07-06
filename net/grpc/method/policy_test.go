@@ -3,9 +3,9 @@ package method_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
 )
 
 func TestPolicyOperationService(t *testing.T) {
