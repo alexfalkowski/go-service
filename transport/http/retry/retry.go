@@ -283,7 +283,7 @@ func retryableStatusCodes(cfg *Config) []int {
 
 	codes := make([]int, 0, len(cfg.StatusCodes))
 	for _, code := range cfg.StatusCodes {
-		if code >= http.StatusBadRequest && code <= http.StatusNetworkAuthenticationRequired {
+		if code >= http.StatusBadRequest && code <= 599 {
 			codes = append(codes, code)
 		}
 	}
