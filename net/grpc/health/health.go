@@ -80,3 +80,13 @@ func NewClient(cc grpc.ClientConnInterface) Client {
 func RegisterServer(s grpc.ServiceRegistrar, srv Server) {
 	health.RegisterHealthServer(s, srv)
 }
+
+// IsMethodName reports whether name is a standard gRPC health method name.
+func IsMethodName(name string) bool {
+	switch name {
+	case CheckFullMethodName, ListFullMethodName, WatchFullMethodName:
+		return true
+	default:
+		return false
+	}
+}

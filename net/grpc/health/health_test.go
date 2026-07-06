@@ -1,14 +1,13 @@
-package strings_test
+package health_test
 
 import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/stretchr/testify/require"
 )
 
-func TestIsOperationMethod(t *testing.T) {
+func TestIsMethodName(t *testing.T) {
 	tests := []struct {
 		name   string
 		method string
@@ -23,7 +22,7 @@ func TestIsOperationMethod(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.match, strings.IsOperationMethod(tt.method))
+			require.Equal(t, tt.match, health.IsMethodName(tt.method))
 		})
 	}
 }

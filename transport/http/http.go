@@ -94,6 +94,12 @@ type RoundTripper = http.RoundTripper
 // ServeMux is an alias for [net/http.ServeMux].
 type ServeMux = http.ServeMux
 
+// RoutePolicy is an alias for [github.com/alexfalkowski/go-service/v2/net/http.RoutePolicy].
+type RoutePolicy = http.RoutePolicy
+
+// Router is an alias for [github.com/alexfalkowski/go-service/v2/net/http.Router].
+type Router = http.Router
+
 // DefaultTransport is an alias for [http.DefaultTransport].
 var DefaultTransport = http.DefaultTransport
 
@@ -114,6 +120,16 @@ func NewRequestWithContext(ctx context.Context, method, url string, body io.Read
 // NewServeMux constructs a new HTTP request multiplexer.
 func NewServeMux() *ServeMux {
 	return http.NewServeMux()
+}
+
+// NewRoutePolicy constructs an empty HTTP route policy registry.
+func NewRoutePolicy() *RoutePolicy {
+	return http.NewRoutePolicy()
+}
+
+// NewRouter constructs an HTTP router backed by mux and routePolicy.
+func NewRouter(mux *ServeMux, routePolicy *RoutePolicy) *Router {
+	return http.NewRouter(mux, routePolicy)
 }
 
 // NewChainedHandlers constructs an HTTP middleware chain.

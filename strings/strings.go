@@ -54,6 +54,14 @@ func Cut(s, sep string) (string, string, bool) {
 	return strings.Cut(s, sep)
 }
 
+// CutAfter slices s around the first instance of sep and returns the text after sep.
+//
+// If sep is not present, it returns [Empty].
+func CutAfter(s, sep string) string {
+	_, after, _ := Cut(s, sep)
+	return after
+}
+
 // HasPrefix reports whether s begins with prefix.
 //
 // This is a thin wrapper around [strings.HasPrefix] and does not change semantics.

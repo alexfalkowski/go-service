@@ -57,6 +57,8 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	tb.Helper()
 
 	mux := http.NewServeMux()
+	policy := http.NewRoutePolicy()
+	router := http.NewRouter(mux, policy)
 	lc := fxtest.NewLifecycle(tb)
 	tracer := NewOTLPTracerConfig()
 	generator := uuid.NewGenerator()
@@ -68,7 +70,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	transportCfg := transportConfig(os)
 	debugCfg := debugConfig(os)
 	tlsCfg := tlsConfig(os)
-	meter, err := meter(lc, mux, os)
+	meter, err := meter(lc, router, os)
 	require.NoError(tb, err)
 
 	grpcServerLimiter, err := NewGRPCServerLimiter(lc, LimiterKeyMap, os.serverLimiter)
@@ -79,7 +81,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	server := &Server{
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
 		TransportConfig: transportCfg, DebugConfig: debugCfg,
-		Meter: meter, Mux: mux, Drain: drain,
+		Meter: meter, Mux: mux, RoutePolicy: policy, Drain: drain,
 		GRPCLimiter: grpcServerLimiter,
 		HTTPLimiter: httpServerLimiter,
 		Verifier:    os.verifier, Access: os.access, Generator: generator,
@@ -104,14 +106,14 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	registerMVC(mux, logger.Logger)
 	registerRest(mux)
 
-	receiver, sender, err := NewEvents(mux, os.rt, generator)
+	receiver, sender, err := NewEvents(router, os.rt, generator)
 	require.NoError(tb, err)
 
 	cacheKind, cachePinger := newWorldCache(tb, lc, os)
 	world := &World{
 		t:      tb,
 		Logger: logger, Tracer: tracer,
-		Lifecycle: lc, ServeMux: mux,
+		Lifecycle: lc, ServeMux: mux, Router: router,
 		Server: server, Client: client,
 		Rest:     restClient(httpClient, os),
 		Receiver: receiver, Sender: sender,
@@ -152,6 +154,8 @@ type World struct {
 	*fxtest.Lifecycle
 	// ServeMux is the HTTP mux used by world HTTP handlers.
 	*http.ServeMux
+	// Router registers HTTP handlers with route policy used by transport middleware.
+	*http.Router
 	// Logger is the test logger shared by world components.
 	*logger.Logger
 	// Tracer configures tracing for world transports and clients.

@@ -77,7 +77,7 @@ func TestRoundTripperGeneratesTokenForMethodPath(t *testing.T) {
 
 func TestHandlerVerifiesTokenForMethodPath(t *testing.T) {
 	verifier := &audienceVerifier{token: "fresh-token"}
-	handler := token.NewHandler(env.Name("service"), env.UserID("user-id"), verifier)
+	handler := token.NewHandler(http.NewRoutePolicy(), env.UserID("user-id"), verifier)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodPatch, "/users/123", http.NoBody)
 	require.NoError(t, err)
 	req = req.WithContext(meta.WithAttributes(req.Context(), meta.WithAuthorization(meta.String("fresh-token"))))
@@ -92,7 +92,9 @@ func TestHandlerVerifiesTokenForMethodPath(t *testing.T) {
 func TestAccessHandler(t *testing.T) {
 	for _, tt := range accessHandlerTests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := token.NewAccessHandler(env.Name("service"), tt.controller)
+			policy := http.NewRoutePolicy()
+			policy.Operation("GET /service/healthz")
+			handler := token.NewAccessHandler(policy, tt.controller)
 			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, tt.path, http.NoBody)
 			require.NoError(t, err)
 			if tt.user != strings.Empty {

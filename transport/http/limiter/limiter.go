@@ -4,10 +4,8 @@ import (
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/net/http/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
@@ -44,19 +42,19 @@ type Server struct {
 // NewHandler constructs a server-side rate limiting Negroni handler.
 //
 // Callers should only install this handler when limiter is non-nil.
-func NewHandler(name env.Name, limiter *Server) *Handler {
-	return &Handler{name: name, limiter: limiter}
+func NewHandler(routePolicy *http.RoutePolicy, limiter *Server) *Handler {
+	return &Handler{routePolicy: routePolicy, limiter: limiter}
 }
 
 // Handler applies server-side rate limiting.
 type Handler struct {
-	limiter *Server
-	name    env.Name
+	limiter     *Server
+	routePolicy *http.RoutePolicy
 }
 
 // ServeHTTP enforces the configured limiter.
 //
-// Service-owned operation paths (health/metrics/etc.) bypass limiting (see [github.com/alexfalkowski/go-service/v2/net/http/strings.IsOperationPath]).
+// Registered operation paths (health/metrics/etc.) bypass limiting.
 //
 // Behavior:
 //   - If the limiter returns an error, it writes an internal server error response.
@@ -64,7 +62,7 @@ type Handler struct {
 //   - If the request is not allowed, it writes an HTTP 429 response with Retry-After when reset timing is available.
 //   - Otherwise it calls next.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsOperationPath(h.name, req.URL.Path) {
+	if h.routePolicy.IsOperation(req) {
 		next(res, req)
 		return
 	}

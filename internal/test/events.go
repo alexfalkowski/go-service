@@ -14,13 +14,13 @@ import (
 )
 
 // NewEvents builds a webhook-backed CloudEvents receiver and sender using the shared hook fixture.
-func NewEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator) (*transportevents.Receiver, *transportevents.Sender, error) {
+func NewEvents(router *http.Router, rt http.RoundTripper, generator id.Generator) (*transportevents.Receiver, *transportevents.Sender, error) {
 	h, err := hooks.NewHook(FS, NewHook())
 	if err != nil {
 		return nil, nil, err
 	}
 
-	receiver := transportevents.NewReceiver(mux, httphooks.NewWebhook(h, generator))
+	receiver := transportevents.NewReceiver(router, httphooks.NewWebhook(h, generator))
 
 	sender := transportevents.NewSender(httphooks.NewWebhook(h, generator), transportevents.WithSenderRoundTripper(rt))
 

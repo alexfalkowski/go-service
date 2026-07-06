@@ -167,13 +167,13 @@ func EnableMetricsReader(tb testing.TB) metrics.Reader {
 	return reader
 }
 
-func meter(lc di.Lifecycle, mux *http.ServeMux, os *worldOpts) (metrics.Meter, error) {
+func meter(lc di.Lifecycle, router *http.Router, os *worldOpts) (metrics.Meter, error) {
 	if os.telemetry == "otlp" {
 		return NewMeter(lc, NewOTLPMetricsConfig())
 	}
 
 	config := NewPrometheusMetricsConfig()
-	hm.Register(Name, config, mux)
+	hm.Register(Name, config, router)
 
 	return NewMeter(lc, config)
 }

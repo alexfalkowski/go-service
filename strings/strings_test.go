@@ -166,6 +166,29 @@ func TestCutColon(t *testing.T) {
 	}
 }
 
+func TestCutAfter(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		s    string
+		sep  string
+		want string
+	}{
+		{name: "space", s: "GET /events", sep: strings.Space, want: "/events"},
+		{name: "missing separator", s: "/events", sep: strings.Space, want: ""},
+		{name: "first separator", s: "POST /events extra", sep: strings.Space, want: "/events extra"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, test.want, strings.CutAfter(test.s, test.sep))
+		})
+	}
+}
+
 func TestLastIndex(t *testing.T) {
 	t.Parallel()
 

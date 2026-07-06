@@ -1,11 +1,10 @@
 package logger
 
 import (
-	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/net/http/strings"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
 	snoop "github.com/felixge/httpsnoop"
@@ -19,21 +18,21 @@ type Logger = logger.Logger
 
 // NewHandler constructs HTTP server logging middleware.
 //
-// The returned handler logs the outcome of each request after next has completed, including duration
-// and response status code. Service-owned operation paths (health/metrics/etc.) are skipped.
-func NewHandler(name env.Name, logger *Logger) *Handler {
-	return &Handler{name: name, logger: logger}
+// The returned handler logs the outcome of each request after next has completed, including duration and
+// response status code. Registered operation paths (health/metrics/etc.) are skipped.
+func NewHandler(routePolicy *http.RoutePolicy, logger *Logger) *Handler {
+	return &Handler{routePolicy: routePolicy, logger: logger}
 }
 
 // Handler logs HTTP server requests and responses.
 type Handler struct {
-	logger *Logger
-	name   env.Name
+	logger      *Logger
+	routePolicy *http.RoutePolicy
 }
 
 // ServeHTTP logs the request outcome after next completes.
 //
-// Service-owned operation paths (health/metrics/etc.) bypass logging (see [github.com/alexfalkowski/go-service/v2/net/http/strings.IsOperationPath]).
+// Registered operation paths (health/metrics/etc.) bypass logging.
 //
 // Logged attributes include:
 //   - system: "http"
@@ -46,7 +45,7 @@ type Handler struct {
 //   - 5xx → error
 //   - otherwise → info
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsOperationPath(h.name, req.URL.Path) {
+	if h.routePolicy.IsOperation(req) {
 		next(res, req)
 		return
 	}

@@ -94,10 +94,11 @@ func TestReadinessDrains(t *testing.T) {
 
 	drain := netserver.NewDrain()
 	mux := http.NewServeMux()
+	router := http.NewRouter(mux, http.NewRoutePolicy())
 	health.Register(health.RegisterParams{
 		Name:   test.Name,
 		Server: srv,
-		Mux:    mux,
+		Router: router,
 		Drain:  drain,
 	})
 

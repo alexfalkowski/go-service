@@ -8,8 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/net/http/strings"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 )
@@ -55,20 +55,20 @@ type Verifier token.Verifier
 // NewHandler constructs server-side token verification middleware.
 //
 // Callers should only install this handler when verifier is non-nil.
-func NewHandler(name env.Name, id env.UserID, verifier Verifier) *Handler {
-	return &Handler{name: name, id: id, verifier: verifier}
+func NewHandler(routePolicy *http.RoutePolicy, id env.UserID, verifier Verifier) *Handler {
+	return &Handler{routePolicy: routePolicy, id: id, verifier: verifier}
 }
 
 // Handler verifies Authorization headers and injects the verified subject into request metadata.
 type Handler struct {
-	verifier Verifier
-	name     env.Name
-	id       env.UserID
+	verifier    Verifier
+	routePolicy *http.RoutePolicy
+	id          env.UserID
 }
 
 // ServeHTTP verifies the request Authorization token and stores the verified subject in the context.
 //
-// Service-owned operation paths (health/metrics/etc.) bypass verification (see [github.com/alexfalkowski/go-service/v2/net/http/strings.IsOperationPath]).
+// Registered operation paths (health/metrics/etc.) and registered unauthenticated routes bypass verification.
 //
 // The handler expects an Authorization value to be available in the request context (typically injected by
 // [github.com/alexfalkowski/go-service/v2/net/http/meta.Handler]). It verifies the token using verifier, scoping verification to the request method and path.
@@ -79,7 +79,7 @@ type Handler struct {
 //
 // Callers should only install this handler when verifier is non-nil.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsOperationPath(h.name, req.URL.Path) {
+	if h.routePolicy.IsOperation(req) || h.routePolicy.IsUnauthenticated(req) {
 		next(res, req)
 		return
 	}
@@ -100,23 +100,23 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 // NewAccessHandler constructs server-side access-control middleware.
 //
 // Callers should only install this handler when controller is non-nil.
-func NewAccessHandler(name env.Name, controller access.Controller) *AccessHandler {
-	return &AccessHandler{name: name, controller: controller}
+func NewAccessHandler(routePolicy *http.RoutePolicy, controller access.Controller) *AccessHandler {
+	return &AccessHandler{routePolicy: routePolicy, controller: controller}
 }
 
 // AccessHandler enforces access policy for token-authenticated requests.
 type AccessHandler struct {
-	controller access.Controller
-	name       env.Name
+	controller  access.Controller
+	routePolicy *http.RoutePolicy
 }
 
 // ServeHTTP checks the verified user id against the configured access policy.
 //
-// Service-owned operation paths (health/metrics/etc.) bypass access control. For application paths, a
-// missing verified user id is treated as unauthenticated, a policy denial is written as HTTP 403, and policy
-// evaluation errors are written as HTTP 500.
+// Registered operation paths (health/metrics/etc.) and registered unauthenticated routes bypass access
+// control. For application paths, a missing verified user id is treated as unauthenticated, a policy denial
+// is written as HTTP 403, and policy evaluation errors are written as HTTP 500.
 func (h *AccessHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsOperationPath(h.name, req.URL.Path) {
+	if h.routePolicy.IsOperation(req) || h.routePolicy.IsUnauthenticated(req) {
 		next(res, req)
 		return
 	}

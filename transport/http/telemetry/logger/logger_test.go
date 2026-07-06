@@ -31,7 +31,7 @@ func TestHandlerLogsResponse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var logs bytes.Buffer
 			slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
-			handler := httplogger.NewHandler(test.Name, &logger.Logger{Logger: slogLogger})
+			handler := httplogger.NewHandler(http.NewRoutePolicy(), &logger.Logger{Logger: slogLogger})
 			res := httptest.NewRecorder()
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/greeter/say-hello", http.NoBody)
 
@@ -52,7 +52,9 @@ func TestHandlerLogsResponse(t *testing.T) {
 func TestHandlerSkipsOperationPath(t *testing.T) {
 	var logs bytes.Buffer
 	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
-	handler := httplogger.NewHandler(test.Name, &logger.Logger{Logger: slogLogger})
+	policy := http.NewRoutePolicy()
+	policy.Operation("GET /test/metrics")
+	handler := httplogger.NewHandler(policy, &logger.Logger{Logger: slogLogger})
 	res := httptest.NewRecorder()
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/test/metrics", http.NoBody)
 	called := false

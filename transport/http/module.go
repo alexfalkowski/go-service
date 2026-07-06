@@ -16,7 +16,7 @@ import (
 //
 // It composes constructors and registrations required to run an HTTP server and to support common
 // handler styles used by go-service:
-//   - mux construction ([http.NewServeMux])
+//   - mux, route policy, and router construction ([http.NewServeMux], [http.NewRoutePolicy], [http.NewRouter])
 //   - content negotiation and encoding ([content.NewContent])
 //   - MVC view rendering helpers ([mvc.NewFunctionMap], [mvc.Register])
 //   - RPC and REST routing ([rpc.Register], [rest.Register])
@@ -29,6 +29,8 @@ import (
 var Module = di.Module(
 	di.Register(Register),
 	di.Constructor(http.NewServeMux),
+	di.Constructor(http.NewRoutePolicy),
+	di.Constructor(http.NewRouter),
 	di.Constructor(content.NewContent),
 	di.Constructor(mvc.NewFunctionMap),
 	di.Register(mvc.Register),
