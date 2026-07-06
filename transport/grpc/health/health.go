@@ -16,10 +16,7 @@ type RegisterParams struct {
 	di.In
 
 	// Registrar is the gRPC service registrar used to register the health service implementation.
-	//
-	// In practice this is typically the transport gRPC server (or something wrapping it) that implements
-	// [grpc.ServiceRegistrar].
-	Registrar grpc.ServiceRegistrar
+	Registrar *grpc.Registrar
 
 	// Server is the health service implementation to register.
 	Server *Server
@@ -34,5 +31,7 @@ func Register(params RegisterParams) {
 		return
 	}
 
-	health.RegisterServer(params.Registrar, params.Server)
+	// Register through the operation-aware registrar so middleware learns the
+	// standard health methods without hard-coded health method checks.
+	params.Registrar.RegisterOperationService(&health.ServiceDesc, params.Server)
 }

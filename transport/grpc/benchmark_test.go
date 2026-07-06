@@ -66,9 +66,10 @@ func BenchmarkGRPC(b *testing.B) {
 		cfg := test.NewInsecureTransportConfig()
 
 		g, err := transportgrpc.NewServer(transportgrpc.ServerParams{
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg.GRPC,
-			UserAgent:  test.UserAgent, Version: test.Version,
+			Shutdowner:   test.NewShutdowner(),
+			Config:       cfg.GRPC,
+			MethodPolicy: transportgrpc.NewMethodPolicy(),
+			UserAgent:    test.UserAgent, Version: test.Version,
 		})
 		require.NoError(b, err)
 		cfg.GRPC.Address = test.BoundAddress(cfg.GRPC.Address, g.GetService().String())
@@ -112,7 +113,8 @@ func BenchmarkGRPC(b *testing.B) {
 		g, err := transportgrpc.NewServer(transportgrpc.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg.GRPC, Logger: logger,
-			UserAgent: test.UserAgent, Version: test.Version,
+			MethodPolicy: transportgrpc.NewMethodPolicy(),
+			UserAgent:    test.UserAgent, Version: test.Version,
 		})
 		require.NoError(b, err)
 		cfg.GRPC.Address = test.BoundAddress(cfg.GRPC.Address, g.GetService().String())
@@ -159,7 +161,8 @@ func BenchmarkGRPC(b *testing.B) {
 		g, err := transportgrpc.NewServer(transportgrpc.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg.GRPC, Logger: logger,
-			UserAgent: test.UserAgent, Version: test.Version,
+			MethodPolicy: transportgrpc.NewMethodPolicy(),
+			UserAgent:    test.UserAgent, Version: test.Version,
 		})
 		require.NoError(b, err)
 		cfg.GRPC.Address = test.BoundAddress(cfg.GRPC.Address, g.GetService().String())

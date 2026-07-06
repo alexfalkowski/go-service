@@ -10,6 +10,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	grpclogger "github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
@@ -18,7 +20,7 @@ import (
 
 func TestUnaryServerInterceptorLogs(t *testing.T) {
 	var logs bytes.Buffer
-	interceptor := grpclogger.UnaryServerInterceptor(newLogger(&logs))
+	interceptor := grpclogger.UnaryServerInterceptor(method.NewPolicy(), newLogger(&logs))
 
 	resp, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.GreeterService/SayHello"}, func(context.Context, any) (any, error) {
 		return "ok", nil
@@ -36,10 +38,12 @@ func TestUnaryServerInterceptorLogs(t *testing.T) {
 
 func TestUnaryServerInterceptorSkipsOperationMethod(t *testing.T) {
 	var logs bytes.Buffer
-	interceptor := grpclogger.UnaryServerInterceptor(newLogger(&logs))
+	policy := method.NewPolicy()
+	policy.Operation(health.CheckFullMethodName)
+	interceptor := grpclogger.UnaryServerInterceptor(policy, newLogger(&logs))
 	called := false
 
-	resp, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: "/grpc.health.v1.Health/Check"}, func(context.Context, any) (any, error) {
+	resp, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: health.CheckFullMethodName}, func(context.Context, any) (any, error) {
 		called = true
 		return "ok", nil
 	})
@@ -52,7 +56,7 @@ func TestUnaryServerInterceptorSkipsOperationMethod(t *testing.T) {
 
 func TestStreamServerInterceptorLogs(t *testing.T) {
 	var logs bytes.Buffer
-	interceptor := grpclogger.StreamServerInterceptor(newLogger(&logs))
+	interceptor := grpclogger.StreamServerInterceptor(method.NewPolicy(), newLogger(&logs))
 	stream := &test.MetaServerStream{Ctx: t.Context()}
 
 	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/greet.v1.GreeterService/SayStreamHello"}, func(any, grpc.ServerStream) error {

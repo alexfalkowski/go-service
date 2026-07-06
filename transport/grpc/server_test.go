@@ -54,8 +54,9 @@ func TestInvalidServer(t *testing.T) {
 		},
 	}
 	params := grpc.ServerParams{
-		Shutdowner: test.NewShutdowner(),
-		Config:     cfg,
+		Shutdowner:   test.NewShutdowner(),
+		Config:       cfg,
+		MethodPolicy: grpc.NewMethodPolicy(),
 	}
 
 	_, err := grpc.NewServer(params)
@@ -70,8 +71,9 @@ func TestServerRejectsCAOnlyTLS(t *testing.T) {
 		},
 	}
 	params := grpc.ServerParams{
-		Shutdowner: test.NewShutdowner(),
-		Config:     cfg,
+		Shutdowner:   test.NewShutdowner(),
+		Config:       cfg,
+		MethodPolicy: grpc.NewMethodPolicy(),
 	}
 
 	_, err := grpc.NewServer(params)

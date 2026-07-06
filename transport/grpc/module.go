@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 )
@@ -26,9 +27,11 @@ var Module = di.Module(
 	di.Register(Register),
 	di.Constructor(NewServerLimiter),
 	di.Constructor(NewToken),
+	di.Constructor(grpc.NewMethodPolicy),
 	di.Constructor(token.NewGenerator),
 	di.Constructor(token.NewVerifier),
 	di.Constructor(NewServer),
 	di.Constructor(registrar),
+	di.Constructor(serviceRegistrar),
 	health.Module,
 )

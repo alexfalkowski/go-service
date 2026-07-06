@@ -4,8 +4,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
@@ -35,7 +35,7 @@ type Server struct {
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
 //
-// Standard gRPC health unary methods bypass limiting (see [github.com/alexfalkowski/go-service/v2/net/grpc/health.IsMethodName]).
+// Operation unary methods bypass limiting.
 // Stream RPCs do not bypass limiting because long-lived streams, such as health Watch, can hold server resources
 // until the client disconnects.
 //
@@ -47,9 +47,9 @@ type Server struct {
 //   - Otherwise, it invokes the handler.
 //
 // Callers should only install this interceptor when limiter is non-nil.
-func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(policy *method.Policy, limiter *Server) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if health.IsMethodName(info.FullMethod) {
+		if policy.IsOperation(info.FullMethod) {
 			return handler(ctx, req)
 		}
 

@@ -1,7 +1,7 @@
 package health
 
 import (
-	"google.golang.org/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	health "google.golang.org/grpc/health/grpc_health_v1"
 )
 
@@ -74,19 +74,4 @@ var StatusValue = health.HealthCheckResponse_ServingStatus_value
 // NewClient returns a standard gRPC health client.
 func NewClient(cc grpc.ClientConnInterface) Client {
 	return health.NewHealthClient(cc)
-}
-
-// RegisterServer registers srv as a standard gRPC health service.
-func RegisterServer(s grpc.ServiceRegistrar, srv Server) {
-	health.RegisterHealthServer(s, srv)
-}
-
-// IsMethodName reports whether name is a standard gRPC health method name.
-func IsMethodName(name string) bool {
-	switch name {
-	case CheckFullMethodName, ListFullMethodName, WatchFullMethodName:
-		return true
-	default:
-		return false
-	}
 }
