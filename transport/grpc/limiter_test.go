@@ -77,6 +77,26 @@ func TestServerLimiterStreamHeader(t *testing.T) {
 	require.NotEmpty(t, rejected.Header.Get("ratelimit-policy"))
 }
 
+func TestServerLimiterStreamHeaderNotDuplicated(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+
+	conn := test.RequireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	stream, err := client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+
+	_, err = test.SendStreamHello(t, stream, "test")
+	require.NoError(t, err)
+
+	header, err := stream.Header()
+	require.NoError(t, err)
+	require.Len(t, header.Get("ratelimit"), 1)
+	require.Len(t, header.Get("ratelimit-policy"), 1)
+}
+
 func TestClientLimiterUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 
