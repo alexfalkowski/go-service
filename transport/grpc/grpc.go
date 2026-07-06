@@ -11,6 +11,25 @@ import (
 // import path when they do not need the higher-level ClientOption stack.
 type DialOption = grpc.DialOption
 
+// MethodPolicy is an alias for [github.com/alexfalkowski/go-service/v2/net/grpc.MethodPolicy].
+type MethodPolicy = grpc.MethodPolicy
+
+// Registrar is an alias for [github.com/alexfalkowski/go-service/v2/net/grpc.Registrar].
+type Registrar = grpc.Registrar
+
+// ServiceRegistrar is an alias for [github.com/alexfalkowski/go-service/v2/net/grpc.ServiceRegistrar].
+type ServiceRegistrar = grpc.ServiceRegistrar
+
+// NewMethodPolicy constructs a gRPC method policy.
+func NewMethodPolicy() *MethodPolicy {
+	return grpc.NewMethodPolicy()
+}
+
+// NewRegistrar constructs a gRPC registrar that can attach method policy while registering services.
+func NewRegistrar(registrar ServiceRegistrar, policy *MethodPolicy) *Registrar {
+	return grpc.NewRegistrar(registrar, policy)
+}
+
 // NewClientConn constructs a low-level gRPC client channel using raw dial options.
 //
 // This forwards to [github.com/alexfalkowski/go-service/v2/net/grpc.NewClient]. No I/O is performed during construction;

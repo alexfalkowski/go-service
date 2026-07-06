@@ -59,6 +59,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
+	grpcPolicy := grpc.NewMethodPolicy()
 	lc := fxtest.NewLifecycle(tb)
 	tracer := NewOTLPTracerConfig()
 	generator := uuid.NewGenerator()
@@ -81,7 +82,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	server := &Server{
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
 		TransportConfig: transportCfg, DebugConfig: debugCfg,
-		Meter: meter, Mux: mux, RoutePolicy: policy, Drain: drain,
+		Meter: meter, Mux: mux, RoutePolicy: policy, GRPCMethodPolicy: grpcPolicy, Drain: drain,
 		GRPCLimiter: grpcServerLimiter,
 		HTTPLimiter: httpServerLimiter,
 		Verifier:    os.verifier, Access: os.access, Generator: generator,

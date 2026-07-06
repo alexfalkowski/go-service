@@ -9,7 +9,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	grpcmeta "github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/peer"
 )
@@ -153,7 +155,7 @@ func TestStreamClientInterceptorPreservesOutgoingRequestID(t *testing.T) {
 }
 
 func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {
-	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	interceptor := grpcmeta.UnaryServerInterceptor(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Map{})
 
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
@@ -170,7 +172,7 @@ func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {
 }
 
 func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
-	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	interceptor := grpcmeta.UnaryServerInterceptor(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Map{})
 	ctx = peer.NewContext(ctx, &peer.Peer{})
 
@@ -185,7 +187,7 @@ func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
 }
 
 func TestUnaryServerInterceptorPreservesIncomingRequestID(t *testing.T) {
-	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	interceptor := grpcmeta.UnaryServerInterceptor(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
 
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
@@ -198,7 +200,7 @@ func TestUnaryServerInterceptorPreservesIncomingRequestID(t *testing.T) {
 }
 
 func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
-	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	interceptor := grpcmeta.UnaryServerInterceptor(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Map{})
 	ctx = peer.NewContext(ctx, &peer.Peer{Addr: &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: 8080}})
 
@@ -213,7 +215,7 @@ func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
 }
 
 func TestUnaryServerInterceptorPrefersForwardedIPAddr(t *testing.T) {
-	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	interceptor := grpcmeta.UnaryServerInterceptor(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("x-forwarded-for", "203.0.113.10, 10.0.0.1"))
 	ctx = peer.NewContext(ctx, &peer.Peer{Addr: &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: 8080}})
 
@@ -228,7 +230,7 @@ func TestUnaryServerInterceptorPrefersForwardedIPAddr(t *testing.T) {
 }
 
 func TestUnaryServerInterceptorStoresGeolocationAsIgnored(t *testing.T) {
-	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	interceptor := grpcmeta.UnaryServerInterceptor(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("geolocation", "geo:47,11"))
 
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
@@ -245,7 +247,7 @@ func TestUnaryServerInterceptorStoresGeolocationAsIgnored(t *testing.T) {
 }
 
 func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
-	interceptor := grpcmeta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	interceptor := grpcmeta.StreamServerInterceptor(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Map{})
 	stream := &test.MetaServerStream{Ctx: ctx}
 
@@ -261,7 +263,7 @@ func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
 }
 
 func TestStreamServerInterceptorPreservesIncomingRequestID(t *testing.T) {
-	interceptor := grpcmeta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	interceptor := grpcmeta.StreamServerInterceptor(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
 	stream := &test.MetaServerStream{Ctx: ctx}
 
@@ -275,14 +277,16 @@ func TestStreamServerInterceptorPreservesIncomingRequestID(t *testing.T) {
 }
 
 func TestStreamServerInterceptorExtractsOperationMetadata(t *testing.T) {
-	interceptor := grpcmeta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
+	policy := method.NewPolicy()
+	policy.Operation(health.WatchFullMethodName)
+	interceptor := grpcmeta.StreamServerInterceptor(policy, env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs(
 		"authorization", "invalid",
 		"user-agent", "watch-agent",
 	))
 	stream := &test.MetaServerStream{Ctx: ctx}
 
-	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/grpc.health.v1.Health/Watch"}, func(_ any, stream grpc.ServerStream) error {
+	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: health.WatchFullMethodName}, func(_ any, stream grpc.ServerStream) error {
 		require.Equal(t, grpcmeta.String("watch-agent"), grpcmeta.UserAgent(stream.Context()))
 
 		return nil

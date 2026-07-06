@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/slices"
@@ -38,11 +38,11 @@ import (
 //
 // If the Authorization header is present but invalid, the interceptor returns a
 // [codes.InvalidArgument] gRPC status error.
-func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(policy *method.Policy, userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.UnaryServerInterceptor {
 	serviceVersion := version.String()
 
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if health.IsMethodName(info.FullMethod) {
+		if policy.IsOperation(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -81,7 +81,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 // The interceptor performs the same metadata-to-context projection as [UnaryServerInterceptor], but applies it to
 // the wrapped stream context, stores "grpc" as the ignored transport attribute, and emits response headers
 // through the stream API.
-func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(policy *method.Policy, userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.StreamServerInterceptor {
 	serviceVersion := version.String()
 
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
@@ -96,7 +96,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 		// Operation streams still need metadata for limiting, but they keep the same auth bypass as unary
 		// operation methods.
 		var auth meta.Value
-		if health.IsMethodName(info.FullMethod) {
+		if policy.IsOperation(info.FullMethod) {
 			auth = meta.Blank()
 		} else {
 			a, err := serverAuthorization(ctx)

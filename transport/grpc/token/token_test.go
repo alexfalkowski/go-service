@@ -8,7 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 	"github.com/stretchr/testify/require"
@@ -46,6 +48,37 @@ func TestStreamClientInterceptorReplacesOutgoingAuthorization(t *testing.T) {
 	require.Nil(t, stream)
 }
 
+func TestUnaryServerInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
+	policy := method.NewPolicy()
+	policy.AllowUnauthenticated("/events.v1.EventsService/Receive")
+	interceptor := token.UnaryServerInterceptor(policy, env.UserID("service-user"), &test.Verifier{})
+	called := false
+
+	_, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: "/events.v1.EventsService/Receive"}, func(context.Context, any) (any, error) {
+		called = true
+		return nil, nil
+	})
+
+	require.NoError(t, err)
+	require.True(t, called)
+}
+
+func TestStreamServerInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
+	policy := method.NewPolicy()
+	policy.AllowUnauthenticated("/events.v1.EventsService/Subscribe")
+	interceptor := token.StreamServerInterceptor(policy, env.UserID("service-user"), &test.Verifier{})
+	stream := &test.MetaServerStream{Ctx: t.Context()}
+	called := false
+
+	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/events.v1.EventsService/Subscribe"}, func(any, grpc.ServerStream) error {
+		called = true
+		return nil
+	})
+
+	require.NoError(t, err)
+	require.True(t, called)
+}
+
 func TestUnaryAccessServerInterceptor(t *testing.T) {
 	for _, tt := range accessServerTests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -53,7 +86,14 @@ func TestUnaryAccessServerInterceptor(t *testing.T) {
 			if tt.user != "" {
 				ctx = meta.WithAttributes(ctx, meta.WithUserID(meta.String(tt.user)))
 			}
-			interceptor := token.UnaryAccessServerInterceptor(tt.controller)
+			policy := method.NewPolicy()
+			if tt.operation {
+				policy.Operation(tt.method)
+			}
+			if tt.unauthenticated {
+				policy.AllowUnauthenticated(tt.method)
+			}
+			interceptor := token.UnaryAccessServerInterceptor(policy, tt.controller)
 			called := false
 
 			_, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: tt.method}, func(context.Context, any) (any, error) {
@@ -74,7 +114,14 @@ func TestStreamAccessServerInterceptor(t *testing.T) {
 			if tt.user != "" {
 				ctx = meta.WithAttributes(ctx, meta.WithUserID(meta.String(tt.user)))
 			}
-			interceptor := token.StreamAccessServerInterceptor(tt.controller)
+			policy := method.NewPolicy()
+			if tt.operation {
+				policy.Operation(tt.method)
+			}
+			if tt.unauthenticated {
+				policy.AllowUnauthenticated(tt.method)
+			}
+			interceptor := token.StreamAccessServerInterceptor(policy, tt.controller)
 			stream := &test.MetaServerStream{Ctx: ctx}
 			called := false
 
@@ -96,21 +143,32 @@ func (g staticTokenGenerator) Generate(_, _ string) ([]byte, error) {
 }
 
 type accessServerTest struct {
-	controller accessControllerFunc
-	method     string
-	name       string
-	user       string
-	code       codes.Code
-	called     bool
+	controller      accessControllerFunc
+	method          string
+	name            string
+	user            string
+	code            codes.Code
+	called          bool
+	operation       bool
+	unauthenticated bool
 }
 
 var accessServerTests = []accessServerTest{
 	{
 		name:       "operation method bypasses access",
-		method:     "/grpc.health.v1.Health/Check",
+		method:     health.CheckFullMethodName,
 		code:       codes.OK,
 		controller: accessControllerFunc(func(context.Context) (bool, error) { return false, test.ErrInvalid }),
 		called:     true,
+		operation:  true,
+	},
+	{
+		name:            "unauthenticated method bypasses access",
+		method:          "/events.v1.EventsService/Receive",
+		code:            codes.OK,
+		controller:      accessControllerFunc(func(context.Context) (bool, error) { return false, test.ErrInvalid }),
+		called:          true,
+		unauthenticated: true,
 	},
 	{
 		name:       "missing user id is unauthenticated",

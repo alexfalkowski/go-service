@@ -63,6 +63,9 @@ type ServerParams struct {
 	// ID generates request IDs when one is not already present.
 	ID id.Generator
 
+	// MethodPolicy stores gRPC method behavior used by server middleware.
+	MethodPolicy *grpc.MethodPolicy
+
 	// Limiter enables server-side rate limiting when non-nil.
 	Limiter *limiter.Server
 
@@ -169,26 +172,26 @@ func (s *Server) GetService() *grpcserver.Service {
 
 func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	uis := []grpc.UnaryServerInterceptor{
-		meta.UnaryServerInterceptor(params.UserAgent, params.Version, params.ID),
+		meta.UnaryServerInterceptor(params.MethodPolicy, params.UserAgent, params.Version, params.ID),
 		grpc.TimeoutUnaryServerInterceptor(params.Config.GetTimeout()),
 	}
 
 	if params.Logger != nil {
-		uis = append(uis, logger.UnaryServerInterceptor(params.Logger))
+		uis = append(uis, logger.UnaryServerInterceptor(params.MethodPolicy, params.Logger))
 	}
 
 	uis = append(uis, recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)))
 
 	if params.Verifier != nil {
-		uis = append(uis, token.UnaryServerInterceptor(params.UserID, params.Verifier))
+		uis = append(uis, token.UnaryServerInterceptor(params.MethodPolicy, params.UserID, params.Verifier))
 	}
 
 	if params.Limiter != nil {
-		uis = append(uis, limiter.UnaryServerInterceptor(params.Limiter))
+		uis = append(uis, limiter.UnaryServerInterceptor(params.MethodPolicy, params.Limiter))
 	}
 
 	if params.Access != nil {
-		uis = append(uis, token.UnaryAccessServerInterceptor(params.Access))
+		uis = append(uis, token.UnaryAccessServerInterceptor(params.MethodPolicy, params.Access))
 	}
 
 	uis = append(uis, interceptors...)
@@ -197,16 +200,16 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 }
 
 func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
-	sis := []grpc.StreamServerInterceptor{meta.StreamServerInterceptor(params.UserAgent, params.Version, params.ID)}
+	sis := []grpc.StreamServerInterceptor{meta.StreamServerInterceptor(params.MethodPolicy, params.UserAgent, params.Version, params.ID)}
 
 	if params.Logger != nil {
-		sis = append(sis, logger.StreamServerInterceptor(params.Logger))
+		sis = append(sis, logger.StreamServerInterceptor(params.MethodPolicy, params.Logger))
 	}
 
 	sis = append(sis, recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)))
 
 	if params.Verifier != nil {
-		sis = append(sis, token.StreamServerInterceptor(params.UserID, params.Verifier))
+		sis = append(sis, token.StreamServerInterceptor(params.MethodPolicy, params.UserID, params.Verifier))
 	}
 
 	if params.Limiter != nil {
@@ -214,7 +217,7 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 	}
 
 	if params.Access != nil {
-		sis = append(sis, token.StreamAccessServerInterceptor(params.Access))
+		sis = append(sis, token.StreamAccessServerInterceptor(params.MethodPolicy, params.Access))
 	}
 
 	sis = append(sis, interceptors...)
@@ -245,8 +248,20 @@ func credsServerOption(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
 	return grpc.Creds(grpc.NewTLS(conf)), nil
 }
 
-func registrar(server *Server) grpc.ServiceRegistrar {
-	return server.ServiceRegistrar()
+func registrar(server *Server, policy *grpc.MethodPolicy) *grpc.Registrar {
+	if server == nil {
+		return nil
+	}
+
+	return grpc.NewRegistrar(server.ServiceRegistrar(), policy)
+}
+
+func serviceRegistrar(registrar *grpc.Registrar) grpc.ServiceRegistrar {
+	if registrar == nil {
+		return nil
+	}
+
+	return registrar
 }
 
 func prefix(err error) error {

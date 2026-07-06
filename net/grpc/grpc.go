@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
@@ -53,6 +54,11 @@ type DialOption = grpc.DialOption
 // It is used when building server options that conditionally return "no option".
 type EmptyServerOption = grpc.EmptyServerOption
 
+// MethodDesc is an alias of [grpc.MethodDesc].
+//
+// It describes a unary RPC method on a generated gRPC service.
+type MethodDesc = grpc.MethodDesc
+
 // UnaryInvoker is an alias of [grpc.UnaryInvoker].
 //
 // It is the function signature used by unary client interceptors to invoke the
@@ -69,6 +75,11 @@ type ServerOption = grpc.ServerOption
 //
 // It is the gRPC server implementation that hosts registered services.
 type Server = grpc.Server
+
+// ServiceDesc is an alias of [grpc.ServiceDesc].
+//
+// It describes a generated gRPC service and its unary and stream methods.
+type ServiceDesc = grpc.ServiceDesc
 
 // ServerStream is an alias of [grpc.ServerStream].
 //
@@ -136,6 +147,16 @@ type UnaryServerInterceptor = grpc.UnaryServerInterceptor
 
 // TransportCredentials is an alias of [credentials.TransportCredentials].
 type TransportCredentials = credentials.TransportCredentials
+
+// MethodPolicy is an alias of [method.Policy].
+//
+// It stores gRPC method behavior used by server middleware.
+type MethodPolicy = method.Policy
+
+// NewMethodPolicy constructs a gRPC method policy.
+func NewMethodPolicy() *MethodPolicy {
+	return method.NewPolicy()
+}
 
 // StatusText returns the standard gRPC status text for the code.
 func StatusText(code codes.Code) string {

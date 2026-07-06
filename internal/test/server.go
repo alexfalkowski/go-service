@@ -37,6 +37,10 @@ type Server struct {
 	HTTPServer *http.Server
 	// GRPCServer is populated when RegisterGRPC is true.
 	GRPCServer *grpc.Server
+	// GRPCRegistrar registers gRPC services and records method policy.
+	GRPCRegistrar *grpc.Registrar
+	// GRPCMethodPolicy stores gRPC method behavior used by server middleware.
+	GRPCMethodPolicy *grpc.MethodPolicy
 	// DebugServer is populated when RegisterDebug is true.
 	DebugServer *debug.Server
 	// Drain tracks server lifecycle shutdown state.
@@ -106,7 +110,8 @@ func (s *Server) Register() error {
 			Logger:     s.Logger,
 			Verifier:   s.Verifier, Access: s.Access, ID: s.Generator, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
-			Limiter: s.GRPCLimiter,
+			Limiter:      s.GRPCLimiter,
+			MethodPolicy: s.GRPCMethodPolicy,
 		}
 
 		grpcServer, err := grpc.NewServer(params)
@@ -115,8 +120,9 @@ func (s *Server) Register() error {
 		}
 
 		s.GRPCServer = grpcServer
+		s.GRPCRegistrar = grpc.NewRegistrar(grpcServer.ServiceRegistrar(), s.GRPCMethodPolicy)
 		s.TransportConfig.GRPC.Address = BoundAddress(s.TransportConfig.GRPC.Address, grpcServer.GetService().String())
-		v1.RegisterGreeterServiceServer(grpcServer.ServiceRegistrar(), NewService())
+		v1.RegisterGreeterServiceServer(s.GRPCRegistrar, NewService())
 		servers = append(servers, grpcServer.GetService())
 	}
 

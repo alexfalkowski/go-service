@@ -46,7 +46,7 @@ func (w *World) RegisterGRPCHealth(name, url string, observations ...HealthObser
 
 	grpcServer := grpchealth.NewServer(grpchealth.ServerParams{Server: server, Drain: w.Drain})
 	grpchealth.Register(grpchealth.RegisterParams{
-		Registrar: w.GRPCServer.ServiceRegistrar(),
+		Registrar: w.GRPCRegistrar,
 		Server:    grpcServer,
 	})
 	w.GRPCHealth = server

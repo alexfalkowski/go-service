@@ -7,8 +7,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -58,7 +58,7 @@ type Verifier token.Verifier
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that verifies Authorization tokens.
 //
-// Standard gRPC health methods bypass verification (see [github.com/alexfalkowski/go-service/v2/net/grpc/health.IsMethodName]).
+// Operation and unauthenticated methods bypass verification.
 //
 // The interceptor expects an Authorization value to have been extracted into the context by the metadata
 // interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.UnaryServerInterceptor]). It verifies the token using verifier, scoping
@@ -70,9 +70,9 @@ type Verifier token.Verifier
 //     the handler.
 //
 // Callers should only install this interceptor when verifier is non-nil.
-func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(policy *method.Policy, id env.UserID, verifier Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if health.IsMethodName(info.FullMethod) {
+		if bypassAuth(policy, info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -90,7 +90,7 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that verifies Authorization tokens.
 //
-// Standard gRPC health methods bypass verification (see [github.com/alexfalkowski/go-service/v2/net/grpc/health.IsMethodName]).
+// Operation and unauthenticated methods bypass verification.
 //
 // The interceptor expects an Authorization value to have been extracted into the stream context by the
 // metadata interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.StreamServerInterceptor]). It verifies the token using verifier,
@@ -102,9 +102,9 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 //     invokes the handler using a wrapped stream (`go-grpc-middleware` wrapper) that carries the new context.
 //
 // Callers should only install this interceptor when verifier is non-nil.
-func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(policy *method.Policy, id env.UserID, verifier Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if health.IsMethodName(info.FullMethod) {
+		if bypassAuth(policy, info.FullMethod) {
 			return handler(srv, stream)
 		}
 
@@ -126,12 +126,12 @@ func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServer
 
 // UnaryAccessServerInterceptor returns a gRPC unary server interceptor that enforces access policy.
 //
-// Standard gRPC health methods bypass access control. For application RPCs, a missing verified user id is treated
+// Operation and unauthenticated methods bypass access control. For application RPCs, a missing verified user id is treated
 // as unauthenticated, a policy denial returns [codes.PermissionDenied], and policy evaluation errors return
 // [codes.Internal].
-func UnaryAccessServerInterceptor(controller access.Controller) grpc.UnaryServerInterceptor {
+func UnaryAccessServerInterceptor(policy *method.Policy, controller access.Controller) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if health.IsMethodName(info.FullMethod) {
+		if bypassAuth(policy, info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -153,12 +153,12 @@ func UnaryAccessServerInterceptor(controller access.Controller) grpc.UnaryServer
 
 // StreamAccessServerInterceptor returns a gRPC stream server interceptor that enforces access policy.
 //
-// Standard gRPC health methods bypass access control. For application RPCs, a missing verified user id is treated
+// Operation and unauthenticated methods bypass access control. For application RPCs, a missing verified user id is treated
 // as unauthenticated, a policy denial returns [codes.PermissionDenied], and policy evaluation errors return
 // [codes.Internal].
-func StreamAccessServerInterceptor(controller access.Controller) grpc.StreamServerInterceptor {
+func StreamAccessServerInterceptor(policy *method.Policy, controller access.Controller) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if health.IsMethodName(info.FullMethod) {
+		if bypassAuth(policy, info.FullMethod) {
 			return handler(srv, stream)
 		}
 
@@ -177,6 +177,10 @@ func StreamAccessServerInterceptor(controller access.Controller) grpc.StreamServ
 
 		return handler(srv, stream)
 	}
+}
+
+func bypassAuth(policy *method.Policy, fullMethod string) bool {
+	return policy.IsOperation(fullMethod) || policy.IsUnauthenticated(fullMethod)
 }
 
 // NewGenerator returns a [Generator] backed by token.
