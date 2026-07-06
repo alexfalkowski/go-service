@@ -43,8 +43,9 @@ func TestPostRequiresNonNilTypedResponse(t *testing.T) {
 
 func TestPostUsesAccept(t *testing.T) {
 	mux := http.NewServeMux()
+	router := http.NewRouter(mux, http.NewRoutePolicy())
 	rpc.Register(rpc.RegisterParams{
-		Mux:     mux,
+		Router:  router,
 		Content: test.Content,
 		Pool:    test.Pool,
 	})

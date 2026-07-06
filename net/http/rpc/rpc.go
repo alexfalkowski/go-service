@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	mux  *http.ServeMux
-	cont *content.Content
-	pool *sync.BufferPool
+	router *http.Router
+	cont   *content.Content
+	pool   *sync.BufferPool
 )
 
 // RegisterParams defines dependencies used to register RPC package globals.
@@ -20,8 +20,8 @@ var (
 type RegisterParams struct {
 	di.In
 
-	// Mux is the HTTP mux where server-side routes will be registered by this package's helpers.
-	Mux *http.ServeMux
+	// Router registers server-side routes for this package's helpers.
+	Router *http.Router
 
 	// Content resolves encoders/decoders based on HTTP media types (Content-Type).
 	Content *content.Content
@@ -37,7 +37,7 @@ type RegisterParams struct {
 // Important: Register must be called before using any server-side route helpers or client helpers in this
 // package. If it is not called, globals will be nil and helper calls will panic.
 func Register(params RegisterParams) {
-	mux = params.Mux
+	router = params.Router
 	cont = params.Content
 	pool = params.Pool
 }

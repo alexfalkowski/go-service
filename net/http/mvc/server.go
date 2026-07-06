@@ -89,7 +89,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 		writeView(ctx, res, view, model, http.StatusOK)
 	}
 
-	http.HandleFunc(mux, pattern, handler)
+	router.Handle(pattern, http.HandlerFunc(handler))
 	return true
 }
 

@@ -34,7 +34,7 @@ func StaticFile(pattern, name string, opts ...StaticOption) bool {
 		serveFile(res, req, name, options)
 	}
 
-	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
+	router.Handle(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler))
 	return true
 }
 
@@ -61,7 +61,7 @@ func StaticPathValue(pattern, value, prefix string, opts ...StaticOption) bool {
 		serveFile(res, req, name, options)
 	}
 
-	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
+	router.Handle(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler))
 	return true
 }
 

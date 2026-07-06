@@ -1,11 +1,11 @@
 // Package rest provides REST-style HTTP handler registration and client helpers for go-service.
 //
 // This package is built on top of [github.com/alexfalkowski/go-service/v2/net/http/content]. It relies on package-level registration (see [Register])
-// to supply the HTTP mux, content codec helpers, and buffer pool that are used when wiring handlers and clients.
+// to supply the HTTP router, content codec helpers, and buffer pool that are used when wiring handlers and clients.
 //
 // # Server-side routing
 //
-// Server-side helpers (Get/Post/etc.) register handlers on the configured mux using method-qualified
+// Server-side helpers (Get/Post/etc.) register handlers on the configured router using method-qualified
 // patterns of the form:
 //
 //	"<METHOD> <pattern>"

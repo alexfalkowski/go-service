@@ -103,8 +103,8 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	httpClient, err := client.NewHTTP()
 	require.NoError(tb, err)
 
-	registerMVC(mux, logger.Logger)
-	registerRest(mux)
+	registerMVC(router, logger.Logger)
+	registerRest(router)
 
 	receiver, sender, err := NewEvents(router, os.rt, generator)
 	require.NoError(tb, err)
@@ -113,7 +113,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	world := &World{
 		t:      tb,
 		Logger: logger, Tracer: tracer,
-		Lifecycle: lc, ServeMux: mux, Router: router,
+		Lifecycle: lc, Router: router,
 		Server: server, Client: client,
 		Rest:     restClient(httpClient, os),
 		Receiver: receiver, Sender: sender,
@@ -145,15 +145,13 @@ func NewStartedWorld(tb testing.TB, opts ...WorldOption) *World {
 
 // World groups the shared components used by integration-style tests.
 //
-// It exposes the lifecycle, mux, logger, transport builders, cache, event
+// It exposes the lifecycle, router, logger, transport builders, cache, event
 // sender/receiver, and generated configs so tests can compose realistic service
 // scenarios with minimal boilerplate.
 type World struct {
 	t testing.TB
 	// Lifecycle controls startup and shutdown hooks for the test world.
 	*fxtest.Lifecycle
-	// ServeMux is the HTTP mux used by world HTTP handlers.
-	*http.ServeMux
 	// Router registers HTTP handlers with route policy used by transport middleware.
 	*http.Router
 	// Logger is the test logger shared by world components.
@@ -210,9 +208,9 @@ func (w *World) Start() *World {
 
 // HandleHello registers a simple HTTP hello endpoint on the world's mux.
 func (w *World) HandleHello() {
-	w.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
+	w.Handle("GET /hello", http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write(strings.Bytes("hello!"))
-	})
+	}))
 }
 
 // NamedServerURL returns a server URL rooted at `/<service-name>/<path>`.

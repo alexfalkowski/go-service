@@ -8,7 +8,7 @@ import (
 
 // Delete registers an HTTP DELETE handler under pattern.
 //
-// The effective route pattern passed to the underlying mux is a method-qualified pattern of the form:
+// The effective route pattern passed to the router is a method-qualified pattern of the form:
 //
 //	"<METHOD> <pattern>"
 //
@@ -23,7 +23,7 @@ func Delete[Res any](pattern string, handler content.Handler[Res]) {
 
 // Get registers an HTTP GET handler under pattern.
 //
-// The effective route pattern passed to the underlying mux is method-qualified (see Delete for details).
+// The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This helper delegates to Route.
 func Get[Res any](pattern string, handler content.Handler[Res]) {
 	Route(strings.Join(strings.Space, http.MethodGet, pattern), handler)
@@ -31,7 +31,7 @@ func Get[Res any](pattern string, handler content.Handler[Res]) {
 
 // Post registers an HTTP POST handler under pattern.
 //
-// The effective route pattern passed to the underlying mux is method-qualified (see Delete for details).
+// The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This helper delegates to RouteRequest.
 func Post[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
 	RouteRequest(strings.Join(strings.Space, http.MethodPost, pattern), handler)
@@ -39,7 +39,7 @@ func Post[Req any, Res any](pattern string, handler content.RequestHandler[Req, 
 
 // Put registers an HTTP PUT handler under pattern.
 //
-// The effective route pattern passed to the underlying mux is method-qualified (see Delete for details).
+// The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This helper delegates to RouteRequest.
 func Put[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
 	RouteRequest(strings.Join(strings.Space, http.MethodPut, pattern), handler)
@@ -47,7 +47,7 @@ func Put[Req any, Res any](pattern string, handler content.RequestHandler[Req, R
 
 // Patch registers an HTTP PATCH handler under pattern.
 //
-// The effective route pattern passed to the underlying mux is method-qualified (see Delete for details).
+// The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This helper delegates to RouteRequest.
 func Patch[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
 	RouteRequest(strings.Join(strings.Space, http.MethodPatch, pattern), handler)
@@ -61,10 +61,10 @@ func Patch[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 //   - encodes the returned response model using the negotiated media type.
 //
 // Registration:
-// The resulting handler is registered on the package-level mux configured via [Register].
-// [Register] must be called before RouteRequest; otherwise mux/cont will be nil and this function will panic.
+// The resulting handler is registered on the package-level router configured via [Register].
+// [Register] must be called before RouteRequest; otherwise router/cont will be nil and this function will panic.
 func RouteRequest[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
-	http.HandleFunc(mux, pattern, content.NewRequestHandler(cont, handler))
+	router.Handle(pattern, content.NewRequestHandler(cont, handler))
 }
 
 // Route registers a handler under pattern that encodes a response.
@@ -75,8 +75,8 @@ func RouteRequest[Req any, Res any](pattern string, handler content.RequestHandl
 //   - encodes the returned response model using the negotiated media type.
 //
 // Registration:
-// The resulting handler is registered on the package-level mux configured via Register.
-// Register must be called before Route; otherwise mux/cont will be nil and this function will panic.
+// The resulting handler is registered on the package-level router configured via Register.
+// Register must be called before Route; otherwise router/cont will be nil and this function will panic.
 func Route[Res any](pattern string, handler content.Handler[Res]) {
-	http.HandleFunc(mux, pattern, content.NewHandler(cont, handler))
+	router.Handle(pattern, content.NewHandler(cont, handler))
 }

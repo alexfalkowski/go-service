@@ -15,9 +15,10 @@ import (
 
 func ExampleGet() {
 	mux := http.NewServeMux()
+	router := http.NewRouter(mux, http.NewRoutePolicy())
 	pool := sync.NewBufferPool()
 	rest.Register(rest.RegisterParams{
-		Mux: mux,
+		Router: router,
 		Content: content.NewContent(
 			encoding.NewMap(encoding.MapParams{JSON: json.NewEncoder()}),
 			pool,

@@ -41,9 +41,9 @@ var Model = Page{
 	},
 }
 
-func registerMVC(mux *http.ServeMux, logger *slog.Logger) {
+func registerMVC(router *http.Router, logger *slog.Logger) {
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      router,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: logger}),
 		FileSystem:  FileSystem,
 		Pool:        Pool,
