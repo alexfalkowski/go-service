@@ -59,9 +59,10 @@ func testNotFoundHandler(t *testing.T, tt notFoundHandlerTest) {
 
 	mux := http.NewServeMux()
 	if tt.registerRoute {
-		http.HandleFunc(mux, "GET /hello", func(res http.ResponseWriter, _ *http.Request) {
+		router := http.NewRouter(mux, http.NewRoutePolicy())
+		router.Handle("GET /hello", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 			res.WriteHeader(http.StatusOK)
-		})
+		}))
 	}
 
 	handler := http.NewNotFoundHandler(mux, test.Pool, func(res http.ResponseWriter, _ *http.Request) bool {

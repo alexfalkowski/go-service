@@ -86,9 +86,9 @@ func RestRequestError(_ context.Context, _ *Request) (*Response, error) {
 	return nil, ErrInvalid
 }
 
-func registerRest(mux *http.ServeMux) {
+func registerRest(router *http.Router) {
 	rest.Register(rest.RegisterParams{
-		Mux:     mux,
+		Router:  router,
 		Pool:    Pool,
 		Content: Content,
 	})

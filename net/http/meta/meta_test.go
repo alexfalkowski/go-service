@@ -126,7 +126,8 @@ func TestHandlerStoresServiceMethodFromPath(t *testing.T) {
 
 func TestHandlerStoresServiceMethodFromPattern(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /users/{id}", func(http.ResponseWriter, *http.Request) {})
+	router := http.NewRouter(mux, http.NewRoutePolicy())
+	router.Handle("GET /users/{id}", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
 	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), mux)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/users/123", http.NoBody)
 	require.NoError(t, err)

@@ -61,7 +61,7 @@ type Router struct {
 
 // Handle registers handler for pattern on the Router's mux.
 func (r *Router) Handle(pattern string, handler Handler) {
-	Handle(r.mux, pattern, handler)
+	r.mux.Handle(pattern, handler)
 }
 
 // HandleOperation registers handler and marks pattern as a service-owned operation path.

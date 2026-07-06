@@ -14,8 +14,9 @@ import (
 
 func ExampleGet() {
 	mux := http.NewServeMux()
+	router := http.NewRouter(mux, http.NewRoutePolicy())
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      router,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  exampleFileSystem(),
 		Pool:        sync.NewBufferPool(),
@@ -41,8 +42,9 @@ func ExampleGet() {
 
 func ExampleNotFound() {
 	mux := http.NewServeMux()
+	router := http.NewRouter(mux, http.NewRoutePolicy())
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      router,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  exampleFileSystem(),
 		Pool:        sync.NewBufferPool(),
@@ -68,8 +70,9 @@ func ExampleNotFound() {
 
 func ExampleStaticFile() {
 	mux := http.NewServeMux()
+	router := http.NewRouter(mux, http.NewRoutePolicy())
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      router,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  exampleFileSystem(),
 		Pool:        sync.NewBufferPool(),
@@ -111,8 +114,9 @@ func ExampleStaticFile() {
 
 func ExampleStaticPathValue() {
 	mux := http.NewServeMux()
+	router := http.NewRouter(mux, http.NewRoutePolicy())
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      router,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  exampleFileSystem(),
 		Pool:        sync.NewBufferPool(),

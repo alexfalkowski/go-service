@@ -56,7 +56,7 @@ func TestServerMaxReceiveSize(t *testing.T) {
 	cfg.HTTP.MaxReceiveSize = 64
 
 	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
-	http.Handle(world.ServeMux, "POST /hello", content.NewRequestHandler(test.Content, func(_ context.Context, _ *test.Request) (*test.Response, error) {
+	world.Handle("POST /hello", content.NewRequestHandler(test.Content, func(_ context.Context, _ *test.Request) (*test.Response, error) {
 		return &test.Response{Greeting: "hello"}, nil
 	}))
 	world.Start()
@@ -80,7 +80,7 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 	cfg.HTTP.MaxReceiveSize = 64
 
 	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
-	http.Handle(world.ServeMux, "POST /hello", content.NewRequestHandler(test.Content, func(_ context.Context, _ *test.Request) (*test.Response, error) {
+	world.Handle("POST /hello", content.NewRequestHandler(test.Content, func(_ context.Context, _ *test.Request) (*test.Response, error) {
 		return &test.Response{Greeting: "hello"}, nil
 	}))
 	world.Start()
@@ -101,9 +101,9 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 
 func TestServerRecoversPanic(t *testing.T) {
 	world := test.NewWorld(t, test.WithWorldHTTP())
-	http.HandleFunc(world.ServeMux, "GET /panic", func(http.ResponseWriter, *http.Request) {
+	world.Handle("GET /panic", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		panic("test panic")
-	})
+	}))
 	world.HandleHello()
 	world.Start()
 

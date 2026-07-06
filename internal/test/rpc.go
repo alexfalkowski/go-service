@@ -71,7 +71,7 @@ func ErrorsInternalProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*
 
 func (w *World) registerRPC() {
 	rpc.Register(rpc.RegisterParams{
-		Mux:     w.ServeMux,
+		Router:  w.Router,
 		Pool:    Pool,
 		Content: Content,
 	})

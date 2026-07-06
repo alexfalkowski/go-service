@@ -224,7 +224,7 @@ func TestStaticPathValueError(t *testing.T) {
 
 func TestMissingViews(t *testing.T) {
 	mvc.Register(mvc.RegisterParams{
-		Mux:         http.NewServeMux(),
+		Router:      newTestRouter(),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		Pool:        test.Pool,
 		Layout:      test.Layout,
@@ -240,7 +240,7 @@ func TestMissingViews(t *testing.T) {
 	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
 
 	mvc.Register(mvc.RegisterParams{
-		Mux:         http.NewServeMux(),
+		Router:      newTestRouter(),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
 		Pool:        test.Pool,
@@ -254,4 +254,8 @@ func TestMissingViews(t *testing.T) {
 	}))
 	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
 	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
+}
+
+func newTestRouter() *http.Router {
+	return http.NewRouter(http.NewServeMux(), http.NewRoutePolicy())
 }

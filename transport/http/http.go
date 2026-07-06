@@ -142,16 +142,6 @@ func MaxBytesHandler(h Handler, n int64) Handler {
 	return http.MaxBytesHandler(h, n)
 }
 
-// HandleFunc registers handler for pattern on mux.
-func HandleFunc(mux *ServeMux, pattern string, handler HandlerFunc) {
-	http.HandleFunc(mux, pattern, handler)
-}
-
-// Handle registers handler for pattern on mux.
-func Handle(mux *ServeMux, pattern string, handler Handler) {
-	http.Handle(mux, pattern, handler)
-}
-
 // ParseServiceMethod derives a logical "service" and "method" name from an HTTP request.
 func ParseServiceMethod(req *Request) (string, string) {
 	return http.ParseServiceMethod(req)

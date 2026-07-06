@@ -252,16 +252,6 @@ func NewTelemetryHandler(handler Handler, operation string) Handler {
 	return telemetry.NewHandler(handler, operation)
 }
 
-// HandleFunc registers handler for pattern on mux.
-func HandleFunc(mux *ServeMux, pattern string, handler http.HandlerFunc) {
-	Handle(mux, pattern, handler)
-}
-
-// Handle registers handler for pattern on mux.
-func Handle(mux *ServeMux, pattern string, handler http.Handler) {
-	mux.Handle(pattern, handler)
-}
-
 // StatusText returns the standard HTTP status text for the given status code.
 //
 // This is a thin wrapper around [net/http.StatusText].

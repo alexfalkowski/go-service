@@ -86,9 +86,9 @@ func TestServerLimiterDoesNotBypassApplicationMetricsPath(t *testing.T) {
 		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)),
 		test.WithWorldHTTP(),
 	)
-	http.HandleFunc(world.ServeMux, "GET /admin/metrics", func(res http.ResponseWriter, _ *http.Request) {
+	world.Handle("GET /admin/metrics", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 		_, _ = res.Write([]byte("secret"))
-	})
+	}))
 	world.Start()
 
 	url := world.PathServerURL("http", "admin/metrics")

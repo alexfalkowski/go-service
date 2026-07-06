@@ -22,7 +22,7 @@ import (
 func TestStaticPathValueRejectsTraversal(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
 		Pool:        test.Pool,
@@ -42,7 +42,7 @@ func TestStaticPathValueRejectsTraversal(t *testing.T) {
 func TestStaticPathValueSetsContentType(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"static/icon.svg": &fstest.MapFile{Data: []byte(`<svg xmlns="http://www.w3.org/2000/svg"></svg>`)},
@@ -64,7 +64,7 @@ func TestStaticPathValueSetsContentType(t *testing.T) {
 func TestStaticPathValueRejectsDirectory(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"static/assets": &fstest.MapFile{Mode: fs.ModeDir},
@@ -85,7 +85,7 @@ func TestStaticPathValueRejectsDirectory(t *testing.T) {
 func TestStaticFileSetsContentType(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"static/icon.svg": &fstest.MapFile{Data: []byte(`<svg xmlns="http://www.w3.org/2000/svg"></svg>`)},
@@ -107,7 +107,7 @@ func TestStaticFileSetsContentType(t *testing.T) {
 func TestStaticFileRejectsDirectory(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"static/assets": &fstest.MapFile{Mode: fs.ModeDir},
@@ -128,7 +128,7 @@ func TestStaticFileRejectsDirectory(t *testing.T) {
 func TestStaticFileRejectsPermissionDenied(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  permissionFileSystem{},
 		Pool:        test.Pool,
@@ -147,7 +147,7 @@ func TestStaticFileRejectsPermissionDenied(t *testing.T) {
 func TestStaticFileSetsCacheControl(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"static/asset.txt": &fstest.MapFile{Data: []byte("hello")},
@@ -172,7 +172,7 @@ func TestStaticFileUsesETagValidator(t *testing.T) {
 	modified := time.Now().UTC()
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"static/asset.txt": &fstest.MapFile{Data: []byte("hello"), ModTime: modified},
@@ -236,7 +236,7 @@ func TestStaticPathValueUsesETagValidator(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mux := http.NewServeMux()
 			mvc.Register(mvc.RegisterParams{
-				Mux:         mux,
+				Router:      newTestRouter(mux),
 				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 				FileSystem: fstest.MapFS{
 					"static/asset.txt": &fstest.MapFile{Data: []byte("hello")},
@@ -272,7 +272,7 @@ func TestStaticPathValueUsesETagValidator(t *testing.T) {
 func TestViewRenderReturnsContextError(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
 		Pool:        test.Pool,
@@ -291,7 +291,7 @@ func TestViewRenderReturnsContextError(t *testing.T) {
 func TestViewRenderReturnsWriteError(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
 		Pool:        test.Pool,
@@ -326,7 +326,7 @@ func TestNewViewUsesLayoutPathWhenBasenameCollides(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mux := http.NewServeMux()
 			mvc.Register(mvc.RegisterParams{
-				Mux:         mux,
+				Router:      newTestRouter(mux),
 				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 				FileSystem: fstest.MapFS{
 					"views/full.tmpl":    &fstest.MapFile{Data: []byte(`full layout {{ block "content" . }}default{{ end }}`)},
@@ -359,7 +359,7 @@ func TestLayoutNames(t *testing.T) {
 func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
@@ -387,7 +387,7 @@ func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
@@ -415,7 +415,7 @@ func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
 func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
@@ -448,7 +448,7 @@ func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
 func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
@@ -476,7 +476,7 @@ func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 func TestNotFoundHandlesNotFound(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
@@ -507,7 +507,7 @@ func TestNotFoundHandlesNotFound(t *testing.T) {
 func TestNotFoundIncludesRequestMeta(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
@@ -538,7 +538,7 @@ func TestNotFoundIncludesRequestMeta(t *testing.T) {
 func TestNotFoundUsesDefaultWhenControllerMissing(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
 		Pool:        test.Pool,
@@ -568,8 +568,9 @@ func TestFallback(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mux := http.NewServeMux()
 			mvc.Register(mvc.RegisterParams{
-				Mux:         http.NewServeMux(),
+				Router:      newTestRouter(mux),
 				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 				FileSystem: fstest.MapFS{
 					"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
@@ -607,7 +608,7 @@ func TestFallback(t *testing.T) {
 func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
 		Pool:        test.Pool,
@@ -630,7 +631,7 @@ func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
 			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
@@ -661,7 +662,7 @@ func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
 func TestStaticFileSetsContentLength(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
+		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.ErrFileSystem{},
 		Pool:        test.Pool,
@@ -683,6 +684,10 @@ func TestStaticFileSetsContentLength(t *testing.T) {
 type requestModel struct {
 	Method string
 	Path   string
+}
+
+func newTestRouter(mux *http.ServeMux) *http.Router {
+	return http.NewRouter(mux, http.NewRoutePolicy())
 }
 
 type permissionFileSystem struct{}

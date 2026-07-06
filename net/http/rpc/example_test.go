@@ -15,9 +15,10 @@ import (
 
 func ExampleClient_Post() {
 	mux := http.NewServeMux()
+	router := http.NewRouter(mux, http.NewRoutePolicy())
 	pool := sync.NewBufferPool()
 	rpc.Register(rpc.RegisterParams{
-		Mux: mux,
+		Router: router,
 		Content: content.NewContent(
 			encoding.NewMap(encoding.MapParams{JSON: json.NewEncoder()}),
 			pool,

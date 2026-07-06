@@ -1,7 +1,7 @@
 // Package mvc provides a small MVC-style HTML rendering layer for go-service HTTP servers.
 //
 // This package provides helpers to register controller-driven routes that render HTML templates.
-// It relies on package-level registration (see Register) to supply the HTTP mux, template function map,
+// It relies on package-level registration (see Register) to supply the HTTP router, template function map,
 // filesystem, and layout.
 //
 // Registration requirements:

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	mux                *http.ServeMux
+	router             *http.Router
 	fmap               sprout.FunctionMap
 	fileSystem         fs.FS
 	layout             *Layout
@@ -26,8 +26,8 @@ var (
 type RegisterParams struct {
 	di.In
 
-	// Mux is the HTTP mux where MVC routes (Route/Get/Post/etc.) will be registered.
-	Mux *http.ServeMux
+	// Router registers MVC routes (Route/Get/Post/etc.).
+	Router *http.Router
 
 	// FunctionMap is the template function map used when parsing templates.
 	//
@@ -63,7 +63,7 @@ type RegisterParams struct {
 // If MVC is not defined, routing helpers (Route/Get/Post/etc. and static helpers) return false and do not
 // register handlers.
 func Register(params RegisterParams) {
-	mux = params.Mux
+	router = params.Router
 	fmap = params.FunctionMap
 	fileSystem = params.FileSystem
 	pool = params.Pool
