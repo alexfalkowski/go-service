@@ -20,7 +20,11 @@ import (
 )
 
 func TestConfigRejectsInvalidStatusCodes(t *testing.T) {
-	require.NoError(t, test.Validator.Struct(&retry.Config{StatusCodes: []int{http.StatusBadRequest, http.StatusNetworkAuthenticationRequired}}))
+	require.NoError(t, test.Validator.Struct(&retry.Config{StatusCodes: []int{
+		http.StatusBadRequest,
+		http.StatusNetworkAuthenticationRequired,
+		520,
+	}}))
 	require.Error(t, test.Validator.Struct(&retry.Config{StatusCodes: []int{http.StatusContinue}}))
 	require.Error(t, test.Validator.Struct(&retry.Config{StatusCodes: []int{600}}))
 }
@@ -67,6 +71,18 @@ func TestRoundTripperRetriesRetryableResponses(t *testing.T) {
 func TestRoundTripperRetriesConfiguredStatusCodes(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusBadGateway, http.StatusOK}}
 	retrying := retry.NewRoundTripper(test.NewHTTPRetryConfig(2, time.Millisecond, http.StatusBadGateway), rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 2, rt.Calls)
+}
+
+func TestRoundTripperRetriesConfiguredExtended5xxStatusCodes(t *testing.T) {
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{520, http.StatusOK}}
+	retrying := retry.NewRoundTripper(test.NewHTTPRetryConfig(2, time.Millisecond, 520), rt)
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
 
