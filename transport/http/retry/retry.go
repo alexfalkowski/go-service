@@ -88,6 +88,7 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 	return &RoundTripper{
 		RoundTripper: hrt,
 		backoff:      cfg.GetBackoff(),
+		strategy:     cfg.GetStrategy(),
 		policy:       composePolicy(policies),
 		maxRetries:   cfg.MaxRetries(),
 		statusCodes:  retryableStatusCodes(cfg),
@@ -107,8 +108,8 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 // an explicit policy.
 type RoundTripper struct {
 	http.RoundTripper
-	policy Policy
-
+	policy      Policy
+	strategy    string
 	statusCodes []int
 	backoff     time.Duration
 	maxRetries  uint64
@@ -177,7 +178,7 @@ func (r *RoundTripper) retry(ctx context.Context, req *http.Request, attempt *ro
 		return res, err
 	}
 
-	backoff := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewConstant(attempt.backoff))
+	backoff := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewBackoff(r.strategy, attempt.backoff))
 	backoff = retry.WithMaxRetries(attempt.maxRetries, backoff)
 	return retry.DoValue(ctx, backoff, operation)
 }

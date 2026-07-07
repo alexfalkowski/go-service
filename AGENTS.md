@@ -207,6 +207,16 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   final flush failures; report only concrete bugs such as shutdown hooks not
   running, globals not resetting after successful shutdown, or a public API
   promise to surface telemetry shutdown errors.
+- The effective log level is intentionally resolved once from
+  `telemetry.logger.level` at startup and installed as the process-wide `slog`
+  default; there is no runtime log-level mutation endpoint or `slog.LevelVar`
+  toggle. The debug server is off by default and not run in production, so any
+  workflow that could reach such an endpoint is already a configuration change
+  where `telemetry.logger.level` can be set directly. Do not flag the absence of
+  a runtime/debug log-level control endpoint or dynamic level toggle as a feature
+  or operability gap; operators change verbosity through `telemetry.logger.level`
+  config. Report only concrete bugs where the configured level is ignored or a
+  public API promises runtime level mutation.
 - `cache.Register(...)` sets the package-level cache used by generic cache helpers.
   It is intentionally called by the supported wiring path during startup/test
   setup, not as a concurrent runtime reconfiguration API. Do not flag

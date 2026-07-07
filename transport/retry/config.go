@@ -24,6 +24,13 @@ const MaxAttempts uint64 = 10
 // Timeout and Backoff are typed durations encoded as Go duration strings in config
 // (see [time.ParseDuration]), such as "250ms", "5s", or "1m".
 type Config struct {
+	// Strategy selects the backoff growth applied between attempts.
+	//
+	// Supported values are "constant" (the default), "exponential", and "fibonacci".
+	// Backoff is the base duration: constant reuses it for every wait, while exponential
+	// and fibonacci grow it on each attempt. An empty value applies the constant strategy.
+	Strategy string `yaml:"strategy,omitempty" json:"strategy,omitempty" toml:"strategy,omitempty" validate:"omitempty,oneof=constant exponential fibonacci"`
+
 	// Timeout is a transport-specific timeout duration.
 	//
 	// Transports that support per-attempt deadlines use it to bound attempts independently.
@@ -90,6 +97,17 @@ func (c *Config) GetBackoff() time.Duration {
 	}
 
 	return c.Backoff
+}
+
+// GetStrategy returns the configured retry backoff strategy.
+//
+// A nil receiver or an empty value falls back to the "constant" strategy.
+func (c *Config) GetStrategy() string {
+	if c == nil || c.Strategy == "" {
+		return "constant"
+	}
+
+	return c.Strategy
 }
 
 // MaxRetries returns the maximum number of retries after the initial attempt.

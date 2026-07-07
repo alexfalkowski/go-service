@@ -69,6 +69,7 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 	maxAttempts := cfg.MaxAttempts()
 	timeout := cfg.GetTimeout()
 	backoff := cfg.GetBackoff()
+	strategy := cfg.GetStrategy()
 	codes := retryableCodes(cfg)
 
 	invoke := func(ctx context.Context, attempt func(context.Context) error) error {
@@ -76,7 +77,7 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 			return attempt(ctx)
 		}
 
-		retries := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewConstant(backoff))
+		retries := retry.WithJitterPercent(config.DefaultJitterPercent, retry.NewBackoff(strategy, backoff))
 		retries = retry.WithMaxRetries(maxAttempts-1, retries)
 		return retry.Do(ctx, retries, func(ctx context.Context) error {
 			err := attempt(ctx)
