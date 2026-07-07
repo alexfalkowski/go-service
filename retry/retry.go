@@ -15,12 +15,20 @@ type RetryFunc = retry.RetryFunc
 // RetryFuncValue aliases the upstream retry value function type.
 type RetryFuncValue[T any] = retry.RetryFuncValue[T]
 
-// NewConstant creates a constant backoff.
+// NewBackoff creates a backoff for the given strategy using base as the starting duration.
 //
-// It forwards to the upstream retry package and panics when duration is less
-// than or equal to zero.
-func NewConstant(duration time.Duration) Backoff {
-	return retry.NewConstant(duration.Duration())
+// Supported strategies are "constant" (the default), "exponential", and "fibonacci".
+// An empty or unrecognized strategy falls back to a constant backoff. It forwards to the
+// upstream retry package and panics when base is less than or equal to zero.
+func NewBackoff(strategy string, base time.Duration) Backoff {
+	switch strategy {
+	case "exponential":
+		return retry.NewExponential(base.Duration())
+	case "fibonacci":
+		return retry.NewFibonacci(base.Duration())
+	default:
+		return retry.NewConstant(base.Duration())
+	}
 }
 
 // WithJitterPercent wraps next and adds +/- percent jitter to each backoff duration.

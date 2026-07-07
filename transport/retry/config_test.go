@@ -68,6 +68,32 @@ func TestConfigGetBackoff(t *testing.T) {
 	}
 }
 
+func TestConfigRejectsInvalidStrategy(t *testing.T) {
+	for _, strategy := range []string{"", "constant", "exponential", "fibonacci"} {
+		require.NoError(t, test.Validator.Struct(&retry.Config{Strategy: strategy}))
+	}
+
+	require.Error(t, test.Validator.Struct(&retry.Config{Strategy: "bogus"}))
+}
+
+func TestConfigGetStrategy(t *testing.T) {
+	tests := []struct {
+		cfg  *retry.Config
+		name string
+		want string
+	}{
+		{name: "nil", want: "constant"},
+		{name: "empty", cfg: &retry.Config{}, want: "constant"},
+		{name: "explicit", cfg: &retry.Config{Strategy: "exponential"}, want: "exponential"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, tt.cfg.GetStrategy())
+		})
+	}
+}
+
 func TestConfigMaxAttempts(t *testing.T) {
 	tests := []struct {
 		name      string

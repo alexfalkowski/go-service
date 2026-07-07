@@ -1210,6 +1210,7 @@ feature:
     timeout: 1s
     backoff: 100ms
     attempts: 3
+    strategy: exponential
 ```
 
 When manually constructing HTTP or gRPC clients, pass a transport-specific retry config to
@@ -1228,6 +1229,12 @@ disables retries by omitting retry config.
 of `0` or `1` means no retry beyond the first attempt; values above `10` are
 rejected during config validation. `backoff` is the base delay between retry
 attempts.
+
+`strategy` selects how `backoff` grows between attempts: `constant` (the
+default) reuses the base delay for every wait, `exponential` doubles it on each
+attempt, and `fibonacci` grows it along the Fibonacci sequence. An unset value
+applies `constant`, jitter is applied on top of the chosen strategy, and any
+other value is rejected during config validation.
 
 `timeout` is transport-specific. gRPC unary retries apply it per attempt, so
 total elapsed time can include multiple attempt timeouts plus backoff unless the
