@@ -11,6 +11,7 @@ import (
 func FuzzUnmarshal(f *testing.F) {
 	f.Add([]byte("{test: test}"))
 	f.Add([]byte("{test: ''}"))
+	f.Add([]byte("{test: ' <\"'}"))
 	f.Add([]byte("{}"))
 	f.Add([]byte("{test: first, test: second}"))
 	f.Add([]byte("{"))
@@ -28,11 +29,16 @@ func FuzzUnmarshal(f *testing.F) {
 		encoded, err := hjson.Marshal(msg)
 		require.NoError(t, err)
 
+		// hjson-go can normalize some accepted decoded strings while formatting, so
+		// assert that emitted HJSON reaches a stable representation.
+		var normalized map[string]string
+		require.NoError(t, hjson.Unmarshal(encoded, &normalized))
+
+		reencoded, err := hjson.Marshal(normalized)
+		require.NoError(t, err)
+
 		var decoded map[string]string
-		require.NoError(t, hjson.Unmarshal(encoded, &decoded))
-		require.Len(t, decoded, len(msg))
-		for key, value := range msg {
-			require.Equal(t, value, decoded[key])
-		}
+		require.NoError(t, hjson.Unmarshal(reencoded, &decoded))
+		require.Equal(t, normalized, decoded)
 	})
 }
