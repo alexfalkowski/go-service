@@ -4,6 +4,7 @@ include bin/build/make/help.mak
 include bin/build/make/go.mak
 include bin/build/make/git.mak
 include bin/build/make/claude.mak
+include bin/build/make/codex.mak
 
 # Diagrams generated from https://github.com/loov/goda.
 diagrams: crypto-diagram database-diagram telemetry-diagram transport-diagram
