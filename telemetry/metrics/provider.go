@@ -80,7 +80,12 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		params.Version.String(),
 		params.Environment.String(),
 	)
-	provider := sdk.NewMeterProvider(sdk.WithReader(params.Reader), sdk.WithResource(attrs))
+	options := []sdk.Option{sdk.WithReader(params.Reader), sdk.WithResource(attrs)}
+	if views := configViews(params.Config); len(views) > 0 {
+		options = append(options, sdk.WithView(views...))
+	}
+
+	provider := sdk.NewMeterProvider(options...)
 	setMeterProvider(provider, true)
 
 	params.Lifecycle.Append(di.Hook{
@@ -99,6 +104,25 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	})
 
 	return provider
+}
+
+// configViews builds explicit-bucket-histogram views from the configured
+// instrument-name-to-boundaries map. It returns nil when no views are
+// configured, leaving the OpenTelemetry SDK default boundaries in place.
+func configViews(cfg *Config) []sdk.View {
+	if cfg == nil || len(cfg.Views) == 0 {
+		return nil
+	}
+
+	views := make([]sdk.View, 0, len(cfg.Views))
+	for name, boundaries := range cfg.Views {
+		views = append(views, sdk.NewView(
+			sdk.Instrument{Name: name},
+			sdk.Stream{Aggregation: sdk.AggregationExplicitBucketHistogram{Boundaries: boundaries}},
+		))
+	}
+
+	return views
 }
 
 // IsEnabled reports whether this package has registered metrics as enabled.

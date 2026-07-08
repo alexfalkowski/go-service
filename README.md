@@ -670,6 +670,25 @@ telemetry:
 `interval` and `timeout` apply only to OTLP push metrics. When either value is
 unset or zero, the OpenTelemetry SDK default is used.
 
+#### Histogram buckets
+
+Override the default histogram bucket boundaries per instrument with
+`telemetry.metrics.views`, keyed by instrument name (OpenTelemetry name matching,
+including `*` wildcards):
+
+```yaml
+telemetry:
+  metrics:
+    views:
+      http.server.request.duration: [0.005, 0.01, 0.05, 0.1, 0.5, 1, 5]
+      "rpc.*.duration": [0.01, 0.1, 1]
+```
+
+Boundaries are in the instrument's unit (seconds for duration histograms, bytes
+for size histograms) and must be listed in increasing order. Views apply to
+histogram instruments regardless of metrics kind; an unset or empty map keeps the
+OpenTelemetry SDK default buckets.
+
 ### Tracing
 
 Tracing supports OTLP exporter config:

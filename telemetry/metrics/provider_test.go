@@ -127,6 +127,33 @@ func TestMeterProviderAttributes(t *testing.T) {
 	require.Equal(t, "payments", attrs[attributes.Key("k8s.namespace.name")])
 }
 
+func TestMeterProviderViews(t *testing.T) {
+	t.Cleanup(func() {
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+	})
+
+	boundaries := []float64{0.1, 0.5, 1}
+	reader := metrics.NewManualReader()
+	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
+		Lifecycle:   fxtest.NewLifecycle(t),
+		Config:      &metrics.Config{Views: map[string][]float64{"test.duration": boundaries}},
+		Reader:      reader,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+
+	histogram, err := provider.Meter(test.Name.String()).Float64Histogram("test.duration")
+	require.NoError(t, err)
+	histogram.Record(t.Context(), 0.3)
+
+	rm := metrics.ResourceMetrics{}
+	require.NoError(t, reader.Collect(t.Context(), &rm))
+
+	require.Equal(t, boundaries, collectHistogramBounds(t, rm, "test.duration"))
+}
+
 func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
 	t.Cleanup(func() {
 		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
@@ -168,4 +195,25 @@ func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
 	require.Eventually(t, func() bool {
 		return exports.Load() > 0
 	}, (2 * time.Second).Duration(), (20 * time.Millisecond).Duration())
+}
+
+func collectHistogramBounds(t *testing.T, rm metrics.ResourceMetrics, name string) []float64 {
+	t.Helper()
+
+	for _, sm := range rm.ScopeMetrics {
+		for _, m := range sm.Metrics {
+			if m.Name != name {
+				continue
+			}
+
+			histogram, ok := m.Data.(metrics.Histogram[float64])
+			require.True(t, ok)
+			require.NotEmpty(t, histogram.DataPoints)
+
+			return histogram.DataPoints[0].Bounds
+		}
+	}
+
+	t.Fatalf("histogram %q not collected", name)
+	return nil
 }
