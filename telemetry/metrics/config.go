@@ -26,6 +26,17 @@ type Config struct {
 	// config enables TLS; Cert, Key, and CA values use go-service source strings.
 	TLS *tls.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 
+	// Views maps OpenTelemetry instrument names to explicit histogram bucket
+	// boundaries, overriding the SDK default boundaries for matching histogram
+	// instruments such as "http.server.request.duration" or "rpc.server.call.duration".
+	//
+	// Instrument name matching follows OpenTelemetry view semantics and supports
+	// "*" wildcards (for example "rpc.*.duration"). Boundaries are expressed in the
+	// instrument's unit (seconds for duration histograms, bytes for size
+	// histograms) and must be listed in increasing order. A nil or empty map keeps
+	// the SDK default boundaries, so this field is a no-op unless configured.
+	Views map[string][]float64 `yaml:"views,omitempty" json:"views,omitempty" toml:"views,omitempty"`
+
 	// Kind selects the metrics reader/exporter implementation.
 	//
 	// Supported kinds depend on what the service links in, but this package typically supports:

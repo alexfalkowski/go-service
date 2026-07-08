@@ -130,6 +130,9 @@ type Gauge[T int64 | float64] = metricdata.Gauge[T]
 // Sum is an alias for [metricdata.Sum].
 type Sum[T int64 | float64] = metricdata.Sum[T]
 
+// Histogram is an alias for [metricdata.Histogram].
+type Histogram[T int64 | float64] = metricdata.Histogram[T]
+
 // NewMeter returns a Meter from provider using the service name and version.
 //
 // The returned meter uses `name` as the instrumentation scope name and `version` as the
