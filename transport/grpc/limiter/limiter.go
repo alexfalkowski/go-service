@@ -23,6 +23,29 @@ func take(ctx context.Context, rateLimiter *limiter.Limiter) (limiter.Decision, 
 	return decision, nil
 }
 
+// limitError returns the terminal ResourceExhausted error used when a limiter
+// rejects a request. Client-side local rejections use this bare form, matching
+// the HTTP client limiter's local 429.
 func limitError() error {
 	return status.Error(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted))
+}
+
+// serverLimitError returns ResourceExhausted with a google.rpc.RetryInfo detail
+// built from the server limiter decision's reset window, mirroring the HTTP
+// server limiter's Retry-After. RetryInfo is a status detail, so it can only
+// ride the rejection error; the proactive quota state stays in the ratelimit
+// response metadata. It advertises a delay only when reset timing is known, so
+// clients are not told to retry immediately, and falls back to the bare
+// limitError when the detail cannot be attached.
+func serverLimitError(decision limiter.Decision) error {
+	if reset := decision.ResetAfter(); reset > 0 {
+		s, err := status.New(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted)).WithDetails(&status.RetryInfo{
+			RetryDelay: status.NewDuration(reset),
+		})
+		if err == nil {
+			return s.Err()
+		}
+	}
+
+	return limitError()
 }

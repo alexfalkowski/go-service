@@ -60,7 +60,7 @@ func UnaryServerInterceptor(policy *method.Policy, limiter *Server) grpc.UnarySe
 
 		setHeader(ctx, decision)
 		if !decision.Allowed() {
-			return nil, limitError()
+			return nil, serverLimitError(decision)
 		}
 
 		return handler(ctx, req)
@@ -93,7 +93,7 @@ func StreamServerInterceptor(limiter *Server) grpc.StreamServerInterceptor {
 
 		setStreamHeader(stream, decision)
 		if !decision.Allowed() {
-			return limitError()
+			return serverLimitError(decision)
 		}
 
 		return handler(srv, &serverStream{ServerStream: stream, limiter: limiter.Limiter})
@@ -120,7 +120,7 @@ func (s *serverStream) RecvMsg(m any) error {
 	// again only on rejection so clients still observe the terminating quota state.
 	if !decision.Allowed() {
 		setStreamHeader(s, decision)
-		return limitError()
+		return serverLimitError(decision)
 	}
 
 	return nil
@@ -135,7 +135,7 @@ func (s *serverStream) SendMsg(m any) error {
 	// See RecvMsg: the quota metadata is emitted once at stream open, and again only on rejection.
 	if !decision.Allowed() {
 		setStreamHeader(s, decision)
-		return limitError()
+		return serverLimitError(decision)
 	}
 
 	return s.ServerStream.SendMsg(m)
