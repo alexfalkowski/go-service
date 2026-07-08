@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	grpcmeta "github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/time"
 	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/stretchr/testify/require"
@@ -37,6 +38,7 @@ func TestServerLimiterUnary(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 	require.NotEmpty(t, rejectedHeader.Get("ratelimit"))
 	require.NotEmpty(t, rejectedHeader.Get("ratelimit-policy"))
+	requireRetryInfo(t, err)
 }
 
 func TestServerLimiterStream(t *testing.T) {
@@ -51,6 +53,7 @@ func TestServerLimiterStream(t *testing.T) {
 	err := sayStreamHello(t, client)
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+	requireRetryInfo(t, err)
 }
 
 func TestServerLimiterStreamHeader(t *testing.T) {
@@ -75,6 +78,7 @@ func TestServerLimiterStreamHeader(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 	require.NotEmpty(t, rejected.Header.Get("ratelimit"))
 	require.NotEmpty(t, rejected.Header.Get("ratelimit-policy"))
+	requireRetryInfo(t, err)
 }
 
 func TestServerLimiterStreamHeaderNotDuplicated(t *testing.T) {
@@ -270,6 +274,28 @@ func TestClientClosedLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
 	require.Equal(t, codes.Internal, status.Code(err))
+}
+
+func requireRetryInfo(t *testing.T, err error) {
+	t.Helper()
+
+	s, ok := status.FromError(err)
+	require.True(t, ok)
+
+	var info *status.RetryInfo
+	for _, detail := range s.Details() {
+		if retryInfo, ok := detail.(*status.RetryInfo); ok {
+			info = retryInfo
+		}
+	}
+
+	require.NotNil(t, info)
+
+	// The delay must derive from the decision reset window, so it is positive and
+	// no larger than the configured limiter interval (1s in these tests).
+	delay := info.GetRetryDelay().AsDuration()
+	require.Positive(t, delay)
+	require.LessOrEqual(t, delay, time.Second.Duration())
 }
 
 func sayStreamHello(t *testing.T, client v1.GreeterServiceClient) error {
