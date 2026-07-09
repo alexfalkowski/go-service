@@ -92,7 +92,9 @@ type ServerParams struct {
 // Middleware composition:
 //
 // When OpenTelemetry tracing or metrics are enabled, the full transport chain is wrapped with HTTP server
-// instrumentation so transport-level rejections are observed before the request reaches the mux.
+// instrumentation so transport-level rejections are observed before the request reaches the mux. This wrapper
+// must stay outermost: it starts the server span before the metadata middleware runs, and the metadata
+// middleware stamps request metadata onto that span, so reordering would leave the server span without it.
 //
 // The server is built using Negroni and composes middleware in this order inside that instrumentation wrapper
 // (first listed runs first):

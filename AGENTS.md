@@ -103,6 +103,17 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 ## Gotchas
 
 - Manual transport TLS setup must call the HTTP and gRPC transport register functions; `transport.Module` does this on the normal path.
+- Runtime TLS material, like other resolved configuration, is intentionally
+  materialized once at startup; the leaf certificate and CA pools are pinned for
+  the process lifetime. This framework targets container platforms where
+  certificate rotation and other configuration changes are rolled out by
+  restarting or recreating the workload (cert-manager renewal plus rolling
+  restart, mounted-secret refresh plus pod recreation), so there is no
+  `GetCertificate`/`GetClientCertificate` callback, fsnotify watch, or SIGHUP
+  reload. Do not flag the absence of TLS certificate hot-reload as a reliability
+  or operability gap; report only concrete bugs such as certs not being resolved
+  at startup, ignored explicit TLS config, or a public API promise of in-process
+  certificate rotation.
 - Manual server lifecycle wiring should use `net/server.Register(...)`.
 - `transport.Module` is normally consumed through `module.Server`, which also
   wires `debug.Module`; do not flag `transport.NewServers` requiring
@@ -139,6 +150,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   zero-sample profile export edge cases as upstream behavior, not local debug
   findings, unless this repository adds local fgprof handler logic or promises
   cancellation-aware profiling semantics.
+- Build and version provenance is intentionally owned by the container image and
+  deployment platform, not a service endpoint. Services built with this framework
+  learn their version from the image tag/metadata supplied at build/deploy time,
+  surfaced through `service.version`/`deployment.environment.name` telemetry
+  resource attributes and static log attributes, and the platform already tracks
+  which image a pod runs. Do not flag the absence of a build-info/version debug
+  endpoint (for example `runtime/debug.ReadBuildInfo`, `expvar`, or
+  `/debug/vars`) as a feature or operability gap; report only concrete bugs where
+  configured version/environment attributes are dropped from telemetry or logs.
 - `cli.RunCode` returns `os.ExitCodeSuccess` on success, preserves non-zero
   shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
   returns `os.ExitCodeFailure`.
@@ -158,6 +178,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   user-facing flag with the reserved `test.` prefix; report only concrete
   breakage in a supported CLI contract or an explicit public promise to
   preserve `-test.*` command flags.
+- `config.NewConfig[T]` intentionally decodes and validates configuration on the
+  normal startup path, so a service started with bad configuration fails fast at
+  run time. There is no separate config validate/preflight subcommand (for
+  example an `AddCheck` command or `svc check`), and its absence is not a feature
+  gap: running the service is the check. Do not flag the missing side-effect-free
+  config-only command solely because CI or pre-deploy config linting would prefer
+  not to start subsystems; report only concrete bugs where documented config
+  validation is skipped, invalid config is accepted, or the decode/validate path
+  does not run at startup.
 - `net/server.Service` intentionally logs asynchronous `Server.Serve` errors
   and requests shutdown with `di.ExitCode(os.ExitCodeServeFailure)`; it does not
   return the raw serve error from `Stop`.
@@ -456,6 +485,16 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   broken behavior such as missing documented endpoints, ignored observer
   errors, wrong probe names, or a public API promise that standard probes are
   auto-composed.
+- The `healthz`/`livez`/`readyz` probes intentionally return only the plain-text
+  `SERVING`/`503` probe contract, not a per-check status breakdown. This
+  framework targets container platforms where per-dependency health aggregation,
+  rollout gating, and outage attribution live at the orchestration and
+  observability layer (Kubernetes probes plus events, service mesh, dashboards),
+  and a service owner who wants a structured per-check detail route can register
+  one. Do not flag the absence of an aggregated health-detail endpoint (per-check
+  JSON from the go-health `Observer.Errors()` map) as a feature or operability
+  gap; report only concrete bugs such as a documented probe endpoint missing,
+  ignored observer errors, or wrong probe names/status codes.
 - Shared metadata, header, and string helpers live under `net/...`, not `transport/...`.
 - `vendor/` is gitignored and regenerated via `make dep`.
 - HTTP webhook verification buffers `req.Body` intentionally for signature checks.

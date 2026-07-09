@@ -6,12 +6,52 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
+
+func TestMeta(t *testing.T) {
+	ctx := meta.WithAttributes(t.Context(),
+		meta.WithRequestID(meta.String("request-id")),
+		meta.WithUserID(meta.String("user-id")),
+	)
+
+	attrs := tracer.Meta(ctx)
+
+	values := make(map[string]string, len(attrs))
+	for _, attr := range attrs {
+		values[string(attr.Key)] = attr.Value.AsString()
+	}
+
+	require.Equal(t, "request-id", values[meta.RequestIDKey])
+	require.Equal(t, "user-id", values[meta.UserIDKey])
+}
+
+func TestMetaWithoutAttributesIsEmpty(t *testing.T) {
+	require.Empty(t, tracer.Meta(t.Context()))
+}
+
+func TestMetaSpanProcessorStampsChildSpans(t *testing.T) {
+	exporter := test.EnableIsolatedSpanExporter(t)
+
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+
+	_, span := tracer.GetProvider().Tracer(test.Name.String()).Start(ctx, "child")
+	span.End()
+
+	spans := exporter.Spans()
+	require.Len(t, spans, 1)
+
+	values := make(map[string]string)
+	for _, attr := range spans[0].Attributes() {
+		values[string(attr.Key)] = attr.Value.AsString()
+	}
+	require.Equal(t, "request-id", values[meta.RequestIDKey])
+}
 
 func TestIsEnabled(t *testing.T) {
 	t.Cleanup(func() {

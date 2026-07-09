@@ -68,8 +68,23 @@ func NewSpanContext(config SpanContextConfig) SpanContext {
 	return trace.NewSpanContext(config)
 }
 
+// SpanContextFromContext returns the [SpanContext] of the span currently active
+// in ctx.
+//
+// The returned SpanContext is invalid (see [SpanContext.IsValid]) when ctx
+// carries no span, so callers can treat an untraced context as "no correlation".
+func SpanContextFromContext(ctx context.Context) SpanContext {
+	return trace.SpanContextFromContext(ctx)
+}
+
 // NewProvider constructs an OpenTelemetry SDK tracer provider.
+//
+// It always installs the metadata span processor (see [Meta]) so spans created
+// by any instrumentation carry the request/service context used to correlate
+// them with logs.
 func NewProvider(opts ...ProviderOption) *SDKProvider {
+	opts = append([]ProviderOption{sdk.WithSpanProcessor(newMetaProcessor())}, opts...)
+
 	return sdk.NewTracerProvider(opts...)
 }
 
@@ -168,7 +183,7 @@ func Register(params TracerParams) error {
 			providerOpts = append(providerOpts, sdk.WithSampler(sampler))
 		}
 
-		provider := sdk.NewTracerProvider(providerOpts...)
+		provider := NewProvider(providerOpts...)
 		setProvider(provider, true)
 
 		params.Lifecycle.Append(di.Hook{

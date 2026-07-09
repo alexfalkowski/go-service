@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	httpmeta "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -109,6 +110,28 @@ func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
 		require.Equal(t, []string{"1", "v2"}, res.Header().Values("Service-Version"))
 		require.Equal(t, []string{"request-id"}, res.Header().Values("Request-Id"))
 	})
+}
+
+func TestHandlerStampsSpanWithMeta(t *testing.T) {
+	exporter := test.EnableIsolatedSpanExporter(t)
+
+	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil)
+	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(t.Context(), "request")
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "/users/123", http.NoBody)
+	require.NoError(t, err)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req, func(http.ResponseWriter, *http.Request) {})
+	span.End()
+
+	spans := exporter.Spans()
+	require.Len(t, spans, 1)
+
+	values := make(map[string]string)
+	for _, attr := range spans[0].Attributes() {
+		values[string(attr.Key)] = attr.Value.AsString()
+	}
+	require.Equal(t, "request-id", values[meta.RequestIDKey])
 }
 
 func TestHandlerStoresServiceMethodFromPath(t *testing.T) {

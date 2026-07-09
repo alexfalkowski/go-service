@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -94,6 +95,69 @@ func TestMetaTruncatesLongValuesAtUTF8Boundary(t *testing.T) {
 			require.Equal(t, prefix, truncated)
 		})
 	}
+}
+
+func TestTraceAddsSpanCorrelation(t *testing.T) {
+	test.EnableIsolatedSpanExporter(t)
+
+	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(t.Context(), "request")
+	defer span.End()
+
+	attrs := logger.Trace(ctx)
+	require.Len(t, attrs, 2)
+
+	values := make(map[string]string, len(attrs))
+	for _, attr := range attrs {
+		values[attr.Key] = attr.Value.String()
+	}
+	require.Equal(t, span.SpanContext().TraceID().String(), values["trace_id"])
+	require.Equal(t, span.SpanContext().SpanID().String(), values["span_id"])
+}
+
+func TestTraceWithoutSpanReturnsNoAttrs(t *testing.T) {
+	require.Empty(t, logger.Trace(t.Context()))
+}
+
+func TestTraceHandlerInjectsSpanAttributes(t *testing.T) {
+	test.EnableIsolatedSpanExporter(t)
+
+	capture := &test.CaptureHandler{}
+	log := slog.New(logger.NewTraceHandler(capture))
+
+	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(t.Context(), "request")
+	defer span.End()
+
+	log.InfoContext(ctx, "message")
+
+	require.Len(t, capture.Records, 1)
+	require.Equal(t, span.SpanContext().TraceID().String(), capture.Records[0].Attrs["trace_id"].String())
+	require.Equal(t, span.SpanContext().SpanID().String(), capture.Records[0].Attrs["span_id"].String())
+}
+
+func TestTraceHandlerWithoutSpanLeavesRecordUnchanged(t *testing.T) {
+	capture := &test.CaptureHandler{}
+	log := slog.New(logger.NewTraceHandler(capture))
+
+	log.InfoContext(t.Context(), "message")
+
+	require.Len(t, capture.Records, 1)
+	require.NotContains(t, capture.Records[0].Attrs, "trace_id")
+	require.NotContains(t, capture.Records[0].Attrs, "span_id")
+}
+
+func TestStdoutLoggerLogsUnderSpan(t *testing.T) {
+	test.EnableIsolatedSpanExporter(t)
+
+	lc := fxtest.NewLifecycle(t)
+	log, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
+	require.NoError(t, err)
+
+	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(t.Context(), "request")
+	defer span.End()
+
+	require.NotPanics(t, func() {
+		log.Log(ctx, logger.NewText("test"))
+	})
 }
 
 func TestInvalidLogger(t *testing.T) {

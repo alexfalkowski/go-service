@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	grpcmeta "github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/peer"
 )
@@ -152,6 +153,51 @@ func TestStreamClientInterceptorPreservesOutgoingRequestID(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.Nil(t, stream)
+}
+
+func TestUnaryServerInterceptorStampsSpanWithMeta(t *testing.T) {
+	exporter := test.EnableIsolatedSpanExporter(t)
+
+	interceptor := grpcmeta.UnaryServerInterceptor(method.NewPolicy(), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Map{}), "request")
+
+	_, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(context.Context, any) (any, error) {
+		return "ok", nil
+	})
+	require.NoError(t, err)
+	span.End()
+
+	spans := exporter.Spans()
+	require.Len(t, spans, 1)
+
+	values := make(map[string]string)
+	for _, attr := range spans[0].Attributes() {
+		values[string(attr.Key)] = attr.Value.AsString()
+	}
+	require.Equal(t, "request-id", values[meta.RequestIDKey])
+}
+
+func TestStreamServerInterceptorStampsSpanWithMeta(t *testing.T) {
+	exporter := test.EnableIsolatedSpanExporter(t)
+
+	interceptor := grpcmeta.StreamServerInterceptor(method.NewPolicy(), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"))
+	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Map{}), "request")
+	stream := &test.MetaServerStream{Ctx: ctx}
+
+	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(any, grpc.ServerStream) error {
+		return nil
+	})
+	require.NoError(t, err)
+	span.End()
+
+	spans := exporter.Spans()
+	require.Len(t, spans, 1)
+
+	values := make(map[string]string)
+	for _, attr := range spans[0].Attributes() {
+		values[string(attr.Key)] = attr.Value.AsString()
+	}
+	require.Equal(t, "request-id", values[meta.RequestIDKey])
 }
 
 func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {

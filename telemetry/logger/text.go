@@ -7,7 +7,7 @@ import (
 )
 
 func newTextLogger(params LoggerParams) *slog.Logger {
-	return slog.New(slog.NewTextHandler(os.Stdout, handlerOptions(params.Config))).With(
+	return slog.New(NewTraceHandler(slog.NewTextHandler(os.Stdout, handlerOptions(params.Config)))).With(
 		slog.String("id", params.ID.String()),
 		slog.String("name", params.Name.String()),
 		slog.String("version", params.Version.String()),
