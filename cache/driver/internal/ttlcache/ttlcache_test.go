@@ -26,6 +26,27 @@ func TestDriverHonorsCanceledContext(t *testing.T) {
 	require.ErrorIs(t, d.Delete(ctx, "key"), context.Canceled)
 	require.ErrorIs(t, d.Flush(ctx), context.Canceled)
 	require.ErrorIs(t, d.Ping(ctx), context.Canceled)
+
+	_, _, err = d.GetOrSave(ctx, "key", "value", 0)
+	require.ErrorIs(t, err, context.Canceled)
+}
+
+func TestDriverGetOrSave(t *testing.T) {
+	d := cachettl.NewDriver(config.DefaultMaxEntries)
+
+	existing, loaded, err := d.GetOrSave(t.Context(), "key", "first", 0)
+	require.NoError(t, err)
+	require.False(t, loaded)
+	require.Empty(t, existing)
+
+	existing, loaded, err = d.GetOrSave(t.Context(), "key", "second", 0)
+	require.NoError(t, err)
+	require.True(t, loaded)
+	require.Equal(t, "first", existing)
+
+	value, err := d.Get(t.Context(), "key")
+	require.NoError(t, err)
+	require.Equal(t, "first", value)
 }
 
 func TestDriverPings(t *testing.T) {

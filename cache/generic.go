@@ -49,3 +49,33 @@ func Persist[T any](ctx context.Context, key string, value *T, ttl time.Duration
 
 	return cache.Persist(ctx, key, value, ttl)
 }
+
+// GetOrPersist returns the cached value for key, or produces and stores a new value of type T via fn when the key is absent.
+//
+// If caching is disabled (no cache registered), GetOrPersist does not call fn and returns a nil value with a
+// nil error, mirroring how [Get] reports a disabled cache. Callers must tolerate a nil value rather than
+// assuming a value was produced or cached.
+// Concurrent in-process calls for the same key run fn once and share the produced value.
+func GetOrPersist[T any](ctx context.Context, key string, ttl time.Duration, fn func() (T, error)) (*T, error) {
+	if cache == nil {
+		return nil, nil
+	}
+
+	value := ptr.Zero[T]()
+	load := func() error {
+		v, err := fn()
+		if err != nil {
+			return err
+		}
+
+		*value = v
+
+		return nil
+	}
+
+	if err := cache.GetOrPersist(ctx, key, value, ttl, load); err != nil {
+		return nil, err
+	}
+
+	return value, nil
+}

@@ -41,6 +41,11 @@ func (c *Cache) Save(context.Context, string, string, time.Duration) error {
 	return nil
 }
 
+// GetOrSave returns the cached value as an existing entry.
+func (c *Cache) GetOrSave(context.Context, string, string, time.Duration) (string, bool, error) {
+	return c.Value, true, nil
+}
+
 // ErrCache is a [cache.Cache] test double that fails fetch, delete, and save operations with ErrFailed.
 //
 // Flush succeeds so tests can use ErrCache in started worlds without turning cleanup into the failure under test.
@@ -64,6 +69,11 @@ func (*ErrCache) Flush(context.Context) error {
 // Save returns ErrFailed.
 func (*ErrCache) Save(context.Context, string, string, time.Duration) error {
 	return ErrFailed
+}
+
+// GetOrSave returns ErrFailed.
+func (*ErrCache) GetOrSave(context.Context, string, string, time.Duration) (string, bool, error) {
+	return strings.Empty, false, ErrFailed
 }
 
 // RequireCacheRoundTrip persists a value, reads it back, and asserts the shared hello payload.
