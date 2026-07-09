@@ -28,7 +28,7 @@ func TestClientClosesOnStop(t *testing.T) {
 	lc.RequireStart()
 	lc.RequireStop()
 
-	_, err = d.Fetch(t.Context(), "missing")
+	_, err = d.Get(t.Context(), "missing")
 	require.ErrorIs(t, err, redis.ErrClosed)
 }
 

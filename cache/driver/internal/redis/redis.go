@@ -72,8 +72,8 @@ func (d *Driver) Delete(ctx context.Context, key string) error {
 	return d.client.Del(ctx, key).Err()
 }
 
-// Fetch retrieves the cached value for key.
-func (d *Driver) Fetch(ctx context.Context, key string) (string, error) {
+// Get retrieves the cached value for key.
+func (d *Driver) Get(ctx context.Context, key string) (string, error) {
 	value, err := d.client.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return "", drivererrors.ErrMissing

@@ -21,7 +21,7 @@ func TestDriverHonorsCanceledContext(t *testing.T) {
 
 	d := cachettl.NewDriver(config.DefaultMaxEntries)
 	require.ErrorIs(t, d.Save(ctx, "key", "value", 0), context.Canceled)
-	_, err := d.Fetch(ctx, "key")
+	_, err := d.Get(ctx, "key")
 	require.ErrorIs(t, err, context.Canceled)
 	require.ErrorIs(t, d.Delete(ctx, "key"), context.Canceled)
 	require.ErrorIs(t, d.Flush(ctx), context.Canceled)
@@ -41,7 +41,7 @@ func TestDriverExpiresEntries(t *testing.T) {
 
 	var missing error
 	require.Eventually(t, func() bool {
-		_, missing = d.Fetch(t.Context(), "key")
+		_, missing = d.Get(t.Context(), "key")
 		return drivererrors.IsMissingError(missing)
 	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
 	require.ErrorIs(t, missing, drivererrors.ErrMissing)
@@ -55,13 +55,13 @@ func TestDriverEvictsEntryAtCapacity(t *testing.T) {
 
 	require.NoError(t, d.Save(t.Context(), "third", "3", 0))
 
-	value, err := d.Fetch(t.Context(), "third")
+	value, err := d.Get(t.Context(), "third")
 	require.NoError(t, err)
 	require.Equal(t, "3", value)
 
 	var misses int
 	for _, key := range []string{"first", "second"} {
-		_, err = d.Fetch(t.Context(), key)
+		_, err = d.Get(t.Context(), key)
 		if drivererrors.IsMissingError(err) {
 			misses++
 		}
@@ -76,11 +76,11 @@ func TestDriverCleansExpiredEntriesOnSave(t *testing.T) {
 	require.Eventually(t, func() bool {
 		require.NoError(t, d.Save(t.Context(), "new", "value", 0))
 
-		_, err := d.Fetch(t.Context(), "expired")
+		_, err := d.Get(t.Context(), "expired")
 		return errors.Is(err, drivererrors.ErrMissing)
 	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
 
-	value, err := d.Fetch(t.Context(), "new")
+	value, err := d.Get(t.Context(), "new")
 	require.NoError(t, err)
 	require.Equal(t, "value", value)
 }

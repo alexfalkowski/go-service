@@ -34,8 +34,8 @@ func (d *Driver) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-// Fetch retrieves the cached value for key.
-func (d *Driver) Fetch(ctx context.Context, key string) (string, error) {
+// Get retrieves the cached value for key.
+func (d *Driver) Get(ctx context.Context, key string) (string, error) {
 	if err := ctx.Err(); err != nil {
 		return "", err
 	}
