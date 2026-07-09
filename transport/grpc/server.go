@@ -88,7 +88,8 @@ type ServerParams struct {
 // as not configured.
 //
 // The constructed server includes:
-//   - OpenTelemetry stats handling when tracing or metrics are enabled.
+//   - OpenTelemetry stats handling when tracing or metrics are enabled. The stats handler starts the server
+//     span before any interceptor runs, so the metadata interceptor can stamp request metadata onto that span.
 //   - A unary interceptor chain that performs metadata extraction/injection, applies the configured
 //     server timeout, and optionally logging, token verification, rate limiting, and access control,
 //     followed by any user-provided interceptors.

@@ -7,7 +7,7 @@ import (
 )
 
 func newJSONLogger(params LoggerParams) *slog.Logger {
-	return slog.New(slog.NewJSONHandler(os.Stdout, handlerOptions(params.Config))).With(
+	return slog.New(NewTraceHandler(slog.NewJSONHandler(os.Stdout, handlerOptions(params.Config)))).With(
 		slog.String("id", params.ID.String()),
 		slog.String("name", params.Name.String()),
 		slog.String("version", params.Version.String()),

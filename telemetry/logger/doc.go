@@ -42,6 +42,15 @@
 // record. Truncation preserves UTF-8 validity so multi-byte characters are not
 // split.
 //
+// # Trace correlation
+//
+// The stdout kinds ("json", "text", "tint") additionally attach "trace_id" and
+// "span_id" attributes to any record emitted while a valid OpenTelemetry span
+// is active in the context, named per the OpenTelemetry log data model so a log
+// line can be linked to its trace. Records emitted without an active span are
+// unchanged. The "otlp" kind does not add these attributes; it correlates
+// through the OpenTelemetry logging bridge instead. See [Trace].
+//
 // # Exporter headers and secret resolution
 //
 // Some kinds (notably "otlp") support outbound request headers for authentication or

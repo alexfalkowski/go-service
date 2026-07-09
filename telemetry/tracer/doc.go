@@ -23,6 +23,15 @@
 // Instrumentation that relies on the global provider (directly or indirectly) will create
 // spans using this provider.
 //
+// # Metadata on spans
+//
+// The provider installs a span processor that copies request/service metadata
+// from the context onto each span as it starts (see [Meta]), so spans created
+// by any instrumentation (server, database, cache, ...) carry the same context
+// used to correlate them with logs. The server/root span is created before that
+// metadata is available, so the transport metadata middleware stamps it
+// directly.
+//
 // This package does not configure propagation. Propagation is configured at the top-level
 // telemetry package ([github.com/alexfalkowski/go-service/v2/telemetry.RegisterPropagation]), which sets the global
 // TextMapPropagator used for context extraction/injection on supported transports

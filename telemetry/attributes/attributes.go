@@ -1,9 +1,11 @@
 package attributes
 
 import (
+	"github.com/alexfalkowski/go-service/v2/context"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // SchemaURL is the OpenTelemetry semantic conventions schema URL used by this package.
@@ -38,6 +40,33 @@ type Resource = resource.Resource
 // attributes added by [NewResource] take precedence over duplicate configured
 // keys.
 type Map map[string]string
+
+// Strings converts a string map into OpenTelemetry string attributes.
+//
+// It lets callers turn a set of key/value strings, such as request metadata,
+// into span or log attributes without importing the attribute package directly.
+// It returns no attributes for an empty map.
+func Strings(values map[string]string) []KeyValue {
+	attrs := make([]KeyValue, 0, len(values))
+	for key, value := range values {
+		attrs = append(attrs, attribute.String(key, value))
+	}
+
+	return attrs
+}
+
+// Record attaches attrs to the span active in ctx.
+//
+// It returns early for empty attrs. When ctx carries no span, the attributes
+// are applied to a non-recording span, which discards them, so callers can
+// stamp the current span unconditionally.
+func Record(ctx context.Context, attrs ...KeyValue) {
+	if len(attrs) == 0 {
+		return
+	}
+
+	trace.SpanFromContext(ctx).SetAttributes(attrs...)
+}
 
 // DBSystemNamePostgreSQL identifies PostgreSQL as the value of the
 // db.system.name semantic-convention attribute.

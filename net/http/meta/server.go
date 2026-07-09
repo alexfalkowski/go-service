@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 )
 
 // NewHandler constructs server-side metadata middleware for HTTP requests.
@@ -81,8 +82,19 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		meta.WithGeolocation(geolocation),
 		meta.WithAuthorization(auth),
 	)
+	stampSpan(ctx)
 
 	next(res, req.WithContext(ctx))
+}
+
+// stampSpan copies the request metadata in ctx onto the active span so the
+// server/root span carries the same request/service context as the logs.
+//
+// The tracer's metadata span processor cannot cover the server span, because
+// its context has no metadata yet when the span starts; child spans (database,
+// cache, ...) are stamped by that processor instead.
+func stampSpan(ctx context.Context) {
+	attributes.Record(ctx, attributes.Strings(meta.CamelStrings(ctx, meta.NoPrefix))...)
 }
 
 func serverSetResponseHeaders(header http.Header, serviceVersion, requestID string) {

@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -66,6 +67,7 @@ func UnaryServerInterceptor(policy *method.Policy, userAgent env.UserAgent, vers
 			meta.WithGeolocation(geolocation),
 			meta.WithAuthorization(auth),
 		)
+		stampSpan(ctx)
 
 		_ = grpc.SetHeader(ctx, serverResponseHeaders(serviceVersion, id.Value()))
 
@@ -115,6 +117,7 @@ func StreamServerInterceptor(policy *method.Policy, userAgent env.UserAgent, ver
 			meta.WithGeolocation(geolocation),
 			meta.WithAuthorization(auth),
 		)
+		stampSpan(ctx)
 
 		_ = stream.SetHeader(serverResponseHeaders(serviceVersion, id.Value()))
 
@@ -123,6 +126,16 @@ func StreamServerInterceptor(policy *method.Policy, userAgent env.UserAgent, ver
 
 		return handler(srv, wrappedStream)
 	}
+}
+
+// stampSpan copies the request metadata in ctx onto the active span so the
+// server/root span carries the same request/service context as the logs.
+//
+// The tracer's metadata span processor cannot cover the server span, because
+// its context has no metadata yet when the span starts; child spans (database,
+// cache, ...) are stamped by that processor instead.
+func stampSpan(ctx context.Context) {
+	attributes.Record(ctx, attributes.Strings(meta.CamelStrings(ctx, meta.NoPrefix))...)
 }
 
 func serverResponseHeaders(serviceVersion, requestID string) Map {
