@@ -6,8 +6,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func message(v any) (proto.Message, error) {
-	msg, ok := v.(proto.Message)
+// Message is an alias for proto.Message.
+type Message = proto.Message
+
+func message(v any) (Message, error) {
+	msg, ok := v.(Message)
 	if !ok || reflect.IsNil(msg) {
 		return nil, errors.ErrInvalidType
 	}
