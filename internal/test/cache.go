@@ -26,8 +26,8 @@ func (c *Cache) Delete(context.Context, string) error {
 	return nil
 }
 
-// Fetch returns the cached value.
-func (c *Cache) Fetch(context.Context, string) (string, error) {
+// Get returns the cached value.
+func (c *Cache) Get(context.Context, string) (string, error) {
 	return c.Value, nil
 }
 
@@ -51,8 +51,8 @@ func (*ErrCache) Delete(context.Context, string) error {
 	return ErrFailed
 }
 
-// Fetch returns ErrFailed.
-func (*ErrCache) Fetch(context.Context, string) (string, error) {
+// Get returns ErrFailed.
+func (*ErrCache) Get(context.Context, string) (string, error) {
 	return strings.Empty, ErrFailed
 }
 

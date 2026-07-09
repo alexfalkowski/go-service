@@ -86,8 +86,8 @@ type Driver interface {
 	// Delete removes the cached key.
 	Delete(ctx context.Context, key string) error
 
-	// Fetch retrieves the cached value for key.
-	Fetch(ctx context.Context, key string) (string, error)
+	// Get retrieves the cached value for key.
+	Get(ctx context.Context, key string) (string, error)
 
 	// Flush removes cached data according to backend-specific semantics.
 	//

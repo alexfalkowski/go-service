@@ -111,7 +111,7 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 //
 // The value parameter should be a pointer to the destination value (for example *MyStruct).
 func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
-	val, err := c.driver.Fetch(ctx, c.driverKey(key))
+	val, err := c.driver.Get(ctx, c.driverKey(key))
 	if err != nil {
 		if drivererrors.IsMissingError(err) || drivererrors.IsExpiredError(err) {
 			return false, nil

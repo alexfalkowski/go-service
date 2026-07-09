@@ -517,7 +517,7 @@ func (expiredCacheDriver) Delete(context.Context, string) error {
 	return nil
 }
 
-func (expiredCacheDriver) Fetch(context.Context, string) (string, error) {
+func (expiredCacheDriver) Get(context.Context, string) (string, error) {
 	return strings.Empty, drivererrors.ErrExpired
 }
 
