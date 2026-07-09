@@ -89,6 +89,14 @@ type Driver interface {
 	// Get retrieves the cached value for key.
 	Get(ctx context.Context, key string) (string, error)
 
+	// GetOrSave atomically returns the value stored for key, or stores value
+	// when the key is absent.
+	//
+	// The returned bool reports whether an existing value was found: when true,
+	// the returned string is the value already stored and value was not written;
+	// when false, value was stored and the returned string is empty.
+	GetOrSave(ctx context.Context, key, value string, lifetime time.Duration) (string, bool, error)
+
 	// Flush removes cached data according to backend-specific semantics.
 	//
 	// Implementations may clear more than go-service cache namespace keys. For

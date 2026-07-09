@@ -85,6 +85,7 @@ type Cache struct {
 	config   *config.Config
 	pool     *sync.BufferPool
 	driver   driver.Driver
+	single   sync.AnySingleFlightGroup
 }
 
 // Flush removes cached data according to the underlying driver's flush semantics.
@@ -141,6 +142,68 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 	}
 
 	return c.driver.Save(ctx, c.driverKey(key), enc, ttl)
+}
+
+// GetOrPersist returns the cached value for key, or produces and stores it via fn when the key is absent.
+//
+// On a cache hit fn is not called and no write occurs. On a miss fn populates value and the encoded value is
+// published atomically, so concurrent callers converge on a single stored value. Concurrent in-process misses
+// for the same key run fn once and share the produced value; separate processes may each run fn once, but the
+// atomic publish still yields a single stored winner that every caller decodes.
+//
+// The value parameter should be a pointer to the destination value (for example *MyStruct). It is both
+// populated by fn and used as the decode destination for the resolved value.
+func (c *Cache) GetOrPersist(ctx context.Context, key string, value any, ttl time.Duration, fn func() error) error {
+	ok, err := c.Get(ctx, key, value)
+	if err != nil {
+		return err
+	}
+	if ok {
+		return nil
+	}
+
+	driverKey := c.driverKey(key)
+
+	result, err, _ := c.single.Do(driverKey, func() (any, error) {
+		return c.loadOrSave(ctx, driverKey, value, ttl, fn)
+	})
+	if err != nil {
+		return err
+	}
+
+	return c.decode(result.(string), value)
+}
+
+// loadOrSave re-checks the driver for driverKey, then produces and atomically publishes a value on a miss.
+//
+// It runs inside the single-flight group, so it executes once per key for concurrent in-process callers. It
+// returns the encoded value that every caller decodes: the existing stored value when another writer won, or
+// the value just produced and stored.
+func (c *Cache) loadOrSave(ctx context.Context, driverKey string, value any, ttl time.Duration, fn func() error) (string, error) {
+	if val, err := c.driver.Get(ctx, driverKey); err == nil {
+		return val, nil
+	} else if !drivererrors.IsMissingError(err) && !drivererrors.IsExpiredError(err) {
+		return strings.Empty, err
+	}
+
+	if err := fn(); err != nil {
+		return strings.Empty, err
+	}
+
+	enc, err := c.encode(value)
+	if err != nil {
+		return strings.Empty, err
+	}
+
+	existing, loaded, err := c.driver.GetOrSave(ctx, driverKey, enc, ttl)
+	if err != nil {
+		return strings.Empty, err
+	}
+	if loaded {
+		return existing, nil
+	}
+
+	return enc, nil
 }
 
 func (c *Cache) driverKey(key string) string {

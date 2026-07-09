@@ -1,6 +1,7 @@
 package cache_test
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -20,6 +21,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
@@ -45,6 +47,234 @@ func TestGenericValidCache(t *testing.T) {
 	require.Equal(t, "hello?", *value)
 
 	require.NoError(t, world.Remove(t.Context(), "test"))
+}
+
+func TestGetOrPersist(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+
+	calls := 0
+	fn := func() (string, error) {
+		calls++
+
+		return "hello?", nil
+	}
+
+	value, err := cache.GetOrPersist(t.Context(), "test", time.Minute, fn)
+	require.NoError(t, err)
+	require.Equal(t, "hello?", *value)
+	require.Equal(t, 1, calls)
+
+	value, err = cache.GetOrPersist(t.Context(), "test", time.Minute, fn)
+	require.NoError(t, err)
+	require.Equal(t, "hello?", *value)
+	require.Equal(t, 1, calls)
+
+	require.NoError(t, world.Remove(t.Context(), "test"))
+}
+
+func TestGetOrPersistRedis(t *testing.T) {
+	cfg := test.NewCacheConfig("redis", "snappy", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+	ctx := t.Context()
+	require.NoError(t, world.Remove(ctx, "test"))
+
+	calls := 0
+	fn := func() (string, error) {
+		calls++
+
+		return "hello?", nil
+	}
+
+	value, err := cache.GetOrPersist(ctx, "test", time.Minute, fn)
+	require.NoError(t, err)
+	require.Equal(t, "hello?", *value)
+	require.Equal(t, 1, calls)
+
+	value, err = cache.GetOrPersist(ctx, "test", time.Minute, fn)
+	require.NoError(t, err)
+	require.Equal(t, "hello?", *value)
+	require.Equal(t, 1, calls)
+
+	require.NoError(t, world.Remove(ctx, "test"))
+}
+
+func TestGetOrPersistSingleWinner(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+	ctx := t.Context()
+
+	const goroutines = 16
+	var group sync.WaitGroup
+	values := make([]string, goroutines)
+	errs := make([]error, goroutines)
+
+	group.Add(goroutines)
+	for i := range goroutines {
+		go func(i int) {
+			defer group.Done()
+
+			value, err := cache.GetOrPersist(ctx, "test", time.Minute, func() (string, error) {
+				return fmt.Sprintf("value-%d", i), nil
+			})
+			errs[i] = err
+			if err == nil {
+				values[i] = *value
+			}
+		}(i)
+	}
+	group.Wait()
+
+	for i := range goroutines {
+		require.NoError(t, errs[i])
+		require.Equal(t, values[0], values[i])
+	}
+	require.NotEmpty(t, values[0])
+
+	require.NoError(t, world.Remove(ctx, "test"))
+}
+
+func TestGenericGetOrPersistDisabledCache(t *testing.T) {
+	cache.Register(nil)
+	t.Cleanup(func() {
+		cache.Register(nil)
+	})
+
+	called := false
+	value, err := cache.GetOrPersist(t.Context(), "test", time.Minute, func() (string, error) {
+		called = true
+
+		return "hello?", nil
+	})
+	require.NoError(t, err)
+	require.Nil(t, value)
+	require.False(t, called)
+}
+
+func TestGetOrPersistLoaderError(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+	ctx := t.Context()
+
+	_, err := cache.GetOrPersist(ctx, "test", time.Minute, func() (string, error) {
+		return strings.Empty, test.ErrFailed
+	})
+	require.ErrorIs(t, err, test.ErrFailed)
+
+	value, ok, err := cache.Get[string](ctx, "test")
+	require.NoError(t, err)
+	require.False(t, ok)
+	require.Empty(t, *value)
+
+	require.NoError(t, world.Remove(ctx, "test"))
+}
+
+func TestGetOrPersistPublish(t *testing.T) {
+	winner := base64.Encode(strings.Bytes(`"winner"`))
+	tests := []struct {
+		driver  driver.Driver
+		name    string
+		want    string
+		wantErr bool
+	}{
+		{name: "returns existing winner", driver: getOrSaveCacheDriver{existing: winner, loaded: true}, want: "winner"},
+		{name: "propagates save error", driver: getOrSaveCacheDriver{err: test.ErrFailed}, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+			world := test.NewStartedWorld(t,
+				test.WithWorldCacheConfig(cfg),
+				test.WithWorldCacheDriver(tt.driver),
+			)
+
+			value := "unchanged"
+			called := false
+			err := world.GetOrPersist(t.Context(), "test", &value, time.Minute, func() error {
+				called = true
+				value = "produced"
+
+				return nil
+			})
+
+			require.True(t, called)
+			if tt.wantErr {
+				require.Error(t, err)
+
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.want, value)
+		})
+	}
+}
+
+func TestGetOrPersistEncodeError(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "snappy", "error", "redis")
+	test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+
+	_, err := cache.GetOrPersist(t.Context(), "test", time.Minute, func() (string, error) {
+		return "hello?", nil
+	})
+	require.Error(t, err)
+}
+
+func TestGetOrPersistDriverGetError(t *testing.T) {
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+	world := test.NewStartedWorld(t,
+		test.WithWorldCacheConfig(cfg),
+		test.WithWorldCacheDriver(&test.ErrCache{}),
+	)
+
+	value := "unchanged"
+	called := false
+	err := world.GetOrPersist(t.Context(), "test", &value, time.Minute, func() error {
+		called = true
+
+		return nil
+	})
+	require.ErrorIs(t, err, test.ErrFailed)
+	require.False(t, called)
+}
+
+func TestGetOrPersistRecheck(t *testing.T) {
+	winner := base64.Encode(strings.Bytes(`"winner"`))
+	tests := []struct {
+		driver  *recheckCacheDriver
+		name    string
+		wantErr bool
+	}{
+		{name: "recheck finds concurrently stored value", driver: &recheckCacheDriver{value: winner}},
+		{name: "recheck surfaces backend error", driver: &recheckCacheDriver{recheck: test.ErrFailed}, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+			world := test.NewStartedWorld(t,
+				test.WithWorldCacheConfig(cfg),
+				test.WithWorldCacheDriver(tt.driver),
+			)
+
+			value := "unchanged"
+			called := false
+			err := world.GetOrPersist(t.Context(), "test", &value, time.Minute, func() error {
+				called = true
+
+				return nil
+			})
+
+			require.False(t, called)
+			if tt.wantErr {
+				require.Error(t, err)
+
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, "winner", value)
+		})
+	}
 }
 
 func TestModuleRegistersGenericCache(t *testing.T) {
@@ -527,4 +757,72 @@ func (expiredCacheDriver) Flush(context.Context) error {
 
 func (expiredCacheDriver) Save(context.Context, string, string, time.Duration) error {
 	return nil
+}
+
+func (expiredCacheDriver) GetOrSave(context.Context, string, string, time.Duration) (string, bool, error) {
+	return strings.Empty, false, nil
+}
+
+// getOrSaveCacheDriver misses on Get and returns a configured result from GetOrSave, exercising the publish
+// path of Cache.GetOrPersist without a live backend.
+type getOrSaveCacheDriver struct {
+	err      error
+	existing string
+	loaded   bool
+}
+
+func (getOrSaveCacheDriver) Delete(context.Context, string) error {
+	return nil
+}
+
+func (getOrSaveCacheDriver) Get(context.Context, string) (string, error) {
+	return strings.Empty, drivererrors.ErrMissing
+}
+
+func (getOrSaveCacheDriver) Flush(context.Context) error {
+	return nil
+}
+
+func (getOrSaveCacheDriver) Save(context.Context, string, string, time.Duration) error {
+	return nil
+}
+
+func (d getOrSaveCacheDriver) GetOrSave(context.Context, string, string, time.Duration) (string, bool, error) {
+	return d.existing, d.loaded, d.err
+}
+
+// recheckCacheDriver misses the first Get, then hits or errors on later Gets, simulating a value stored or a
+// backend failure between Cache.GetOrPersist's initial read and its single-flight re-check.
+type recheckCacheDriver struct {
+	recheck error
+	value   string
+	gets    int
+}
+
+func (*recheckCacheDriver) Delete(context.Context, string) error {
+	return nil
+}
+
+func (d *recheckCacheDriver) Get(context.Context, string) (string, error) {
+	d.gets++
+	if d.gets == 1 {
+		return strings.Empty, drivererrors.ErrMissing
+	}
+	if d.recheck != nil {
+		return strings.Empty, d.recheck
+	}
+
+	return d.value, nil
+}
+
+func (*recheckCacheDriver) Flush(context.Context) error {
+	return nil
+}
+
+func (*recheckCacheDriver) Save(context.Context, string, string, time.Duration) error {
+	return nil
+}
+
+func (*recheckCacheDriver) GetOrSave(context.Context, string, string, time.Duration) (string, bool, error) {
+	return strings.Empty, false, nil
 }

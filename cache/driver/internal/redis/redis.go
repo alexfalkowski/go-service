@@ -99,3 +99,22 @@ func (d *Driver) Ping(ctx context.Context) error {
 func (d *Driver) Save(ctx context.Context, key, value string, lifetime time.Duration) error {
 	return d.client.Set(ctx, key, value, lifetime.Duration()).Err()
 }
+
+// GetOrSave atomically returns the value stored for key, or stores value when the key is absent.
+//
+// It issues a single SET ... NX GET command, so it requires Redis 7.0 or later.
+func (d *Driver) GetOrSave(ctx context.Context, key, value string, lifetime time.Duration) (string, bool, error) {
+	existing, err := d.client.SetArgs(ctx, key, value, redis.SetArgs{
+		Mode: "NX",
+		Get:  true,
+		TTL:  lifetime.Duration(),
+	}).Result()
+	if errors.Is(err, redis.Nil) {
+		return "", false, nil
+	}
+	if err != nil {
+		return "", false, err
+	}
+
+	return existing, true, nil
+}

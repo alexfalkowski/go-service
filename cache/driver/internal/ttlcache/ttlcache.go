@@ -76,6 +76,22 @@ func (d *Driver) Save(ctx context.Context, key, value string, lifetime time.Dura
 	return nil
 }
 
+// GetOrSave atomically returns the value stored for key, or stores value when the key is absent.
+func (d *Driver) GetOrSave(ctx context.Context, key, value string, lifetime time.Duration) (string, bool, error) {
+	if err := ctx.Err(); err != nil {
+		return "", false, err
+	}
+
+	d.cache.DeleteExpired()
+
+	item, retrieved := d.cache.GetOrSet(key, value, ttlcache.WithTTL[string, string](ttl(lifetime).Duration()))
+	if !retrieved {
+		return "", false, nil
+	}
+
+	return item.Value(), true, nil
+}
+
 func ttl(lifetime time.Duration) time.Duration {
 	if lifetime <= 0 {
 		return time.Duration(ttlcache.NoTTL)
