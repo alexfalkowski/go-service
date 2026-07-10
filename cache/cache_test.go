@@ -134,6 +134,110 @@ func TestGetOrPersistSingleWinner(t *testing.T) {
 	require.NoError(t, world.Remove(ctx, "test"))
 }
 
+func TestGetOrPersistReleasesWaiterOnItsOwnCancellation(t *testing.T) {
+	drv := &blockingGetDriver{gets: make(chan string, 16)}
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldCacheDriver(drv))
+
+	leaderStarted := make(chan struct{})
+	release := make(chan struct{})
+	leaderErr := make(chan error, 1)
+	leaderValue := "unchanged"
+	go func() {
+		leaderErr <- world.GetOrPersist(context.Background(), "test", &leaderValue, time.Minute, func() error {
+			close(leaderStarted)
+			<-release
+			leaderValue = "leader"
+
+			return nil
+		})
+	}()
+
+	<-leaderStarted
+	<-drv.gets // leader's initial Get
+	<-drv.gets // leader's single-flight recheck Get
+
+	dupCtx, dupCancel := context.WithCancel(context.Background())
+	dupErr := make(chan error, 1)
+	dupValue := "unchanged"
+	go func() {
+		dupErr <- world.GetOrPersist(dupCtx, "test", &dupValue, time.Minute, func() error {
+			dupValue = "duplicate"
+
+			return nil
+		})
+	}()
+
+	<-drv.gets // duplicate missed and joined the in-flight fill
+	dupCancel()
+
+	select {
+	case err := <-dupErr:
+		require.ErrorIs(t, err, context.Canceled)
+	case <-time.After(5 * time.Second):
+		t.Fatal("duplicate blocked on the shared fill instead of returning on its own cancellation")
+	}
+	require.Equal(t, "unchanged", dupValue)
+
+	close(release)
+	require.NoError(t, <-leaderErr)
+	require.Equal(t, "leader", leaderValue)
+}
+
+func TestGetOrPersistLeaderCancellationFailsWaiters(t *testing.T) {
+	drv := &blockingGetDriver{gets: make(chan string, 16)}
+	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldCacheDriver(drv))
+
+	leaderStarted := make(chan struct{})
+	release := make(chan struct{})
+	leaderCtx, leaderCancel := context.WithCancel(context.Background())
+	leaderErr := make(chan error, 1)
+	leaderValue := "unchanged"
+	go func() {
+		leaderErr <- world.GetOrPersist(leaderCtx, "test", &leaderValue, time.Minute, func() error {
+			close(leaderStarted)
+			<-release
+			leaderValue = "leader"
+
+			return nil
+		})
+	}()
+
+	<-leaderStarted
+	<-drv.gets
+	<-drv.gets
+
+	followerCalled := make(chan struct{}, 1)
+	followerErr := make(chan error, 1)
+	followerValue := "unchanged"
+	go func() {
+		followerErr <- world.GetOrPersist(context.Background(), "test", &followerValue, time.Minute, func() error {
+			followerCalled <- struct{}{}
+
+			return nil
+		})
+	}()
+
+	<-drv.gets // follower missed and is joining the shared fill
+	// Give the follower time to park on the shared fill before it publishes.
+	time.Sleep(100 * time.Millisecond)
+
+	// The shared fill runs under the leader context, so canceling the leader and
+	// then letting the fill publish fails the still-live follower too.
+	leaderCancel()
+	close(release)
+
+	require.ErrorIs(t, <-followerErr, context.Canceled)
+	require.ErrorIs(t, <-leaderErr, context.Canceled)
+
+	select {
+	case <-followerCalled:
+		t.Fatal("follower ran its own loader instead of sharing the leader's fill")
+	default:
+	}
+}
+
 func TestGenericGetOrPersistDisabledCache(t *testing.T) {
 	cache.Register(nil)
 	t.Cleanup(func() {
@@ -824,5 +928,40 @@ func (*recheckCacheDriver) Save(context.Context, string, string, time.Duration) 
 }
 
 func (*recheckCacheDriver) GetOrSave(context.Context, string, string, time.Duration) (string, bool, error) {
+	return strings.Empty, false, nil
+}
+
+// blockingGetDriver reports every Get on gets and always misses, letting a test observe when callers reach
+// Cache.GetOrPersist's single-flight path while a loader is held blocked.
+type blockingGetDriver struct {
+	gets chan string
+}
+
+func (*blockingGetDriver) Delete(context.Context, string) error {
+	return nil
+}
+
+func (d *blockingGetDriver) Get(ctx context.Context, key string) (string, error) {
+	if err := ctx.Err(); err != nil {
+		return strings.Empty, err
+	}
+	d.gets <- key
+
+	return strings.Empty, drivererrors.ErrMissing
+}
+
+func (*blockingGetDriver) Flush(context.Context) error {
+	return nil
+}
+
+func (*blockingGetDriver) Save(context.Context, string, string, time.Duration) error {
+	return nil
+}
+
+func (*blockingGetDriver) GetOrSave(ctx context.Context, _, _ string, _ time.Duration) (string, bool, error) {
+	if err := ctx.Err(); err != nil {
+		return strings.Empty, false, err
+	}
+
 	return strings.Empty, false, nil
 }
