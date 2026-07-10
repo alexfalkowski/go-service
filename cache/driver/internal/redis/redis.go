@@ -104,11 +104,7 @@ func (d *Driver) Save(ctx context.Context, key, value string, lifetime time.Dura
 //
 // It issues a single SET ... NX GET command, so it requires Redis 7.0 or later.
 func (d *Driver) GetOrSave(ctx context.Context, key, value string, lifetime time.Duration) (string, bool, error) {
-	existing, err := d.client.SetArgs(ctx, key, value, redis.SetArgs{
-		Mode: "NX",
-		Get:  true,
-		TTL:  lifetime.Duration(),
-	}).Result()
+	existing, err := d.client.SetArgs(ctx, key, value, redis.SetArgs{Mode: "NX", Get: true, TTL: lifetime.Duration()}).Result()
 	if errors.Is(err, redis.Nil) {
 		return "", false, nil
 	}
