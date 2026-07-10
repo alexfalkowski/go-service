@@ -73,6 +73,18 @@ func (c *Config) IsEnabled() bool {
 	return c != nil
 }
 
+// GetKind returns the configured logger kind.
+//
+// A nil receiver returns an empty kind, which callers treat as no configured
+// stdout format.
+func (c *Config) GetKind() string {
+	if c == nil {
+		return ""
+	}
+
+	return c.Kind
+}
+
 // GetProtocol returns the configured OTLP transport protocol.
 //
 // A nil receiver or an empty value falls back to OTLP/HTTP.

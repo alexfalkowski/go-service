@@ -31,6 +31,21 @@ var Args = os.Args
 // output from CLIs.
 var Stdout = os.Stdout
 
+// File is an alias of [os.File].
+//
+// It represents an open file descriptor and is provided so go-service code can
+// depend on go-service packages consistently.
+type File = os.File
+
+// CreateTemp creates a new temporary file in the directory dir, opens it for
+// reading and writing, and returns the resulting *[File].
+//
+// It forwards to [os.CreateTemp]. If dir is empty, CreateTemp uses the default
+// directory for temporary files (see [os.TempDir]).
+func CreateTemp(dir, pattern string) (*File, error) {
+	return os.CreateTemp(dir, pattern)
+}
+
 // Getenv returns the value of the environment variable named by key.
 func Getenv(key string) string {
 	return os.Getenv(key)

@@ -10,7 +10,7 @@
 //     Prometheus), plus helpers for obtaining a Meter from a configured provider.
 //   - telemetry/tracer: tracing SDK wiring and OTLP exporter configuration.
 //   - telemetry/errors: OpenTelemetry error handler wiring so OTel SDK/internal
-//     errors are logged.
+//     errors are written to an independent stdout diagnostic sink.
 //   - telemetry/header: helpers for exporter/request headers, including secret
 //     resolution via the go-service "source string" convention (env:NAME,
 //     file:<path>, or literal values).

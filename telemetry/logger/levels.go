@@ -21,6 +21,9 @@ func validateLevel(cfg *Config) error {
 }
 
 func level(cfg *Config) slog.Level {
+	if cfg == nil {
+		return slog.LevelInfo
+	}
 	if level, ok := levels[cfg.Level]; ok {
 		return level
 	}
