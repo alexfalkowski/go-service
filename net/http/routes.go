@@ -40,6 +40,11 @@ func (r *RoutePolicy) IsOperation(req *Request) bool {
 
 // IsUnauthenticated reports whether req targets a route that does not require transport token authentication.
 func (r *RoutePolicy) IsUnauthenticated(req *Request) bool {
+	if !strings.IsEmpty(req.Pattern) {
+		_, ok := r.unauthenticated[req.Pattern]
+		return ok
+	}
+
 	if _, ok := r.unauthenticated[routeRequestPattern(req)]; ok {
 		return true
 	}
