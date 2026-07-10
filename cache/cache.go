@@ -151,6 +151,13 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 // for the same key run fn once and share the produced value; separate processes may each run fn once, but the
 // atomic publish still yields a single stored winner that every caller decodes.
 //
+// Each concurrent caller waits for the shared fill on its own ctx: if a caller's ctx is canceled or its
+// deadline passes before the fill publishes, that caller returns ctx.Err() instead of blocking until the fill
+// completes. The shared fill runs under the first caller's ctx in a background goroutine and continues even if
+// later callers stop waiting, so a caller that returns early on cancellation must not read value. Because the
+// fill uses the first caller's ctx, canceling that first caller can surface as an error to other callers still
+// waiting on the same fill.
+//
 // The value parameter should be a pointer to the destination value (for example *MyStruct). It is both
 // populated by fn and used as the decode destination for the resolved value.
 func (c *Cache) GetOrPersist(ctx context.Context, key string, value any, ttl time.Duration, fn func() error) error {
@@ -164,14 +171,20 @@ func (c *Cache) GetOrPersist(ctx context.Context, key string, value any, ttl tim
 
 	driverKey := c.driverKey(key)
 
-	result, err, _ := c.single.Do(driverKey, func() (any, error) {
+	result := c.single.DoChan(driverKey, func() (any, error) {
 		return c.loadOrSave(ctx, driverKey, value, ttl, fn)
 	})
-	if err != nil {
-		return err
-	}
 
-	return c.decode(result.(string), value)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case res := <-result:
+		if res.Err != nil {
+			return res.Err
+		}
+
+		return c.decode(res.Val.(string), value)
+	}
 }
 
 // loadOrSave re-checks the driver for driverKey, then produces and atomically publishes a value on a miss.
