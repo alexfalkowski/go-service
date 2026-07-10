@@ -62,15 +62,16 @@ func TestRouterRegistersHandlerAndPolicy(t *testing.T) {
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
 
-	router.HandleUnauthenticated("POST /events", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+	router.HandleUnauthenticated("POST /events/{tenant}", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 		res.WriteHeader(http.StatusAccepted)
 	}))
 
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/events", http.NoBody)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/events/acme", http.NoBody)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
 
+	require.Equal(t, "POST /events/{tenant}", req.Pattern)
 	require.True(t, policy.IsUnauthenticated(req))
 	require.Equal(t, http.StatusAccepted, res.Code)
 }
