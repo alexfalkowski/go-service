@@ -16,7 +16,7 @@ import (
 //   - logging ([github.com/alexfalkowski/go-service/v2/telemetry/logger.Module]),
 //   - metrics ([github.com/alexfalkowski/go-service/v2/telemetry/metrics.Module]),
 //   - tracing ([github.com/alexfalkowski/go-service/v2/telemetry/tracer.Module]), and
-//   - OpenTelemetry internal error handling ([github.com/alexfalkowski/go-service/v2/telemetry/errors.Module]).
+//   - local OpenTelemetry internal error handling ([github.com/alexfalkowski/go-service/v2/telemetry/errors.Module]).
 //
 // In addition, Module constructs [NewPropagator] and registers it with
 // [RegisterPropagation], which configures the global OpenTelemetry
@@ -24,6 +24,10 @@ import (
 // for extraction and injection. This affects context extraction/injection
 // performed by instrumentation that relies on the global propagator (for example
 // HTTP/gRPC instrumentation).
+//
+// OpenTelemetry internal errors use an independent handler-owned JSON logger on
+// stdout so a failing configured OTLP logger cannot receive its own exporter
+// diagnostics. Normal application logging is not fanned out to that logger.
 //
 // Note: This module wires providers/exporters and global configuration. It does
 // not itself create spans/metrics/log records; instrumentation elsewhere in your

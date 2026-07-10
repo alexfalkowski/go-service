@@ -17,6 +17,9 @@ const ExitCodeFailure = 1
 // ExitCodeServeFailure indicates an asynchronous server Serve failure.
 const ExitCodeServeFailure = 2
 
+// File aliases [os.File] so file-returning helpers stay on the go-service OS surface.
+type File = os.File
+
 // Args is the process argument vector used by go-service CLI helpers.
 //
 // It is initialized from [os.Args] at package init time and is provided so
@@ -30,6 +33,11 @@ var Args = os.Args
 // It is an alias of [os.Stdout] and is typically used for writing user-facing
 // output from CLIs.
 var Stdout = os.Stdout
+
+// CreateTemp wraps [os.CreateTemp] without changing its semantics.
+func CreateTemp(dir, pattern string) (*File, error) {
+	return os.CreateTemp(dir, pattern)
+}
 
 // Getenv returns the value of the environment variable named by key.
 func Getenv(key string) string {

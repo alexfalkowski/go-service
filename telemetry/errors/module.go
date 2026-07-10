@@ -6,16 +6,12 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //
 // Including this module in an Fx application provides:
 //
-//   - NewHandler: constructs a *[Handler] that logs OpenTelemetry internal/SDK errors
-//     through the go-service telemetry logger when logging is enabled. If no
-//     go-service logger is available, NewHandler returns nil.
+//   - NewHandler: constructs a *[Handler] with its own local JSON logger.
 //   - Register: installs that handler as the process-wide OpenTelemetry error
-//     handler via otel.SetErrorHandler. If the constructed handler is nil,
-//     Register leaves the current global handler unchanged.
+//     handler via otel.SetErrorHandler.
 //
-// This surfaces OpenTelemetry exporter/SDK errors in service logs when logging
-// is configured, while preserving the OpenTelemetry default error handling when
-// it is not.
+// This keeps OpenTelemetry exporter/SDK failures visible on local stdout without
+// feeding them back into a failing configured OTLP logger.
 //
 // Note: the OpenTelemetry error handler is global; the last handler registered
 // wins.

@@ -575,6 +575,12 @@ Supported built-in logger kinds:
 Supported logger levels are `debug`, `info`, `warn`, and `error`. When `level`
 is unset, logging defaults to `info`; unknown values fail logger construction.
 
+The standard telemetry module writes OpenTelemetry SDK and exporter failures as
+JSON to stdout through a handler-owned logger that is independent of the
+configured application logger. This keeps OTLP outage diagnostics local without
+duplicating normal application logs or feeding failures back into the OTLP log
+exporter.
+
 #### JSON logger
 
 ```yaml

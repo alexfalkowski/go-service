@@ -6,14 +6,12 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/stretchr/testify/require"
 )
-
-func TestNewHandlerNilLogger(t *testing.T) {
-	require.Nil(t, errors.NewHandler(nil))
-}
 
 func TestRegisterNilHandler(t *testing.T) {
 	original := errors.GetHandler()
@@ -32,15 +30,43 @@ func TestHandleNilHandler(t *testing.T) {
 	})
 }
 
-func TestHandleLogsError(t *testing.T) {
+func TestHandleLogsErrors(t *testing.T) {
+	stdout := captureStdout(t)
+	handler := errors.NewHandler()
+	originalDefault := slog.Default()
+	t.Cleanup(func() {
+		slog.SetDefault(originalDefault)
+	})
 	capture := &test.CaptureHandler{}
-	handler := errors.NewHandler(&logger.Logger{Logger: slog.New(capture)})
-	require.NotNil(t, handler)
+	slog.SetDefault(slog.New(capture))
 
 	handler.Handle(context.Canceled)
+	handler.Handle(context.DeadlineExceeded)
 
-	require.Len(t, capture.Records, 1)
-	require.Equal(t, slog.LevelError, capture.Records[0].Level)
-	require.Equal(t, "telemetry: global error", capture.Records[0].Message)
-	require.Equal(t, context.Canceled, capture.Records[0].Attrs["error"].Any())
+	require.Empty(t, capture.Records)
+	_, err := stdout.Seek(0, 0)
+	require.NoError(t, err)
+	data, reader, err := io.ReadAll(stdout)
+	require.NoError(t, err)
+	require.NoError(t, reader.Close())
+	logs := string(data)
+	require.Equal(t, 2, strings.Count(logs, "\n"))
+	require.Equal(t, 2, strings.Count(logs, `"msg":"telemetry: global error"`))
+	require.Contains(t, logs, `"error":"context canceled"`)
+	require.Contains(t, logs, `"error":"context deadline exceeded"`)
+}
+
+func captureStdout(t *testing.T) *os.File {
+	t.Helper()
+
+	original := os.Stdout
+	file, err := os.CreateTemp(t.TempDir(), "telemetry-errors-*.log")
+	require.NoError(t, err)
+	os.Stdout = file
+	t.Cleanup(func() {
+		os.Stdout = original
+		require.NoError(t, file.Close())
+	})
+
+	return file
 }

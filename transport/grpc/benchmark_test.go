@@ -121,7 +121,7 @@ func BenchmarkGRPC(b *testing.B) {
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 		server.Register(server.RegisterParams{Lifecycle: lc, Drain: server.NewDrain(), Services: []*server.Service{g.GetService()}})
-		errors.Register(errors.NewHandler(logger))
+		errors.Register(errors.NewHandler())
 
 		lc.RequireStart()
 
@@ -169,7 +169,7 @@ func BenchmarkGRPC(b *testing.B) {
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 		server.Register(server.RegisterParams{Lifecycle: lc, Drain: server.NewDrain(), Services: []*server.Service{g.GetService()}})
-		errors.Register(errors.NewHandler(logger))
+		errors.Register(errors.NewHandler())
 
 		lc.RequireStart()
 

@@ -59,7 +59,7 @@ func NewLogger(lc di.Lifecycle, config *logger.Config) (*logger.Logger, error) {
 }
 
 func (w *World) registerTelemetry() {
-	errors.Register(errors.NewHandler(w.Logger))
+	errors.Register(errors.NewHandler())
 }
 
 func createLogger(lc di.Lifecycle, os *worldOpts) (*logger.Logger, error) {

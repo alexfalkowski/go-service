@@ -10,12 +10,9 @@
 //
 // # Handler
 //
-// Handler implements the OpenTelemetry error handler interface by logging errors through
-// a go-service *[github.com/alexfalkowski/go-service/v2/telemetry/logger.Logger]. Errors are logged at error level using a
-// consistent message and attribute key ("error").
-//
-// When logging is disabled and no *[github.com/alexfalkowski/go-service/v2/telemetry/logger.Logger] is available, NewHandler
-// returns nil so callers can keep the OpenTelemetry default global error handler.
+// Handler implements the OpenTelemetry error handler interface with its own
+// JSON logger on stdout. Errors are logged at error level using a consistent
+// message and attribute key ("error").
 //
 // # Registration
 //
@@ -33,16 +30,16 @@
 // # Dependency injection (Fx)
 //
 // This package also exports [Module], which wires:
-//   - construction of the Handler (NewHandler), and
-//   - registration of the handler (Register)
+//   - construction of [Handler] with [NewHandler], and
+//   - registration with [Register]
 //
 // into an Fx application.
 //
 // Including [github.com/alexfalkowski/go-service/v2/telemetry/errors.Module] (or the top-level [github.com/alexfalkowski/go-service/v2/telemetry.Module]) wires this
-// handler into your service. When a go-service logger is configured, OpenTelemetry
-// internal errors are routed into service logging. When logging is disabled,
-// NewHandler returns nil and Register preserves the OpenTelemetry default global
-// error handler instead.
+// handler into your service. OpenTelemetry internal errors are written as JSON
+// to local stdout independently of the configured logger. This prevents an OTLP
+// exporter failure from feeding its diagnostic back into the same failed
+// exporter.
 //
 // # Notes
 //

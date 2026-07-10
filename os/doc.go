@@ -67,10 +67,10 @@
 // # Relationship to the standard library
 //
 // Several identifiers are thin wrappers or aliases of the standard library
-// package os (for example [Getenv], [LookupEnv], [Setenv], [Unsetenv], [Exit],
-// [Args], and [Stdout]). They exist to keep go-service code depending on
-// go-service packages consistently, while still delegating to the underlying OS
-// implementation.
+// package os (for example [File], [CreateTemp], [Getenv], [LookupEnv], [Setenv],
+// [Unsetenv], [Exit], [Args], and [Stdout]). They exist to keep go-service code
+// depending on go-service packages consistently, while still delegating to the
+// underlying OS implementation.
 //
 // # Process exit codes
 //
