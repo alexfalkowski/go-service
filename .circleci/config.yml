@@ -14,7 +14,7 @@ commands:
 executors:
   go-with-postgres-valkey-status-mimir:
     docker:
-      - image: alexfalkowski/go:4.27
+      - image: alexfalkowski/go:4.28
       - image: postgres:18-trixie
         environment:
           POSTGRES_DB: test
