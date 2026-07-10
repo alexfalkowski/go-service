@@ -1,4 +1,4 @@
-// Package errors wires OpenTelemetry global error handling into go-service logging.
+// Package errors wires OpenTelemetry global error handling into an independent stdout diagnostic sink.
 //
 // OpenTelemetry SDKs and instrumentations may emit internal errors (for example exporter
 // failures, dropped data warnings, or other SDK/runtime issues). The OpenTelemetry API
@@ -11,11 +11,13 @@
 // # Handler
 //
 // Handler implements the OpenTelemetry error handler interface by logging errors through
-// a go-service *[github.com/alexfalkowski/go-service/v2/telemetry/logger.Logger]. Errors are logged at error level using a
-// consistent message and attribute key ("error").
+// a private [log/slog.Logger] that writes to os.Stdout and mirrors the configured logger
+// format (json, text, or tint). Errors are logged at error level using a consistent
+// message and attribute key ("error").
 //
-// When logging is disabled and no *[github.com/alexfalkowski/go-service/v2/telemetry/logger.Logger] is available, NewHandler
-// returns nil so callers can keep the OpenTelemetry default global error handler.
+// This diagnostic sink is intentionally independent of the configured application logger
+// and its OTLP export pipeline. It ensures OpenTelemetry export failures remain locally
+// visible without feeding their own diagnostics back into a failing exporter.
 //
 // # Registration
 //
@@ -39,10 +41,9 @@
 // into an Fx application.
 //
 // Including [github.com/alexfalkowski/go-service/v2/telemetry/errors.Module] (or the top-level [github.com/alexfalkowski/go-service/v2/telemetry.Module]) wires this
-// handler into your service. When a go-service logger is configured, OpenTelemetry
-// internal errors are routed into service logging. When logging is disabled,
-// NewHandler returns nil and Register preserves the OpenTelemetry default global
-// error handler instead.
+// handler into your service, so OpenTelemetry internal errors are written to the
+// handler's private stdout sink regardless of the application logger
+// configuration.
 //
 // # Notes
 //
@@ -50,5 +51,5 @@
 // startup. If you install multiple handlers, the last one set wins.
 //
 // This package only handles OpenTelemetry internal errors; it does not affect how spans,
-// metrics, or logs are exported beyond ensuring SDK errors are visible in logs.
+// metrics, or logs are exported beyond ensuring SDK errors are visible on stdout.
 package errors

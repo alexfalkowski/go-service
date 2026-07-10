@@ -1,6 +1,8 @@
 package errors
 
 import (
+	"log/slog"
+
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
@@ -11,7 +13,8 @@ import (
 //
 // Register is typically invoked once during service startup (for example via an
 // Fx module) so that OpenTelemetry SDK/internal errors (exporter failures,
-// dropped data warnings, etc.) are routed into application logging.
+// dropped data warnings, etc.) are surfaced through the handler's independent
+// diagnostic sink.
 //
 // If handler is nil, Register leaves the current global OpenTelemetry error
 // handler unchanged.
@@ -26,32 +29,31 @@ func Register(handler *Handler) {
 // NewHandler constructs a Handler that logs OpenTelemetry internal errors.
 //
 // The returned Handler implements the OpenTelemetry error handler interface and
-// writes errors using the provided go-service *[logger.Logger].
-//
-// If logger is nil, NewHandler returns nil so callers can preserve the
-// OpenTelemetry default global error handler when logging is disabled.
-func NewHandler(logger *logger.Logger) *Handler {
-	if logger == nil {
-		return nil
-	}
-
-	return &Handler{logger: logger}
+// owns a private stdout logger built by [logger.NewDiagnosticLogger]. That sink
+// mirrors the configured logger format (json, text, or tint) while remaining
+// independent of the configured application logger and its OTLP export pipeline,
+// so OpenTelemetry export failures cannot feed their own diagnostics back into a
+// failing exporter. A nil cfg, the "otlp" kind, or an unknown kind fall back to
+// JSON on stdout.
+func NewHandler(cfg *logger.Config) *Handler {
+	return &Handler{logger: logger.NewDiagnosticLogger(cfg)}
 }
 
-// Handler routes OpenTelemetry SDK/internal errors into a go-service logger.
+// Handler routes OpenTelemetry SDK/internal errors into a private diagnostic logger.
 //
 // Handler is intended to be registered via Register so that OpenTelemetry errors
-// are visible in service logs. It logs a consistent message and includes a
-// standardized "error" attribute produced by [logger.Error].
+// are visible on stdout independently of the configured application logger. It
+// logs a consistent message and includes a standardized "error" attribute
+// produced by [logger.Error].
 type Handler struct {
-	logger *logger.Logger
+	logger *slog.Logger
 }
 
 // Handle logs an OpenTelemetry internal error.
 //
 // This method is called by the OpenTelemetry SDK when it encounters an internal
-// error. It logs at error level using the go-service logger, attaching the error
-// under the "error" key.
+// error. It logs at error level using the handler's private logger, attaching
+// the error under the "error" key.
 //
 // Handle is nil-safe. If the receiver or its logger is nil, the error is ignored.
 func (e *Handler) Handle(err error) {

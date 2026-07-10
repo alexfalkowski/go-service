@@ -7,9 +7,9 @@ import (
 	"github.com/lmittmann/tint"
 )
 
-func newTintLogger(params LoggerParams) *slog.Logger {
-	opts := &tint.Options{
-		Level: level(params.Config),
+func tintOptions(cfg *Config) *tint.Options {
+	return &tint.Options{
+		Level: level(cfg),
 		ReplaceAttr: func(_ []string, attr slog.Attr) slog.Attr {
 			if attr.Value.Kind() == slog.KindAny {
 				if err, ok := attr.Value.Any().(error); ok {
@@ -23,8 +23,10 @@ func newTintLogger(params LoggerParams) *slog.Logger {
 			return attr
 		},
 	}
+}
 
-	return slog.New(NewTraceHandler(tint.NewHandler(os.Stdout, opts))).With(
+func newTintLogger(params LoggerParams) *slog.Logger {
+	return slog.New(NewTraceHandler(tint.NewHandler(os.Stdout, tintOptions(params.Config)))).With(
 		slog.String("id", params.ID.String()),
 		slog.String("name", params.Name.String()),
 		slog.String("version", params.Version.String()),

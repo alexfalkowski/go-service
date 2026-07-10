@@ -5,15 +5,12 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/stretchr/testify/require"
 )
-
-func TestNewHandlerNilLogger(t *testing.T) {
-	require.Nil(t, errors.NewHandler(nil))
-}
 
 func TestRegisterNilHandler(t *testing.T) {
 	original := errors.GetHandler()
@@ -33,14 +30,36 @@ func TestHandleNilHandler(t *testing.T) {
 }
 
 func TestHandleLogsError(t *testing.T) {
-	capture := &test.CaptureHandler{}
-	handler := errors.NewHandler(&logger.Logger{Logger: slog.New(capture)})
+	file, err := os.CreateTemp(t.TempDir(), "otel-*.log")
+	require.NoError(t, err)
+
+	stdout := os.Stdout
+	os.Stdout = file
+	t.Cleanup(func() {
+		os.Stdout = stdout
+		_ = file.Close()
+	})
+
+	handler := errors.NewHandler(nil)
 	require.NotNil(t, handler)
+
+	// Replace the process-wide default logger to prove the handler writes to its
+	// own independent sink rather than slog.Default.
+	original := slog.Default()
+	capture := &test.CaptureHandler{}
+	slog.SetDefault(slog.New(capture))
+	t.Cleanup(func() { slog.SetDefault(original) })
 
 	handler.Handle(context.Canceled)
 
-	require.Len(t, capture.Records, 1)
-	require.Equal(t, slog.LevelError, capture.Records[0].Level)
-	require.Equal(t, "telemetry: global error", capture.Records[0].Message)
-	require.Equal(t, context.Canceled, capture.Records[0].Attrs["error"].Any())
+	content, err := test.FS.ReadFile(file.Name())
+	require.NoError(t, err)
+
+	record := map[string]any{}
+	require.NoError(t, json.Unmarshal(content, &record))
+	require.Equal(t, "error", record["level"])
+	require.Equal(t, "telemetry: global error", record["msg"])
+	require.Equal(t, context.Canceled.Error(), record["error"])
+
+	require.Empty(t, capture.Records)
 }

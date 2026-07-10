@@ -7,8 +7,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
@@ -47,6 +49,58 @@ func TestConfigGetProtocol(t *testing.T) {
 	require.Equal(t, otlp.ProtocolHTTP, (*logger.Config)(nil).GetProtocol())
 	require.Equal(t, otlp.ProtocolHTTP, (&logger.Config{}).GetProtocol())
 	require.Equal(t, otlp.ProtocolGRPC, (&logger.Config{Protocol: otlp.ProtocolGRPC}).GetProtocol())
+}
+
+func TestConfigGetKind(t *testing.T) {
+	require.Equal(t, strings.Empty, (*logger.Config)(nil).GetKind())
+	require.Equal(t, strings.Empty, (&logger.Config{}).GetKind())
+	require.Equal(t, "tint", (&logger.Config{Kind: "tint"}).GetKind())
+}
+
+func TestNewDiagnosticLogger(t *testing.T) {
+	tests := []struct {
+		config *logger.Config
+		name   string
+		json   bool
+	}{
+		{name: "json uses json", config: &logger.Config{Kind: "json"}, json: true},
+		{name: "text uses text", config: &logger.Config{Kind: "text"}, json: false},
+		{name: "tint uses tint", config: &logger.Config{Kind: "tint"}, json: false},
+		{name: "otlp falls back to json", config: &logger.Config{Kind: "otlp"}, json: true},
+		{name: "disabled falls back to json", config: nil, json: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			file, err := os.CreateTemp(t.TempDir(), "diagnostic-*.log")
+			require.NoError(t, err)
+
+			stdout := os.Stdout
+			os.Stdout = file
+			t.Cleanup(func() {
+				os.Stdout = stdout
+				_ = file.Close()
+			})
+
+			logger.NewDiagnosticLogger(tt.config).Error("diagnostic", logger.Error(context.Canceled))
+
+			content, err := test.FS.ReadFile(file.Name())
+			require.NoError(t, err)
+
+			require.Contains(t, string(content), "diagnostic")
+			require.Contains(t, string(content), context.Canceled.Error())
+
+			record := map[string]any{}
+			if tt.json {
+				require.NoError(t, json.Unmarshal(content, &record))
+				require.Equal(t, "diagnostic", record["msg"])
+				require.Equal(t, "error", record["level"])
+				require.Equal(t, context.Canceled.Error(), record["error"])
+			} else {
+				require.Error(t, json.Unmarshal(content, &record))
+			}
+		})
+	}
 }
 
 func TestMetaTruncatesLongValues(t *testing.T) {
