@@ -24,7 +24,7 @@ func NewDiagnosticLogger(cfg *Config) *slog.Logger {
 	case "text":
 		return slog.New(slog.NewTextHandler(os.Stdout, handlerOptions(cfg)))
 	case "tint":
-		return slog.New(tint.NewHandler(os.Stdout, tintOptions(cfg)))
+		return slog.New(tint.NewTextHandler(os.Stdout, tintOptions(cfg)))
 	default:
 		return slog.New(slog.NewJSONHandler(os.Stdout, handlerOptions(cfg)))
 	}
