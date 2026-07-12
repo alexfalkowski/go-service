@@ -26,7 +26,7 @@ func tintOptions(cfg *Config) *tint.Options {
 }
 
 func newTintLogger(params LoggerParams) *slog.Logger {
-	return slog.New(NewTraceHandler(tint.NewHandler(os.Stdout, tintOptions(params.Config)))).With(
+	return slog.New(NewTraceHandler(tint.NewTextHandler(os.Stdout, tintOptions(params.Config)))).With(
 		slog.String("id", params.ID.String()),
 		slog.String("name", params.Name.String()),
 		slog.String("version", params.Version.String()),
