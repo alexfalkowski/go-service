@@ -93,7 +93,7 @@ var Server = di.Module(
 // modules, such as [transport.Module] or [github.com/alexfalkowski/go-service/v2/transport/http/hooks.Module],
 // on top of Client if needed.
 //
-// This is the primary entrypoint for client-style applications built from `go-service-template`.
+// This is the primary entrypoint for client-style applications built from `go-client-template`.
 var Client = di.Module(
 	Library,
 	config.Module,

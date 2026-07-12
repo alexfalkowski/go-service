@@ -56,6 +56,8 @@ func Persist[T any](ctx context.Context, key string, value *T, ttl time.Duration
 // nil error, mirroring how [Get] reports a disabled cache. Callers must tolerate a nil value rather than
 // assuming a value was produced or cached.
 // Concurrent in-process calls for the same key run fn once and share the produced value.
+// With the built-in Redis driver, atomic publication requires Redis
+// 7.0-compatible `SET ... NX GET` semantics.
 func GetOrPersist[T any](ctx context.Context, key string, ttl time.Duration, fn func() (T, error)) (*T, error) {
 	if cache == nil {
 		return nil, nil

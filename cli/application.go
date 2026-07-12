@@ -108,6 +108,9 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 //   - start the DI application
 //   - stop the DI application immediately after startup completes
 //
+// Client commands should perform their main action from an invoked constructor or a lifecycle OnStart
+// hook so the work completes before startup returns and the graph is stopped.
+//
 // Any start/stop error is wrapped with the subcommand name for easier attribution.
 func (a *Application) AddClient(name, description string, opts ...Option) *Command {
 	opts = slices.Clone(opts)

@@ -30,5 +30,8 @@ type Commander interface {
 	//   - parses command args into the returned `*Command`'s FlagSet,
 	//   - starts a DI application built from opts plus client-specific wiring,
 	//   - then stops the DI application immediately after startup completes.
+	//
+	// Run the command's main action from an invoked constructor or a lifecycle
+	// OnStart hook so it completes before startup returns.
 	AddClient(name, description string, opts ...Option) *Command
 }

@@ -65,8 +65,9 @@ func WithClientCompression() ClientOption {
 // WithClientTokenGenerator enables token injection using gen and id.
 //
 // When configured, the client will generate an Authorization token per request and add it to the outbound
-// request using the `Bearer` scheme. Token generation is typically scoped to the request path and the
-// configured user id.
+// request using the `Bearer` scheme. Token generation is scoped to the request
+// method plus URL path (for example `DELETE /users/123`) and the configured user
+// id. Query parameters are not included in the audience.
 //
 // Token-enabled clients use [http.SameOriginRedirect] so credentials are not forwarded to cross-origin
 // redirect targets. Cross-origin redirects are returned to the caller as [http.ErrUseLastResponse].

@@ -50,8 +50,11 @@
 //
 // # Configuration and enablement
 //
-// This package does not enforce that nested config blocks (JWT/Paseto/SSH) are
-// present when the corresponding kind is selected. The concrete token constructors
-// typically treat a nil *[Config] as disabled and may return nil implementations.
-// Ensure your configuration is consistent with the selected kind.
+// The standard startup path through
+// [github.com/alexfalkowski/go-service/v2/config.NewConfig] validates that the
+// nested JWT, PASETO, or SSH block matching [Config.Kind] is present. Direct
+// callers that construct [Config] without validation remain fail-closed:
+// [Token.Generate] and [Token.Verify] return
+// [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig] when
+// the selected nested configuration is missing.
 package token
