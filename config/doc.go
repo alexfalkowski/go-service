@@ -33,8 +33,17 @@
 // [Module] wires the decoder, validator, and a standard top-level [Config] into [go.uber.org/fx]/[go.uber.org/dig], and also
 // provides constructors for commonly-used sub-config projections.
 //
-// In normal service applications, this package is consumed through higher-level bundles such as
-// [github.com/alexfalkowski/go-service/v2/module.Server] or [github.com/alexfalkowski/go-service/v2/module.Client] from `go-service-template`, which also include the standard
-// encoder registrations needed by the config decoders. Custom or partial wiring is still supported,
-// but advanced compositions are responsible for registering any required encoders themselves.
+// In normal applications, this package is consumed through higher-level bundles such as
+// [github.com/alexfalkowski/go-service/v2/module.Server] from `go-service-template` or
+// [github.com/alexfalkowski/go-service/v2/module.Client] from `go-client-template`. Those bundles also include
+// the standard encoder registrations needed by the config decoders. Custom or partial wiring is still
+// supported, but advanced compositions are responsible for registering any required encoders themselves.
+//
+// Services that extend the standard top-level configuration should construct one
+// service-specific type with [NewConfig], embed *[Config], and use
+// [github.com/alexfalkowski/go-service/v2/di.Decorate] to project that embedded
+// value into the standard module graph. Service-local constructors can then
+// project application-specific sub-configs from the same decoded value. This is
+// the supported way to compose custom configuration with the standard bundles
+// without forcing a second shared-config decode.
 package config

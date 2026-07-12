@@ -20,6 +20,13 @@
 // The configured encoder and compressor are also included in the driver key namespace so format changes
 // create cache misses instead of decoding values written by an incompatible format.
 //
+// # Redis compatibility
+//
+// Atomic publication through [Cache.GetOrPersist] and the package-level
+// [GetOrPersist] helper requires Redis 7.0-compatible `SET` semantics when the
+// built-in Redis driver is selected. The driver publishes with `SET ... NX GET`
+// so concurrent writers converge on the stored winner.
+//
 // # TTL resolution
 //
 // TTL handling depends on the selected driver. The built-in in-memory "ttlcache"

@@ -86,9 +86,11 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 //
 // If unset or negative, a default timeout is applied (see [NewDialOptions] defaults).
 //
-// Note: this timeout is enforced via an interceptor and is independent from any deadlines already set
-// on the incoming context; the interceptor will typically only apply a timeout when a deadline is not
-// already present. Streaming callers should use explicit context deadlines or a custom stream interceptor.
+// The interceptor always derives the outgoing context with this timeout. The
+// effective deadline is the earlier of the parent context's deadline and the
+// configured timeout; a later configured timeout cannot extend an earlier
+// parent deadline. Streaming callers should use explicit context deadlines or
+// a custom stream interceptor.
 func WithClientTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = timeout

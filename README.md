@@ -11,13 +11,13 @@
 
 This repo is primarily a **library of packages** (no top-level `cmd/` binary). Services built on top typically define their own `main` package elsewhere and import this module.
 
-Most services are expected to be bootstrapped from [`go-service-template`](https://github.com/alexfalkowski/go-service-template) and to compose the high-level module bundles from this repository. That is the primary supported path. Lower-level package-by-package composition is still available, but it is an advanced mode and may require extra manual registration.
+Long-running services are expected to start from [`go-service-template`](https://github.com/alexfalkowski/go-service-template), while short-lived client commands start from [`go-client-template`](https://github.com/alexfalkowski/go-client-template). Both compose the high-level module bundles from this repository. These are the primary supported paths. Lower-level package-by-package composition is still available, but it is an advanced mode and may require extra manual registration.
 
 ---
 
 ## 🚀 Install
 
-For a new service, start from `go-service-template` so the application `main`, command wiring, configuration fixtures, and standard module composition are generated together.
+For a new long-running service, start from `go-service-template` so the application `main`, server command wiring, configuration fixtures, and standard module composition are generated together. For a short-lived control, migration, or batch command, start from `go-client-template`; it demonstrates `cli.Application.AddClient`, `module.Client`, and lifecycle startup work.
 
 For direct package use in an existing module, add the library dependency with the versioned module path:
 
@@ -97,7 +97,7 @@ Services commonly expose two command shapes:
 
 The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `main` typically wires Fx modules + commands.
 
-> This repo intentionally does not ship a ready-to-run `main` — it provides the building blocks. In normal usage those building blocks are consumed through `go-service-template` plus `module.Server` / `module.Client`, not by wiring every subsystem manually.
+> This repo intentionally does not ship a ready-to-run `main` — it provides the building blocks. In normal usage server applications consume them through `go-service-template` plus `module.Server`, while short-lived commands use `go-client-template` plus `module.Client`, rather than wiring every subsystem manually.
 
 ---
 
@@ -191,14 +191,39 @@ non-comparable fields.
 Example:
 
 ```go
+type WorkerConfig struct {
+    Queue string `yaml:"queue" json:"queue" toml:"queue" validate:"required"`
+}
+
 type AppConfig struct {
-    config.Config `yaml:",inline" json:",inline" toml:",inline"`
+    Worker         *WorkerConfig `yaml:"worker" json:"worker" toml:"worker" validate:"required"`
+    *config.Config `yaml:",inline" json:",inline" toml:",inline" validate:"required"`
 }
 
 func loadConfig(decoder config.Decoder, validator *config.Validator) (*AppConfig, error) {
     return config.NewConfig[AppConfig](decoder, validator)
 }
+
+func sharedConfig(cfg *AppConfig) *config.Config {
+    return cfg.Config
+}
+
+func workerConfig(cfg *AppConfig) *WorkerConfig {
+    return cfg.Worker
+}
+
+var AppConfigModule = di.Module(
+    di.Constructor(config.NewConfig[AppConfig]),
+    di.Decorate(sharedConfig),
+    di.Constructor(workerConfig),
+)
 ```
+
+Compose `AppConfigModule` alongside `module.Server` or `module.Client`. The
+decorator projects the embedded shared `*config.Config` into the standard graph,
+so the service-specific config is decoded once while existing transport, SQL,
+and telemetry projections continue to work. Add constructors like
+`workerConfig` for service-owned sub-configs.
 
 ### The standard top-level config shape
 
@@ -302,6 +327,7 @@ cache:
 > - `max_size` limits encoded cache values before compression, after compression, and after decompression. A zero value uses the default `4MB`.
 > - `max_entries` limits entries retained by bounded in-memory cache drivers. A zero value uses the default `1024`; negative values are invalid.
 > - `options` is backend-specific and decoded as `map[string]any`.
+> - Redis-backed `GetOrPersist` requires [Redis 7.0-compatible `SET` semantics](https://redis.io/docs/latest/commands/set/) because atomic publication uses `SET ... NX GET`.
 > - Configure each cache backend for a specific service or purpose. For Redis, use a dedicated database, endpoint, or deployment-level key namespace in the connection/configuration instead of sharing one general cache for unrelated data.
 
 > [!WARNING]
@@ -491,6 +517,15 @@ orchestrators can stop sending new traffic before the listener fully stops.
 
 Built-in checker helpers under `health/checker` include DB connectivity checks and
 cache connectivity checks for pingable cache drivers such as Redis and ttlcache.
+
+`module.Server` installs the HTTP/gRPC health transports, but services own the
+checks and observer mapping. Create go-health `server.Registration` values,
+register them under the service or gRPC service name on `*server.Server`, and
+map them to `healthz`, `livez`, `readyz`, or `grpc` with `Observe`. See the
+executable [`Registrations` example](health/example_test.go) and the
+[`go-service-template` health module](https://github.com/alexfalkowski/go-service-template/tree/master/internal/health)
+for the standard DI pattern. A checker is not exposed by a probe until that
+registration and observer mapping exists.
 
 When gRPC transport is enabled, `transport/grpc/health` registers the standard
 `grpc.health.v1.Health` service on the gRPC server. Named checks use the service
@@ -802,6 +837,11 @@ The `p` rows define permissions and must match the model's `p = sub, obj, act`
 shape, so they include `invoke`. The `g` rows define role membership and match
 `g = _, _`, so they only contain `subject, role`.
 
+> [!WARNING]
+> Casbin's string policy adapter can skip malformed policy rows without failing
+> startup. Validate policy files before deployment; a successful startup does
+> not prove that every configured row was loaded.
+
 For HTTP servers the object uses the matched route pattern when available, such
 as `http:GET /users/{id}`. HTTP tokens are authenticated against the concrete
 request method and path, such as `GET /users/123`; access policy enforcement
@@ -991,7 +1031,7 @@ The transport layer provides higher-level wiring and middleware policy for commu
 At a high level:
 
 - `transport/...` contains the opinionated service transport layer: Fx wiring, composed HTTP/gRPC server and client stacks, retries, breakers, token middleware, health wiring, and related policy.
-- `net/...` contains lower-level protocol helpers and reusable primitives such as `net/http`, `net/grpc`, `net/http/meta`, `net/grpc/meta`, `net/http/strings`, `net/grpc/strings`, `net/grpc/health`, `net/header`, and `net/server`.
+- `net/...` contains lower-level protocol helpers and reusable primitives such as `net/http`, `net/grpc`, `net/http/meta`, `net/grpc/meta`, `net/grpc/health`, `net/header`, and `net/server`.
 
 Supported stacks include:
 

@@ -160,6 +160,9 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 //
 // The value parameter should be a pointer to the destination value (for example *MyStruct). It is both
 // populated by fn and used as the decode destination for the resolved value.
+//
+// With the built-in Redis driver, atomic publication requires Redis
+// 7.0-compatible `SET ... NX GET` semantics.
 func (c *Cache) GetOrPersist(ctx context.Context, key string, value any, ttl time.Duration, fn func() error) error {
 	ok, err := c.Get(ctx, key, value)
 	if err != nil {

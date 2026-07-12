@@ -280,7 +280,9 @@ func Header(md *meta.Map) CallOption {
 // TimeoutUnaryClientInterceptor returns a unary client interceptor that applies a per-RPC timeout.
 //
 // This forwards to [timeout.UnaryClientInterceptor] from go-grpc-middleware.
-// The interceptor typically wraps the outgoing context with a deadline of d.
+// The interceptor derives every outgoing context with a timeout of d. If the
+// parent already has an earlier deadline, that earlier deadline remains in
+// effect; the derived timeout cannot extend it.
 func TimeoutUnaryClientInterceptor(d time.Duration) grpc.UnaryClientInterceptor {
 	return timeout.UnaryClientInterceptor(d.Duration())
 }

@@ -16,13 +16,22 @@ func (r *Registrar) RegisterService(desc *ServiceDesc, impl any) {
 	r.registrar.RegisterService(desc, impl)
 }
 
-// RegisterOperationService marks desc as operations and registers it with the wrapped registrar.
+// RegisterOperationService marks every method in desc as an operation and registers the service.
+//
+// Operation methods bypass transport token verification, access control, and
+// logging. Unary operations also bypass metadata extraction and limiting,
+// while operation streams retain metadata extraction and stream limiting. Use
+// this for operational services such as the standard gRPC health service, not
+// for ordinary application RPCs.
 func (r *Registrar) RegisterOperationService(desc *ServiceDesc, impl any) {
 	r.policy.OperationService(desc)
 	r.RegisterService(desc, impl)
 }
 
-// RegisterUnauthenticatedService marks desc as unauthenticated and registers it with the wrapped registrar.
+// RegisterUnauthenticatedService marks every method in desc as unauthenticated and registers the service.
+//
+// These methods bypass token verification and access control while retaining
+// normal metadata extraction, logging, and limiting.
 func (r *Registrar) RegisterUnauthenticatedService(desc *ServiceDesc, impl any) {
 	r.policy.AllowUnauthenticatedService(desc)
 	r.RegisterService(desc, impl)

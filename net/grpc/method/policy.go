@@ -11,22 +11,34 @@ func NewPolicy() *Policy {
 }
 
 // Policy stores gRPC full-method behavior used by server middleware.
+//
+// Populate Policy during service registration before the server starts. See
+// the package documentation for the middleware behavior of each classification.
 type Policy struct {
 	operations      map[string]struct{}
 	unauthenticated map[string]struct{}
 }
 
 // Operation marks name as an operation method.
+//
+// Operation methods bypass transport token verification, access control, and
+// logging. Unary operations also bypass metadata extraction and limiting,
+// while operation streams retain metadata extraction and stream limiting.
 func (p *Policy) Operation(name string) {
 	p.operations[name] = struct{}{}
 }
 
 // AllowUnauthenticated marks name as not requiring transport token authentication.
+//
+// Unauthenticated methods also bypass access control, but retain the normal
+// metadata extraction, logging, and limiting behavior.
 func (p *Policy) AllowUnauthenticated(name string) {
 	p.unauthenticated[name] = struct{}{}
 }
 
 // OperationService marks every unary and stream method in desc as an operation method.
+//
+// See [Policy.Operation] for the middleware consequences.
 func (p *Policy) OperationService(desc *grpc.ServiceDesc) {
 	for _, method := range desc.Methods {
 		p.Operation(fullMethodName(desc.ServiceName, method.MethodName))
@@ -37,6 +49,8 @@ func (p *Policy) OperationService(desc *grpc.ServiceDesc) {
 }
 
 // AllowUnauthenticatedService marks every unary and stream method in desc as not requiring transport token authentication.
+//
+// See [Policy.AllowUnauthenticated] for the middleware consequences.
 func (p *Policy) AllowUnauthenticatedService(desc *grpc.ServiceDesc) {
 	for _, method := range desc.Methods {
 		p.AllowUnauthenticated(fullMethodName(desc.ServiceName, method.MethodName))
