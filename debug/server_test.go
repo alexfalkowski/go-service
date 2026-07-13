@@ -22,7 +22,6 @@ var debugPaths = []string{
 	"debug/pprof/cmdline",
 	"debug/pprof/symbol",
 	"debug/pprof/trace",
-	"debug/psutil",
 }
 
 func TestInsecureDebug(t *testing.T) {
@@ -71,7 +70,6 @@ func TestMaxReceiveSize(t *testing.T) {
 		Config:    cfg,
 		Lifecycle: lc,
 		Name:      test.Name,
-		Content:   test.Content,
 		Mux:       mux,
 	}))
 

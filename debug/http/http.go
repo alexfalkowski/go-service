@@ -23,7 +23,7 @@ func Pattern(name env.Name, pattern string) string {
 //
 // The returned mux is a small wrapper over go-service's [github.com/alexfalkowski/go-service/v2/net/http.ServeMux] and is intended as
 // the shared router where debug endpoint packages register their handlers (pprof, fgprof, statsviz,
-// psutil, etc.).
+// etc.).
 func NewServeMux() *ServeMux {
 	return &ServeMux{http.NewServeMux()}
 }
