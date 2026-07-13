@@ -1423,18 +1423,6 @@ GET http://localhost:6060/<name>/debug/fgprof?seconds=10
 
 <https://pkg.go.dev/github.com/felixge/fgprof>
 
-### gopsutil
-
-```http
-GET http://localhost:6060/<name>/debug/psutil
-```
-
-The response is content-negotiated and contains a best-effort snapshot with `cpu`, `host`, `load`, `mem`,
-and `net` sections. Individual nested values may be empty or partially populated when the platform or
-runtime permissions do not expose a metric.
-
-<https://github.com/shirou/gopsutil>
-
 ---
 
 ## 🧑‍💻 Development

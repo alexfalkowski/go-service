@@ -13,7 +13,7 @@ import (
 //   - the debug server (*[Server]) via [NewServer] (returns nil when disabled), and
 //   - [Register], the front door for optional debug endpoint registration.
 //
-// Register installs statsviz, pprof, fgprof, and psutil handlers under their
+// Register installs statsviz, pprof, and fgprof handlers under their
 // service-namespaced /<name>/debug/... routes.
 //
 // Register attaches handlers to the debug mux only when the debug server is enabled. The mux is then

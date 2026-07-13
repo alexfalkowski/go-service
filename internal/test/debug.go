@@ -25,7 +25,6 @@ func NewDebugServer(lc di.Lifecycle, config *debug.Config, logger *logger.Logger
 		Config:    config,
 		Lifecycle: lc,
 		Name:      Name,
-		Content:   Content,
 		Mux:       mux,
 	}); err != nil {
 		return nil, err

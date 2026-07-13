@@ -4,11 +4,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/debug/http"
 	"github.com/alexfalkowski/go-service/v2/debug/internal/fgprof"
 	"github.com/alexfalkowski/go-service/v2/debug/internal/pprof"
-	"github.com/alexfalkowski/go-service/v2/debug/internal/psutil"
 	"github.com/alexfalkowski/go-service/v2/debug/internal/statsviz"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 )
 
 // RegisterParams defines dependencies for registering built-in debug endpoints.
@@ -24,9 +22,6 @@ type RegisterParams struct {
 	// Config enables or disables debug endpoint registration.
 	Config *Config
 
-	// Content resolves response encoders for content-backed debug endpoints.
-	Content *content.Content
-
 	// Mux is the debug mux where handlers are registered.
 	Mux *http.ServeMux
 
@@ -37,7 +32,7 @@ type RegisterParams struct {
 // Register installs the built-in debug endpoint handlers when cfg is enabled.
 //
 // This is the public front door for debug endpoint registration. It registers
-// pprof, fgprof, psutil, and statsviz handlers on Mux. When Config is nil or
+// pprof, fgprof, and statsviz handlers on Mux. When Config is nil or
 // disabled, Register returns without installing handlers or starting any
 // endpoint-owned background work.
 func Register(params RegisterParams) error {
@@ -47,7 +42,6 @@ func Register(params RegisterParams) error {
 
 	pprof.Register(params.Name, params.Mux)
 	fgprof.Register(params.Name, params.Mux)
-	psutil.Register(params.Name, params.Content, params.Mux)
 
 	return statsviz.Register(params.Lifecycle, params.Name, params.Mux)
 }
