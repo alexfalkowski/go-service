@@ -4,10 +4,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-sync"
-	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	sdk "go.opentelemetry.io/otel/sdk/metric"
 )
@@ -24,8 +22,8 @@ var (
 type MeterProviderParams struct {
 	di.In
 
-	// Lifecycle is used to start runtime/host instrumentation and to shut down the
-	// meter provider with the application.
+	// Lifecycle is used to start runtime instrumentation and to shut down the meter
+	// provider with the application.
 	Lifecycle di.Lifecycle
 
 	// Reader is the SDK reader/exporter that NewMeterProvider will attach to the provider.
@@ -61,7 +59,7 @@ type MeterProviderParams struct {
 //  2. Constructs an SDK *[go.opentelemetry.io/otel/sdk/metric.MeterProvider] with the provided reader.
 //  3. Installs it globally via [go.opentelemetry.io/otel.SetMeterProvider].
 //  4. Registers lifecycle hooks:
-//     - OnStart: starts runtime and host instrumentation using this provider
+//     - OnStart: starts runtime instrumentation using this provider
 //     - OnStop: shuts down the provider
 //
 // Provider shutdown errors are intentionally ignored to avoid blocking other stop hooks.
@@ -90,7 +88,8 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 
 	params.Lifecycle.Append(di.Hook{
 		OnStart: func(_ context.Context) error {
-			err := errors.Join(runtime.Start(runtime.WithMeterProvider(provider)), host.Start(host.WithMeterProvider(provider)))
+			// Re-add host metrics when https://github.com/shirou/gopsutil/issues/2115 is fixed.
+			err := runtime.Start(runtime.WithMeterProvider(provider))
 
 			return prefix(err)
 		},

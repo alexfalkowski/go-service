@@ -6,7 +6,9 @@
 //
 //   - NewReader constructs an OpenTelemetry SDK metric reader/exporter based on Config.
 //   - NewMeterProvider constructs an SDK MeterProvider, installs it globally via
-//     otel.SetMeterProvider, and starts runtime/host metric instrumentation.
+//     otel.SetMeterProvider, and starts runtime metric instrumentation. Host metric
+//     instrumentation is temporarily disabled until
+//     https://github.com/shirou/gopsutil/issues/2115 is fixed.
 //   - NewMeter returns a metric.Meter scoped to the service name and instrumentation
 //     version and is nil-safe when the provider is nil.
 //
