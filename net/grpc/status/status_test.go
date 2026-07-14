@@ -69,6 +69,36 @@ func TestSafeError(t *testing.T) {
 	require.ErrorIs(t, err, cause)
 }
 
+func TestLocalError(t *testing.T) {
+	cause := errors.New("local limiter rejection")
+	err := status.LocalError(status.SafeError(codes.ResourceExhausted, cause))
+
+	s, ok := status.FromError(err)
+	require.True(t, ok)
+	require.True(t, status.IsLocalError(err))
+	require.True(t, status.IsLocalError(fmt.Errorf("wrapped: %w", err)))
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+	require.Equal(t, codes.ResourceExhausted, s.Code())
+	require.Equal(t, "grpc: resource exhausted", s.Message())
+	require.ErrorIs(t, err, cause)
+}
+
+func TestLocalErrorConvertsPlainError(t *testing.T) {
+	cause := errors.New("local failure")
+	err := status.LocalError(cause)
+
+	s, ok := status.FromError(err)
+	require.True(t, ok)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, codes.Unknown, s.Code())
+	require.Equal(t, cause.Error(), s.Message())
+	require.ErrorIs(t, err, cause)
+}
+
+func TestLocalErrorAllowsNil(t *testing.T) {
+	require.NoError(t, status.LocalError(nil))
+}
+
 func TestSafeErrorOK(t *testing.T) {
 	err := status.SafeError(codes.OK, errors.New("ignored"))
 
@@ -143,6 +173,7 @@ func TestErrorIs(t *testing.T) {
 	target := status.Error(codes.NotFound, "missing")
 
 	require.ErrorIs(t, err, target)
+	require.ErrorIs(t, err, status.New(codes.NotFound, "missing").Err())
 }
 
 type unwrapper interface {

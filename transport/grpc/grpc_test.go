@@ -121,6 +121,7 @@ func TestBreakerUnary(t *testing.T) {
 	require.Equal(t, codes.Internal, status.Code(err))
 
 	_, err = client.SayHello(t.Context(), &v1.SayHelloRequest{Name: "test"})
+	require.True(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 

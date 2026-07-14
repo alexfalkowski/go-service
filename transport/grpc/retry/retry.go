@@ -53,6 +53,7 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 //
 // Failure classification:
 // Retries are only attempted for configured gRPC status codes. The default is [codes.Unavailable].
+// Errors marked by [status.LocalError] are terminal even when their status code is configured as retryable.
 //
 // Policy behavior:
 // When no policy is provided, only side-effect-safe unary RPCs are eligible for retry: AIP-style read methods,
@@ -81,7 +82,10 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 		retries = retry.WithMaxRetries(maxAttempts-1, retries)
 		return retry.Do(ctx, retries, func(ctx context.Context) error {
 			err := attempt(ctx)
-			if err == nil || !isRetryableCode(status.Code(err), codes) {
+			if err == nil || status.IsLocalError(err) {
+				return err
+			}
+			if !isRetryableCode(status.Code(err), codes) {
 				return err
 			}
 			if retryInfoDelayExceedsBackoff(err, backoff) {

@@ -103,6 +103,22 @@ func TestUnaryClientInterceptorRetriesConfiguredCode(t *testing.T) {
 	require.Equal(t, 2, calls)
 }
 
+func TestUnaryClientInterceptorDoesNotRetryLocalStatusError(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond, codes.ResourceExhausted))
+
+	calls := 0
+	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.LocalError(status.SafeError(codes.ResourceExhausted, test.ErrInvalid))
+	})
+
+	require.Error(t, err)
+	require.ErrorIs(t, err, test.ErrInvalid)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+	require.Equal(t, 1, calls)
+}
+
 func TestUnaryClientInterceptorConfiguredCodesReplaceDefaults(t *testing.T) {
 	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, time.Millisecond, codes.ResourceExhausted))
 

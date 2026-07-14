@@ -11,9 +11,10 @@
 //
 // Most functions in this package forward to the upstream gRPC status package.
 // SafeError adds go-service safe-message behavior while still exposing a normal
-// gRPC status to the runtime. For authoritative upstream behavior, edge cases,
-// and wire-level details, consult the upstream gRPC documentation for the
-// version you vend.
+// gRPC status to the runtime. LocalError marks locally produced client-control
+// errors without changing their gRPC code, message, details, or wrapped causes.
+// For authoritative upstream behavior, edge cases, and wire-level details,
+// consult the upstream gRPC documentation for the version you vend.
 //
 // # Background: gRPC status errors
 //
@@ -71,6 +72,8 @@
 //	c := status.Code(err)
 //
 // Code delegates to google.golang.org/grpc/status.Code.
+// Use IsLocalError when retry or client policy needs to distinguish a local
+// rejection from a remote status error carrying the same code.
 //
 // If err is nil, Code returns codes.OK (matching upstream behavior). If err is
 // not a gRPC status error, upstream logic typically returns codes.Unknown. Treat
@@ -99,8 +102,8 @@
 //
 // This package intentionally exposes only the small subset of the upstream
 // status API and structured detail types that go-service uses broadly: Code,
-// FromError, New, Error, Errorf, SafeError, SafeErrorf, Status, RetryInfo, and
-// NewDuration. Higher-level code that needs unrelated structured-detail helpers
-// should add a narrow go-service alias here before reaching through to upstream
-// packages from transport code.
+// FromError, New, Error, Errorf, SafeError, SafeErrorf, LocalError,
+// IsLocalError, Status, RetryInfo, and NewDuration. Higher-level code that needs
+// unrelated structured-detail helpers should add a narrow go-service alias here
+// before reaching through to upstream packages from transport code.
 package status

@@ -337,10 +337,12 @@ func TestRoundTripperReturnsFinalRetryableResponseWhenExhausted(t *testing.T) {
 	require.Equal(t, 2, rt.Calls)
 }
 
-func TestRoundTripperClosesRetryableResponseBeforeNextAttempt(t *testing.T) {
+func TestRoundTripperReusesConnectionWhenRetryingResponse(t *testing.T) {
 	var calls int
-	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+	var remoteAddresses []string
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		calls++
+		remoteAddresses = append(remoteAddresses, req.RemoteAddr)
 		if calls == 1 {
 			res.WriteHeader(http.StatusServiceUnavailable)
 			_, _ = res.Write([]byte("first failure"))
@@ -359,6 +361,60 @@ func TestRoundTripperClosesRetryableResponseBeforeNextAttempt(t *testing.T) {
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, server.URL, http.NoBody)
 	require.NoError(t, err)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 1, res.ProtoMajor, "connection reuse regression is HTTP/1.x-specific")
+	require.NoError(t, res.Body.Close())
+	require.Equal(t, 2, calls)
+	require.Len(t, remoteAddresses, 2)
+	require.Equal(t, remoteAddresses[0], remoteAddresses[1])
+}
+
+func TestRoundTripperBoundsDiscardedResponseDrain(t *testing.T) {
+	const drainSize = 4096
+
+	reader := strings.NewReader(strings.Repeat("a", drainSize*2))
+	retryBody := &test.TrackedBody{Reader: reader}
+	calls := 0
+	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		calls++
+		if calls == 1 {
+			res := test.ResponseWithStatus(http.StatusServiceUnavailable)
+			res.Body = retryBody
+			res.ProtoMajor = 1
+
+			return res, nil
+		}
+
+		return test.ResponseWithStatus(http.StatusOK), nil
+	})
+	retrying := retry.NewRoundTripper(test.NewHTTPRetryConfig(2, time.Millisecond), rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.NoError(t, res.Body.Close())
+	require.True(t, retryBody.Closed, "discarded response body should be closed")
+	require.Equal(t, drainSize, reader.Len(), "discarded response drain should remain byte-bounded")
+}
+
+func TestRoundTripperRetriesResponseWithNilBody(t *testing.T) {
+	calls := 0
+	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		calls++
+		if calls == 1 {
+			return &http.Response{StatusCode: http.StatusServiceUnavailable}, nil
+		}
+
+		return test.ResponseWithStatus(http.StatusOK), nil
+	})
+	retrying := retry.NewRoundTripper(test.NewHTTPRetryConfig(2, time.Millisecond), rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
 
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
