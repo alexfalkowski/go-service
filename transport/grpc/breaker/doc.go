@@ -17,7 +17,8 @@
 // # Rejections
 //
 // When the breaker rejects a call (open state or too many concurrent half-open probes), the
-// interceptor returns a gRPC ResourceExhausted status error.
+// interceptor returns a locally marked gRPC ResourceExhausted status error. Retry middleware treats
+// the local marker as terminal while preserving the status code and wrapped breaker cause.
 //
 // Start with [UnaryClientInterceptor].
 package breaker

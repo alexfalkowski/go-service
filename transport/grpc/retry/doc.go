@@ -13,5 +13,9 @@
 // greater than the minimum jittered backoff, the error is returned without another attempt. Missing, zero, or
 // shorter retry_delay values do not suppress a retry.
 //
+// Locally produced client-control errors marked by `net/grpc/status.LocalError` are
+// terminal. An unmarked response with the same gRPC code remains governed by
+// the configured retry codes.
+//
 // Start with [Config] and [UnaryClientInterceptor].
 package retry

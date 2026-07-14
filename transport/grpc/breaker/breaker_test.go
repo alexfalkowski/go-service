@@ -30,6 +30,7 @@ func TestUnaryClientInterceptorUsesConfigFailureCodes(t *testing.T) {
 
 	err = interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
 	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 	require.Equal(t, 1, calls)
 }
@@ -94,6 +95,7 @@ func TestUnaryClientInterceptorOpensOnClassifiedFailures(t *testing.T) {
 
 			err = interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
 			require.Error(t, err)
+			require.True(t, status.IsLocalError(err))
 			require.Equal(t, codes.ResourceExhausted, status.Code(err))
 			require.Equal(t, 1, calls)
 		})
@@ -130,6 +132,7 @@ func TestUnaryClientInterceptorIsolatesBreakersByFullMethod(t *testing.T) {
 	t.Run("rejects failing method without invoker call", func(t *testing.T) {
 		err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
 		require.Error(t, err)
+		require.True(t, status.IsLocalError(err))
 		require.Equal(t, codes.ResourceExhausted, status.Code(err))
 		require.Equal(t, 1, calls["/test.Service/GetBook"])
 		require.Equal(t, 1, calls["/test.Service/ListBooks"])

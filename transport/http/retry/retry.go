@@ -3,6 +3,7 @@ package retry
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/body"
@@ -13,6 +14,8 @@ import (
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 	retryable "github.com/hashicorp/go-retryablehttp"
 )
+
+const maxResponseDrainBytes int64 = 4096
 
 // Policy decides whether req is eligible for retry.
 //
@@ -225,7 +228,7 @@ func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *ht
 		return nil
 	}
 
-	closeResponse(res)
+	discardResponse(res)
 	a.attempt++
 	return retryErr
 }
@@ -316,10 +319,17 @@ func statusError(retryErr, err error) error {
 	return ErrInvalidStatusCode
 }
 
-func closeResponse(res *http.Response) {
-	if res != nil {
-		body.Close(res.Body)
+func discardResponse(res *http.Response) {
+	if res.Body == nil {
+		return
 	}
+
+	// Drain a bounded prefix so small HTTP/1.x responses can reach EOF and keep the connection reusable
+	// without fully consuming large or streaming responses. Disposal remains best-effort so a read
+	// failure does not replace the retry result. The cap bounds bytes, not time; request cancellation
+	// or http.Client.Timeout remains responsible for limiting slow reads.
+	_, _ = io.Copy(io.Discard, io.LimitReader(res.Body, maxResponseDrainBytes))
+	body.Close(res.Body)
 }
 
 func composePolicy(policies []Policy) Policy {

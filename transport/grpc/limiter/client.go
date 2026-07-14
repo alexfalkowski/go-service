@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
@@ -36,7 +37,7 @@ type Client struct {
 // The interceptor calls `limiter.TakeDecision(ctx)` before invoking the RPC:
 //
 //   - If `TakeDecision` returns an error, it returns [codes.Internal].
-//   - If the request is not allowed, it returns [codes.ResourceExhausted].
+//   - If the request is not allowed, it returns a locally marked [codes.ResourceExhausted].
 //   - Otherwise, it invokes the underlying `invoker`.
 //
 // Callers should only install this interceptor when limiter is non-nil.
@@ -48,7 +49,7 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 		}
 
 		if !decision.Allowed() {
-			return limitError()
+			return status.LocalError(limitError())
 		}
 
 		return invoker(ctx, fullMethod, req, resp, conn, opts...)
@@ -61,7 +62,7 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 // stream message:
 //
 //   - If `TakeDecision` returns an error, it returns [codes.Internal].
-//   - If the stream is not allowed, it returns [codes.ResourceExhausted].
+//   - If the stream is not allowed, it returns a locally marked [codes.ResourceExhausted].
 //   - Otherwise, it invokes the underlying `streamer`.
 //
 // Callers should only install this interceptor when limiter is non-nil.
@@ -73,7 +74,7 @@ func StreamClientInterceptor(limiter *Client) grpc.StreamClientInterceptor {
 		}
 
 		if !decision.Allowed() {
-			return nil, limitError()
+			return nil, status.LocalError(limitError())
 		}
 
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
@@ -102,7 +103,7 @@ func (s *clientStream) RecvMsg(m any) error {
 	}
 
 	if !decision.Allowed() {
-		return limitError()
+		return status.LocalError(limitError())
 	}
 
 	return nil
@@ -115,7 +116,7 @@ func (s *clientStream) SendMsg(m any) error {
 	}
 
 	if !decision.Allowed() {
-		return limitError()
+		return status.LocalError(limitError())
 	}
 
 	return s.ClientStream.SendMsg(m)

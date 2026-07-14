@@ -23,9 +23,9 @@ func take(ctx context.Context, rateLimiter *limiter.Limiter) (limiter.Decision, 
 	return decision, nil
 }
 
-// limitError returns the terminal ResourceExhausted error used when a limiter
-// rejects a request. Client-side local rejections use this bare form, matching
-// the HTTP client limiter's local 429.
+// limitError returns the ResourceExhausted error used when a limiter rejects a
+// request. Client interceptors wrap it with status.LocalError; server
+// interceptors leave it unmarked so remote retry configuration still applies.
 func limitError() error {
 	return status.Error(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted))
 }

@@ -3,6 +3,7 @@ package status
 import (
 	"fmt"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"google.golang.org/grpc/status"
@@ -97,6 +98,25 @@ func SafeError(c codes.Code, err error) error {
 	return &statusError{code: c, msg: defaultSafeMessage(c), err: err}
 }
 
+// LocalError wraps err to mark a gRPC status error as produced by local client-side controls.
+//
+// Retry middleware can use this marker to distinguish local load-control rejections from upstream
+// gRPC status errors with the same code that may be worth retrying. If err is not a gRPC status
+// error, it is represented with [codes.Unknown].
+func LocalError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	return &localError{err: err}
+}
+
+// IsLocalError reports whether err was wrapped by LocalError.
+func IsLocalError(err error) bool {
+	_, ok := errors.AsType[*localError](err)
+	return ok
+}
+
 // SafeErrorf formats internal context around err and wraps it with a safe gRPC-prefixed status message.
 //
 // The formatted context and err remain available through Unwrap for internal inspection, while gRPC sends the
@@ -146,21 +166,36 @@ func (s *statusError) GRPCStatus() *Status {
 
 // Is reports whether target has the same gRPC status code and message.
 func (s *statusError) Is(target error) bool {
-	type grpcStatus interface {
-		GRPCStatus() *Status
+	targetStatus, ok := FromError(target)
+	if !ok || targetStatus == nil {
+		return false
 	}
 
-	if target, ok := target.(grpcStatus); ok {
-		t := target.GRPCStatus()
-		return t != nil && s.code == t.Code() && s.msg == t.Message()
-	}
-
-	return false
+	return s.code == targetStatus.Code() && s.msg == targetStatus.Message()
 }
 
 // Unwrap returns the wrapped cause, if any.
 func (s *statusError) Unwrap() error {
 	return s.err
+}
+
+type localError struct {
+	err error
+}
+
+// Error returns the diagnostic error message.
+func (e *localError) Error() string {
+	return e.err.Error()
+}
+
+// GRPCStatus returns the wrapped gRPC status, converting plain errors to [codes.Unknown].
+func (e *localError) GRPCStatus() *Status {
+	return status.Convert(e.err)
+}
+
+// Unwrap returns the wrapped cause.
+func (e *localError) Unwrap() error {
+	return e.err
 }
 
 func defaultSafeMessage(c codes.Code) string {

@@ -17,6 +17,9 @@
 //
 // Streaming interceptors take one token when a stream opens and also meter
 // each RecvMsg and SendMsg operation. Unary interceptors take one token per RPC.
+// Client-side denials are locally marked so retry middleware returns them
+// terminally. Server-side denials remain ordinary remote ResourceExhausted
+// statuses and may be retried by configured clients.
 //
 // Start with [UnaryServerInterceptor] or [StreamServerInterceptor] for server-side limiting and
 // [UnaryClientInterceptor] or [StreamClientInterceptor] for client-side limiting.

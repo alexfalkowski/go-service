@@ -35,6 +35,7 @@ func TestServerLimiterUnary(t *testing.T) {
 	rejectedHeader := grpcmeta.Map{}
 	_, err = client.SayHello(t.Context(), req, grpc.Header(&rejectedHeader))
 	require.Error(t, err)
+	require.False(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 	require.NotEmpty(t, rejectedHeader.Get("ratelimit"))
 	require.NotEmpty(t, rejectedHeader.Get("ratelimit-policy"))
@@ -52,6 +53,7 @@ func TestServerLimiterStream(t *testing.T) {
 	require.NoError(t, sayStreamHello(t, client))
 	err := sayStreamHello(t, client)
 	require.Error(t, err)
+	require.False(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 	requireRetryInfo(t, err)
 }
@@ -75,6 +77,7 @@ func TestServerLimiterStreamHeader(t *testing.T) {
 		return nil
 	})
 	require.Error(t, err)
+	require.False(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 	require.NotEmpty(t, rejected.Header.Get("ratelimit"))
 	require.NotEmpty(t, rejected.Header.Get("ratelimit-policy"))
@@ -113,6 +116,7 @@ func TestClientLimiterUnary(t *testing.T) {
 	_, _ = client.SayHello(t.Context(), req)
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
@@ -127,6 +131,7 @@ func TestClientLimiterStream(t *testing.T) {
 	_ = sayStreamHello(t, client)
 	err := sayStreamHello(t, client)
 	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
@@ -143,6 +148,7 @@ func TestClientLimiterStreamRecvRejected(t *testing.T) {
 
 	_, err = stream.Recv()
 	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
@@ -158,6 +164,7 @@ func TestClientLimiterStreamSendRejected(t *testing.T) {
 
 	err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
 	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 

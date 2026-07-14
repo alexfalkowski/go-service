@@ -37,7 +37,7 @@ type Settings = breaker.Settings
 //
 // If the breaker rejects a call because it is open ([breaker.ErrOpenState]) or because the half-open
 // MaxRequests limit would be exceeded ([breaker.ErrTooManyRequests]), the interceptor maps that condition to
-// a gRPC `ResourceExhausted` status error.
+// a locally marked gRPC `ResourceExhausted` status error so retry middleware returns it terminally.
 //
 // All other errors from the invoker are returned as-is.
 func UnaryClientInterceptor(options ...Option) grpc.UnaryClientInterceptor {
@@ -55,7 +55,7 @@ func UnaryClientInterceptor(options ...Option) grpc.UnaryClientInterceptor {
 		})
 		if err != nil {
 			if errors.Is(err, breaker.ErrOpenState) || errors.Is(err, breaker.ErrTooManyRequests) {
-				return status.SafeError(codes.ResourceExhausted, err)
+				return status.LocalError(status.SafeError(codes.ResourceExhausted, err))
 			}
 
 			return err

@@ -7,47 +7,48 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
+	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/stretchr/testify/require"
 )
 
 func TestInvalidServer(t *testing.T) {
-	http.Register(test.FS)
+	transporthttp.Register(test.FS)
 
-	cfg := &http.Config{
+	cfg := &transporthttp.Config{
 		Config: &server.Config{
 			Timeout: 5 * time.Second,
 			TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 		},
 	}
-	params := http.ServerParams{
+	params := transporthttp.ServerParams{
 		Shutdowner: test.NewShutdowner(),
 		Config:     cfg,
 	}
 
-	_, err := http.NewServer(params)
+	_, err := transporthttp.NewServer(params)
 	require.Error(t, err)
 }
 
 func TestServerRejectsCAOnlyTLS(t *testing.T) {
-	http.Register(test.FS)
+	transporthttp.Register(test.FS)
 
-	cfg := &http.Config{
+	cfg := &transporthttp.Config{
 		Config: &server.Config{
 			Timeout: 5 * time.Second,
 			TLS:     &tls.Config{CA: test.FilePath("certs/rootCA.pem")},
 		},
 	}
-	params := http.ServerParams{
+	params := transporthttp.ServerParams{
 		Shutdowner: test.NewShutdowner(),
 		Config:     cfg,
 	}
 
-	_, err := http.NewServer(params)
+	_, err := transporthttp.NewServer(params)
 	require.ErrorIs(t, err, server.ErrMissingKeyPair)
 }
 
@@ -104,16 +105,26 @@ func TestServerRecoversPanic(t *testing.T) {
 	world.Handle("GET /panic", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		panic("test panic")
 	}))
+	world.Handle("GET /panic-after-informational", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.WriteHeader(http.StatusEarlyHints)
+		panic("test panic after informational response")
+	}))
 	world.Handle("GET /panic-after-write", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 		res.WriteHeader(http.StatusOK)
 		_, _ = res.Write([]byte("partial"))
 		res.(interface{ Flush() }).Flush()
+		res.WriteHeader(http.StatusEarlyHints)
 		panic("test panic after commit")
 	}))
 	world.HandleHello()
 	world.Start()
 
 	res, body, err := world.GetBody(t.Context(), world.PathServerURL("http", "panic"), http.Header{})
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, "http: internal server error", body)
+
+	res, body, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-informational"), http.Header{})
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	require.Equal(t, "http: internal server error", body)

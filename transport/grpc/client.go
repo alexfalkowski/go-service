@@ -328,6 +328,7 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 //
 // The logger wraps retry, limiter, and breaker outcomes so local rejections are recorded.
 // Retry wraps the limiter and breaker so each retry attempt consumes quota and breaker capacity.
+// Locally marked limiter and breaker rejections terminate without re-entering either control.
 // Token injection is inside retry, so each retried unary attempt can generate a fresh token while the
 // metadata request id remains stable for the logical RPC.
 // The limiter stays before the breaker so local quota denials are not counted as upstream failures.

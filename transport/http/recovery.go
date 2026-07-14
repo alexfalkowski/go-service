@@ -15,8 +15,11 @@ func (*recoveryHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, ne
 	hooks := snoop.Hooks{
 		WriteHeader: func(writeHeader snoop.WriteHeaderFunc) snoop.WriteHeaderFunc {
 			return func(code int) {
-				committed = true
 				writeHeader(code)
+				// Informational responses do not commit the final response, except 101 switches protocols.
+				if code == http.StatusSwitchingProtocols || code >= http.StatusOK {
+					committed = true
+				}
 			}
 		},
 		Write: func(write snoop.WriteFunc) snoop.WriteFunc {
