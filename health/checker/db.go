@@ -53,7 +53,9 @@ func (c *DBChecker) Check(ctx context.Context) error {
 		return ErrNoConnections
 	}
 
-	var group sync.ErrorsGroup
+	group := sync.ErrorsGroup{}
+	group.SetLimit(len(databases))
+
 	for _, database := range databases {
 		group.Go(func() error {
 			err := c.ping(ctx, database.db)
@@ -64,6 +66,7 @@ func (c *DBChecker) Check(ctx context.Context) error {
 			return nil
 		})
 	}
+
 	return group.Wait()
 }
 

@@ -44,7 +44,9 @@ func Register(params RegisterParams) {
 		OnStop: func(ctx context.Context) error {
 			params.Drain.Start()
 
-			var group sync.ErrorsGroup
+			group := sync.ErrorsGroup{}
+			group.SetLimit(len(services))
+
 			for _, s := range services {
 				group.Go(func() error {
 					return s.Stop(ctx)
