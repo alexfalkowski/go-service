@@ -104,6 +104,12 @@ func TestServerRecoversPanic(t *testing.T) {
 	world.Handle("GET /panic", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		panic("test panic")
 	}))
+	world.Handle("GET /panic-after-write", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.WriteHeader(http.StatusOK)
+		_, _ = res.Write([]byte("partial"))
+		res.(interface{ Flush() }).Flush()
+		panic("test panic after commit")
+	}))
 	world.HandleHello()
 	world.Start()
 
@@ -111,6 +117,9 @@ func TestServerRecoversPanic(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	require.Equal(t, "http: internal server error", body)
+
+	_, _, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-write"), http.Header{"Accept-Encoding": {"identity"}})
+	require.Error(t, err)
 
 	res, body, err = world.GetBody(t.Context(), world.PathServerURL("http", "hello"), http.Header{})
 	require.NoError(t, err)

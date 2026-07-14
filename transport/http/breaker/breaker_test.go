@@ -3,6 +3,7 @@ package breaker_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -12,6 +13,28 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	"github.com/stretchr/testify/require"
 )
+
+func TestRoundTripperDoesNotOpenOnCallerCancellation(t *testing.T) {
+	rt := breaker.NewRoundTripper(
+		&test.ErrorRoundTripper{Err: context.Canceled},
+		breaker.WithSettings(breaker.Settings{
+			ReadyToTrip: func(counts breaker.Counts) bool {
+				return counts.ConsecutiveFailures >= 1
+			},
+		}),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, context.Canceled)
+
+	res, err = rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, context.Canceled)
+	require.NotErrorIs(t, err, breaker.ErrOpenState)
+}
 
 func TestRoundTripperOpensOnTransportError(t *testing.T) {
 	transportErr := errors.New("transport unavailable")
