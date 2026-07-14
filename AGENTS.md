@@ -360,6 +360,27 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   valid custom codes such as `499`. Do not flag hypothetical invalid
   `WriteHeader` panics from manually constructed bogus codes unless a concrete
   public API path accepts untrusted status codes or starts promising validation.
+- HTTP operation route patterns registered through
+  `net/http.Router.HandleOperation`/`HandleOperationFunc` and
+  `net/http.RoutePolicy.Operation` are expected to include an HTTP method
+  prefix, such as `"GET /<name>/metrics"`, matching the supported callers in
+  `transport/http/health` and `transport/http/telemetry/metrics`.
+  `RoutePolicy.Operation` stores only the path portion, so a bare method-less
+  pattern registers under the empty key and never matches; operation matching is
+  intentionally path-only so method mismatches still reach the mux for normal
+  method handling. Do not flag method-less operation patterns failing to match,
+  or the `Operation`-versus-`AllowUnauthenticated` handling asymmetry, as a bug;
+  method-prefixing is the supported registration form. Report only concrete bugs
+  where a method-prefixed operation pattern fails to match or the supported
+  callers stop prefixing.
+- HTTP `net/http/client.Options.ContentType` is expected to be a real encodable
+  request media type. Error media types (`text/error` and other `*/error`
+  subtypes) are internal error-response media with no encoder, so `Client.Do`
+  panics if one is supplied together with a request body. This is intentional:
+  error media are not valid request content types and callers control
+  `ContentType`. Do not flag the missing nil-encoder guard in `Client.Do` as a
+  bug based on supplying an error media type as a request content type; report
+  only concrete bugs where a valid request media type panics or fails to encode.
 - gRPC client constructor options use the package's last-wins functional option
   convention. `WithClientDialOption`, `WithClientUnaryInterceptors`, and
   `WithClientStreamInterceptors` expect all custom values for one client
