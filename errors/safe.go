@@ -1,5 +1,7 @@
 package errors
 
+import "github.com/alexfalkowski/go-service/v2/strings"
+
 // SafeMessenger allows an error to expose a message that is safe to send outside the process.
 //
 // Error implementations can use this when Error contains diagnostic details that should be retained for
@@ -18,7 +20,7 @@ type SafeMessenger interface {
 // Empty safe messages are ignored. The fallback is returned as supplied, so callers that need a non-empty
 // client message should pass a non-empty fallback.
 func SafeMessage(err error, fallback string) string {
-	if msg := safeMessage(err); msg != "" {
+	if msg := safeMessage(err); !strings.IsEmpty(msg) {
 		return msg
 	}
 
@@ -31,7 +33,7 @@ func safeMessage(err error) string {
 	}
 
 	if messenger, ok := err.(SafeMessenger); ok {
-		if msg := messenger.SafeMessage(); msg != "" {
+		if msg := messenger.SafeMessage(); !strings.IsEmpty(msg) {
 			return msg
 		}
 	}
@@ -42,7 +44,7 @@ func safeMessage(err error) string {
 
 	if unwrapper, ok := err.(interface{ Unwrap() []error }); ok {
 		for _, wrapped := range unwrapper.Unwrap() {
-			if msg := safeMessage(wrapped); msg != "" {
+			if msg := safeMessage(wrapped); !strings.IsEmpty(msg) {
 				return msg
 			}
 		}

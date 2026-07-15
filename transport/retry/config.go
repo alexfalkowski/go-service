@@ -1,6 +1,9 @@
 package retry
 
-import "github.com/alexfalkowski/go-service/v2/time"
+import (
+	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
+)
 
 // DefaultBackoff is the shared retry backoff used when [Config.Backoff] is unset.
 const DefaultBackoff time.Duration = 100 * time.Millisecond
@@ -103,7 +106,7 @@ func (c *Config) GetBackoff() time.Duration {
 //
 // A nil receiver or an empty value falls back to the "constant" strategy.
 func (c *Config) GetStrategy() string {
-	if c == nil || c.Strategy == "" {
+	if c == nil || strings.IsEmpty(c.Strategy) {
 		return "constant"
 	}
 

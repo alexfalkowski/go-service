@@ -2,6 +2,7 @@ package logger
 
 import (
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 )
@@ -89,7 +90,7 @@ func (c *Config) GetKind() string {
 //
 // A nil receiver or an empty value falls back to OTLP/HTTP.
 func (c *Config) GetProtocol() string {
-	if c == nil || c.Protocol == "" {
+	if c == nil || strings.IsEmpty(c.Protocol) {
 		return otlp.ProtocolHTTP
 	}
 

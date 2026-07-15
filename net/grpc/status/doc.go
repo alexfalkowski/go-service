@@ -73,7 +73,7 @@
 //
 // Code delegates to google.golang.org/grpc/status.Code.
 // Use IsLocalError when retry or client policy needs to distinguish a local
-// rejection from a remote status error carrying the same code.
+// rejection from an upstream status error carrying the same code.
 //
 // If err is nil, Code returns codes.OK (matching upstream behavior). If err is
 // not a gRPC status error, upstream logic typically returns codes.Unknown. Treat

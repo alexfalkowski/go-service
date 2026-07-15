@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
 
@@ -81,10 +82,10 @@ func testNotFoundHandler(t *testing.T, tt notFoundHandlerTest) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, tt.code, res.Code)
-	if tt.body != "" {
+	if !strings.IsEmpty(tt.body) {
 		test.RequireResponseBody(t, res, tt.body)
 	}
-	if tt.contains != "" {
+	if !strings.IsEmpty(tt.contains) {
 		test.RequireResponseBodyContains(t, res, tt.contains)
 	}
 }
