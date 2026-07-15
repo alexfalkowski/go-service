@@ -307,6 +307,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   replace those defaults unless a supported config/DI path exposes that option,
   raw SQL text is emitted by repository code, or the public API starts promising
   safe merging of arbitrary span options.
+- SQL OpenTelemetry error recording intentionally preserves upstream `otelsql`
+  error events and span status. Those events use `err.Error()` as
+  `exception.message`, and PostgreSQL may echo bound parameter values in error
+  text even while raw query capture is disabled. Trace telemetry is privileged
+  operator diagnostic data and should be protected by backend access controls.
+  Do not flag upstream SQL error messages solely because they may contain bound
+  values; report only concrete local bugs such as raw query text, credentials,
+  or DSNs emitted independently by repository code, ignored explicit telemetry
+  options, or a public API promise of sanitized SQL span errors.
 - RSA public-key loading intentionally validates the repository's key-size
   policy and delegates deeper RSA parameter checks, such as public exponent
   usability, to the standard library operations that consume the key. Do not
