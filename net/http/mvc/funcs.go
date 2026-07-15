@@ -45,8 +45,10 @@ func NewFunctionMap(params FunctionMapParams) sprout.FunctionMap {
 	runtime.Must(handler.AddRegistry(time.NewRegistry()))
 
 	functionMap := handler.Build()
-	// Sprout's shuffle uses a package-global math/rand.Source, which races during concurrent template renders.
+	// Sprout's shuffle (and its WithSafeFuncs twin safeShuffle) uses a package-global
+	// math/rand.Source, which races during concurrent template renders.
 	delete(functionMap, "shuffle")
+	delete(functionMap, "safeShuffle")
 
 	return functionMap
 }
