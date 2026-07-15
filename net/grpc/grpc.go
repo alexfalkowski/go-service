@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/stats"
+	"google.golang.org/grpc/tap"
 )
 
 // CallOption is an alias of [grpc.CallOption].
@@ -148,6 +149,19 @@ type UnaryServerInterceptor = grpc.UnaryServerInterceptor
 // TransportCredentials is an alias of [credentials.TransportCredentials].
 type TransportCredentials = credentials.TransportCredentials
 
+// TapInfo is an alias of [tap.Info].
+//
+// It carries per-RPC metadata (method name, wire byte count) available to a
+// TapHandle before the request is read or dispatched to a handler.
+type TapInfo = tap.Info
+
+// TapHandle is an alias of [tap.ServerInHandle].
+//
+// It runs for every RPC as the connection accepts it, before message
+// decoding or interceptors, and can reject the call by returning a non-nil
+// error.
+type TapHandle = tap.ServerInHandle
+
 // ErrServerStopped is an alias for [grpc.ErrServerStopped].
 var ErrServerStopped = grpc.ErrServerStopped
 
@@ -185,6 +199,16 @@ func ParseServiceMethod(name string) (string, string) {
 // server runtime.
 func StatsHandler(h stats.Handler) ServerOption {
 	return grpc.StatsHandler(h)
+}
+
+// InTapHandle returns a ServerOption that installs h as the server's tap handle.
+//
+// This is a thin wrapper around [grpc.InTapHandle]. A tap handle runs for every
+// RPC as the connection accepts it, before message decoding or interceptors,
+// and can reject the call early (for example for connection-level admission
+// control or overload shedding) by returning a non-nil error.
+func InTapHandle(h TapHandle) ServerOption {
+	return grpc.InTapHandle(h)
 }
 
 // WithStatsHandler returns a DialOption that installs h as the client stats handler.

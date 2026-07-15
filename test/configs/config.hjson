@@ -42,11 +42,14 @@
       interval: "15s"
       timeout: "5s"
       consecutive_failures: 4
+      failure_ratio: 0.5
+      min_requests: 10
     }
     retry: {
       backoff: "100ms"
       timeout: "1s"
       attempts: 3
+      max_backoff: "5s"
     }
     timeout: "10s"
   }

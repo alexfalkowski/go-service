@@ -26,7 +26,9 @@ func TestInsecureUnary(t *testing.T) {
 	)
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -45,7 +47,9 @@ func TestCompressionUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldGRPC(), test.WithWorldCompression())
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -61,7 +65,9 @@ func TestSecureUnary(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(), meta.NewPair("ip", meta.ToIgnored(net.ParseIP("192.168.8.0"))))
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -77,7 +83,9 @@ func TestStream(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(), test.WithTest(meta.Redacted("test")))
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -95,7 +103,9 @@ func TestStream(t *testing.T) {
 func TestServerRecoversUnaryPanic(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldGRPC())
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -113,7 +123,9 @@ func TestBreakerUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldGRPC(), test.WithWorldBreaker(test.NewBreaker(1)))
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -128,7 +140,9 @@ func TestBreakerUnary(t *testing.T) {
 func TestServerRecoversStreamPanic(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldGRPC())
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -150,7 +164,9 @@ func TestServerRecoversStreamPanic(t *testing.T) {
 func TestUnaryMaxReceiveSize(t *testing.T) {
 	world := newStartedGRPCWorld(t, 64)
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -162,7 +178,9 @@ func TestUnaryMaxReceiveSize(t *testing.T) {
 func TestStreamMaxReceiveSize(t *testing.T) {
 	world := newStartedGRPCWorld(t, 64)
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	stream, err := client.SayStreamHello(t.Context())
@@ -176,7 +194,9 @@ func TestStreamMaxReceiveSize(t *testing.T) {
 func TestUnaryMaxSendSize(t *testing.T) {
 	world := newStartedGRPCWorldWithOptions(t, 0, map[string]string{"max_send_msg_size": "64B"})
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -188,7 +208,9 @@ func TestUnaryMaxSendSize(t *testing.T) {
 func TestStreamMaxSendSize(t *testing.T) {
 	world := newStartedGRPCWorldWithOptions(t, 0, map[string]string{"max_send_msg_size": "64B"})
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	stream, err := client.SayStreamHello(t.Context())

@@ -4,8 +4,12 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/config/server"
+	"github.com/alexfalkowski/go-service/v2/context"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	netgrpc "github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	netserver "github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -78,4 +82,39 @@ func TestServerRejectsCAOnlyTLS(t *testing.T) {
 
 	_, err := grpc.NewServer(params)
 	require.ErrorIs(t, err, server.ErrMissingKeyPair)
+}
+
+func TestServerAppliesCallerServerOption(t *testing.T) {
+	rejected := errors.New("rejected by tap handle")
+	tapHandle := func(ctx context.Context, _ *netgrpc.TapInfo) (context.Context, error) {
+		return ctx, rejected
+	}
+
+	cfg := test.NewInsecureTransportConfig().GRPC
+	params := grpc.ServerParams{
+		Shutdowner:   test.NewShutdowner(),
+		Config:       cfg,
+		MethodPolicy: grpc.NewMethodPolicy(),
+		Options:      []netgrpc.ServerOption{netgrpc.InTapHandle(tapHandle)},
+	}
+
+	srv, err := grpc.NewServer(params)
+	require.NoError(t, err)
+
+	v1.RegisterGreeterServiceServer(srv.ServiceRegistrar(), test.NewService())
+	srv.GetService().Start()
+	t.Cleanup(func() {
+		require.NoError(t, srv.GetService().Stop(context.Background()))
+	})
+
+	conn, err := netgrpc.NewClient(srv.GetService().String(), netgrpc.WithTransportCredentials(netgrpc.NewInsecureCredentials()))
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
+
+	_, err = v1.NewGreeterServiceClient(conn).SayHello(t.Context(), &v1.SayHelloRequest{Name: "test"})
+
+	require.Error(t, err)
+	require.ErrorContains(t, err, rejected.Error())
 }

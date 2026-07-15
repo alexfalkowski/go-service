@@ -53,6 +53,14 @@ func WithMaxRetries(attempts uint64, next Backoff) Backoff {
 	return retry.WithMaxRetries(attempts, next)
 }
 
+// WithCappedDuration wraps next so each returned backoff duration is capped at maxDuration.
+//
+// This bounds only the per-attempt duration, not the total backoff time; combine it with
+// [WithMaxRetries] or [Do]'s context to bound overall retry time.
+func WithCappedDuration(maxDuration time.Duration, next Backoff) Backoff {
+	return retry.WithCappedDuration(maxDuration.Duration(), next)
+}
+
 // Do wraps f with b and retries errors marked by [RetryableError].
 //
 // It forwards ctx to each call of f. If ctx is canceled before or during a

@@ -16,6 +16,7 @@ func TestConfigRejectsNegativeDurations(t *testing.T) {
 	}{
 		{name: "timeout", cfg: &retry.Config{Timeout: -time.Second}},
 		{name: "backoff", cfg: &retry.Config{Backoff: -time.Second}},
+		{name: "max backoff", cfg: &retry.Config{MaxBackoff: -time.Second}},
 	}
 
 	for _, tt := range tests {
@@ -64,6 +65,25 @@ func TestConfigGetBackoff(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			require.Equal(t, tt.want, tt.cfg.GetBackoff())
+		})
+	}
+}
+
+func TestConfigGetMaxBackoff(t *testing.T) {
+	tests := []struct {
+		cfg  *retry.Config
+		name string
+		want time.Duration
+	}{
+		{name: "nil", want: 0},
+		{name: "zero", cfg: &retry.Config{}, want: 0},
+		{name: "negative", cfg: &retry.Config{MaxBackoff: -time.Second}, want: 0},
+		{name: "explicit", cfg: &retry.Config{MaxBackoff: time.Second}, want: time.Second},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, tt.cfg.GetMaxBackoff())
 		})
 	}
 }

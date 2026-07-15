@@ -21,7 +21,7 @@ func TestDoAllowsResponseAtMaxResponseSize(t *testing.T) {
 		res.Header().Set(content.TypeKey, media.Text)
 		_, _ = io.WriteString(res, "hello")
 	}))
-	defer server.Close()
+	t.Cleanup(server.Close)
 
 	c := client.NewClient(test.Content, test.Pool, client.WithMaxResponseSize(5))
 
@@ -34,7 +34,7 @@ func TestDoRejectsResponseOverMaxResponseSize(t *testing.T) {
 		res.Header().Set(content.TypeKey, media.Text)
 		_, _ = io.WriteString(res, "hello!")
 	}))
-	defer server.Close()
+	t.Cleanup(server.Close)
 
 	c := client.NewClient(test.Content, test.Pool, client.WithMaxResponseSize(5))
 
@@ -50,7 +50,7 @@ func TestDoRejectsErrorResponseOverMaxResponseSize(t *testing.T) {
 		res.WriteHeader(http.StatusBadRequest)
 		_, _ = io.WriteString(res, "too large")
 	}))
-	defer server.Close()
+	t.Cleanup(server.Close)
 
 	c := client.NewClient(test.Content, test.Pool, client.WithMaxResponseSize(5))
 
@@ -66,7 +66,7 @@ func TestDoPreservesErrorMediaStatusCode(t *testing.T) {
 		res.WriteHeader(http.StatusBadRequest)
 		_, _ = io.WriteString(res, "bad request")
 	}))
-	defer server.Close()
+	t.Cleanup(server.Close)
 
 	c := client.NewClient(test.Content, test.Pool)
 
@@ -81,7 +81,7 @@ func TestDoUsesDefaultMessageForNonstandardErrorStatus(t *testing.T) {
 		res.Header().Set(content.TypeKey, media.Text)
 		res.WriteHeader(http.StatusClientClosedRequest)
 	}))
-	defer server.Close()
+	t.Cleanup(server.Close)
 
 	c := client.NewClient(test.Content, test.Pool)
 
@@ -107,7 +107,7 @@ func TestDoNormalizesErrorMediaSuccessStatusCode(t *testing.T) {
 				res.WriteHeader(tt.code)
 				_, _ = io.WriteString(res, "upstream error")
 			}))
-			defer server.Close()
+			t.Cleanup(server.Close)
 
 			c := client.NewClient(test.Content, test.Pool)
 
@@ -124,7 +124,7 @@ func TestDoUsesDefaultMaxResponseSize(t *testing.T) {
 		res.Header().Set(content.TypeKey, media.Text)
 		_, _ = io.WriteString(res, "hello")
 	}))
-	defer server.Close()
+	t.Cleanup(server.Close)
 
 	c := client.NewClient(test.Content, test.Pool, client.WithMaxResponseSize(0))
 
@@ -141,7 +141,7 @@ func TestDoUsesMsgPack(t *testing.T) {
 		res.Header().Set(content.TypeKey, media.MessagePack+"; profile=test")
 		require.NoError(t, test.Encoder.Get("msgpack").Encode(res, &test.Response{Greeting: "Hello " + request.Name}))
 	}))
-	defer server.Close()
+	t.Cleanup(server.Close)
 
 	var response test.Response
 	c := client.NewClient(test.Content, test.Pool)

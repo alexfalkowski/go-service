@@ -10,7 +10,9 @@ import (
 func TestNewTimer(t *testing.T) {
 	timer := time.NewTimer(time.Nanosecond)
 	require.NotNil(t, timer)
-	defer timer.Stop()
+	t.Cleanup(func() {
+		timer.Stop()
+	})
 
 	select {
 	case tm := <-timer.C:

@@ -39,6 +39,8 @@ import (
 //   - `Verifier`: enables server-side token verification when non-nil.
 //   - `Access`: enables server-side access control when non-nil.
 //   - `Unary`/`Stream`: allow callers to inject additional interceptors (and are optional in DI).
+//   - `Options`: allow callers to pass additional raw [grpc.ServerOption] values not modeled by this
+//     package (and is optional in DI).
 type ServerParams struct {
 	di.In
 
@@ -80,6 +82,12 @@ type ServerParams struct {
 
 	// Stream are additional stream server interceptors to append after the standard chain.
 	Stream []grpc.StreamServerInterceptor `optional:"true"`
+
+	// Options are additional gRPC server options appended after the built option list.
+	//
+	// This is an escape hatch for passing options not modeled by this package, such as
+	// grpc.InTapHandle, a second grpc.StatsHandler, or grpc.UnknownServiceHandler.
+	Options []grpc.ServerOption `optional:"true"`
 }
 
 // NewServer constructs a gRPC transport [Server] when the transport is enabled.
@@ -95,6 +103,7 @@ type ServerParams struct {
 //     followed by any user-provided interceptors.
 //   - A stream interceptor chain that performs metadata extraction/injection, and optionally logging,
 //     token verification, rate limiting, and access control, followed by any user-provided interceptors.
+//   - Any params.Options appended last, after the built option list.
 //
 // TLS:
 // If TLS is enabled in config, server credentials are built from `params.Config.TLS`. Certificate/key
@@ -126,6 +135,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	if metrics.IsEnabled() || tracer.IsEnabled() {
 		options = append(options, grpc.StatsHandler(telemetry.NewServerHandler()))
 	}
+	options = append(options, params.Options...)
 
 	grpcServer := grpc.NewServer(params.Config.Options, params.Config.GetTimeout(), options...)
 	cfg := &config.Config{Address: cmp.Or(params.Config.Address, net.DefaultAddress("9090"))}

@@ -53,6 +53,15 @@ type Config struct {
 	// A zero value applies DefaultBackoff. Negative values are invalid.
 	Backoff time.Duration `yaml:"backoff,omitempty" json:"backoff,omitempty" toml:"backoff,omitempty" validate:"gte=0"`
 
+	// MaxBackoff caps the per-attempt backoff duration for the exponential and fibonacci
+	// strategies. Without a cap, those strategies grow the wait between attempts
+	// unboundedly (aside from any overall context or client timeout).
+	//
+	// Value encoding: Go duration string (for example "5s", "30s").
+	// A zero value leaves backoff growth uncapped, preserving today's behavior. Negative
+	// values are invalid.
+	MaxBackoff time.Duration `yaml:"max_backoff,omitempty" json:"max_backoff,omitempty" toml:"max_backoff,omitempty" validate:"gte=0"`
+
 	// Attempts is the maximum number of attempts, including the initial attempt.
 	//
 	// The go-service transport convention is:
@@ -100,6 +109,17 @@ func (c *Config) GetBackoff() time.Duration {
 	}
 
 	return c.Backoff
+}
+
+// GetMaxBackoff returns the configured maximum backoff duration.
+//
+// A nil receiver or a non-positive value returns zero, meaning backoff growth is uncapped.
+func (c *Config) GetMaxBackoff() time.Duration {
+	if c == nil || c.MaxBackoff <= 0 {
+		return 0
+	}
+
+	return c.MaxBackoff
 }
 
 // GetStrategy returns the configured retry backoff strategy.

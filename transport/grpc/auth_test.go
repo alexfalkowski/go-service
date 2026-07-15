@@ -24,7 +24,9 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 	)
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -41,7 +43,9 @@ func TestEmptyAuthUnary(t *testing.T) {
 	)
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -54,7 +58,9 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -75,7 +81,9 @@ func TestInvalidAuthUnary(t *testing.T) {
 	ctx = meta.AppendToOutgoingContext(ctx, "geolocation", "geo:47,11")
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -91,7 +99,9 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -107,7 +117,9 @@ func TestAuthStreamWithAppend(t *testing.T) {
 	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -125,7 +137,9 @@ func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
 	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "bearer test")
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -145,7 +159,9 @@ func TestValidAuthUnary(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldGRPC())
 
 			conn := test.RequireGRPCConn(t, world)
-			defer conn.Close()
+			t.Cleanup(func() {
+				require.NoError(t, conn.Close())
+			})
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
@@ -172,7 +188,9 @@ func TestAccessDeniedUnary(t *testing.T) {
 	)
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -188,7 +206,9 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldGRPC())
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -206,7 +226,9 @@ func TestValidAuthStream(t *testing.T) {
 	)
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -227,7 +249,9 @@ func TestInvalidAuthStream(t *testing.T) {
 	)
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -246,7 +270,9 @@ func TestEmptyAuthStream(t *testing.T) {
 	)
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -262,7 +288,9 @@ func TestMissingClientAuthStream(t *testing.T) {
 	)
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -281,7 +309,9 @@ func TestTokenErrorAuthStream(t *testing.T) {
 	)
 
 	conn := test.RequireGRPCConn(t, world)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 
