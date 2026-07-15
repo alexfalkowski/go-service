@@ -1,8 +1,6 @@
 package mvc
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"io/fs"
 	"path"
 	"strconv"
@@ -14,12 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
 )
-
-// staticETagSeparator is a NUL byte field separator for ETag hash input.
-// Static file names cannot contain NUL, so this keeps name/size/mod-time boundaries unambiguous.
-const staticETagSeparator = "\x00"
 
 // StaticFile registers an HTTP GET route that serves the named file from the registered filesystem.
 //
@@ -30,8 +23,8 @@ func StaticFile(pattern, name string, opts ...StaticOption) bool {
 	}
 
 	options := options(opts...)
-	handler := func(res http.ResponseWriter, req *http.Request) {
-		serveFile(res, req, name, options)
+	handler := func(res http.ResponseWriter, _ *http.Request) {
+		serveFile(res, name, options)
 	}
 
 	router.Handle(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler))
@@ -58,14 +51,14 @@ func StaticPathValue(pattern, value, prefix string, opts ...StaticOption) bool {
 		}
 
 		name := path.Join(prefix, cleaned)
-		serveFile(res, req, name, options)
+		serveFile(res, name, options)
 	}
 
 	router.Handle(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler))
 	return true
 }
 
-func serveFile(res http.ResponseWriter, req *http.Request, name string, options *staticOptions) {
+func serveFile(res http.ResponseWriter, name string, options *staticOptions) {
 	f, err := fileSystem.Open(name)
 	if err != nil {
 		res.WriteHeader(staticStatusCode(err))
@@ -84,26 +77,6 @@ func serveFile(res http.ResponseWriter, req *http.Request, name string, options 
 	}
 
 	setStaticCacheControl(res, options)
-	if options.cacheValidators {
-		serveFileWithCacheValidators(res, req, name, f, info)
-		return
-	}
-
-	writeStaticFile(res, name, f, info)
-}
-
-func serveFileWithCacheValidators(res http.ResponseWriter, req *http.Request, name string, f fs.File, info fs.FileInfo) {
-	etag := staticETag(name, info)
-	setStaticValidators(res, etag, info)
-	if staticETagMatches(req.Header.Get("If-None-Match"), etag) {
-		res.WriteHeader(http.StatusNotModified)
-		return
-	}
-	if strings.IsEmpty(req.Header.Get("If-None-Match")) && staticModifiedSinceMatches(req, info) {
-		res.WriteHeader(http.StatusNotModified)
-		return
-	}
-
 	writeStaticFile(res, name, f, info)
 }
 
@@ -137,77 +110,8 @@ func setStaticCacheControl(res http.ResponseWriter, options *staticOptions) {
 	}
 }
 
-func setStaticValidators(res http.ResponseWriter, etag string, info fs.FileInfo) {
-	res.Header().Set("ETag", etag)
-
-	modified := info.ModTime()
-	if !modified.IsZero() {
-		res.Header().Set("Last-Modified", modified.UTC().Format(http.TimeFormat))
-	}
-}
-
-func staticModifiedSinceMatches(req *http.Request, info fs.FileInfo) bool {
-	value := req.Header.Get("If-Modified-Since")
-	if strings.IsEmpty(value) {
-		return false
-	}
-
-	since, err := http.ParseTime(value)
-	if err != nil {
-		return false
-	}
-
-	modified := info.ModTime()
-	if modified.IsZero() {
-		return false
-	}
-
-	modified = modified.UTC().Truncate(time.Second.Duration())
-	return !modified.After(since)
-}
-
 func setStaticContentLength(res http.ResponseWriter, size int64) {
 	if size >= 0 {
 		res.Header().Set("Content-Length", strconv.FormatInt(size, 10))
 	}
-}
-
-func staticETag(name string, info fs.FileInfo) string {
-	sum := sha256.Sum256(strings.Bytes(strings.Join(
-		staticETagSeparator,
-		name,
-		strconv.FormatInt(info.Size(), 10),
-		strconv.FormatInt(info.ModTime().UTC().UnixNano(), 10),
-	)))
-
-	// W/ marks a weak ETag: metadata freshness, not byte-for-byte content identity.
-	return strings.Concat(
-		`W/"`,
-		hex.EncodeToString(sum[:]),
-		`"`,
-	)
-}
-
-func staticETagMatches(value, etag string) bool {
-	tag := staticETagOpaqueTag(etag)
-	for {
-		candidate, rest, found := strings.Cut(value, ",")
-		candidate = strings.TrimSpace(candidate)
-		if candidate == "*" || staticETagOpaqueTag(candidate) == tag {
-			return true
-		}
-		if !found {
-			return false
-		}
-
-		value = rest
-	}
-}
-
-func staticETagOpaqueTag(value string) string {
-	if strings.HasPrefix(value, "W/") {
-		return value[2:]
-	}
-
-	return value
 }

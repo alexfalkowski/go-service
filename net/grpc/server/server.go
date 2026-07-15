@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/errors"
 	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
@@ -74,10 +75,12 @@ type Server struct {
 
 // Serve starts serving requests on the configured listener.
 //
-// This delegates to (*[grpc.Server]).Serve. It will return an error if the server
-// cannot begin serving, or if the underlying listener encounters an error.
+// Serve normalizes [grpc.ErrServerStopped] through
+// [github.com/alexfalkowski/go-service/v2/net/grpc/errors.ServerError], so a
+// graceful shutdown that occurs before serving is treated as normal completion.
+// Other errors, including listener failures, are returned unchanged.
 func (s *Server) Serve() error {
-	return s.server.Serve(s.listener)
+	return errors.ServerError(s.server.Serve(s.listener))
 }
 
 // Shutdown gracefully stops the gRPC server while respecting ctx.

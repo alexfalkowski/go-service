@@ -15,7 +15,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -168,46 +167,26 @@ func TestStaticFileSetsCacheControl(t *testing.T) {
 	test.RequireResponseBody(t, res, "hello")
 }
 
-func TestStaticFileUsesETagValidator(t *testing.T) {
-	modified := time.Now().UTC()
+func TestStaticFileIgnoresConditionalRequestHeaders(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
-		FileSystem: fstest.MapFS{
-			"static/asset.txt": &fstest.MapFile{Data: []byte("hello"), ModTime: modified},
-		},
-		Pool:   test.Pool,
-		Layout: test.Layout,
+		FileSystem:  test.FileSystem,
+		Pool:        test.Pool,
+		Layout:      test.Layout,
 	})
-	require.True(t, mvc.StaticFile("/asset.txt", "static/asset.txt", mvc.WithCacheValidators()))
-
-	firstReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
-	firstRes := httptest.NewRecorder()
-
-	mux.ServeHTTP(firstRes, firstReq)
-
-	etag := firstRes.Header().Get("ETag")
-	require.Equal(t, http.StatusOK, firstRes.Code)
-	require.NotEmpty(t, etag)
-	require.GreaterOrEqual(t, len(etag), 2)
-	require.Equal(t, "W/", etag[:2])
-	require.Equal(t, modified.Format(http.TimeFormat), firstRes.Header().Get("Last-Modified"))
-	test.RequireResponseBody(t, firstRes, "hello")
+	require.True(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
 
 	for _, tt := range []struct {
 		headers map[string]string
 		name    string
-		body    string
-		code    int
 	}{
-		{headers: map[string]string{"If-None-Match": etag}, name: "etag", code: http.StatusNotModified},
-		{headers: map[string]string{"If-None-Match": etag[2:]}, name: "strong-etag", code: http.StatusNotModified},
-		{headers: map[string]string{"If-Modified-Since": modified.Format(http.TimeFormat)}, name: "modified", code: http.StatusNotModified},
-		{headers: map[string]string{"If-Modified-Since": modified.AddDate(0, 0, -1).Format(http.TimeFormat)}, name: "stale", body: "hello", code: http.StatusOK},
+		{headers: map[string]string{"If-None-Match": `W/"asset"`}, name: "none match"},
+		{headers: map[string]string{"If-Modified-Since": "Sun, 06 Nov 1994 08:49:37 GMT"}, name: "modified since"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/robots.txt", http.NoBody)
 			for key, value := range tt.headers {
 				req.Header.Set(key, value)
 			}
@@ -215,23 +194,23 @@ func TestStaticFileUsesETagValidator(t *testing.T) {
 
 			mux.ServeHTTP(res, req)
 
-			require.Equal(t, tt.code, res.Code)
-			if tt.body == "" {
-				test.RequireEmptyResponseBody(t, res)
-				return
-			}
-			test.RequireResponseBody(t, res, tt.body)
+			require.Equal(t, http.StatusOK, res.Code)
+			require.Empty(t, res.Header().Get("ETag"))
+			require.Empty(t, res.Header().Get("Last-Modified"))
+			test.RequireResponseBody(t, res, "User-agent: *\nAllow: /\n")
 		})
 	}
 }
 
-func TestStaticPathValueUsesETagValidator(t *testing.T) {
+func TestStaticPathValueIgnoresConditionalRequestHeaders(t *testing.T) {
 	for _, tt := range []struct {
-		name string
-		path string
+		value  string
+		header string
+		name   string
+		path   string
 	}{
-		{name: "simple", path: "/asset.txt"},
-		{name: "comma", path: "/a,b.txt"},
+		{header: "If-None-Match", name: "none match", path: "/asset.txt", value: `W/"asset"`},
+		{header: "If-Modified-Since", name: "modified since", path: "/a,b.txt", value: "Sun, 06 Nov 1994 08:49:37 GMT"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			mux := http.NewServeMux()
@@ -245,26 +224,18 @@ func TestStaticPathValueUsesETagValidator(t *testing.T) {
 				Pool:   test.Pool,
 				Layout: test.Layout,
 			})
-			require.True(t, mvc.StaticPathValue("/{file...}", "file", "static", mvc.WithCacheValidators()))
+			require.True(t, mvc.StaticPathValue("/{file...}", "file", "static"))
 
-			firstReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, tt.path, http.NoBody)
-			firstRes := httptest.NewRecorder()
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, tt.path, http.NoBody)
+			req.Header.Set(tt.header, tt.value)
+			res := httptest.NewRecorder()
 
-			mux.ServeHTTP(firstRes, firstReq)
+			mux.ServeHTTP(res, req)
 
-			etag := firstRes.Header().Get("ETag")
-			require.Equal(t, http.StatusOK, firstRes.Code)
-			require.NotEmpty(t, etag)
-			test.RequireResponseBody(t, firstRes, "hello")
-
-			secondReq := httptest.NewRequestWithContext(t.Context(), http.MethodGet, tt.path, http.NoBody)
-			secondReq.Header.Set("If-None-Match", etag)
-			secondRes := httptest.NewRecorder()
-
-			mux.ServeHTTP(secondRes, secondReq)
-
-			require.Equal(t, http.StatusNotModified, secondRes.Code)
-			test.RequireEmptyResponseBody(t, secondRes)
+			require.Equal(t, http.StatusOK, res.Code)
+			require.Empty(t, res.Header().Get("ETag"))
+			require.Empty(t, res.Header().Get("Last-Modified"))
+			test.RequireResponseBody(t, res, "hello")
 		})
 	}
 }

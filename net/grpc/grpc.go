@@ -148,6 +148,9 @@ type UnaryServerInterceptor = grpc.UnaryServerInterceptor
 // TransportCredentials is an alias of [credentials.TransportCredentials].
 type TransportCredentials = credentials.TransportCredentials
 
+// ErrServerStopped is an alias for [grpc.ErrServerStopped].
+var ErrServerStopped = grpc.ErrServerStopped
+
 // MethodPolicy is an alias of [method.Policy].
 //
 // It stores gRPC method behavior used by server middleware.
