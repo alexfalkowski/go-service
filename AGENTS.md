@@ -100,6 +100,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   calling constructors with nil filesystem dependencies unless a public API
   explicitly promises nil-FS tolerance or a supported path can provide nil.
 
+## Compatibility
+
+- Treat compatibility-affecting changes that have landed in repository history
+  as accepted decisions, even when they appear semver-incompatible or require
+  downstream source changes. Do not flag or reopen them solely by comparing
+  current code with older tags, releases, documentation, examples, or exported
+  surfaces. Review current code against the current supported behavior, and
+  revisit a landed compatibility decision only when the user explicitly asks.
+
 ## Gotchas
 
 - Manual transport TLS setup must call the HTTP and gRPC transport register functions; `transport.Module` does this on the normal path.
@@ -472,6 +481,11 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   `fs.FS` can return partial data after successful `Open`/`Stat`; report only
   concrete supported filesystem paths where static reads can fail mid-stream
   and operators need different behavior.
+- MVC static serving intentionally does not generate `ETag`, `Last-Modified`,
+  or conditional 304 responses. The supported embedded filesystem path has no
+  reliable content identity, so do not propose reintroducing validators unless
+  the supported Go toolchain provides a trustworthy constant-time content hash
+  or MVC gains explicit, reliable build metadata.
 - MVC not-found handling intentionally uses a simple `Accept` header check for
   `text/html` and does not fully evaluate quality weights such as
   `text/html;q=0`. Do not flag this unless there is concrete evidence of a

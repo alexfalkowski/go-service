@@ -83,7 +83,6 @@ func ExampleStaticFile() {
 		"/asset.txt",
 		"static/asset.txt",
 		mvc.WithCacheControl("public, max-age=60"),
-		mvc.WithCacheValidators(),
 	)
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/asset.txt", http.NoBody)
@@ -91,25 +90,13 @@ func ExampleStaticFile() {
 
 	mux.ServeHTTP(res, req)
 
-	etag := res.Header().Get("ETag")
 	fmt.Println(res.Code)
 	fmt.Println(res.Header().Get("Cache-Control"))
-	fmt.Println(etag != "")
-
-	req = httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/asset.txt", http.NoBody)
-	req.Header.Set("If-None-Match", etag)
-	res = httptest.NewRecorder()
-
-	mux.ServeHTTP(res, req)
-
-	fmt.Println(res.Code)
-	fmt.Println(res.Body.Len())
+	fmt.Println(res.Body.String())
 	// Output:
 	// 200
 	// public, max-age=60
-	// true
-	// 304
-	// 0
+	// hello
 }
 
 func ExampleStaticPathValue() {
@@ -123,25 +110,18 @@ func ExampleStaticPathValue() {
 		Layout:      mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	mvc.StaticPathValue("/{file...}", "file", "static", mvc.WithCacheValidators())
+	mvc.StaticPathValue("/{file...}", "file", "static")
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/asset.txt", http.NoBody)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
 
-	etag := res.Header().Get("ETag")
-	req = httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/asset.txt", http.NoBody)
-	req.Header.Set("If-None-Match", etag)
-	res = httptest.NewRecorder()
-
-	mux.ServeHTTP(res, req)
-
 	fmt.Println(res.Code)
-	fmt.Println(res.Body.Len())
+	fmt.Println(res.Body.String())
 	// Output:
-	// 304
-	// 0
+	// 200
+	// hello
 }
 
 type examplePage struct {

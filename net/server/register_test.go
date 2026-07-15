@@ -6,6 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
+	grpcserver "github.com/alexfalkowski/go-service/v2/net/grpc/server"
 	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -164,6 +167,31 @@ func TestRegisterSnapshotsServices(t *testing.T) {
 	require.NoError(t, lc.Stop(t.Context()))
 	require.Equal(t, 1, original.Shutdowns, "original shutdowns")
 	require.Equal(t, 0, replacement.Shutdowns, "replacement shutdowns")
+}
+
+func TestRegisterImmediateGRPCStopDoesNotRequestShutdown(t *testing.T) {
+	for iteration := range 5_000 {
+		lc := fxtest.NewLifecycle(t)
+		sh := test.NewShutdowner()
+		service, err := grpcserver.NewService(
+			"grpc",
+			grpc.NewServer(test.ConfigOptions, time.Second),
+			&config.Config{Address: "tcp://127.0.0.1:0"},
+			nil,
+			sh,
+		)
+		require.NoError(t, err)
+
+		server.Register(server.RegisterParams{
+			Lifecycle: lc,
+			Drain:     server.NewDrain(),
+			Services:  []*server.Service{service},
+		})
+
+		require.NoError(t, lc.Start(t.Context()))
+		require.NoError(t, lc.Stop(t.Context()))
+		require.False(t, sh.Called(), "graceful lifecycle stop was reported as a serve failure at iteration %d", iteration)
+	}
 }
 
 func waitForRegisteredService(t *testing.T, done <-chan struct{}) {

@@ -43,6 +43,14 @@ func TestShutdownClosesUnservedListener(t *testing.T) {
 	require.Nil(t, conn)
 }
 
+func TestServeReturnsNilAfterShutdownBeforeServe(t *testing.T) {
+	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions, time.Second), &config.Config{Address: ":0"})
+	require.NoError(t, err)
+
+	require.NoError(t, srv.Shutdown(context.Background()))
+	require.NoError(t, srv.Serve())
+}
+
 func TestShutdownStopsServerWhenContextCanceled(t *testing.T) {
 	srv, blocking := newServerWithBlockingGreeter(t)
 	serveErrCh := serve(srv)

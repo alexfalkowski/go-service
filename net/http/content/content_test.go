@@ -58,6 +58,32 @@ func TestNewFromAcceptPrefersAccept(t *testing.T) {
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
 }
 
+func TestNewFromAcceptUsesFirstCompleteMediaRange(t *testing.T) {
+	tests := []struct {
+		name    string
+		accept  string
+		subtype string
+		kind    string
+	}{
+		{name: "quoted comma", accept: `application/yaml; profile="a,b", application/toml`, subtype: "yaml", kind: "yaml"},
+		{name: "escaped quoted comma", accept: `application/yaml; profile="a\",b", application/toml`, subtype: "yaml", kind: "yaml"},
+		{name: "list", accept: "application/yaml, application/toml", subtype: "yaml", kind: "yaml"},
+		{name: "malformed quoted parameter", accept: `application/yaml; profile="a,b`, subtype: "json", kind: "json"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+			req.Header.Set(content.AcceptKey, tt.accept)
+
+			media := test.Content.NewFromAccept(req)
+
+			require.Equal(t, tt.subtype, media.Subtype())
+			require.Same(t, test.Encoder.Get(tt.kind), media.Encoder)
+		})
+	}
+}
+
 func TestNewFromAcceptFallsBackToContentType(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 	req.Header.Set(content.TypeKey, media.TOML)
@@ -70,7 +96,7 @@ func TestNewFromAcceptFallsBackToContentType(t *testing.T) {
 
 func TestNewFromRequestFallsBackToAccept(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.AcceptKey, "application/yaml, application/toml")
+	req.Header.Set(content.AcceptKey, `application/yaml; profile="a,b", application/toml`)
 
 	media := test.Content.NewFromRequest(req)
 

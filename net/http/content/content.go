@@ -97,8 +97,36 @@ func (c *Content) NewFromMedia(mediaType string) Media {
 }
 
 func firstMediaType(value string) string {
-	mediaType, _, _ := strings.Cut(value, ",")
-	return strings.TrimSpace(mediaType)
+	quoted := false
+	escaped := false
+
+	for index := range value {
+		if escaped {
+			// The preceding backslash quotes this character, so it cannot change the list state.
+			escaped = false
+			continue
+		}
+
+		if quoted && value[index] == '\\' {
+			// A quoted-pair protects the next character, including a quote or comma.
+			escaped = true
+			continue
+		}
+
+		if value[index] == '"' {
+			// Only an unescaped quote can enter or leave a quoted parameter value.
+			quoted = !quoted
+			continue
+		}
+
+		if value[index] == ',' && !quoted {
+			// An HTTP list comma ends the first media range only outside a quoted string.
+			return strings.TrimSpace(value[:index])
+		}
+	}
+
+	// Leave a single or malformed range intact so the media parser can accept or reject it.
+	return strings.TrimSpace(value)
 }
 
 func (c *Content) newRequestMedia(mediaType string) Media {
