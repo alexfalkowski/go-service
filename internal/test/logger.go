@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
@@ -30,7 +31,7 @@ func (h *CaptureHandler) Enabled(context.Context, slog.Level) bool {
 func (h *CaptureHandler) Handle(_ context.Context, record slog.Record) error {
 	attrs := make(map[string]slog.Value)
 	record.Attrs(func(attr slog.Attr) bool {
-		if attr.Key != "" {
+		if !strings.IsEmpty(attr.Key) {
 			attrs[attr.Key] = attr.Value.Resolve()
 		}
 		return true

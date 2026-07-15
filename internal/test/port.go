@@ -1,6 +1,9 @@
 package test
 
-import "github.com/alexfalkowski/go-service/v2/net"
+import (
+	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/strings"
+)
 
 const (
 	localNetwork = "tcp"
@@ -26,7 +29,7 @@ func RandomNetworkHost() (string, string) {
 func BoundAddress(configured, actual string) string {
 	network, address := net.ListenNetworkAddress(configured)
 	host, _, err := net.SplitHostPort(address)
-	if err != nil || host == "" {
+	if err != nil || strings.IsEmpty(host) {
 		return net.NetworkAddress(network, actual)
 	}
 

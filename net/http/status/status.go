@@ -37,10 +37,13 @@ func SafeError(code int, err error) error {
 	return &statusError{code: code, error: err.Error(), msg: msg, err: err}
 }
 
-// LocalError wraps err to mark an HTTP status error as produced by local client-side controls.
+// LocalError marks err as produced by this client's own load-control middleware —
+// the client circuit breaker or rate limiter — rather than returned by the upstream server.
 //
-// Retry middleware can use this marker to distinguish local load-control rejections from upstream
-// HTTP 429/503 responses that may be worth retrying.
+// "Local" contrasts with an upstream response. A breaker-open or limiter-exhausted rejection
+// surfaces the same 429/503 code an upstream server could return, so the status code alone cannot
+// tell the two apart. Retry middleware treats a local rejection as terminal: retrying a request the
+// client just shed is futile and only amplifies load, whereas an upstream 429/503 may be worth retrying.
 func LocalError(err error) error {
 	if err == nil {
 		return nil
@@ -49,7 +52,8 @@ func LocalError(err error) error {
 	return &localError{err: err}
 }
 
-// IsLocalError reports whether err was wrapped by LocalError.
+// IsLocalError reports whether err was wrapped by LocalError, identifying a local load-control
+// rejection as opposed to an upstream response.
 func IsLocalError(err error) bool {
 	_, ok := errors.AsType[*localError](err)
 	return ok
@@ -122,7 +126,7 @@ func DefaultMessage(code int) string {
 		return "http: client closed request"
 	}
 
-	if msg := http.StatusText(code); msg != "" {
+	if msg := http.StatusText(code); !strings.IsEmpty(msg) {
 		return "http: " + strings.ToLower(msg)
 	}
 

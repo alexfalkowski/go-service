@@ -1,6 +1,10 @@
 package logger
 
-import "log/slog"
+import (
+	"log/slog"
+
+	"github.com/alexfalkowski/go-service/v2/strings"
+)
 
 var levels = map[string]slog.Level{
 	"debug": slog.LevelDebug,
@@ -10,7 +14,7 @@ var levels = map[string]slog.Level{
 }
 
 func validateLevel(cfg *Config) error {
-	if cfg.Level == "" {
+	if strings.IsEmpty(cfg.Level) {
 		return nil
 	}
 	if _, ok := levels[cfg.Level]; ok {

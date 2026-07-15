@@ -2,6 +2,7 @@ package tracer
 
 import (
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 )
@@ -56,14 +57,14 @@ type Config struct {
 //
 // A nil *[Config] or empty Kind indicates tracing is disabled.
 func (c *Config) IsEnabled() bool {
-	return c != nil && c.Kind != ""
+	return c != nil && !strings.IsEmpty(c.Kind)
 }
 
 // GetProtocol returns the configured OTLP transport protocol.
 //
 // A nil receiver or an empty value falls back to OTLP/HTTP.
 func (c *Config) GetProtocol() string {
-	if c == nil || c.Protocol == "" {
+	if c == nil || strings.IsEmpty(c.Protocol) {
 		return otlp.ProtocolHTTP
 	}
 
@@ -87,5 +88,5 @@ type SamplerConfig struct {
 
 // IsEnabled reports whether sampler configuration is present.
 func (c *SamplerConfig) IsEnabled() bool {
-	return c != nil && c.Kind != ""
+	return c != nil && !strings.IsEmpty(c.Kind)
 }

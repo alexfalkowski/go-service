@@ -3,6 +3,7 @@ package env
 import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewID returns a service instance identifier.
@@ -16,7 +17,7 @@ import (
 // This is commonly used to distinguish service instances in logs/metrics/traces when multiple replicas
 // are running.
 func NewID(generator id.Generator) ID {
-	if id := os.Getenv("SERVICE_ID"); id != "" {
+	if id := os.Getenv("SERVICE_ID"); !strings.IsEmpty(id) {
 		return ID(id)
 	}
 

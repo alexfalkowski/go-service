@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 	"github.com/stretchr/testify/require"
 )
@@ -83,7 +84,7 @@ func TestUnaryAccessServerInterceptor(t *testing.T) {
 	for _, tt := range accessServerTests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := t.Context()
-			if tt.user != "" {
+			if !strings.IsEmpty(tt.user) {
 				ctx = meta.WithAttributes(ctx, meta.WithUserID(meta.String(tt.user)))
 			}
 			policy := method.NewPolicy()
@@ -111,7 +112,7 @@ func TestStreamAccessServerInterceptor(t *testing.T) {
 	for _, tt := range accessServerTests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := t.Context()
-			if tt.user != "" {
+			if !strings.IsEmpty(tt.user) {
 				ctx = meta.WithAttributes(ctx, meta.WithUserID(meta.String(tt.user)))
 			}
 			policy := method.NewPolicy()
