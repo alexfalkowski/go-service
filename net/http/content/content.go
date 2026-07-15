@@ -47,7 +47,7 @@ type Content struct {
 func (c *Content) NewFromRequest(req *http.Request) Media {
 	mediaType := req.Header.Get(TypeKey)
 	if strings.IsEmpty(mediaType) {
-		mediaType = firstMediaType(req.Header.Get(AcceptKey))
+		mediaType = firstListItem(req.Header.Get(AcceptKey))
 	}
 
 	return c.newRequestMedia(mediaType)
@@ -60,7 +60,7 @@ func (c *Content) NewFromRequest(req *http.Request) Media {
 // If parsing fails, it falls back to JSON.
 // If the internal error media type is selected, it falls back to plain text.
 func (c *Content) NewFromAccept(req *http.Request) Media {
-	mediaType := firstMediaType(req.Header.Get(AcceptKey))
+	mediaType := firstListItem(req.Header.Get(AcceptKey))
 	if strings.IsEmpty(mediaType) {
 		mediaType = req.Header.Get(TypeKey)
 	}
@@ -94,39 +94,6 @@ func (c *Content) NewFromRequestBody(req *http.Request) (Media, error) {
 // If parsing fails, it falls back to JSON.
 func (c *Content) NewFromMedia(mediaType string) Media {
 	return NewMedia(mediaType, c.enc)
-}
-
-func firstMediaType(value string) string {
-	quoted := false
-	escaped := false
-
-	for index := range value {
-		if escaped {
-			// The preceding backslash quotes this character, so it cannot change the list state.
-			escaped = false
-			continue
-		}
-
-		if quoted && value[index] == '\\' {
-			// A quoted-pair protects the next character, including a quote or comma.
-			escaped = true
-			continue
-		}
-
-		if value[index] == '"' {
-			// Only an unescaped quote can enter or leave a quoted parameter value.
-			quoted = !quoted
-			continue
-		}
-
-		if value[index] == ',' && !quoted {
-			// An HTTP list comma ends the first media range only outside a quoted string.
-			return strings.TrimSpace(value[:index])
-		}
-	}
-
-	// Leave a single or malformed range intact so the media parser can accept or reject it.
-	return strings.TrimSpace(value)
 }
 
 func (c *Content) newRequestMedia(mediaType string) Media {
