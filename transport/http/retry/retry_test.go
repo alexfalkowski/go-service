@@ -132,6 +132,30 @@ func TestRoundTripperClampsAttemptsAboveMax(t *testing.T) {
 	require.Equal(t, int(config.MaxAttempts), calls)
 }
 
+func TestRoundTripperCapsGrowingBackoffWithMaxBackoff(t *testing.T) {
+	calls := 0
+	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		calls++
+		return test.ResponseWithStatus(http.StatusTooManyRequests), nil
+	})
+	cfg := config.Config{Strategy: "exponential", Backoff: 2 * time.Millisecond, MaxBackoff: 10 * time.Millisecond, Attempts: config.MaxAttempts}
+	retrying := retry.NewRoundTripper(retry.NewConfig(&cfg), rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	start := time.Now()
+	res, err := retrying.RoundTrip(req)
+	elapsed := time.Since(start)
+
+	require.NoError(t, err)
+	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+	require.Equal(t, int(config.MaxAttempts), calls)
+	// Uncapped exponential growth from a 2ms base across 9 retries sums to ~1022ms; capping
+	// at 10ms bounds the same schedule to well under that, so a generous bound below the
+	// uncapped total still proves the cap is applied.
+	require.Less(t, elapsed, 400*time.Millisecond)
+}
+
 func TestRoundTripperDoesNotPanicWithOmittedBackoff(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
 	retrying := retry.NewRoundTripper(test.NewHTTPRetryConfig(1, 0), rt)

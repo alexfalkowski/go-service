@@ -19,7 +19,9 @@ func TestSecure(t *testing.T) {
 
 	resp, err := client.Do(req)
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	t.Cleanup(func() {
+		require.NoError(t, resp.Body.Close())
+	})
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 }

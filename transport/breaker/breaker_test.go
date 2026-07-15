@@ -55,18 +55,72 @@ func TestConfig(t *testing.T) {
 }
 
 func TestConfigSettings(t *testing.T) {
-	settings := (&breaker.Config{
+	cfg := &breaker.Config{
 		MaxRequests:         2,
 		Interval:            15 * time.Second,
 		Timeout:             5 * time.Second,
 		ConsecutiveFailures: 4,
-	}).Settings()
+	}
+	settings := cfg.Settings()
 
 	require.Equal(t, uint32(2), settings.MaxRequests)
 	require.Equal(t, (15 * time.Second).Duration(), settings.Interval)
 	require.Equal(t, (5 * time.Second).Duration(), settings.Timeout)
 	require.False(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 3}))
 	require.True(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 4}))
+}
+
+func TestConfigSettingsFailureRatio(t *testing.T) {
+	cfg := &breaker.Config{
+		FailureRatio: 0.5,
+		MinRequests:  10,
+	}
+	settings := cfg.Settings()
+
+	tests := []struct {
+		name   string
+		counts breaker.Counts
+		want   bool
+	}{
+		{
+			name:   "ratio reached at minimum requests",
+			counts: breaker.Counts{Requests: 10, TotalFailures: 5},
+			want:   true,
+		},
+		{
+			name:   "ratio below threshold",
+			counts: breaker.Counts{Requests: 10, TotalFailures: 4},
+			want:   false,
+		},
+		{
+			name:   "ratio exceeded but below minimum requests",
+			counts: breaker.Counts{Requests: 9, TotalFailures: 9},
+			want:   false,
+		},
+		{
+			name:   "zero requests does not panic or trip",
+			counts: breaker.Counts{Requests: 0, TotalFailures: 0},
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, settings.ReadyToTrip(tt.counts))
+		})
+	}
+}
+
+func TestConfigSettingsFailureRatioTakesPrecedence(t *testing.T) {
+	cfg := &breaker.Config{
+		FailureRatio:        0.5,
+		MinRequests:         10,
+		ConsecutiveFailures: 1,
+	}
+	settings := cfg.Settings()
+
+	require.False(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 4}), "consecutive failures should be ignored when FailureRatio is set")
+	require.True(t, settings.ReadyToTrip(breaker.Counts{Requests: 10, TotalFailures: 5}))
 }
 
 func TestConfigSettingsDefaults(t *testing.T) {

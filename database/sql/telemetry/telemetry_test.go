@@ -24,7 +24,9 @@ func TestOpenDisablesRawQueryTextByDefault(t *testing.T) {
 
 	db, err := telemetry.Open(driverName, "benchmark")
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		require.NoError(t, db.Close())
+	})
 
 	test.RequireSQLQueryRows(t, db, query)
 
@@ -41,7 +43,9 @@ func TestWrapDriverDisablesRawQueryTextByDefault(t *testing.T) {
 
 	db, err := sql.Open(driverName, "benchmark")
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		require.NoError(t, db.Close())
+	})
 
 	test.RequireSQLQueryRows(t, db, query)
 
@@ -58,7 +62,9 @@ func TestWithSpanOptionsCanEnableRawQueryText(t *testing.T) {
 
 	db, err := telemetry.Open(driverName, "benchmark", telemetry.WithSpanOptions(telemetry.SpanOptions{}))
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		require.NoError(t, db.Close())
+	})
 
 	test.RequireSQLQueryRows(t, db, query)
 

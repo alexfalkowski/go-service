@@ -94,7 +94,9 @@ func TestMaxReceiveSize(t *testing.T) {
 
 	res, err := http.NewClient(http.DefaultTransport, time.DefaultTimeout).Do(req)
 	require.NoError(t, err)
-	defer res.Body.Close()
+	t.Cleanup(func() {
+		require.NoError(t, res.Body.Close())
+	})
 
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
 }

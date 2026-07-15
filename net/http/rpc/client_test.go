@@ -52,7 +52,7 @@ func TestPostUsesAccept(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(server.Close)
 
 	client := rpc.NewClient(server.URL,
 		rpc.WithClientContentType(media.JSON),

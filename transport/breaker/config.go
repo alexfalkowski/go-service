@@ -32,6 +32,16 @@ type Config struct {
 	//
 	// A zero value keeps the default.
 	ConsecutiveFailures uint32 `yaml:"consecutive_failures,omitempty" json:"consecutive_failures,omitempty" toml:"consecutive_failures,omitempty"`
+
+	// FailureRatio is the failure ratio (0 < r <= 1) that opens the breaker once MinRequests is reached.
+	//
+	// A zero value keeps ConsecutiveFailures-based tripping. When set, it takes precedence over ConsecutiveFailures.
+	FailureRatio float64 `yaml:"failure_ratio,omitempty" json:"failure_ratio,omitempty" toml:"failure_ratio,omitempty" validate:"omitempty,gt=0,lte=1"`
+
+	// MinRequests is the minimum request volume within the interval before FailureRatio is evaluated.
+	//
+	// A zero value means any request volume is eligible once FailureRatio is set.
+	MinRequests uint32 `yaml:"min_requests,omitempty" json:"min_requests,omitempty" toml:"min_requests,omitempty"`
 }
 
 // IsEnabled reports whether breaker configuration is present.
@@ -55,7 +65,13 @@ func (c *Config) Settings() Settings {
 	if c.Timeout > 0 {
 		settings.Timeout = c.Timeout.Duration()
 	}
-	if c.ConsecutiveFailures > 0 {
+	if c.FailureRatio > 0 {
+		ratio := c.FailureRatio
+		minRequests := c.MinRequests
+		settings.ReadyToTrip = func(counts Counts) bool {
+			return counts.Requests > 0 && counts.Requests >= minRequests && float64(counts.TotalFailures)/float64(counts.Requests) >= ratio
+		}
+	} else if c.ConsecutiveFailures > 0 {
 		failures := c.ConsecutiveFailures
 		settings.ReadyToTrip = func(counts Counts) bool {
 			return counts.ConsecutiveFailures >= failures

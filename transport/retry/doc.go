@@ -17,6 +17,10 @@
 // Timeout and Backoff are typed durations. In config files they are encoded as
 // Go duration strings (see [time.ParseDuration]), such as "250ms", "5s", or "1m".
 //
+// Strategy selects how Backoff grows across attempts ("constant", "exponential", or
+// "fibonacci"), and MaxBackoff optionally caps that growth so exponential/fibonacci
+// backoff plateaus instead of growing unbounded. A zero MaxBackoff leaves growth uncapped.
+//
 // # Transport interpretation
 //
 // Because this package does not implement retries directly, the exact semantics depend on

@@ -25,10 +25,12 @@ func TestConfigRejectsNegativeTimeout(t *testing.T) {
 }
 
 func TestConfigRejectsNegativeBreakerDurations(t *testing.T) {
-	cfg := &client.Config{Breaker: &breaker.Config{Interval: -time.Second}}
+	breakerConfig := &breaker.Config{Interval: -time.Second}
+	cfg := &client.Config{Breaker: breakerConfig}
 	require.Error(t, test.Validator.Struct(cfg))
 
-	cfg = &client.Config{Breaker: &breaker.Config{Timeout: -time.Second}}
+	breakerConfig = &breaker.Config{Timeout: -time.Second}
+	cfg = &client.Config{Breaker: breakerConfig}
 	require.Error(t, test.Validator.Struct(cfg))
 }
 

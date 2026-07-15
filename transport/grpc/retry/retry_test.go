@@ -132,6 +132,26 @@ func TestUnaryClientInterceptorConfiguredCodesReplaceDefaults(t *testing.T) {
 	require.Equal(t, 1, calls)
 }
 
+func TestUnaryClientInterceptorCapsGrowingBackoffWithMaxBackoff(t *testing.T) {
+	cfg := config.Config{Strategy: "exponential", Backoff: 2 * time.Millisecond, MaxBackoff: 10 * time.Millisecond, Timeout: time.Second, Attempts: config.MaxAttempts}
+	interceptor := retry.UnaryClientInterceptor(retry.NewConfig(&cfg))
+
+	calls := 0
+	start := time.Now()
+	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.Unavailable, "unavailable")
+	})
+	elapsed := time.Since(start)
+
+	require.Error(t, err)
+	require.Equal(t, int(config.MaxAttempts), calls)
+	// Uncapped exponential growth from a 2ms base across 9 retries sums to ~1022ms; capping
+	// at 10ms bounds the same schedule to well under that, so a generous bound below the
+	// uncapped total still proves the cap is applied.
+	require.Less(t, elapsed, 400*time.Millisecond)
+}
+
 func TestUnaryClientInterceptorRetriesWithDefaultBackoff(t *testing.T) {
 	interceptor := retry.UnaryClientInterceptor(test.NewGRPCRetryConfig(2, 0))
 

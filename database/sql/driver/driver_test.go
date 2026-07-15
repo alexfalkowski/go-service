@@ -91,7 +91,9 @@ func TestRegisterWrapsDriverWhenTelemetryIsEnabled(t *testing.T) {
 
 	db, err := sql.Open(driverName, "benchmark")
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		require.NoError(t, db.Close())
+	})
 
 	rows, err := db.QueryContext(t.Context(), "SELECT register-telemetry")
 	require.NoError(t, err)

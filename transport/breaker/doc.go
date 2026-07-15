@@ -9,4 +9,9 @@
 //
 // go-service transport packages (for example the HTTP RoundTripper wrapper and the gRPC unary
 // client interceptor) compose these settings to build per-destination circuit breakers.
+//
+// Config.Settings builds ReadyToTrip from either ConsecutiveFailures (an unbroken run of
+// failures) or FailureRatio plus MinRequests (a sustained failure rate over the rolling
+// interval, evaluated only once MinRequests requests have been observed). FailureRatio
+// takes precedence over ConsecutiveFailures when both are set.
 package breaker

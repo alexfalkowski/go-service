@@ -37,7 +37,9 @@ func TestClientEmptyTLSConfigUsesTLS(t *testing.T) {
 
 	conn, err := transportgrpc.NewClient(target, transportgrpc.WithClientTLS(&tls.Config{}))
 	require.NoError(t, err)
-	defer conn.Close()
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
 
 	client := v1.NewGreeterServiceClient(conn)
 	_, err = client.SayHello(t.Context(), &v1.SayHelloRequest{Name: "test"})

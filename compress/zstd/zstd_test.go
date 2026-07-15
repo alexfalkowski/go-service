@@ -79,7 +79,9 @@ func TestDecompressAllowsWindowLargerThanOutputLimit(t *testing.T) {
 	data := make([]byte, 64<<10)
 	encoder, err := compress.NewWriter(nil, compress.WithWindowSize(128<<10), compress.WithSingleSegment(false))
 	require.NoError(t, err)
-	defer encoder.Close()
+	t.Cleanup(func() {
+		require.NoError(t, encoder.Close())
+	})
 
 	encoded := encoder.EncodeAll(data, nil)
 	decoded, err := cmp.Decompress(encoded, bytes.Size(len(data)))

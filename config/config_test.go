@@ -340,9 +340,12 @@ func verifyFeatureConfig(t *testing.T, cfg *config.Config) {
 	require.Equal(t, 15*time.Second, cfg.Feature.Breaker.Interval)
 	require.Equal(t, 5*time.Second, cfg.Feature.Breaker.Timeout)
 	require.Equal(t, uint32(4), cfg.Feature.Breaker.ConsecutiveFailures)
+	require.InDelta(t, 0.5, cfg.Feature.Breaker.FailureRatio, 0)
+	require.Equal(t, uint32(10), cfg.Feature.Breaker.MinRequests)
 	require.Equal(t, 100*time.Millisecond, cfg.Feature.Retry.Backoff)
 	require.Equal(t, time.Second, cfg.Feature.Retry.Timeout)
 	require.Equal(t, uint64(3), cfg.Feature.Retry.Attempts)
+	require.Equal(t, 5*time.Second, cfg.Feature.Retry.MaxBackoff)
 }
 
 func verifyIDConfig(t *testing.T, cfg *config.Config) {

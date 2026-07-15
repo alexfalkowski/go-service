@@ -1251,6 +1251,23 @@ closed-state count reset window. `timeout` controls how long the breaker stays
 open before allowing half-open probes. `consecutive_failures` controls when the
 breaker opens. Zero values keep the package defaults.
 
+Instead of (or alongside) `consecutive_failures`, `failure_ratio` and
+`min_requests` open the breaker on a sustained error rate rather than an
+unbroken run of failures:
+
+```yaml
+feature:
+  address: localhost:9000
+  breaker:
+    failure_ratio: 0.5
+    min_requests: 10
+```
+
+`failure_ratio` is the fraction of failed requests (0 < r <= 1) within the
+current `interval` that opens the breaker, evaluated only once `min_requests`
+requests have been observed. When `failure_ratio` is set, it takes precedence
+over `consecutive_failures`.
+
 HTTP `StatusCodes` and gRPC `Codes` are optional replacement lists for failure
 classification. When omitted, the default lists above apply. When set, only the
 configured values count as breaker failures, so include the defaults as well
@@ -1300,6 +1317,21 @@ total elapsed time can include multiple attempt timeouts plus backoff unless the
 caller context ends first. HTTP retries do not create a retry-owned per-attempt
 timeout; bound outbound HTTP calls with the request context or
 `http.Client.Timeout`.
+
+`max_backoff` caps the per-attempt backoff duration, applied before jitter. It
+is most useful with `exponential` and `fibonacci` growth, which otherwise grow
+unbounded across attempts. A zero value (the default) leaves backoff
+uncapped:
+
+```yaml
+feature:
+  address: localhost:9000
+  retry:
+    backoff: 1s
+    strategy: exponential
+    attempts: 10
+    max_backoff: 30s
+```
 
 HTTP `StatusCodes` and gRPC `Codes` are optional replacement lists for failure
 classification. When omitted, the default lists below apply. When set, only the
