@@ -1181,6 +1181,9 @@ on clients when the dial address differs from the certificate DNS name.
 Server-side TLS requires a complete `cert` and `key` pair whenever TLS material is configured. `ca` enables
 client-certificate verification for mTLS, but a CA-only server TLS config fails startup.
 
+Runtime servers require TLS 1.3 or newer on inbound handshakes; clients keep a TLS 1.2 floor so outbound
+calls stay interoperable with TLS-1.2-only endpoints.
+
 gRPC clients use insecure transport credentials when TLS is not configured. That default is intended for
 local or platform-secured traffic; configure client TLS for calls outside that trusted boundary.
 

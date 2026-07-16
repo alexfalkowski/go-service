@@ -76,7 +76,7 @@ func (c *Config) GetTimeout() time.Duration {
 
 // NewConfig constructs a server-side runtime TLS config from cfg.
 //
-// If cfg is nil or empty, NewConfig returns a TLS 1.2-or-newer config that does
+// If cfg is nil or empty, NewConfig returns a TLS 1.3-or-newer config that does
 // not request client certificates.
 //
 // If cfg has a CA configured, NewConfig uses it as ClientCAs and sets
@@ -87,7 +87,7 @@ func (c *Config) GetTimeout() time.Duration {
 // A CA-only configuration returns ErrMissingKeyPair.
 func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
 	tlsConfig := &tls.Config{
-		MinVersion: tls.VersionTLS12,
+		MinVersion: tls.VersionTLS13,
 	}
 
 	if !cfg.HasKeyMaterial() && !cfg.HasCA() {
