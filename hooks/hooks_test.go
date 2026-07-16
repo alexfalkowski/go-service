@@ -39,7 +39,7 @@ func TestNewHookSignsWithActiveSecret(t *testing.T) {
 	signature, err := hook.Sign("id-1", timestamp, payload)
 	require.NoError(t, err)
 
-	headers := signedHeaders("id-1", timestamp, signature)
+	headers := signedHeaders(timestamp, signature)
 	require.NoError(t, newSingleHook(t, webhookSecret("dGVzdA==")).Verify(payload, headers))
 	require.Error(t, newSingleHook(t, webhookSecret("b3RoZXI=")).Verify(payload, headers))
 }
@@ -56,12 +56,73 @@ func TestNewHookVerifiesTrustedSecrets(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			signature, timestamp := sign(t, newSingleHook(t, secret), payload)
 
-			require.NoError(t, hook.Verify(payload, signedHeaders("id-1", timestamp, signature)))
+			require.NoError(t, hook.Verify(payload, signedHeaders(timestamp, signature)))
 		})
 	}
 
 	signature, timestamp := sign(t, newSingleHook(t, webhookSecret("YmFk")), payload)
-	require.Error(t, hook.Verify(payload, signedHeaders("id-1", timestamp, signature)))
+	require.Error(t, hook.Verify(payload, signedHeaders(timestamp, signature)))
+}
+
+func TestNewHookVerifiesWithLeeway(t *testing.T) {
+	secret := webhookSecret("dGVzdA==")
+
+	hook, err := hooks.NewHook(test.FS, &hooks.Config{
+		Key:     "current",
+		Secrets: hooks.Secrets{"current": secret},
+		Leeway:  10 * time.Minute,
+	})
+	require.NoError(t, err)
+
+	signer := newSingleHook(t, secret)
+	payload := []byte("body")
+
+	tests := map[string]struct {
+		delta   time.Duration
+		wantErr bool
+	}{
+		"too old within leeway": {delta: -7 * time.Minute, wantErr: false},
+		"too old beyond leeway": {delta: -11 * time.Minute, wantErr: true},
+		"too new within leeway": {delta: 7 * time.Minute, wantErr: false},
+		"too new beyond leeway": {delta: 11 * time.Minute, wantErr: true},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			timestamp := time.Now().Add(tt.delta.Duration())
+			signature, err := signer.Sign("id-1", timestamp, payload)
+			require.NoError(t, err)
+
+			err = hook.Verify(payload, signedHeaders(timestamp, signature))
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestNewHookVerifiesWithLeewayRejectsMalformedTimestamp(t *testing.T) {
+	secret := webhookSecret("dGVzdA==")
+
+	hook, err := hooks.NewHook(test.FS, &hooks.Config{
+		Key:     "current",
+		Secrets: hooks.Secrets{"current": secret},
+		Leeway:  10 * time.Minute,
+	})
+	require.NoError(t, err)
+
+	signer := newSingleHook(t, secret)
+	payload := []byte("body")
+	timestamp := time.Now()
+	signature, err := signer.Sign("id-1", timestamp, payload)
+	require.NoError(t, err)
+
+	headers := signedHeaders(timestamp, signature)
+	headers.Set(webhooks.HeaderWebhookTimestamp, "not-a-number")
+
+	require.Error(t, hook.Verify(payload, headers))
 }
 
 func TestNewHookReturnsInvalidConfigForMissingActiveSecret(t *testing.T) {
@@ -136,9 +197,9 @@ func sign(t *testing.T, hook *hooks.Hook, payload []byte) (string, time.Time) {
 	return signature, timestamp
 }
 
-func signedHeaders(id string, timestamp time.Time, signature string) http.Header {
+func signedHeaders(timestamp time.Time, signature string) http.Header {
 	header := http.Header{}
-	header.Set(webhooks.HeaderWebhookID, id)
+	header.Set(webhooks.HeaderWebhookID, "id-1")
 	header.Set(webhooks.HeaderWebhookSignature, signature)
 	header.Set(webhooks.HeaderWebhookTimestamp, strconv.FormatInt(timestamp.Unix(), 10))
 
