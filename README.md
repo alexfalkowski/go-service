@@ -387,6 +387,7 @@ hooks:
   secrets:
     current: env:WEBHOOK_SECRET_CURRENT
     previous: env:WEBHOOK_SECRET_PREVIOUS
+  leeway: 30s
 ```
 
 Each `secrets` value is a source string. The resolved value must be accepted by the
@@ -397,6 +398,14 @@ Signing uses the active `key`. Verification accepts signatures from every
 configured secret, trying the active secret first. Standard Webhooks includes a
 message id (`Webhook-Id`) but not a signing key id, so go-service does not extend
 the protocol with a custom selector header.
+
+`leeway` is optional clock-skew tolerance applied to the `Webhook-Timestamp`
+freshness check during verification. A zero value (the default) keeps the
+Standard Webhooks library's fixed 5-minute freshness window; a non-zero value
+replaces that fixed window with this configured tolerance, matching the
+clock-skew `leeway` already exposed by the JWT, PASETO, and SSH token
+verifiers. Like those, `leeway` is a Go duration string and must be a positive
+whole-second duration.
 
 Inbound verification checks Standard Webhooks signatures and timestamps, but
 does not store or reject previously seen webhook ids. Receivers that perform
