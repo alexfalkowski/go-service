@@ -16,6 +16,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -408,6 +409,32 @@ func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 
 	_, err := logger.NewLogger(params)
 	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
+}
+
+func TestOTLPGRPCLoggerWithBatchTuning(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &logger.Config{
+		Kind:               "otlp",
+		Protocol:           "grpc",
+		URL:                "localhost:4317",
+		BatchTimeout:       20 * time.Millisecond,
+		ExportTimeout:      time.Second,
+		MaxQueueSize:       1024,
+		MaxExportBatchSize: 256,
+	}
+	params := logger.LoggerParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}
+
+	log, err := logger.NewLogger(params)
+	require.NoError(t, err)
+	require.NotNil(t, log)
+	require.NoError(t, lc.Stop(t.Context()))
 }
 
 func TestOTLPLoggerUsesConfiguredLevel(t *testing.T) {

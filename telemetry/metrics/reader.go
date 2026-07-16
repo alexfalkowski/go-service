@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
+	"github.com/prometheus/otlptranslator"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
@@ -87,7 +88,8 @@ func newMetricReader(name env.Name, fs *os.FS, cfg *Config) (metric.Reader, erro
 		}
 		return metric.NewPeriodicReader(exporter, periodicReaderOptions(cfg)...), nil
 	case "prometheus":
-		exporter, err := prometheus.New(prometheus.WithNamespace(name.String()))
+		opts := append([]prometheus.Option{prometheus.WithNamespace(name.String())}, prometheusOptions(cfg.Prometheus)...)
+		exporter, err := prometheus.New(opts...)
 		if err != nil {
 			return nil, prefix(err)
 		}
@@ -95,6 +97,25 @@ func newMetricReader(name env.Name, fs *os.FS, cfg *Config) (metric.Reader, erro
 	default:
 		return nil, ErrNotFound
 	}
+}
+
+func prometheusOptions(cfg *PrometheusConfig) []prometheus.Option {
+	if cfg == nil {
+		return nil
+	}
+
+	opts := make([]prometheus.Option, 0, 3)
+	if cfg.WithoutSuffixes {
+		opts = append(opts, prometheus.WithTranslationStrategy(otlptranslator.UnderscoreEscapingWithoutSuffixes))
+	}
+	if cfg.WithoutTargetInfo {
+		opts = append(opts, prometheus.WithoutTargetInfo())
+	}
+	if cfg.WithoutScopeInfo {
+		opts = append(opts, prometheus.WithoutScopeInfo())
+	}
+
+	return opts
 }
 
 func newOTLPExporter(fs *os.FS, cfg *Config) (metric.Exporter, error) {

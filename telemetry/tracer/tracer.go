@@ -174,7 +174,7 @@ func Register(params TracerParams) error {
 			params.Environment.String(),
 		)
 
-		providerOpts := []sdk.TracerProviderOption{sdk.WithResource(attrs), sdk.WithBatcher(exporter)}
+		providerOpts := []sdk.TracerProviderOption{sdk.WithResource(attrs), sdk.WithBatcher(exporter, batchSpanProcessorOptions(params.Config)...)}
 		sampler, err := newSampler(params.Config.Sampler)
 		if err != nil {
 			return prefix(err)
@@ -235,6 +235,24 @@ func newOTLPExporter(params TracerParams) (*otlptrace.Exporter, error) {
 // IsEnabled reports whether this package has registered tracing as enabled.
 func IsEnabled() bool {
 	return enabled.Load()
+}
+
+func batchSpanProcessorOptions(cfg *Config) []sdk.BatchSpanProcessorOption {
+	opts := make([]sdk.BatchSpanProcessorOption, 0, 4)
+	if cfg.BatchTimeout > 0 {
+		opts = append(opts, sdk.WithBatchTimeout(cfg.BatchTimeout.Duration()))
+	}
+	if cfg.ExportTimeout > 0 {
+		opts = append(opts, sdk.WithExportTimeout(cfg.ExportTimeout.Duration()))
+	}
+	if cfg.MaxQueueSize > 0 {
+		opts = append(opts, sdk.WithMaxQueueSize(cfg.MaxQueueSize))
+	}
+	if cfg.MaxExportBatchSize > 0 {
+		opts = append(opts, sdk.WithMaxExportBatchSize(cfg.MaxExportBatchSize))
+	}
+
+	return opts
 }
 
 func newSampler(cfg *SamplerConfig) (sdk.Sampler, error) {

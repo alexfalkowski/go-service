@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // Config configures structured logging and optional log exporting.
@@ -67,6 +68,31 @@ type Config struct {
 	//
 	// Unknown values are rejected by NewLogger with ErrInvalidLevel.
 	Level string `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
+
+	// BatchTimeout is the maximum delay between batched log record exports.
+	//
+	// A zero value keeps the OpenTelemetry SDK default. Negative values are
+	// invalid. This field only applies when Kind is "otlp".
+	BatchTimeout time.Duration `yaml:"batch_timeout,omitempty" json:"batch_timeout,omitempty" toml:"batch_timeout,omitempty" validate:"gte=0"`
+
+	// ExportTimeout is the maximum duration allowed for a single batch export.
+	//
+	// A zero value keeps the OpenTelemetry SDK default. Negative values are
+	// invalid. This field only applies when Kind is "otlp".
+	ExportTimeout time.Duration `yaml:"export_timeout,omitempty" json:"export_timeout,omitempty" toml:"export_timeout,omitempty" validate:"gte=0"`
+
+	// MaxQueueSize is the maximum number of log records buffered before older
+	// records are dropped.
+	//
+	// A zero value keeps the OpenTelemetry SDK default, which is 2048.
+	// Negative values are invalid. This field only applies when Kind is "otlp".
+	MaxQueueSize int `yaml:"max_queue_size,omitempty" json:"max_queue_size,omitempty" toml:"max_queue_size,omitempty" validate:"gte=0"`
+
+	// MaxExportBatchSize is the maximum number of log records exported in a single batch.
+	//
+	// A zero value keeps the OpenTelemetry SDK default, which is 512. Negative
+	// values are invalid. This field only applies when Kind is "otlp".
+	MaxExportBatchSize int `yaml:"max_export_batch_size,omitempty" json:"max_export_batch_size,omitempty" toml:"max_export_batch_size,omitempty" validate:"gte=0"`
 }
 
 // IsEnabled reports whether logging configuration is present.

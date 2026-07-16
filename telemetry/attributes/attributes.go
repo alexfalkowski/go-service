@@ -37,8 +37,9 @@ type Resource = resource.Resource
 // Map contains configured OpenTelemetry resource attributes.
 //
 // Values are plain labels, not go-service source strings. Provider identity
-// attributes added by [NewResource] take precedence over duplicate configured
-// keys.
+// attributes added by [NewResource], including host.id, service.instance.id,
+// service.name, service.version, and deployment.environment.name, take
+// precedence over duplicate configured keys.
 type Map map[string]string
 
 // Strings converts a string map into OpenTelemetry string attributes.
@@ -116,6 +117,19 @@ func HostID(val string) attribute.KeyValue {
 	return semconv.HostID(val)
 }
 
+// ServiceInstanceID returns a service.instance.id attribute with value val.
+//
+// This is a thin wrapper around [semconv.ServiceInstanceID] and is typically
+// used when constructing a Resource to describe the running service instance.
+// Unlike host.id, this is the OpenTelemetry-recommended attribute for
+// correlating telemetry from the same replica across logs, metrics, and traces.
+//
+// Parameters:
+//   - val: the per-instance identifier reported for the running service instance
+func ServiceInstanceID(val string) attribute.KeyValue {
+	return semconv.ServiceInstanceID(val)
+}
+
 // ServiceName returns a service.name attribute with value name.
 //
 // This is a thin wrapper around [semconv.ServiceName] and is typically used when
@@ -169,15 +183,18 @@ func DeploymentEnvironmentName(env string) attribute.KeyValue {
 // NewResource constructs the OpenTelemetry resource used by go-service providers.
 //
 // Configured resource attributes are added first, then the fixed go-service
-// identity attributes are appended so they win on duplicate keys.
+// identity attributes, host.id, service.instance.id, service.name,
+// service.version, and deployment.environment.name, are appended so they win
+// on duplicate keys.
 func NewResource(attrs Map, id, name, version, environment string) *Resource {
-	resourceAttrs := make([]attribute.KeyValue, 0, len(attrs)+4)
+	resourceAttrs := make([]attribute.KeyValue, 0, len(attrs)+5)
 	for key, value := range attrs {
 		resourceAttrs = append(resourceAttrs, attribute.String(key, value))
 	}
 
 	resourceAttrs = append(resourceAttrs,
 		HostID(id),
+		ServiceInstanceID(id),
 		ServiceName(name),
 		ServiceVersion(version),
 		DeploymentEnvironmentName(environment),

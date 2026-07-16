@@ -57,6 +57,10 @@
 // preserves the OpenTelemetry SDK default sampler and SDK sampler environment
 // handling. When set, it overrides those defaults.
 //
+// [Config.BatchTimeout], [Config.ExportTimeout], [Config.MaxQueueSize], and
+// [Config.MaxExportBatchSize] tune the batch span processor used for OTLP
+// export. Zero values preserve the OpenTelemetry SDK defaults.
+//
 // The exporter request headers are provided by [Config.Headers]. Header values may be
 // configured as go-service "source strings" (for example "env:NAME", "file:/path", or a
 // literal value) and are resolved by [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.Secrets] or

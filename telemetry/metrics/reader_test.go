@@ -8,7 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -40,6 +42,101 @@ func TestReaderShutdownIgnoresAlreadyShutdownReader(t *testing.T) {
 	require.NoError(t, reader.Shutdown(t.Context()))
 
 	require.NoError(t, lc.Stop(t.Context()))
+}
+
+func TestPrometheusReaderShapesOutput(t *testing.T) {
+	t.Cleanup(func() {
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+	})
+
+	lc := fxtest.NewLifecycle(t)
+	cfg := &metrics.Config{
+		Kind: "prometheus",
+		Prometheus: &metrics.PrometheusConfig{
+			WithoutTargetInfo: true,
+			WithoutSuffixes:   true,
+		},
+	}
+
+	reader, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_ = reader.Shutdown(t.Context())
+	})
+
+	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		Reader:      reader,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+
+	histogram, err := provider.Meter(test.Name.String()).Float64Histogram("prometheus_reader_shapes_output_duration", metric.WithUnit("s"))
+	require.NoError(t, err)
+	histogram.Record(t.Context(), 0.3)
+
+	counter, err := provider.Meter(test.Name.String()).Int64Counter("prometheus_reader_shapes_output_count")
+	require.NoError(t, err)
+	counter.Add(t.Context(), 1)
+
+	names := gatherFamilyNames(t)
+
+	require.NotContains(t, names, "target_info")
+	require.Contains(t, names, "test_prometheus_reader_shapes_output_duration")
+	require.NotContains(t, names, "test_prometheus_reader_shapes_output_duration_seconds")
+	require.Contains(t, names, "test_prometheus_reader_shapes_output_count")
+	require.NotContains(t, names, "test_prometheus_reader_shapes_output_count_total")
+}
+
+func TestPrometheusReaderKeepsDefaultOutput(t *testing.T) {
+	t.Cleanup(func() {
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+	})
+
+	lc := fxtest.NewLifecycle(t)
+	cfg := &metrics.Config{Kind: "prometheus"}
+
+	reader, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_ = reader.Shutdown(t.Context())
+	})
+
+	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		Reader:      reader,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+
+	histogram, err := provider.Meter(test.Name.String()).Float64Histogram("prometheus_reader_keeps_default_output_duration", metric.WithUnit("s"))
+	require.NoError(t, err)
+	histogram.Record(t.Context(), 0.3)
+
+	names := gatherFamilyNames(t)
+
+	require.Contains(t, names, "target_info")
+	require.Contains(t, names, "test_prometheus_reader_keeps_default_output_duration_seconds")
+}
+
+func gatherFamilyNames(t *testing.T) []string {
+	t.Helper()
+
+	families, err := prometheus.DefaultGatherer.Gather()
+	require.NoError(t, err)
+
+	names := make([]string, 0, len(families))
+	for _, family := range families {
+		names = append(names, family.GetName())
+	}
+
+	return names
 }
 
 func TestInvalidOTLPEndpoint(t *testing.T) {

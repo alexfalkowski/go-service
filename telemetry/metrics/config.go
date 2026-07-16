@@ -38,6 +38,12 @@ type Config struct {
 	// the SDK default boundaries, so this field is a no-op unless configured.
 	Views map[string][]float64 `yaml:"views,omitempty" json:"views,omitempty" toml:"views,omitempty"`
 
+	// Prometheus configures Prometheus exporter output shaping.
+	//
+	// A nil value preserves the current exporter output. This field only
+	// applies when Kind is "prometheus".
+	Prometheus *PrometheusConfig `yaml:"prometheus,omitempty" json:"prometheus,omitempty" toml:"prometheus,omitempty"`
+
 	// Kind selects the metrics reader/exporter implementation.
 	//
 	// Supported kinds depend on what the service links in, but this package typically supports:
@@ -76,6 +82,32 @@ type Config struct {
 	// A zero value keeps the OpenTelemetry SDK default. Negative values are
 	// invalid. This field only applies when Kind is "otlp".
 	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty" validate:"gte=0"`
+}
+
+// PrometheusConfig configures Prometheus exporter output shaping.
+//
+// A nil *PrometheusConfig preserves the exporter's default output: the
+// target_info metric, otel_scope_name/otel_scope_version labels, unit
+// suffixes (for example "_seconds", "_bytes"), and "_total" counter
+// suffixes are all present. This config only applies when Kind is
+// "prometheus".
+type PrometheusConfig struct {
+	// WithoutSuffixes omits unit suffixes (for example "_seconds", "_bytes") and
+	// the "_total" counter suffix from exported metric names.
+	//
+	// This maps to the upstream exporter's supported WithTranslationStrategy
+	// option using otlptranslator.UnderscoreEscapingWithoutSuffixes, which keeps
+	// the default name-escaping behavior but drops suffixes. The deprecated
+	// per-suffix WithoutUnits/WithoutCounterSuffixes options are not used because
+	// upstream steers callers to WithTranslationStrategy instead, which controls
+	// both suffix kinds together rather than independently.
+	WithoutSuffixes bool `yaml:"without_suffixes,omitempty" json:"without_suffixes,omitempty" toml:"without_suffixes,omitempty"`
+
+	// WithoutTargetInfo omits the target_info metric from exporter output.
+	WithoutTargetInfo bool `yaml:"without_target_info,omitempty" json:"without_target_info,omitempty" toml:"without_target_info,omitempty"`
+
+	// WithoutScopeInfo omits otel_scope_name/otel_scope_version labels from exported series.
+	WithoutScopeInfo bool `yaml:"without_scope_info,omitempty" json:"without_scope_info,omitempty" toml:"without_scope_info,omitempty"`
 }
 
 // IsEnabled reports whether metrics configuration is present.
