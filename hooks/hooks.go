@@ -2,6 +2,7 @@ package hooks
 
 import (
 	"maps"
+	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
@@ -50,6 +51,7 @@ func (g *Generator) Generate() (string, error) {
 type Hook struct {
 	signer    *webhooks.Webhook
 	verifiers []*webhooks.Webhook
+	leeway    time.Duration
 }
 
 // Sign computes a Standard Webhooks signature with the active secret.
@@ -58,13 +60,24 @@ func (h *Hook) Sign(id string, timestamp time.Time, payload []byte) (string, err
 }
 
 // Verify verifies payload and headers against the configured trusted secrets.
+//
+// When [Config.Leeway] is zero, the Webhook-Timestamp freshness check uses the
+// Standard Webhooks library's fixed 5-minute window. When [Config.Leeway] is
+// non-zero, Verify checks Webhook-Timestamp against that configured window
+// itself, then verifies the signature ignoring the library's own timestamp check.
 func (h *Hook) Verify(payload []byte, headers http.Header) error {
+	if h.leeway != 0 {
+		if err := verifyTimestamp(headers, h.leeway); err != nil {
+			return err
+		}
+	}
+
 	// Standard Webhooks signs the message id, timestamp, and payload, but it does
 	// not include a signing key id. During rotation we therefore verify against the
 	// configured trusted secrets in order and accept the first match.
 	err := ErrInvalidConfig
 	for _, verifier := range h.verifiers {
-		if verifyErr := verifier.Verify(payload, headers); verifyErr != nil {
+		if verifyErr := h.verifySignature(verifier, payload, headers); verifyErr != nil {
 			err = verifyErr
 		} else {
 			return nil
@@ -72,6 +85,46 @@ func (h *Hook) Verify(payload []byte, headers http.Header) error {
 	}
 
 	return err
+}
+
+func (h *Hook) verifySignature(verifier *webhooks.Webhook, payload []byte, headers http.Header) error {
+	if h.leeway != 0 {
+		return verifier.VerifyIgnoringTimestamp(payload, headers)
+	}
+
+	return verifier.Verify(payload, headers)
+}
+
+// verifyTimestamp checks the Webhook-Timestamp header against a configured leeway window.
+//
+// A missing or unparsable header is left for the downstream Standard Webhooks verifier to reject with its
+// own required/invalid header error, so this check only reports freshness failures.
+func verifyTimestamp(headers http.Header, leeway time.Duration) error {
+	ts, ok := parseWebhookTimestamp(headers)
+	if !ok {
+		return nil
+	}
+
+	now := time.Now()
+
+	if now.Sub(ts) > leeway.Duration() {
+		return webhooks.ErrMessageTooOld
+	}
+
+	if ts.After(now.Add(leeway.Duration())) {
+		return webhooks.ErrMessageTooNew
+	}
+
+	return nil
+}
+
+func parseWebhookTimestamp(headers http.Header) (time.Time, bool) {
+	sec, err := strconv.ParseInt(headers.Get(webhooks.HeaderWebhookTimestamp), 10, 64)
+	if err != nil {
+		return time.Time{}, false
+	}
+
+	return time.Unix(sec), true
 }
 
 // NewHook constructs a Standard Webhooks hook from cfg.
@@ -123,7 +176,7 @@ func newRotatingHook(fs *os.FS, cfg *Config) (*Hook, error) {
 		verifiers = append(verifiers, verifier)
 	}
 
-	return &Hook{signer: signer, verifiers: verifiers}, nil
+	return &Hook{signer: signer, verifiers: verifiers, leeway: cfg.Leeway}, nil
 }
 
 func newWebhook(fs *os.FS, secret string) (*webhooks.Webhook, error) {

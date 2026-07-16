@@ -56,6 +56,13 @@ func Now() Time {
 	return time.Now()
 }
 
+// Unix returns the local Time corresponding to the given Unix time, sec seconds since January 1, 1970 UTC.
+//
+// This is a thin wrapper around [time.Unix] and does not change semantics.
+func Unix(sec int64) Time {
+	return time.Unix(sec, 0)
+}
+
 // Since returns the time elapsed since t.
 //
 // This is a thin wrapper around [time.Since] and does not change semantics.
