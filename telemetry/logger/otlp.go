@@ -40,7 +40,7 @@ func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
 		params.Environment.String(),
 	)
 
-	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(exporter)), log.WithResource(attrs))
+	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(exporter, batchProcessorOptions(params.Config)...)), log.WithResource(attrs))
 	global.SetLoggerProvider(provider)
 
 	params.Lifecycle.Append(di.Hook{
@@ -82,6 +82,24 @@ func newOtlpExporter(params LoggerParams) (log.Exporter, error) {
 		}
 		return otlploghttp.New(context.Background(), opts...)
 	}
+}
+
+func batchProcessorOptions(cfg *Config) []log.BatchProcessorOption {
+	opts := make([]log.BatchProcessorOption, 0, 4)
+	if cfg.BatchTimeout > 0 {
+		opts = append(opts, log.WithExportInterval(cfg.BatchTimeout.Duration()))
+	}
+	if cfg.ExportTimeout > 0 {
+		opts = append(opts, log.WithExportTimeout(cfg.ExportTimeout.Duration()))
+	}
+	if cfg.MaxQueueSize > 0 {
+		opts = append(opts, log.WithMaxQueueSize(cfg.MaxQueueSize))
+	}
+	if cfg.MaxExportBatchSize > 0 {
+		opts = append(opts, log.WithExportMaxBatchSize(cfg.MaxExportBatchSize))
+	}
+
+	return opts
 }
 
 type levelHandler struct {

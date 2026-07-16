@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -388,6 +389,32 @@ func requireSamplerRecording(t *testing.T, sampler *tracer.SamplerConfig, ctx co
 	defer span.End()
 
 	require.Equal(t, want, span.IsRecording())
+}
+
+func TestRegisterOTLPGRPCExporterWithBatchTuning(t *testing.T) {
+	t.Cleanup(func() {
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+	})
+
+	err := tracer.Register(tracer.TracerParams{
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config: &tracer.Config{
+			Kind:               "otlp",
+			Protocol:           "grpc",
+			URL:                "localhost:4317",
+			BatchTimeout:       20 * time.Millisecond,
+			ExportTimeout:      time.Second,
+			MaxQueueSize:       1024,
+			MaxExportBatchSize: 256,
+		},
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+
+	require.NoError(t, err)
+	require.True(t, tracer.IsEnabled())
 }
 
 func withUnsampledRemoteParent(ctx context.Context) context.Context {

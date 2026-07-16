@@ -44,6 +44,10 @@
 // [Config.Protocol] selects the OTLP transport protocol. The empty value uses
 // OTLP/HTTP. Set "grpc" to use OTLP/gRPC with a host:port endpoint.
 //
+// For "prometheus", [Config.Prometheus] optionally shapes exporter output by
+// dropping unit/counter suffixes, the target_info metric, or the scope-info
+// labels. A nil value preserves the default OpenTelemetry-conventional output.
+//
 // # OTLP endpoint security
 //
 // When [Config.Headers] is non-empty, non-loopback "http://" OTLP endpoints are

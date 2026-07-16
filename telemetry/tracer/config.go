@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // Config configures OpenTelemetry tracing export.
@@ -51,6 +52,31 @@ type Config struct {
 	// Standard OpenTelemetry endpoint environment variables are not used as fallbacks;
 	// configure this value explicitly through go-service config.
 	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
+
+	// BatchTimeout is the maximum delay between batched span exports.
+	//
+	// A zero value keeps the OpenTelemetry SDK default. Negative values are
+	// invalid. This field only applies when Kind is "otlp".
+	BatchTimeout time.Duration `yaml:"batch_timeout,omitempty" json:"batch_timeout,omitempty" toml:"batch_timeout,omitempty" validate:"gte=0"`
+
+	// ExportTimeout is the maximum duration allowed for a single batch export.
+	//
+	// A zero value keeps the OpenTelemetry SDK default. Negative values are
+	// invalid. This field only applies when Kind is "otlp".
+	ExportTimeout time.Duration `yaml:"export_timeout,omitempty" json:"export_timeout,omitempty" toml:"export_timeout,omitempty" validate:"gte=0"`
+
+	// MaxQueueSize is the maximum number of spans buffered before older spans
+	// are dropped.
+	//
+	// A zero value keeps the OpenTelemetry SDK default, which is 2048.
+	// Negative values are invalid. This field only applies when Kind is "otlp".
+	MaxQueueSize int `yaml:"max_queue_size,omitempty" json:"max_queue_size,omitempty" toml:"max_queue_size,omitempty" validate:"gte=0"`
+
+	// MaxExportBatchSize is the maximum number of spans exported in a single batch.
+	//
+	// A zero value keeps the OpenTelemetry SDK default, which is 512. Negative
+	// values are invalid. This field only applies when Kind is "otlp".
+	MaxExportBatchSize int `yaml:"max_export_batch_size,omitempty" json:"max_export_batch_size,omitempty" toml:"max_export_batch_size,omitempty" validate:"gte=0"`
 }
 
 // IsEnabled reports whether tracing is configured.

@@ -14,6 +14,7 @@ func TestResourceMergesConfiguredAttributesWithIdentity(t *testing.T) {
 		attributes.Map{
 			"k8s.namespace.name":                                 "payments",
 			string(attributes.HostID("").Key):                    "configured",
+			string(attributes.ServiceInstanceID("").Key):         "configured",
 			string(attributes.ServiceName("").Key):               "configured",
 			string(attributes.ServiceVersion("").Key):            "configured",
 			string(attributes.DeploymentEnvironmentName("").Key): "configured",
@@ -30,9 +31,28 @@ func TestResourceMergesConfiguredAttributesWithIdentity(t *testing.T) {
 
 	require.Equal(t, "payments", attrs["k8s.namespace.name"])
 	require.Equal(t, "host-id", attrs["host.id"])
+	require.Equal(t, "host-id", attrs["service.instance.id"])
 	require.Equal(t, "service-name", attrs["service.name"])
 	require.Equal(t, "service-version", attrs["service.version"])
 	require.Equal(t, "production", attrs["deployment.environment.name"])
+}
+
+func TestResourceIncludesServiceInstanceIDWithoutConfiguredDuplicate(t *testing.T) {
+	t.Parallel()
+
+	resource := attributes.NewResource(
+		attributes.Map{"k8s.namespace.name": "payments"},
+		"host-id",
+		"service-name",
+		"service-version",
+		"prod",
+	)
+	attrs := make(map[string]string)
+	for _, attr := range resource.Attributes() {
+		attrs[string(attr.Key)] = attr.Value.AsString()
+	}
+
+	require.Equal(t, "host-id", attrs["service.instance.id"])
 }
 
 func TestDeploymentEnvironmentName(t *testing.T) {

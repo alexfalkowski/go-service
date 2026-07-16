@@ -554,7 +554,6 @@ Telemetry config root is `telemetry.Config`:
 telemetry:
   attributes:
     k8s.namespace.name: payments
-    service.instance.id: instance-1
   logger: ...
   metrics: ...
   propagation: ...
@@ -563,8 +562,9 @@ telemetry:
 
 `attributes` are plain OpenTelemetry resource labels attached to logs, metrics,
 and traces. They are not source strings. Fixed go-service identity attributes
-such as `host.id`, `service.name`, `service.version`, and
-`deployment.environment.name` take precedence if the same key is configured.
+such as `host.id`, `service.instance.id`, `service.name`, `service.version`,
+and `deployment.environment.name` take precedence if the same key is
+configured.
 
 ### Propagation
 
@@ -637,11 +637,16 @@ telemetry:
     level: info
     protocol: http
     url: http://localhost:4318/v1/logs
+    batch_timeout: 5s
+    export_timeout: 30s
+    max_queue_size: 2048
+    max_export_batch_size: 512
     headers:
       Authorization: env:OTLP_LOGS_AUTH
 ```
 
 > [!NOTE]
+> - `batch_timeout`, `export_timeout`, `max_queue_size`, and `max_export_batch_size` tune the OTLP batch export pipeline and apply only when `kind` is `otlp`. When a value is unset or zero, the OpenTelemetry SDK default is used (queue `2048`, batch `512`).
 > - `headers` values are source strings.
 > - Telemetry header maps are resolved during config projection; unset `env:` values and unreadable `file:` values fail fast (panic during startup).
 
@@ -684,9 +689,21 @@ Supported metrics kinds:
 telemetry:
   metrics:
     kind: prometheus
+    prometheus:
+      without_suffixes: true
+      without_target_info: true
+      without_scope_info: true
 ```
 
 When Prometheus is enabled on HTTP transport, metrics are exposed at `/<name>/metrics`.
+
+The optional `prometheus` block shapes exporter output for compatibility with an
+existing Prometheus/Grafana/alerting stack. `without_suffixes` drops unit
+(for example `_seconds`, `_bytes`) and `_total` counter suffixes from metric
+names, `without_target_info` omits the `target_info` metric, and
+`without_scope_info` omits the `otel_scope_name`/`otel_scope_version` labels. When
+the `prometheus` block is omitted, the exporter keeps its default
+OpenTelemetry-conventional output.
 
 #### OTLP metrics
 
@@ -734,6 +751,10 @@ telemetry:
     kind: otlp
     protocol: http
     url: http://localhost:4318/v1/traces
+    batch_timeout: 5s
+    export_timeout: 30s
+    max_queue_size: 2048
+    max_export_batch_size: 512
     sampler:
       kind: ratio
       ratio: 0.25
@@ -742,6 +763,8 @@ telemetry:
 ```
 
 > [!NOTE]
+> `batch_timeout`, `export_timeout`, `max_queue_size`, and `max_export_batch_size` tune the OTLP batch span export pipeline. When a value is unset or zero, the OpenTelemetry SDK default is used (queue `2048`, batch `512`).
+>
 > OTLP exporters default to `protocol: http`. Set `protocol: grpc` and use a
 > `host:port` `url`, such as `localhost:4317`, to export through OTLP/gRPC.
 >
