@@ -24,11 +24,11 @@ import (
 // JWT/PASETO/SSH token kinds as configured by the underlying token package).
 //
 // If cfg is disabled, it returns nil so callers can treat token auth as not configured.
-func NewToken(name env.Name, cfg *token.Config, fs *os.FS, gen id.Generator) *Token {
+func NewToken(cfg *token.Config, fs *os.FS, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
 	}
-	return &Token{Token: token.NewToken(name, cfg, fs, gen)}
+	return &Token{Token: token.NewToken(cfg, fs, gen)}
 }
 
 // Token wraps *[github.com/alexfalkowski/go-service/v2/token.Token] for gRPC transport integration.

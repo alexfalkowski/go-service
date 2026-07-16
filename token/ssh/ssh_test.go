@@ -8,10 +8,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
+	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 )
 
@@ -560,6 +562,123 @@ func TestKeysGet(t *testing.T) {
 	require.Nil(t, keys.Get("missing"))
 	require.Nil(t, ssh.Keys{}.Get("missing"))
 	require.Nil(t, ssh.Keys(nil).Get("missing"))
+}
+
+func TestKeyLoaders(t *testing.T) {
+	loaders := []struct {
+		load func(*ssh.Key, *os.FS) (any, error)
+		name string
+	}{
+		{name: "signer", load: func(key *ssh.Key, fs *os.FS) (any, error) {
+			return key.Signer(fs)
+		}},
+		{name: "verifier", load: func(key *ssh.Key, fs *os.FS) (any, error) {
+			return key.Verifier(fs)
+		}},
+	}
+
+	invalid := []struct {
+		key  *ssh.Key
+		fs   *os.FS
+		name string
+	}{
+		{name: "nil key", fs: test.FS},
+		{name: "missing key config", key: &ssh.Key{}, fs: test.FS},
+		{name: "missing fs", key: &ssh.Key{Config: test.NewSSH("secrets/ssh_public", "secrets/ssh_private")}},
+	}
+
+	for _, loader := range loaders {
+		t.Run(loader.name, func(t *testing.T) {
+			for _, tt := range invalid {
+				t.Run(tt.name, func(t *testing.T) {
+					key, err := loader.load(tt.key, tt.fs)
+					require.Nil(t, key)
+					require.ErrorIs(t, err, errors.ErrInvalidConfig)
+				})
+			}
+
+			cfg := &ssh.Key{Config: test.NewSSH("secrets/ssh_public", "secrets/ssh_private")}
+
+			key, err := loader.load(cfg, test.FS)
+			require.NoError(t, err)
+			require.NotNil(t, key)
+
+			again, err := loader.load(cfg, test.FS)
+			require.NoError(t, err)
+			require.Same(t, key, again)
+		})
+	}
+}
+
+func TestKeyLoaderRetriesAfterFailure(t *testing.T) {
+	loaders := []struct {
+		load func(*ssh.Key, *os.FS) (any, error)
+		name string
+	}{
+		{name: "signer", load: func(key *ssh.Key, fs *os.FS) (any, error) {
+			return key.Signer(fs)
+		}},
+		{name: "verifier", load: func(key *ssh.Key, fs *os.FS) (any, error) {
+			return key.Verifier(fs)
+		}},
+	}
+
+	for _, loader := range loaders {
+		t.Run(loader.name, func(t *testing.T) {
+			key := &ssh.Key{Config: test.NewSSH("secrets/none", "secrets/none")}
+
+			_, err := loader.load(key, test.FS)
+			require.Error(t, err)
+
+			key.Config = test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
+
+			k, err := loader.load(key, test.FS)
+			require.NoError(t, err)
+			require.NotNil(t, k)
+		})
+	}
+}
+
+func TestKeyLoaderConcurrentAccessReturnsSameInstance(t *testing.T) {
+	loaders := []struct {
+		load func(*ssh.Key, *os.FS) (any, error)
+		name string
+	}{
+		{name: "signer", load: func(key *ssh.Key, fs *os.FS) (any, error) {
+			return key.Signer(fs)
+		}},
+		{name: "verifier", load: func(key *ssh.Key, fs *os.FS) (any, error) {
+			return key.Verifier(fs)
+		}},
+	}
+
+	for _, loader := range loaders {
+		t.Run(loader.name, func(t *testing.T) {
+			key := &ssh.Key{Config: test.NewSSH("secrets/ssh_public", "secrets/ssh_private")}
+
+			const goroutines = 16
+
+			var group sync.WaitGroup
+
+			results := make([]any, goroutines)
+			errs := make([]error, goroutines)
+
+			group.Add(goroutines)
+			for i := range goroutines {
+				go func(i int) {
+					defer group.Done()
+
+					results[i], errs[i] = loader.load(key, test.FS)
+				}(i)
+			}
+			group.Wait()
+
+			for i := range goroutines {
+				require.NoError(t, errs[i])
+				require.Same(t, results[0], results[i])
+			}
+		})
+	}
 }
 
 func sshClaims(cfg *ssh.Config, issuedAt, expiresAt time.Time) map[string]any {

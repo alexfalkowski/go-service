@@ -2,7 +2,6 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -30,13 +29,13 @@ import (
 //
 // Unknown kinds are treated as invalid configuration by the facade methods: Generate and Verify
 // return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
-func NewToken(name env.Name, cfg *Config, fs *os.FS, gen id.Generator) *Token {
+func NewToken(cfg *Config, fs *os.FS, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
 	}
 
 	return &Token{
-		name: name, cfg: cfg,
+		cfg:    cfg,
 		jwt:    jwt.NewToken(cfg.JWT, fs, gen),
 		paseto: paseto.NewToken(cfg.Paseto, fs, gen),
 		ssh:    ssh.NewToken(cfg.SSH, fs),
@@ -52,7 +51,6 @@ type Token struct {
 	jwt    *jwt.Token
 	paseto *paseto.Token
 	ssh    *ssh.Token
-	name   env.Name
 }
 
 // Generate creates a token for the configured kind.

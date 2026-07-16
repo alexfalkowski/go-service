@@ -92,7 +92,7 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 		return strings.Empty, token.ErrInvalidConfig
 	}
 
-	sig, err := ssh.NewSigner(t.fs, key.Config)
+	sig, err := key.Signer(t.fs)
 	if err != nil {
 		return strings.Empty, err
 	}
@@ -170,7 +170,7 @@ func (t *Token) Verify(tkn, aud string) (string, error) {
 		return strings.Empty, token.ErrInvalidConfig
 	}
 
-	verifier, err := ssh.NewVerifier(t.fs, cfg.Config)
+	verifier, err := cfg.Verifier(t.fs)
 	if err != nil {
 		return strings.Empty, err
 	}

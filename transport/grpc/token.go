@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
@@ -14,9 +13,9 @@ import (
 //
 // If cfg is disabled or cfg.Token is omitted, it returns nil so downstream wiring can treat token auth
 // as not configured.
-func NewToken(name env.Name, cfg *Config, fs *os.FS, gen id.Generator) *token.Token {
+func NewToken(cfg *Config, fs *os.FS, gen id.Generator) *token.Token {
 	if !cfg.IsEnabled() || !cfg.Token.IsEnabled() {
 		return nil
 	}
-	return token.NewToken(name, cfg.Token, fs, gen)
+	return token.NewToken(cfg.Token, fs, gen)
 }

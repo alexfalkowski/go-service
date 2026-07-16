@@ -330,6 +330,16 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   compatibility. Report only concrete bugs where repository-generated RSA keys
   fail to load, weak keys are accepted, secrets leak, or the documented support
   boundary changes.
+- Crypto key generation is intentionally not a `crypto`-package product surface.
+  The `crypto/{aes,hmac,ed25519,rsa,ssh}` `Generator` types exist to produce
+  config-compatible key material, but a runnable, user-facing generation entry
+  point (CLI command, aggregating facade, make target, or shipped example) is
+  intentionally out of scope for this repository; key generation lives in a
+  dedicated CLI. Do not flag the absence of a runnable crypto key-generation
+  command/facade/recipe, or the fact that the `Generator` types have only test
+  callers, as a feature or DX gap. Report only concrete bugs where a generator
+  emits material that its own matching `Config` loader rejects, or where
+  documented generation behavior is wrong.
 - Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
 - `net/header.ForwardedIPs` is intentionally an exported mutable list, similar
