@@ -20,7 +20,7 @@ func TestGenerate(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
 			gen := uuid.NewGenerator()
-			tkn := token.NewToken(test.Name, cfg, test.FS, gen)
+			tkn := token.NewToken(cfg, test.FS, gen)
 
 			_, err := tkn.Generate("hello", test.UserID.String())
 			require.NoError(t, err)
@@ -33,7 +33,7 @@ func TestVerify(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
 			gen := uuid.NewGenerator()
-			tkn := token.NewToken(test.Name, cfg, test.FS, gen)
+			tkn := token.NewToken(cfg, test.FS, gen)
 
 			token, err := tkn.Generate("hello", test.UserID.String())
 			require.NoError(t, err)
@@ -51,7 +51,7 @@ func TestVerify(t *testing.T) {
 
 	t.Run("ssh", func(t *testing.T) {
 		cfg := test.NewToken("ssh")
-		tkn := token.NewToken(test.Name, cfg, test.FS, nil)
+		tkn := token.NewToken(cfg, test.FS, nil)
 
 		gen, err := tkn.Generate("hello", strings.Empty)
 		require.NoError(t, err)
@@ -73,7 +73,7 @@ func TestVerify(t *testing.T) {
 func TestVerifyDispatchesJWTToConcreteImplementation(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	gen := uuid.NewGenerator()
-	tkn := token.NewToken(test.Name, cfg, test.FS, gen)
+	tkn := token.NewToken(cfg, test.FS, gen)
 
 	raw, err := tkn.Generate("hello", test.UserID.String())
 	require.NoError(t, err)
@@ -87,7 +87,7 @@ func TestVerifyDispatchesJWTToConcreteImplementation(t *testing.T) {
 func TestVerifyDispatchesPasetoToConcreteImplementation(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	gen := uuid.NewGenerator()
-	tkn := token.NewToken(test.Name, cfg, test.FS, gen)
+	tkn := token.NewToken(cfg, test.FS, gen)
 
 	raw, err := tkn.Generate("hello", test.UserID.String())
 	require.NoError(t, err)
@@ -100,7 +100,7 @@ func TestVerifyDispatchesPasetoToConcreteImplementation(t *testing.T) {
 
 func TestVerifyDispatchesSSHToConcreteImplementation(t *testing.T) {
 	cfg := test.NewToken("ssh")
-	tkn := token.NewToken(test.Name, cfg, test.FS, nil)
+	tkn := token.NewToken(cfg, test.FS, nil)
 
 	raw, err := tkn.Generate("hello", strings.Empty)
 	require.NoError(t, err)
@@ -114,7 +114,7 @@ func TestVerifyDispatchesSSHToConcreteImplementation(t *testing.T) {
 func TestVerifyRejectsPasetoEmptySubject(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	gen := uuid.NewGenerator()
-	tkn := token.NewToken(test.Name, cfg, test.FS, gen)
+	tkn := token.NewToken(cfg, test.FS, gen)
 
 	raw, err := tkn.Generate("hello", strings.Empty)
 	require.NoError(t, err)
@@ -127,7 +127,7 @@ func TestVerifyRejectsPasetoEmptySubject(t *testing.T) {
 func TestVerifyRejectsJWTEmptySubject(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	gen := uuid.NewGenerator()
-	tkn := token.NewToken(test.Name, cfg, test.FS, gen)
+	tkn := token.NewToken(cfg, test.FS, gen)
 
 	raw, err := tkn.Generate("hello", strings.Empty)
 	require.NoError(t, err)
@@ -139,7 +139,7 @@ func TestVerifyRejectsJWTEmptySubject(t *testing.T) {
 
 func TestSSHSubjectMatchesActiveKey(t *testing.T) {
 	cfg := test.NewToken("ssh")
-	tkn := token.NewToken(test.Name, cfg, test.FS, nil)
+	tkn := token.NewToken(cfg, test.FS, nil)
 
 	raw, err := tkn.Generate("hello", "ignored-subject")
 	require.NoError(t, err)
@@ -192,7 +192,7 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 
 func TestUnknownKindConfig(t *testing.T) {
 	cfg := test.NewToken("none")
-	tkn := token.NewToken(test.Name, cfg, test.FS, nil)
+	tkn := token.NewToken(cfg, test.FS, nil)
 
 	gen, err := tkn.Generate("hello", test.UserID.String())
 	require.Nil(t, gen)
@@ -204,7 +204,7 @@ func TestUnknownKindConfig(t *testing.T) {
 }
 
 func TestNewTokenWithNilConfig(t *testing.T) {
-	tkn := token.NewToken(test.Name, nil, test.FS, nil)
+	tkn := token.NewToken(nil, test.FS, nil)
 	require.Nil(t, tkn)
 }
 
@@ -212,7 +212,7 @@ func TestInvalidKindConfig(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "ssh"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := &token.Config{Kind: kind}
-			tkn := token.NewToken(test.Name, cfg, test.FS, nil)
+			tkn := token.NewToken(cfg, test.FS, nil)
 
 			gen, err := tkn.Generate("hello", test.UserID.String())
 			require.Nil(t, gen)
@@ -229,7 +229,7 @@ func TestInvalidDependenciesDoNotPanic(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
-			tkn := token.NewToken(test.Name, cfg, test.FS, nil)
+			tkn := token.NewToken(cfg, test.FS, nil)
 
 			gen, err := tkn.Generate("hello", test.UserID.String())
 			require.Nil(t, gen)
@@ -244,7 +244,7 @@ func TestInvalidMatchClassification(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
-			tkn := token.NewToken(test.Name, cfg, test.FS, gen)
+			tkn := token.NewToken(cfg, test.FS, gen)
 
 			sub, err := tkn.Verify([]byte("test"), "hello")
 			require.Equal(t, strings.Empty, sub)
@@ -254,7 +254,7 @@ func TestInvalidMatchClassification(t *testing.T) {
 
 	t.Run("ssh", func(t *testing.T) {
 		cfg := test.NewToken("ssh")
-		tkn := token.NewToken(test.Name, cfg, test.FS, nil)
+		tkn := token.NewToken(cfg, test.FS, nil)
 
 		sub, err := tkn.Verify([]byte("test"), "hello")
 		require.Equal(t, strings.Empty, sub)

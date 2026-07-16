@@ -2,8 +2,11 @@ package ssh
 
 import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
+	token "github.com/alexfalkowski/go-service/v2/token/errors"
+	"github.com/alexfalkowski/go-sync"
 )
 
 // Config configures the SSH-style token implementation.
@@ -78,6 +81,67 @@ func (c *Config) IsEnabled() bool {
 type Key struct {
 	// Config contains the SSH key material configuration (public/private key sources).
 	*ssh.Config `yaml:",inline" json:",inline" toml:",inline"`
+
+	signer   sync.Pointer[ssh.Signer]
+	verifier sync.Pointer[ssh.Verifier]
+}
+
+// Signer loads an SSH signer for k.
+//
+// The signer is resolved at most once per process lifetime and reused for
+// subsequent calls. Only a successful load is cached, so a transient read or
+// parse failure is retried on the next call rather than being cached forever.
+//
+// It returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig]
+// when k is nil, its embedded key config is nil, or fs is nil.
+func (k *Key) Signer(fs *os.FS) (*ssh.Signer, error) {
+	if k == nil || k.Config == nil || fs == nil {
+		return nil, token.ErrInvalidConfig
+	}
+
+	if s := k.signer.Load(); s != nil {
+		return s, nil
+	}
+
+	s, err := ssh.NewSigner(fs, k.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	if !k.signer.CompareAndSwap(nil, s) {
+		s = k.signer.Load()
+	}
+
+	return s, nil
+}
+
+// Verifier loads an SSH verifier for k.
+//
+// The verifier is resolved at most once per process lifetime and reused for
+// subsequent calls. Only a successful load is cached, so a transient read or
+// parse failure is retried on the next call rather than being cached forever.
+//
+// It returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig]
+// when k is nil, its embedded key config is nil, or fs is nil.
+func (k *Key) Verifier(fs *os.FS) (*ssh.Verifier, error) {
+	if k == nil || k.Config == nil || fs == nil {
+		return nil, token.ErrInvalidConfig
+	}
+
+	if v := k.verifier.Load(); v != nil {
+		return v, nil
+	}
+
+	v, err := ssh.NewVerifier(fs, k.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	if !k.verifier.CompareAndSwap(nil, v) {
+		v = k.verifier.Load()
+	}
+
+	return v, nil
 }
 
 // Keys maps key ids to SSH key material.

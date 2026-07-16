@@ -13,7 +13,7 @@ import (
 )
 
 func TestNewTokenWithoutTokenConfig(t *testing.T) {
-	tkn := http.NewToken(test.Name, test.NewHTTPTransportConfig(), nil, nil)
+	tkn := http.NewToken(test.NewHTTPTransportConfig(), nil, nil)
 	require.Nil(t, tkn)
 }
 
@@ -22,7 +22,7 @@ func TestNewTokenWithTokenConfig(t *testing.T) {
 	cfg.Token = test.NewToken("jwt")
 	gen := uuid.NewGenerator()
 
-	tkn := http.NewToken(test.Name, cfg, test.FS, gen)
+	tkn := http.NewToken(cfg, test.FS, gen)
 
 	require.NotNil(t, tkn)
 	require.NotNil(t, token.NewGenerator(tkn))

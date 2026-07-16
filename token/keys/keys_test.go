@@ -3,10 +3,12 @@ package keys_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/keys"
+	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 )
 
@@ -65,9 +67,86 @@ func TestConfigLoaders(t *testing.T) {
 				})
 			}
 
-			key, err := loader.load(&keys.Config{Config: test.NewEd25519()}, test.PEM)
+			cfg := &keys.Config{Config: test.NewEd25519()}
+
+			key, err := loader.load(cfg, test.PEM)
 			require.NoError(t, err)
 			require.NotNil(t, key)
+
+			again, err := loader.load(cfg, test.PEM)
+			require.NoError(t, err)
+			require.Same(t, key, again)
+		})
+	}
+}
+
+func TestConfigLoaderRetriesAfterFailure(t *testing.T) {
+	loaders := []struct {
+		load func(*keys.Config, *pem.Decoder) (any, error)
+		name string
+	}{
+		{name: "signer", load: func(cfg *keys.Config, decoder *pem.Decoder) (any, error) {
+			return cfg.Signer(decoder)
+		}},
+		{name: "verifier", load: func(cfg *keys.Config, decoder *pem.Decoder) (any, error) {
+			return cfg.Verifier(decoder)
+		}},
+	}
+
+	for _, loader := range loaders {
+		t.Run(loader.name, func(t *testing.T) {
+			cfg := &keys.Config{Config: &ed25519.Config{}}
+
+			_, err := loader.load(cfg, test.PEM)
+			require.Error(t, err)
+
+			cfg.Config = test.NewEd25519()
+
+			key, err := loader.load(cfg, test.PEM)
+			require.NoError(t, err)
+			require.NotNil(t, key)
+		})
+	}
+}
+
+func TestConfigLoaderConcurrentAccessReturnsSameInstance(t *testing.T) {
+	loaders := []struct {
+		load func(*keys.Config, *pem.Decoder) (any, error)
+		name string
+	}{
+		{name: "signer", load: func(cfg *keys.Config, decoder *pem.Decoder) (any, error) {
+			return cfg.Signer(decoder)
+		}},
+		{name: "verifier", load: func(cfg *keys.Config, decoder *pem.Decoder) (any, error) {
+			return cfg.Verifier(decoder)
+		}},
+	}
+
+	for _, loader := range loaders {
+		t.Run(loader.name, func(t *testing.T) {
+			cfg := &keys.Config{Config: test.NewEd25519()}
+
+			const goroutines = 16
+
+			var group sync.WaitGroup
+
+			results := make([]any, goroutines)
+			errs := make([]error, goroutines)
+
+			group.Add(goroutines)
+			for i := range goroutines {
+				go func(i int) {
+					defer group.Done()
+
+					results[i], errs[i] = loader.load(cfg, test.PEM)
+				}(i)
+			}
+			group.Wait()
+
+			for i := range goroutines {
+				require.NoError(t, errs[i])
+				require.Same(t, results[0], results[i])
+			}
 		})
 	}
 }

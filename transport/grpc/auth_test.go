@@ -154,7 +154,7 @@ func TestValidAuthUnary(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
 			gen := uuid.NewGenerator()
-			tkn := token.NewToken(test.Name, cfg, test.FS, gen)
+			tkn := token.NewToken(cfg, test.FS, gen)
 
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldGRPC())
 
@@ -201,7 +201,7 @@ func TestAccessDeniedUnary(t *testing.T) {
 
 func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	cfg := test.NewToken("none")
-	tkn := token.NewToken(test.Name, cfg, test.FS, nil)
+	tkn := token.NewToken(cfg, test.FS, nil)
 
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldGRPC())
 

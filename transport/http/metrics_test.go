@@ -40,7 +40,7 @@ func TestPrometheusHTTP(t *testing.T) {
 func TestPrometheusAuthHTTP(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	gen := uuid.NewGenerator()
-	tkn := token.NewToken(test.Name, cfg, test.FS, gen)
+	tkn := token.NewToken(cfg, test.FS, gen)
 
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("prometheus"),

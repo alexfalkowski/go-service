@@ -9,6 +9,6 @@ import (
 )
 
 func TestNewTokenWithoutTokenConfig(t *testing.T) {
-	tkn := grpc.NewToken(test.Name, test.NewGRPCTransportConfig(), nil, nil)
+	tkn := grpc.NewToken(test.NewGRPCTransportConfig(), nil, nil)
 	require.Nil(t, tkn)
 }
