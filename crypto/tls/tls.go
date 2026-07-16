@@ -25,6 +25,12 @@ type Certificate = tls.Certificate
 // minimum-version checks.
 const VersionTLS12 = tls.VersionTLS12
 
+// VersionTLS13 is an alias of [crypto/tls.VersionTLS13].
+//
+// It identifies TLS 1.3 for use in runtime TLS config defaults and protocol
+// minimum-version checks.
+const VersionTLS13 = tls.VersionTLS13
+
 // RequireAndVerifyClientCert is an alias of
 // [crypto/tls.RequireAndVerifyClientCert].
 //
