@@ -144,6 +144,42 @@ func TestInvalidOverallCheck(t *testing.T) {
 	require.Equal(t, health.NotServing, resp.GetStatus())
 }
 
+func TestInvalidOverallList(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
+	requireGRPCReady(t, world)
+	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
+
+	conn := test.RequireGRPCConn(t, world)
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
+
+	client := health.NewClient(conn)
+
+	resp, err := client.List(t.Context(), &health.ListRequest{})
+	require.NoError(t, err)
+	require.Equal(t, health.NotServing, resp.GetStatuses()[""].GetStatus())
+}
+
+func TestUnknownOverallCheck(t *testing.T) {
+	world := test.NewStartedWorld(t,
+		test.WithWorldGRPCHealth(test.Name.String(), test.StatusURL("200")),
+		test.WithWorldTelemetry("otlp"),
+	)
+	requireGRPCReady(t, world)
+
+	conn := test.RequireGRPCConn(t, world)
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
+
+	client := health.NewClient(conn)
+
+	_, err := client.Check(t.Context(), &health.Request{})
+	require.Error(t, err)
+	require.Equal(t, codes.NotFound, status.Code(err))
+}
+
 func TestNotFoundCheck(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
@@ -209,6 +245,7 @@ func TestList(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := map[string]*health.Response{
+		"":                 {Status: health.Serving},
 		test.Name.String(): {Status: health.Serving},
 	}
 	require.Equal(t, expected, resp.GetStatuses())
@@ -223,12 +260,14 @@ func TestListDrains(t *testing.T) {
 
 	resp, err := server.List(t.Context(), &health.ListRequest{})
 	require.NoError(t, err)
+	require.Equal(t, health.Serving, resp.GetStatuses()[""].GetStatus())
 	require.Equal(t, health.Serving, resp.GetStatuses()[test.Name.String()].GetStatus())
 
 	drain.Start()
 
 	resp, err = server.List(t.Context(), &health.ListRequest{})
 	require.NoError(t, err)
+	require.Equal(t, health.NotServing, resp.GetStatuses()[""].GetStatus())
 	require.Equal(t, health.NotServing, resp.GetStatuses()[test.Name.String()].GetStatus())
 }
 

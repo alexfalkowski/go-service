@@ -218,6 +218,26 @@ func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsMinimumBackoff(t *testing.
 	}
 }
 
+func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsCappedBackoff(t *testing.T) {
+	calls := 0
+	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		calls++
+		res := test.ResponseWithStatus(http.StatusTooManyRequests)
+		res.Header.Set("Retry-After", "1")
+
+		return res, nil
+	})
+	cfg := config.Config{Strategy: "exponential", Backoff: 10 * time.Second, MaxBackoff: 100 * time.Millisecond, Attempts: 2}
+	retrying := retry.NewRoundTripper(retry.NewConfig(&cfg), rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+	require.Equal(t, 1, calls)
+}
+
 func TestRoundTripperRetriesWhenRetryAfterDoesNotExceedBackoff(t *testing.T) {
 	calls := 0
 	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
