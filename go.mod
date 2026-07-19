@@ -40,8 +40,8 @@ require (
 	github.com/redis/go-redis/v9 v9.21.0
 	github.com/rs/xid v1.6.0
 	github.com/segmentio/ksuid v1.0.4
-	github.com/sethvargo/go-limiter v1.1.0
-	github.com/sethvargo/go-retry v0.4.0
+	github.com/sethvargo/go-limiter v1.2.0
+	github.com/sethvargo/go-retry v0.3.0
 	github.com/sony/gobreaker v1.0.0
 	github.com/standard-webhooks/standard-webhooks/libraries v0.0.1
 	github.com/stretchr/testify v1.11.1
