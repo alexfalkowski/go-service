@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http/telemetry"
 	"github.com/alexfalkowski/go-service/v2/net/url"
@@ -197,7 +198,7 @@ func IsCrossOriginRedirect(req *Request) bool {
 	return !SameOrigin(req.Response.Request.URL, req.URL)
 }
 
-// SameOriginRedirect allows redirects only when the next request stays on the same scheme and host.
+// SameOriginRedirect limits same-origin redirect chains to the standard Go limit of ten requests.
 //
 // It is intended for clients that add credentials or signatures in RoundTripper middleware, where Go's
 // default cross-origin sensitive-header stripping is not enough because middleware may mint fresh credentials
@@ -209,11 +210,15 @@ func SameOriginRedirect(req *Request, via []*Request) error {
 
 	prev := via[len(via)-1].URL
 	next := req.URL
-	if SameOrigin(prev, next) {
-		return nil
+	if !SameOrigin(prev, next) {
+		return ErrUseLastResponse
 	}
 
-	return ErrUseLastResponse
+	if len(via) >= 10 {
+		return errors.New("stopped after 10 redirects")
+	}
+
+	return nil
 }
 
 // NewRequestWithContext constructs a new outgoing HTTP request with ctx.

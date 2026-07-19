@@ -71,6 +71,9 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 	timeout := cfg.GetTimeout()
 	backoff := cfg.GetBackoff()
 	maxBackoff := cfg.GetMaxBackoff()
+	if maxBackoff > 0 && maxBackoff < backoff {
+		backoff = maxBackoff
+	}
 	strategy := cfg.GetStrategy()
 	codes := retryableCodes(cfg)
 

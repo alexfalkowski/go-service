@@ -60,7 +60,12 @@ type Server struct {
 func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response, error) {
 	service := req.GetService()
 	if strings.IsEmpty(service) {
-		return &health.Response{Status: s.healthStatus(s.server.Error("grpc"))}, nil
+		err := s.server.Error("grpc")
+		if errors.Is(err, healthserver.ErrObserverNotFound) {
+			return nil, status.SafeError(codes.NotFound, err)
+		}
+
+		return &health.Response{Status: s.healthStatus(err)}, nil
 	}
 
 	observer, err := s.server.Observer(service, "grpc")
@@ -77,6 +82,10 @@ func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response
 // statuses.
 func (s *Server) List(_ context.Context, _ *health.ListRequest) (*health.ListResponse, error) {
 	res := &health.ListResponse{Statuses: map[string]*health.Response{}}
+	if err := s.server.Error("grpc"); !errors.Is(err, healthserver.ErrObserverNotFound) {
+		res.Statuses[""] = &health.Response{Status: s.healthStatus(err)}
+	}
+
 	for name, observer := range s.server.Observers("grpc") {
 		res.Statuses[name] = &health.Response{Status: s.healthStatus(observer.Error())}
 	}

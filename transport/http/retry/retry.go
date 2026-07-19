@@ -88,10 +88,16 @@ var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 // retry and return the current response to the caller. Invalid, absent, elapsed, or smaller Retry-After values
 // do not suppress a retry.
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *RoundTripper {
+	backoff := cfg.GetBackoff()
+	maxBackoff := cfg.GetMaxBackoff()
+	if maxBackoff > 0 && maxBackoff < backoff {
+		backoff = maxBackoff
+	}
+
 	return &RoundTripper{
 		RoundTripper: hrt,
-		backoff:      cfg.GetBackoff(),
-		maxBackoff:   cfg.GetMaxBackoff(),
+		backoff:      backoff,
+		maxBackoff:   maxBackoff,
 		strategy:     cfg.GetStrategy(),
 		policy:       composePolicy(policies),
 		maxRetries:   cfg.MaxRetries(),

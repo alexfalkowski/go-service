@@ -145,6 +145,31 @@ func TestSameOriginRedirect(t *testing.T) {
 	}
 }
 
+func TestSameOriginRedirectStopsAfterTenRedirects(t *testing.T) {
+	t.Parallel()
+
+	via := make([]*http.Request, 10)
+	for i := range via {
+		request, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/redirect", http.NoBody)
+		require.NoError(t, err)
+
+		via[i] = request
+	}
+
+	next, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/redirect", http.NoBody)
+	require.NoError(t, err)
+
+	require.NoError(t, http.SameOriginRedirect(next, via[:9]))
+
+	err = http.SameOriginRedirect(next, via)
+	require.Error(t, err)
+	require.NotErrorIs(t, err, http.ErrUseLastResponse)
+
+	crossOrigin, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://other.example.com/redirect", http.NoBody)
+	require.NoError(t, err)
+	require.ErrorIs(t, http.SameOriginRedirect(crossOrigin, via), http.ErrUseLastResponse)
+}
+
 func TestSameOrigin(t *testing.T) {
 	t.Parallel()
 
