@@ -82,6 +82,7 @@ func TestServerRejectsCAOnlyTLS(t *testing.T) {
 
 	_, err := grpc.NewServer(params)
 	require.ErrorIs(t, err, server.ErrMissingKeyPair)
+	require.EqualError(t, err, "grpc: server: missing tls key pair")
 }
 
 func TestServerAppliesCallerServerOption(t *testing.T) {

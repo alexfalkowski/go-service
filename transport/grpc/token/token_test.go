@@ -52,7 +52,7 @@ func TestStreamClientInterceptorReplacesOutgoingAuthorization(t *testing.T) {
 func TestUnaryServerInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
 	policy := method.NewPolicy()
 	policy.AllowUnauthenticated("/events.v1.EventsService/Receive")
-	interceptor := token.UnaryServerInterceptor(policy, env.UserID("service-user"), &test.Verifier{})
+	interceptor := token.UnaryServerInterceptor(policy, &test.Verifier{})
 	called := false
 
 	_, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: "/events.v1.EventsService/Receive"}, func(context.Context, any) (any, error) {
@@ -67,7 +67,7 @@ func TestUnaryServerInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
 func TestStreamServerInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
 	policy := method.NewPolicy()
 	policy.AllowUnauthenticated("/events.v1.EventsService/Subscribe")
-	interceptor := token.StreamServerInterceptor(policy, env.UserID("service-user"), &test.Verifier{})
+	interceptor := token.StreamServerInterceptor(policy, &test.Verifier{})
 	stream := &test.MetaServerStream{Ctx: t.Context()}
 	called := false
 

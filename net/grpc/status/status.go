@@ -102,11 +102,11 @@ func SafeError(c codes.Code, err error) error {
 // LocalError marks err as produced by this client's own load-control middleware —
 // the client circuit breaker or rate limiter — rather than returned by the upstream server.
 //
-// "Local" contrasts with an upstream response. A breaker-open or limiter-exhausted rejection surfaces
-// the same ResourceExhausted code an upstream server could return, so the status code alone cannot tell
-// the two apart. Retry middleware treats a local rejection as terminal: retrying a request the client
-// just shed is futile and only amplifies load, whereas an upstream status with the same code may be
-// worth retrying. If err is not a gRPC status error, it is represented with [codes.Unknown].
+// "Local" contrasts with an upstream response. A breaker-open or limiter outcome can surface the same
+// status code an upstream server could return, so the status code alone cannot tell the two apart. Retry
+// middleware treats a local outcome as terminal: retrying a request the client just rejected or cannot
+// process is futile and only amplifies load, whereas an upstream status with the same code may be worth
+// retrying. If err is not a gRPC status error, it is represented with [codes.Unknown].
 func LocalError(err error) error {
 	if err == nil {
 		return nil
@@ -115,8 +115,8 @@ func LocalError(err error) error {
 	return &localError{err: err}
 }
 
-// IsLocalError reports whether err was wrapped by LocalError, identifying a local load-control
-// rejection as opposed to an upstream status response.
+// IsLocalError reports whether err was wrapped by LocalError, identifying a local load-control outcome
+// as opposed to an upstream status response.
 func IsLocalError(err error) bool {
 	_, ok := errors.AsType[*localError](err)
 	return ok

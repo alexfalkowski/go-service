@@ -77,7 +77,7 @@ func TestRoundTripperGeneratesTokenForMethodPath(t *testing.T) {
 
 func TestHandlerVerifiesTokenForMethodPath(t *testing.T) {
 	verifier := &audienceVerifier{token: "fresh-token"}
-	handler := token.NewHandler(http.NewRoutePolicy(), env.UserID("user-id"), verifier)
+	handler := token.NewHandler(http.NewRoutePolicy(), verifier)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodPatch, "/users/123", http.NoBody)
 	require.NoError(t, err)
 	req = req.WithContext(meta.WithAttributes(req.Context(), meta.WithAuthorization(meta.String("fresh-token"))))

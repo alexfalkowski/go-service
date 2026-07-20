@@ -55,15 +55,14 @@ type Verifier token.Verifier
 // NewHandler constructs server-side token verification middleware.
 //
 // Callers should only install this handler when verifier is non-nil.
-func NewHandler(routePolicy *http.RoutePolicy, id env.UserID, verifier Verifier) *Handler {
-	return &Handler{routePolicy: routePolicy, id: id, verifier: verifier}
+func NewHandler(routePolicy *http.RoutePolicy, verifier Verifier) *Handler {
+	return &Handler{routePolicy: routePolicy, verifier: verifier}
 }
 
 // Handler verifies Authorization headers and injects the verified subject into request metadata.
 type Handler struct {
 	verifier    Verifier
 	routePolicy *http.RoutePolicy
-	id          env.UserID
 }
 
 // ServeHTTP verifies the request Authorization token and stores the verified subject in the context.

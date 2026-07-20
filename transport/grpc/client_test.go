@@ -80,6 +80,35 @@ func TestRetryDoesNotReenterClientLimiter(t *testing.T) {
 	require.Equal(t, 0, downstreamCalls)
 }
 
+func TestRetryDoesNotReenterClosedClientLimiter(t *testing.T) {
+	clientLimiter, err := grpclimiter.NewClientLimiter(
+		test.NoopLifecycle{},
+		limiter.NewKeyMap(),
+		test.NewLimiterConfig("user-agent", "1m", 10),
+	)
+	require.NoError(t, err)
+	require.NoError(t, clientLimiter.Close(t.Context()))
+
+	limiting := grpclimiter.UnaryClientInterceptor(clientLimiter)
+	retrying := grpcretry.UnaryClientInterceptor(test.NewGRPCRetryConfig(3, time.Nanosecond, codes.Internal))
+	limiterCalls := 0
+	downstreamCalls := 0
+	invoker := func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, opts ...grpc.CallOption) error {
+		limiterCalls++
+		return limiting(ctx, fullMethod, req, resp, conn, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+			downstreamCalls++
+			return nil
+		}, opts...)
+	}
+	err = retrying(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
+
+	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, codes.Internal, status.Code(err))
+	require.Equal(t, 1, limiterCalls)
+	require.Equal(t, 0, downstreamCalls)
+}
+
 func TestRetryDoesNotReenterClientBreaker(t *testing.T) {
 	breaking := grpcbreaker.UnaryClientInterceptor(
 		grpcbreaker.NewConfig(test.NewBreaker(1), codes.Unavailable).Options()...,
