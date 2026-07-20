@@ -83,10 +83,11 @@ func validateHTTP(endpoint Endpoint) error {
 
 func validateGRPC(endpoint Endpoint) error {
 	host, port, err := net.SplitHostPort(endpoint.Address)
-	if err != nil || strings.IsEmpty(host) {
+	if err != nil || strings.IsEmpty(host) || strings.IsEmpty(port) {
 		return ErrInvalidEndpoint
 	}
-	if _, err := net.LookupPort(context.Background(), "tcp", port); err != nil {
+	portNumber, err := net.LookupPort(context.Background(), "tcp", port)
+	if err != nil || portNumber == 0 {
 		return ErrInvalidEndpoint
 	}
 
@@ -98,7 +99,7 @@ func validateGRPC(endpoint Endpoint) error {
 }
 
 func isLoopback(host string) bool {
-	if host == "localhost" {
+	if strings.ToLower(host) == "localhost" {
 		return true
 	}
 

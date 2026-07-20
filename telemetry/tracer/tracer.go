@@ -177,7 +177,7 @@ func Register(params TracerParams) error {
 		providerOpts := []sdk.TracerProviderOption{sdk.WithResource(attrs), sdk.WithBatcher(exporter, batchSpanProcessorOptions(params.Config)...)}
 		sampler, err := newSampler(params.Config.Sampler)
 		if err != nil {
-			return prefix(err)
+			return err
 		}
 		if sampler != nil {
 			providerOpts = append(providerOpts, sdk.WithSampler(sampler))
