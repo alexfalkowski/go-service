@@ -180,7 +180,7 @@ func WithClientUnaryInterceptors(unary ...grpc.UnaryClientInterceptor) ClientOpt
 //
 // Metadata propagation runs first so custom interceptors see the resolved user-agent and request-id.
 // Interceptors provided here then run before the remaining standard interceptors added by this package
-// (logging, token injection, limiter, etc.).
+// (logging, limiter, token injection, etc.).
 //
 // Pass all custom stream interceptors for a client construction in one call. Repeating this option follows
 // the package's last-wins functional option convention and replaces earlier custom stream interceptors.

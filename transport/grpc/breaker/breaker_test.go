@@ -102,6 +102,38 @@ func TestUnaryClientInterceptorOpensOnClassifiedFailures(t *testing.T) {
 	}
 }
 
+func TestUnaryClientInterceptorDoesNotOpenOnCallerCancellation(t *testing.T) {
+	tests := map[string][]breaker.Option{
+		"canceled configured as a failure code": {
+			breaker.WithSettings(settings()),
+			breaker.WithFailureCodes(codes.Canceled),
+		},
+		"custom IsSuccessful treats canceled as a failure": {
+			breaker.WithSettings(settings(func(error) bool { return false })),
+		},
+	}
+
+	for name, opts := range tests {
+		t.Run(name, func(t *testing.T) {
+			interceptor := breaker.UnaryClientInterceptor(opts...)
+
+			invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+				return status.Error(codes.Canceled, "canceled")
+			}
+
+			err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
+			require.Error(t, err)
+			require.Equal(t, codes.Canceled, status.Code(err))
+			require.False(t, status.IsLocalError(err))
+
+			err = interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
+			require.Error(t, err)
+			require.Equal(t, codes.Canceled, status.Code(err))
+			require.False(t, status.IsLocalError(err))
+		})
+	}
+}
+
 func TestUnaryClientInterceptorIsolatesBreakersByFullMethod(t *testing.T) {
 	interceptor := breaker.UnaryClientInterceptor(
 		breaker.WithSettings(settings()),

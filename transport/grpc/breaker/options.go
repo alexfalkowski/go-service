@@ -42,7 +42,9 @@ func WithSettings(s Settings) Option {
 // WithFailureCodes configures which gRPC status codes are treated as failures for breaker accounting.
 //
 // If an invocation returns an error whose status code is contained in this set, the breaker counts it as a
-// failure. Errors with status codes not in this set are counted as successes.
+// failure. Errors with status codes not in this set are counted as successes. [codes.Canceled] is always
+// counted as a success regardless of this set, matching the caller-cancellation handling in the HTTP client
+// breaker: a caller aborting an in-flight call should not trip the breaker against a healthy upstream.
 func WithFailureCodes(cs ...codes.Code) Option {
 	return optionFunc(func(o *opts) {
 		o.failureCodes = make(map[codes.Code]struct{}, len(cs))
