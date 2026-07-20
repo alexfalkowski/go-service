@@ -87,9 +87,10 @@ func Errorf(c codes.Code, format string, a ...any) error {
 // The wrapped error remains available through Unwrap for internal inspection, while gRPC sends the safe message instead
 // of err.Error(). If c is [codes.OK], SafeError returns nil to preserve upstream gRPC status invariants.
 //
-// Return the SafeError result directly from gRPC handlers. If the result is later wrapped with [fmt.Errorf]("%w"),
-// upstream [status.FromError] may include that outer wrapping text in the client-visible status message. Put internal
-// context in err before passing it to SafeError instead.
+// Return the SafeError result directly from gRPC handlers so the runtime renders the safe message from GRPCStatus.
+// Error reports the diagnostic cause for logs and is not safe to send to clients; do not build a client status from
+// it. If the result is later wrapped with [fmt.Errorf]("%w"), upstream [status.FromError] rebuilds the client-visible
+// message from that outer Error and surfaces the diagnostic on the wire. To add internal context, use [SafeErrorf].
 func SafeError(c codes.Code, err error) error {
 	if c == codes.OK {
 		return nil
@@ -150,9 +151,25 @@ type statusError struct {
 	code codes.Code
 }
 
-// Error returns the gRPC status error string with the safe message.
+// Error returns the gRPC status error string with the diagnostic message.
+//
+// When a cause was wrapped (via [SafeError]/[SafeErrorf]), Error surfaces that cause so operator logs and
+// local inspection can action the real failure. Returned directly from a handler, the client-visible wire
+// message is rendered from [statusError.GRPCStatus]/[statusError.SafeMessage] and stays the safe message.
+// Wrapping the result with [fmt.Errorf]("%w") before returning it to gRPC is not supported (see [SafeError]):
+// upstream status.FromError would then surface this diagnostic string on the wire. Use [SafeErrorf] to add
+// internal context safely.
 func (s *statusError) Error() string {
-	return status.New(s.code, s.msg).Err().Error()
+	return status.New(s.code, s.message()).Err().Error()
+}
+
+// message returns the diagnostic message: the wrapped cause when present, otherwise the safe message.
+func (s *statusError) message() string {
+	if s.err != nil {
+		return s.err.Error()
+	}
+
+	return s.msg
 }
 
 // SafeMessage returns the message that is safe to send to clients.

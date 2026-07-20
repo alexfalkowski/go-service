@@ -69,6 +69,22 @@ func TestSafeError(t *testing.T) {
 	require.ErrorIs(t, err, cause)
 }
 
+func TestSafeErrorSurfacesCauseInErrorString(t *testing.T) {
+	safe := status.SafeError(codes.Internal, errors.New("secret database failure"))
+
+	// Operator logs render err.Error(); the diagnostic cause must be visible there so failures can be actioned.
+	require.Contains(t, safe.Error(), "secret database failure")
+
+	// Returned directly to gRPC, the client-visible wire message stays the safe message.
+	s, ok := status.FromError(safe)
+	require.True(t, ok)
+	require.Equal(t, "grpc: internal", s.Message())
+
+	// A plain (non-safe) error keeps its client-visible message in Error() too.
+	plain := status.Error(codes.NotFound, "widget missing")
+	require.Contains(t, plain.Error(), "widget missing")
+}
+
 func TestLocalError(t *testing.T) {
 	cause := errors.New("local limiter rejection")
 	err := status.LocalError(status.SafeError(codes.ResourceExhausted, cause))
@@ -160,12 +176,15 @@ func TestSafeErrorWrapped(t *testing.T) {
 	cause := errors.New("secret database failure")
 	err := fmt.Errorf("wrapped: %w", status.SafeError(codes.Internal, cause))
 
+	// Wrapping a SafeError with fmt.Errorf before returning it to gRPC is unsupported: upstream
+	// status.FromError rebuilds the wire message from the outer err.Error(), which now carries the
+	// diagnostic cause. This is the deliberate "you know what you are doing" escape hatch; use SafeErrorf
+	// (see TestSafeErrorf) to add internal context without surfacing the cause on the wire.
 	s, ok := status.FromError(err)
 	require.True(t, ok)
 	require.Equal(t, codes.Internal, s.Code())
 	require.Contains(t, s.Message(), "wrapped:")
-	require.Contains(t, s.Message(), "grpc: internal")
-	require.NotContains(t, s.Message(), "secret database failure")
+	require.Contains(t, s.Message(), "secret database failure")
 }
 
 func TestErrorIs(t *testing.T) {

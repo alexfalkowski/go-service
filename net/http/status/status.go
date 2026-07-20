@@ -22,6 +22,11 @@ func Error(code int, msg string) error {
 //
 // The wrapped error remains available through Unwrap for internal inspection, while WriteError sends the safe message
 // instead of err.Error(). If err already carries a status code, it is returned unchanged.
+//
+// Error reports the diagnostic message (including err) for logs, so it is not safe to send to clients directly.
+// Render client responses through WriteError, which uses the chain-aware SafeMessage even when the error is wrapped;
+// never write err.Error() to the response. To add internal context, prefer SafeErrorf over wrapping with
+// fmt.Errorf("%w").
 func SafeError(code int, err error) error {
 	code = normalizeCode(code, err)
 	msg := DefaultMessage(code)
@@ -35,6 +40,23 @@ func SafeError(code int, err error) error {
 	}
 
 	return &statusError{code: code, error: err.Error(), msg: msg, err: err}
+}
+
+// SafeErrorf formats internal context around err and wraps it with a safe HTTP status message.
+//
+// The formatted context and err remain available through Unwrap for internal inspection, while WriteError sends
+// the safe message instead of the formatted cause. It is the preferred helper for adding internal context to a
+// safe status error, keeping that context in the wrapped cause rather than the client-visible message. Prefer it
+// over wrapping SafeError with [fmt.Errorf].
+func SafeErrorf(code int, err error, format string, a ...any) error {
+	if err == nil {
+		return SafeError(code, fmt.Errorf(format, a...))
+	}
+	if strings.IsEmpty(format) {
+		return SafeError(code, err)
+	}
+
+	return SafeError(code, fmt.Errorf(format+": %w", append(a, err)...))
 }
 
 // LocalError marks err as produced by this client's own load-control middleware —
@@ -205,7 +227,9 @@ func (s *statusError) Code() int {
 	return s.code
 }
 
-// Error returns the diagnostic error message.
+// Error returns the diagnostic error message, including any wrapped cause, for logs and local inspection.
+//
+// It is not safe to send to clients; use SafeMessage, or render responses with WriteError, for client-visible output.
 func (s *statusError) Error() string {
 	return s.error
 }

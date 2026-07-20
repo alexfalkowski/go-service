@@ -100,6 +100,8 @@ type ServerParams struct {
 // (first listed runs first):
 //   - metadata extraction/injection, route-pattern resolution, and response headers ([github.com/alexfalkowski/go-service/v2/net/http/meta])
 //   - optional logging ([github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger]) when `params.Logger` is non-nil
+//   - panic recovery that converts a downstream panic into a safe `500 Internal Server Error` response when the
+//     response has not already been committed
 //   - optional token verification ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Verifier` is non-nil
 //   - optional rate limiting ([github.com/alexfalkowski/go-service/v2/transport/http/limiter]) when `params.Limiter` is non-nil
 //   - optional access control ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Access` is non-nil
