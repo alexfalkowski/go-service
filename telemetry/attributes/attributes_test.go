@@ -64,9 +64,12 @@ func TestDeploymentEnvironmentName(t *testing.T) {
 		expected string
 	}{
 		{name: "prod alias", value: "prod", expected: "production"},
+		{name: "prod alias uppercase", value: "PROD", expected: "production"},
 		{name: "production", value: "production", expected: "production"},
+		{name: "production mixed case", value: "Production", expected: "production"},
 		{name: "stage alias", value: "stage", expected: "staging"},
 		{name: "staging", value: "staging", expected: "staging"},
+		{name: "staging uppercase", value: "STAGING", expected: "staging"},
 		{name: "qa alias", value: "qa", expected: "test"},
 		{name: "test", value: "test", expected: "test"},
 		{name: "testing alias", value: "testing", expected: "test"},

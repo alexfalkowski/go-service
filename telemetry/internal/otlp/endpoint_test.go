@@ -11,19 +11,36 @@ import (
 func TestValidateEndpoint(t *testing.T) {
 	headers := map[string]string{"Authorization": "Bearer token"}
 
-	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "https://collector.example.com/v1/traces", Headers: headers}))
-	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "http://localhost:4318/v1/traces", Headers: headers}))
-	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "http://127.0.0.1:4318/v1/traces", Headers: headers}))
-	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "http://collector.example.com/v1/traces"}))
-	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "grpc", Address: "localhost:4317", Headers: headers}))
-	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317"}))
-	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317", Headers: headers, TLS: &tls.Config{}}))
+	tests := []struct {
+		endpoint otlp.Endpoint
+		wantErr  error
+		name     string
+	}{
+		{name: "secure HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "https://collector.example.com/v1/traces", Headers: headers}},
+		{name: "lowercase localhost HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://localhost:4318/v1/traces", Headers: headers}},
+		{name: "mixed case localhost HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://Localhost:4318/v1/traces", Headers: headers}},
+		{name: "uppercase localhost HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://LOCALHOST:4318/v1/traces", Headers: headers}},
+		{name: "loopback IP HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://127.0.0.1:4318/v1/traces", Headers: headers}},
+		{name: "headerless HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://collector.example.com/v1/traces"}},
+		{name: "loopback gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "localhost:4317", Headers: headers}},
+		{name: "mixed case localhost gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "Localhost:4317", Headers: headers}},
+		{name: "headerless gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317"}},
+		{name: "TLS gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317", Headers: headers, TLS: &tls.Config{}}},
+		{name: "insecure HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://collector.example.com/v1/traces", Headers: headers}, wantErr: otlp.ErrInsecureEndpoint},
+		{name: "insecure gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317", Headers: headers}, wantErr: otlp.ErrInsecureEndpoint},
+	}
 
-	err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "http://collector.example.com/v1/traces", Headers: headers})
-	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := otlp.ValidateEndpoint(tt.endpoint)
+			if tt.wantErr == nil {
+				require.NoError(t, err)
+				return
+			}
 
-	err = otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317", Headers: headers})
-	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+			require.ErrorIs(t, err, tt.wantErr)
+		})
+	}
 }
 
 func TestValidateEndpointInvalidURL(t *testing.T) {
@@ -52,6 +69,8 @@ func TestValidateEndpointRejectsInvalidEndpoint(t *testing.T) {
 	for _, address := range []string{
 		"https://collector.example.com:4317",
 		"collector.example.com",
+		"collector.example.com:",
+		"collector.example.com:0",
 		"collector.example.com:4317/v1/traces",
 	} {
 		t.Run(address, func(t *testing.T) {

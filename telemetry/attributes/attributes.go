@@ -2,6 +2,7 @@ package attributes
 
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
@@ -154,7 +155,7 @@ func ServiceVersion(version string) attribute.KeyValue {
 
 // DeploymentEnvironmentName returns a deployment.environment.name attribute for env.
 //
-// It maps common environment names onto the stable OpenTelemetry enum values:
+// It case-insensitively maps common environment names onto the stable OpenTelemetry enum values:
 // "prod" and "production" become "production"; "stage" and "staging" become
 // "staging"; "qa", "test", and "testing" become "test"; "dev" and
 // "development" become "development". Unknown or empty values default to
@@ -166,7 +167,7 @@ func ServiceVersion(version string) attribute.KeyValue {
 // Parameters:
 //   - env: the deployment environment name, such as "prod" or "staging"
 func DeploymentEnvironmentName(env string) attribute.KeyValue {
-	switch env {
+	switch strings.ToLower(env) {
 	case "prod", "production":
 		return semconv.DeploymentEnvironmentNameProduction
 	case "stage", "staging":

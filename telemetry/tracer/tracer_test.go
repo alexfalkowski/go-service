@@ -211,6 +211,7 @@ func TestRegisterInvalidSampler(t *testing.T) {
 			})
 
 			require.ErrorIs(t, err, tracer.ErrInvalidSampler)
+			require.EqualError(t, err, "tracer: invalid sampler")
 		})
 	}
 }
