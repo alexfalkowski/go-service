@@ -21,6 +21,7 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - goconst
+    - gomodguard
     - gomodguard_v2
     - ireturn
     - mnd
