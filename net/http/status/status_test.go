@@ -84,6 +84,40 @@ func TestSafeErrorKeepsWrappedCoder(t *testing.T) {
 	require.Same(t, err, httpstatus.SafeError(http.StatusBadRequest, err))
 }
 
+func TestSafeErrorf(t *testing.T) {
+	err := httpstatus.SafeErrorf(http.StatusUnauthorized, test.ErrInvalid, "load tenant %s", "tenant-1")
+
+	require.ErrorIs(t, err, test.ErrInvalid)
+	require.Equal(t, http.StatusUnauthorized, httpstatus.Code(err))
+	require.Contains(t, err.Error(), "load tenant tenant-1")
+
+	res := httptest.NewRecorder()
+	require.NoError(t, httpstatus.WriteError(res, err))
+	test.RequireTrimmedResponseBody(t, res, "http: unauthorized")
+}
+
+func TestSafeErrorfWithoutCause(t *testing.T) {
+	err := httpstatus.SafeErrorf(http.StatusUnauthorized, nil, "load tenant %s", "tenant-1")
+
+	require.Equal(t, http.StatusUnauthorized, httpstatus.Code(err))
+	require.Contains(t, err.Error(), "load tenant tenant-1")
+
+	res := httptest.NewRecorder()
+	require.NoError(t, httpstatus.WriteError(res, err))
+	test.RequireTrimmedResponseBody(t, res, "http: unauthorized")
+}
+
+func TestSafeErrorfWithoutFormat(t *testing.T) {
+	err := httpstatus.SafeErrorf(http.StatusUnauthorized, test.ErrInvalid, "")
+
+	require.ErrorIs(t, err, test.ErrInvalid)
+	require.Equal(t, http.StatusUnauthorized, httpstatus.Code(err))
+
+	res := httptest.NewRecorder()
+	require.NoError(t, httpstatus.WriteError(res, err))
+	test.RequireTrimmedResponseBody(t, res, "http: unauthorized")
+}
+
 func TestLocalError(t *testing.T) {
 	err := httpstatus.LocalError(httpstatus.SafeError(http.StatusTooManyRequests, test.ErrInvalid))
 

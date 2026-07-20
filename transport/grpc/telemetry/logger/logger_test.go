@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
@@ -34,6 +35,27 @@ func TestUnaryServerInterceptorLogs(t *testing.T) {
 	require.Contains(t, logs.String(), `"service":"greet.v1.GreeterService"`)
 	require.Contains(t, logs.String(), `"method":"SayHello"`)
 	require.Contains(t, logs.String(), `"code":"OK"`)
+}
+
+func TestUnaryServerInterceptorLogsSafeErrorCause(t *testing.T) {
+	var logs bytes.Buffer
+	interceptor := grpclogger.UnaryServerInterceptor(method.NewPolicy(), newLogger(&logs))
+
+	_, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.GreeterService/SayHello"}, func(context.Context, any) (any, error) {
+		return nil, status.SafeError(codes.Unauthenticated, errors.New("jwt: signature invalid"))
+	})
+
+	require.Error(t, err)
+	require.Equal(t, codes.Unauthenticated, status.Code(err))
+
+	// Operator logs must surface the real cause so auth failures can be actioned.
+	require.Contains(t, logs.String(), "jwt: signature invalid")
+	require.Contains(t, logs.String(), `"code":"Unauthenticated"`)
+
+	// The client-visible wire message stays the safe message.
+	s, ok := status.FromError(err)
+	require.True(t, ok)
+	require.Equal(t, "grpc: unauthenticated", s.Message())
 }
 
 func TestUnaryServerInterceptorSkipsOperationMethod(t *testing.T) {
