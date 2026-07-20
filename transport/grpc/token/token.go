@@ -70,7 +70,7 @@ type Verifier token.Verifier
 //     the handler.
 //
 // Callers should only install this interceptor when verifier is non-nil.
-func UnaryServerInterceptor(policy *method.Policy, id env.UserID, verifier Verifier) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(policy *method.Policy, verifier Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		if bypassAuth(policy, info.FullMethod) {
 			return handler(ctx, req)
@@ -102,7 +102,7 @@ func UnaryServerInterceptor(policy *method.Policy, id env.UserID, verifier Verif
 //     invokes the handler using a wrapped stream (`go-grpc-middleware` wrapper) that carries the new context.
 //
 // Callers should only install this interceptor when verifier is non-nil.
-func StreamServerInterceptor(policy *method.Policy, id env.UserID, verifier Verifier) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(policy *method.Policy, verifier Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		if bypassAuth(policy, info.FullMethod) {
 			return handler(srv, stream)

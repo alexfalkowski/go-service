@@ -60,9 +60,6 @@ type ServerParams struct {
 	// Version is the service version reported via response headers and/or request context metadata.
 	Version env.Version
 
-	// UserID identifies the metadata key used for injecting authenticated subjects into context.
-	UserID env.UserID
-
 	// ID generates request IDs when one is not already present.
 	ID id.Generator
 
@@ -141,7 +138,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	neg.Use(&recoveryHandler{})
 
 	if params.Verifier != nil {
-		neg.Use(token.NewHandler(params.RoutePolicy, params.UserID, params.Verifier))
+		neg.Use(token.NewHandler(params.RoutePolicy, params.Verifier))
 	}
 
 	if params.Limiter != nil {

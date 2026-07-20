@@ -88,7 +88,7 @@ func (s *Server) Register() error {
 			Logger:   s.Logger,
 			Limiter:  s.HTTPLimiter,
 			Handlers: []http.ChainedHandler{&EmptyHandler{}},
-			Verifier: s.Verifier, Access: s.Access, ID: s.Generator, UserID: UserID,
+			Verifier: s.Verifier, Access: s.Access, ID: s.Generator,
 			UserAgent: UserAgent, Version: Version,
 			RoutePolicy: s.RoutePolicy,
 		}
@@ -108,7 +108,7 @@ func (s *Server) Register() error {
 			Shutdowner: sh,
 			Config:     s.TransportConfig.GRPC,
 			Logger:     s.Logger,
-			Verifier:   s.Verifier, Access: s.Access, ID: s.Generator, UserID: UserID,
+			Verifier:   s.Verifier, Access: s.Access, ID: s.Generator,
 			UserAgent: UserAgent, Version: Version,
 			Limiter:      s.GRPCLimiter,
 			MethodPolicy: s.GRPCMethodPolicy,

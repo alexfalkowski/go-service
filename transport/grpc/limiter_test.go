@@ -309,6 +309,65 @@ func TestClientClosedLimiterUnary(t *testing.T) {
 	require.Equal(t, codes.Internal, status.Code(err))
 }
 
+func TestClientClosedLimiterStreamOpen(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+
+	conn := test.RequireGRPCConn(t, world)
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	require.NoError(t, world.Client.GRPCLimiter.Close(t.Context()))
+
+	_, err := client.SayStreamHello(t.Context())
+	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, codes.Internal, status.Code(err))
+}
+
+func TestClientClosedLimiterStreamSend(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+
+	conn := test.RequireGRPCConn(t, world)
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
+
+	client := v1.NewGreeterServiceClient(conn)
+	stream, err := client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+
+	require.NoError(t, world.Client.GRPCLimiter.Close(t.Context()))
+
+	err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
+	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, codes.Internal, status.Code(err))
+}
+
+func TestClientClosedLimiterStreamRecv(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+
+	conn := test.RequireGRPCConn(t, world)
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
+
+	client := v1.NewGreeterServiceClient(conn)
+	stream, err := client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+	require.NoError(t, stream.Send(&v1.SayStreamHelloRequest{Name: "test"}))
+
+	require.NoError(t, world.Client.GRPCLimiter.Close(t.Context()))
+
+	_, err = stream.Recv()
+	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, codes.Internal, status.Code(err))
+}
+
 func requireRetryInfo(t *testing.T, err error) {
 	t.Helper()
 

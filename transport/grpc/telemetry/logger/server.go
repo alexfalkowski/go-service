@@ -21,7 +21,7 @@ import (
 //   - code: gRPC status code as a string
 //
 // Log level is derived from the status code (see [CodeToLevel]). The log message includes the full
-// method name and, when present, error details.
+// method name.
 //
 // Operator diagnostics:
 // The raw error is intentionally attached to the log record for backend observability. Client-facing
@@ -63,7 +63,7 @@ func UnaryServerInterceptor(policy *method.Policy, log *Logger) grpc.UnaryServer
 //   - code: gRPC status code as a string
 //
 // Log level is derived from the status code (see [CodeToLevel]). The log message includes the full
-// method name and, when present, error details.
+// method name.
 //
 // Operator diagnostics:
 // The raw error is intentionally attached to the log record for backend observability. Client-facing

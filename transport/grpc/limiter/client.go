@@ -36,7 +36,7 @@ type Client struct {
 //
 // The interceptor calls `limiter.TakeDecision(ctx)` before invoking the RPC:
 //
-//   - If `TakeDecision` returns an error, it returns [codes.Internal].
+//   - If `TakeDecision` returns an error, it returns a locally marked [codes.Internal].
 //   - If the request is not allowed, it returns a locally marked [codes.ResourceExhausted].
 //   - Otherwise, it invokes the underlying `invoker`.
 //
@@ -45,7 +45,7 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		decision, err := take(ctx, limiter.Limiter)
 		if err != nil {
-			return err
+			return status.LocalError(err)
 		}
 
 		if !decision.Allowed() {
@@ -61,7 +61,7 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 // The interceptor calls `limiter.TakeDecision(ctx)` before opening the stream, then meters each sent and received
 // stream message:
 //
-//   - If `TakeDecision` returns an error, it returns [codes.Internal].
+//   - If `TakeDecision` returns an error, it returns a locally marked [codes.Internal].
 //   - If the stream is not allowed, it returns a locally marked [codes.ResourceExhausted].
 //   - Otherwise, it invokes the underlying `streamer`.
 //
@@ -70,7 +70,7 @@ func StreamClientInterceptor(limiter *Client) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		decision, err := take(ctx, limiter.Limiter)
 		if err != nil {
-			return nil, err
+			return nil, status.LocalError(err)
 		}
 
 		if !decision.Allowed() {
@@ -99,7 +99,7 @@ func (s *clientStream) RecvMsg(m any) error {
 
 	decision, err := take(s.ctx, s.limiter)
 	if err != nil {
-		return err
+		return status.LocalError(err)
 	}
 
 	if !decision.Allowed() {
@@ -112,7 +112,7 @@ func (s *clientStream) RecvMsg(m any) error {
 func (s *clientStream) SendMsg(m any) error {
 	decision, err := take(s.ctx, s.limiter)
 	if err != nil {
-		return err
+		return status.LocalError(err)
 	}
 
 	if !decision.Allowed() {

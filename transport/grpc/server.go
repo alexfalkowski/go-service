@@ -59,9 +59,6 @@ type ServerParams struct {
 	// Version is the service version reported via metadata interceptors.
 	Version env.Version
 
-	// UserID identifies the metadata key used for injecting authenticated subjects into context.
-	UserID env.UserID
-
 	// ID generates request IDs when one is not already present.
 	ID id.Generator
 
@@ -194,7 +191,7 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 	uis = append(uis, recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)))
 
 	if params.Verifier != nil {
-		uis = append(uis, token.UnaryServerInterceptor(params.MethodPolicy, params.UserID, params.Verifier))
+		uis = append(uis, token.UnaryServerInterceptor(params.MethodPolicy, params.Verifier))
 	}
 
 	if params.Limiter != nil {
@@ -220,7 +217,7 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 	sis = append(sis, recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)))
 
 	if params.Verifier != nil {
-		sis = append(sis, token.StreamServerInterceptor(params.MethodPolicy, params.UserID, params.Verifier))
+		sis = append(sis, token.StreamServerInterceptor(params.MethodPolicy, params.Verifier))
 	}
 
 	if params.Limiter != nil {
@@ -253,7 +250,7 @@ func credsServerOption(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
 
 	conf, err := server.NewConfig(fs, cfg.TLS)
 	if err != nil {
-		return grpc.EmptyServerOption{}, prefix(err)
+		return grpc.EmptyServerOption{}, err
 	}
 
 	return grpc.Creds(grpc.NewTLS(conf)), nil
