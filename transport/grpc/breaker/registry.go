@@ -1,6 +1,7 @@
 package breaker
 
 import (
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-sync"
@@ -23,6 +24,9 @@ func (r *registry) get(fullMethod string) *breaker.CircuitBreaker {
 	failureCodes := r.opts.failureCodes
 	s.IsSuccessful = func(err error) bool {
 		if err == nil {
+			return true
+		}
+		if status.Code(err) == codes.Canceled {
 			return true
 		}
 

@@ -11,8 +11,10 @@
 // all attempts fail. When retries are triggered by transport errors, the original error is preserved.
 //
 // Retry-After handling: when a retryable HTTP response includes a valid Retry-After seconds value or HTTP-date
-// whose delay is greater than the minimum jittered backoff, the response is returned without another attempt.
-// Invalid, absent, elapsed, or shorter Retry-After values do not suppress a retry.
+// whose delay is greater than the minimum jittered backoff that will precede the next attempt, the response is
+// returned without another attempt. For exponential and fibonacci strategies this grows per attempt, matching
+// the real backoff schedule rather than the static base. Invalid, absent, elapsed, or shorter Retry-After values
+// do not suppress a retry.
 //
 // Default policy: if no policy is passed to NewRoundTripper, only side-effect-safe requests are eligible for
 // retry. This includes safe HTTP methods and requests carrying a Request-Id. In go-service, Request-Id

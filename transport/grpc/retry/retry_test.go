@@ -175,11 +175,52 @@ func TestUnaryClientInterceptorDoesNotRetryWhenRetryInfoDelayExceedsMinimumBacko
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
 		calls++
-		return retryInfoError(t, codes.Unavailable, 20*time.Millisecond)
+		return retryInfoError(t, 20*time.Millisecond)
 	})
 
 	require.Error(t, err)
 	require.Equal(t, 1, calls)
+}
+
+func TestUnaryClientInterceptorHonorsGrownBackoffForRetryInfo(t *testing.T) {
+	tests := []struct {
+		name  string
+		delay time.Duration
+		calls int
+		err   bool
+	}{
+		{name: "below the grown backoff retries", delay: 15 * time.Millisecond, calls: 3, err: false},
+		{name: "above the grown backoff still suppresses", delay: 25 * time.Millisecond, calls: 2, err: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Exponential growth from a 10ms base gives ~10ms before attempt 2 and ~20ms before
+			// attempt 3; the second attempt's gate must compare against the latter, not the base.
+			cfg := config.Config{Strategy: "exponential", Backoff: 10 * time.Millisecond, Attempts: 3}
+			interceptor := retry.UnaryClientInterceptor(retry.NewConfig(&cfg))
+
+			calls := 0
+			err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+				calls++
+				switch calls {
+				case 1:
+					return status.Error(codes.Unavailable, "unavailable")
+				case 2:
+					return retryInfoError(t, tt.delay)
+				default:
+					return nil
+				}
+			})
+
+			if tt.err {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tt.calls, calls)
+		})
+	}
 }
 
 func TestUnaryClientInterceptorDoesNotRetryWhenRetryInfoDelayExceedsCappedBackoff(t *testing.T) {
@@ -189,7 +230,7 @@ func TestUnaryClientInterceptorDoesNotRetryWhenRetryInfoDelayExceedsCappedBackof
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
 		calls++
-		return retryInfoError(t, codes.Unavailable, 20*time.Millisecond)
+		return retryInfoError(t, 20*time.Millisecond)
 	})
 
 	require.Error(t, err)
@@ -211,7 +252,7 @@ func TestUnaryClientInterceptorRetriesWhenRetryInfoDelayDoesNotExceedBackoff(t *
 			err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
 				calls++
 				if calls == 1 {
-					return retryInfoError(t, codes.Unavailable, delay)
+					return retryInfoError(t, delay)
 				}
 
 				return nil
@@ -409,10 +450,10 @@ func TestUnaryClientInterceptorRetriesWhenPolicyAllowsRequestID(t *testing.T) {
 	require.Equal(t, 2, calls)
 }
 
-func retryInfoError(t *testing.T, code codes.Code, delay time.Duration) error {
+func retryInfoError(t *testing.T, delay time.Duration) error {
 	t.Helper()
 
-	grpcStatus, err := status.New(code, "retry later").WithDetails(&status.RetryInfo{
+	grpcStatus, err := status.New(codes.Unavailable, "retry later").WithDetails(&status.RetryInfo{
 		RetryDelay: status.NewDuration(delay),
 	})
 	require.NoError(t, err)

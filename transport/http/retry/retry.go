@@ -84,9 +84,10 @@ var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 //   - If retries are exhausted after retryable transport errors, the original transport error is returned.
 //
 // Retry-After behavior:
-// Valid Retry-After seconds values or HTTP-date values greater than the minimum jittered backoff suppress the
-// retry and return the current response to the caller. Invalid, absent, elapsed, or smaller Retry-After values
-// do not suppress a retry.
+// Valid Retry-After seconds values or HTTP-date values greater than the minimum jittered backoff that will
+// precede the next attempt suppress the retry and return the current response to the caller. For exponential
+// and fibonacci strategies this grows per attempt, matching the real backoff schedule rather than the static
+// base. Invalid, absent, elapsed, or smaller Retry-After values do not suppress a retry.
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *RoundTripper {
 	backoff := cfg.GetBackoff()
 	maxBackoff := cfg.GetMaxBackoff()
@@ -160,6 +161,8 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 
 	attempt := &roundTripAttempt{
 		backoff:     r.backoff,
+		maxBackoff:  r.maxBackoff,
+		strategy:    r.strategy,
 		maxRetries:  r.maxRetries,
 		statusCodes: r.statusCodes,
 	}
@@ -214,9 +217,12 @@ func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *
 }
 
 type roundTripAttempt struct {
+	growth      retry.Backoff
+	strategy    string
 	statusCodes []int
 	attempt     uint64
 	backoff     time.Duration
+	maxBackoff  time.Duration
 	maxRetries  uint64
 }
 
@@ -232,18 +238,38 @@ func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *ht
 	retryErr = statusError(retryErr, err)
 	if res == nil {
 		a.attempt++
+		a.nextGrowth()
 		return retryErr
 	}
 	if a.attempt >= a.maxRetries {
 		return nil
 	}
-	if retryAfterDelayExceedsBackoff(res, a.backoff) {
+	if retryAfterDelayExceedsBackoff(res, a.nextGrowth()) {
 		return nil
 	}
 
 	discardResponse(res)
 	a.attempt++
 	return retryErr
+}
+
+// nextGrowth returns the backoff duration that will precede the next retry attempt.
+//
+// It mirrors the growth applied by the real backoff chain built from the same strategy, base, and
+// cap so the Retry-After gate compares against the wait that will actually happen, not the static
+// base backoff, for growing strategies such as exponential and fibonacci.
+func (a *roundTripAttempt) nextGrowth() time.Duration {
+	if a.growth == nil {
+		growth := retry.NewBackoff(a.strategy, a.backoff)
+		if a.maxBackoff > 0 {
+			growth = retry.WithCappedDuration(a.maxBackoff, growth)
+		}
+
+		a.growth = growth
+	}
+
+	next, _ := a.growth.Next()
+	return time.Duration(next)
 }
 
 func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Request, error) {

@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 )
 
@@ -82,10 +83,12 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 			return attempt(ctx)
 		}
 
-		strategyBackoff := retry.NewBackoff(strategy, backoff)
-		if maxBackoff > 0 {
-			strategyBackoff = retry.WithCappedDuration(maxBackoff, strategyBackoff)
-		}
+		strategyBackoff := cappedBackoff(strategy, backoff, maxBackoff)
+
+		// growthBackoff mirrors strategyBackoff's construction so the RetryInfo gate can peek the
+		// backoff that will actually precede the next attempt, growing per attempt for exponential
+		// and fibonacci strategies rather than staying pinned to the static base.
+		growthBackoff := cappedBackoff(strategy, backoff, maxBackoff)
 
 		retries := retry.WithJitterPercent(config.DefaultJitterPercent, strategyBackoff)
 		retries = retry.WithMaxRetries(maxAttempts-1, retries)
@@ -97,7 +100,9 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 			if !isRetryableCode(status.Code(err), codes) {
 				return err
 			}
-			if retryInfoDelayExceedsBackoff(err, backoff) {
+
+			next, _ := growthBackoff.Next()
+			if retryInfoDelayExceedsBackoff(err, time.Duration(next)) {
 				return err
 			}
 
@@ -117,6 +122,16 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 			return invoker(attemptCtx, fullMethod, req, resp, conn, opts...)
 		})
 	}
+}
+
+// cappedBackoff builds a backoff for strategy and base, capped at maxBackoff when positive.
+func cappedBackoff(strategy string, base, maxBackoff time.Duration) retry.Backoff {
+	backoff := retry.NewBackoff(strategy, base)
+	if maxBackoff > 0 {
+		backoff = retry.WithCappedDuration(maxBackoff, backoff)
+	}
+
+	return backoff
 }
 
 func retryableCodes(cfg *Config) []codes.Code {

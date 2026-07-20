@@ -30,7 +30,8 @@ type Config struct {
 	//
 	// When empty, gRPC breakers use their default failure classification. When set, only these configured
 	// non-OK status codes are counted as breaker failures; include the defaults here as well when custom
-	// configuration should extend rather than replace the default list.
+	// configuration should extend rather than replace the default list. [codes.Canceled] is always counted
+	// as a success even when included here, so a caller aborting an in-flight call never trips the breaker.
 	Codes []codes.Code `yaml:"codes,omitempty" json:"codes,omitempty" toml:"codes,omitempty" validate:"omitempty,dive,gt=0,lte=16"`
 }
 

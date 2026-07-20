@@ -218,6 +218,50 @@ func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsMinimumBackoff(t *testing.
 	}
 }
 
+func TestRoundTripperHonorsGrownBackoffForRetryAfter(t *testing.T) {
+	tests := []struct {
+		name       string
+		retryAfter string
+		calls      int
+		finalCode  int
+	}{
+		{name: "below the grown backoff retries", retryAfter: "1", calls: 3, finalCode: http.StatusOK},
+		{name: "above the grown backoff still suppresses", retryAfter: "2", calls: 2, finalCode: http.StatusTooManyRequests},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calls := 0
+			rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+				calls++
+				switch calls {
+				case 1:
+					return test.ResponseWithStatus(http.StatusTooManyRequests), nil
+				case 2:
+					res := test.ResponseWithStatus(http.StatusTooManyRequests)
+					res.Header.Set("Retry-After", tt.retryAfter)
+
+					return res, nil
+				default:
+					return test.ResponseWithStatus(http.StatusOK), nil
+				}
+			})
+
+			// Exponential growth from a 750ms base gives ~750ms before attempt 2 and ~1.5s before
+			// attempt 3; the second attempt's gate must compare against the latter, not the base.
+			cfg := config.Config{Strategy: "exponential", Backoff: 750 * time.Millisecond, Attempts: 3}
+			retrying := retry.NewRoundTripper(retry.NewConfig(&cfg), rt)
+
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+			res, err := retrying.RoundTrip(req)
+			require.NoError(t, err)
+			require.Equal(t, tt.finalCode, res.StatusCode)
+			require.Equal(t, tt.calls, calls)
+		})
+	}
+}
+
 func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsCappedBackoff(t *testing.T) {
 	calls := 0
 	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
