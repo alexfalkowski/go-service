@@ -23,9 +23,7 @@ var (
 // code. Use [SafeError] to retain an internal cause without exposing it to the client. WriteError returns a
 // body-write failure without attempting a secondary response.
 func WriteError(ctx context.Context, res http.ResponseWriter, err error) error {
-	if state, _ := ctx.Value(requestErrorKey).(*requestError); state != nil && state.err == nil {
-		state.err = err
-	}
+	RecordError(ctx, err)
 
 	header := res.Header()
 	header.Del("Content-Length")

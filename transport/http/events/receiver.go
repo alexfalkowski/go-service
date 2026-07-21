@@ -4,6 +4,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/events"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events/hooks"
 )
@@ -42,7 +44,18 @@ func NewReceiver(router *http.Router, hook *hooks.Webhook) *Receiver {
 // structured HTTP encoding only; binary-mode CloudEvents with ce-* headers are rejected before signature
 // verification.
 func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverFunc) {
-	handler := events.NewReceiveHandler(ctx, receiver)
+	handler := events.NewReceiveHandler(ctx, func(ctx context.Context, event events.Event) (result events.Result) {
+		defer func() {
+			if value := recover(); value != nil {
+				// CloudEvents recovers callback panics internally, so recover here to preserve
+				// go-service's safe response and request-log diagnostics.
+				status.RecordError(ctx, runtime.ConvertRecover(value))
+				result = events.NewHTTPResult(http.StatusInternalServerError, "")
+			}
+		}()
+
+		return receiver(ctx, event)
+	})
 	handler = hooks.NewHandler(r.hook, handler)
 
 	r.router.HandleUnauthenticated(strings.Join(strings.Space, http.MethodPost, path), handler)
