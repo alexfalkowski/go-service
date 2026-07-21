@@ -29,7 +29,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/jellydator/ttlcache/v3 v3.4.1
-	github.com/klauspost/compress v1.19.0
+	github.com/klauspost/compress v1.19.1
 	github.com/lmittmann/tint v1.2.0
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/oklog/ulid v1.3.1
