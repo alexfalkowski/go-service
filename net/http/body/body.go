@@ -36,7 +36,7 @@ func Close(body io.ReadCloser) {
 func NewHandler(handler http.Handler, limit int64) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		if req.ContentLength > limit {
-			_ = status.WriteError(res, &http.MaxBytesError{Limit: limit})
+			_ = status.WriteError(req.Context(), res, &http.MaxBytesError{Limit: limit})
 			return
 		}
 
@@ -47,13 +47,13 @@ func NewHandler(handler http.Handler, limit int64) http.Handler {
 
 		data, body, err := io.ReadAll(io.LimitReader(req.Body, limit+1))
 		if err != nil {
-			_ = status.WriteError(res, status.BadRequestError(err))
+			_ = status.WriteError(req.Context(), res, status.BadRequestError(err))
 			return
 		}
 		defer Close(req.Body)
 
 		if int64(len(data)) > limit {
-			_ = status.WriteError(res, &http.MaxBytesError{Limit: limit})
+			_ = status.WriteError(req.Context(), res, &http.MaxBytesError{Limit: limit})
 			return
 		}
 

@@ -49,6 +49,23 @@ func TestHandlerLogsResponse(t *testing.T) {
 	}
 }
 
+func TestHandlerLogsStatusError(t *testing.T) {
+	var logs bytes.Buffer
+	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+	handler := httplogger.NewHandler(http.NewRoutePolicy(), &logger.Logger{Logger: slogLogger})
+	res := httptest.NewRecorder()
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/greeter/say-hello", http.NoBody)
+
+	handler.ServeHTTP(res, req, func(res http.ResponseWriter, req *http.Request) {
+		require.NoError(t, status.WriteError(req.Context(), res, status.BadRequestError(test.ErrInvalid)))
+	})
+
+	require.Equal(t, http.StatusBadRequest, res.Code)
+	test.RequireTrimmedResponseBody(t, res, "http: bad request")
+	require.Contains(t, logs.String(), `"level":"WARN"`)
+	require.Contains(t, logs.String(), `"error":"`+test.ErrInvalid.Error()+`"`)
+}
+
 func TestHandlerSkipsOperationPath(t *testing.T) {
 	var logs bytes.Buffer
 	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))

@@ -88,7 +88,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	sub, err := h.verifier.Verify(strings.Bytes(auth), audience(req))
 	if err != nil {
-		_ = status.WriteError(res, status.UnauthorizedError(err))
+		_ = status.WriteError(req.Context(), res, status.UnauthorizedError(err))
 		return
 	}
 
@@ -122,17 +122,17 @@ func (h *AccessHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, ne
 
 	ctx := req.Context()
 	if meta.UserID(ctx).IsEmpty() {
-		_ = status.WriteError(res, status.UnauthorizedError(header.ErrInvalidAuthorization))
+		_ = status.WriteError(req.Context(), res, status.UnauthorizedError(header.ErrInvalidAuthorization))
 		return
 	}
 
 	ok, err := h.controller.HasAccess(ctx)
 	if err != nil {
-		_ = status.WriteError(res, status.InternalServerError(err))
+		_ = status.WriteError(req.Context(), res, status.InternalServerError(err))
 		return
 	}
 	if !ok {
-		_ = status.WriteError(res, status.SafeError(http.StatusForbidden, access.ErrAccessDenied))
+		_ = status.WriteError(req.Context(), res, status.SafeError(http.StatusForbidden, access.ErrAccessDenied))
 		return
 	}
 

@@ -1,9 +1,12 @@
 package logger
 
 import (
+	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -19,7 +22,8 @@ type Logger = logger.Logger
 // NewHandler constructs HTTP server logging middleware.
 //
 // The returned handler logs the outcome of each request after next has completed, including duration and
-// response status code. Registered operation paths (health/metrics/etc.) are skipped.
+// response status code. Registered operation paths (health/metrics/etc.) skip ordinary access logs but still
+// log recovered panics.
 func NewHandler(routePolicy *http.RoutePolicy, logger *Logger) *Handler {
 	return &Handler{routePolicy: routePolicy, logger: logger}
 }
@@ -32,37 +36,64 @@ type Handler struct {
 
 // ServeHTTP logs the request outcome after next completes.
 //
-// Registered operation paths (health/metrics/etc.) bypass logging.
+// Registered operation paths (health/metrics/etc.) bypass ordinary access logging but retain recovered-panic
+// logging.
 //
 // Logged attributes include:
 //   - system: "http"
 //   - service/method: derived from the request (see [http.ParseServiceMethod])
 //   - duration: wall-clock elapsed time
 //   - code: HTTP response status code
+//   - error: the request diagnostic error, when present
+//
+// Recovered panics are logged at error level with their original diagnostic error.
 //
 // Log level is derived from the status code:
 //   - 4xx → warn
 //   - 5xx → error
 //   - otherwise → info
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if h.routePolicy.IsOperation(req) {
-		next(res, req)
-		return
-	}
-
 	service, method := http.ParseServiceMethod(req)
-	ctx := req.Context()
+	ctx := status.WithRequestError(req.Context())
+	start := time.Now()
 
 	attrs := make([]logger.Attr, 0, 5)
 	attrs = append(attrs, logger.String(meta.SystemKey, "http"))
 	attrs = append(attrs, logger.String(meta.ServiceKey, service))
 	attrs = append(attrs, logger.String(meta.MethodKey, method))
+	defer func() {
+		if value := recover(); value != nil {
+			h.logPanic(ctx, attrs, runtime.ConvertRecover(value), time.Since(start).String())
+			panic(value)
+		}
+	}()
+	if h.routePolicy.IsOperation(req) {
+		next(res, req.WithContext(ctx))
+		if err := status.RequestError(ctx); errors.Is(err, runtime.ErrRecovered) {
+			h.logPanic(ctx, attrs, err, time.Since(start).String())
+		}
+
+		return
+	}
 
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 	attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
-	message := logger.NewText(httpMessage(strings.Join(strings.Space, method, service)))
+	if err := status.RequestError(ctx); errors.Is(err, runtime.ErrRecovered) {
+		h.logPanic(ctx, attrs, err, "")
+		return
+	}
+
+	message := logger.NewMessage(httpMessage(strings.Join(strings.Space, method, service)), status.RequestError(ctx))
 
 	h.logger.LogAttrs(ctx, codeToLevel(m.Code), message, attrs...)
+}
+
+func (h *Handler) logPanic(ctx context.Context, attrs []logger.Attr, err error, duration string) {
+	if duration != "" {
+		attrs = append(attrs, logger.String(meta.DurationKey, duration))
+	}
+
+	h.logger.LogAttrs(ctx, logger.LevelError, logger.NewMessage("http: panic", err), attrs...)
 }
 
 // NewRoundTripper constructs HTTP client logging middleware.

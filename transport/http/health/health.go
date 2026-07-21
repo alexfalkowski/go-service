@@ -59,18 +59,18 @@ func resister(pattern string, params RegisterParams) {
 	params.Router.HandleOperationFunc("GET "+http.Pattern(params.Name, pattern), func(res http.ResponseWriter, req *http.Request) {
 		if pattern == "/readyz" {
 			if err := params.Drain.Error(); err != nil {
-				_ = status.WriteError(res, status.ServiceUnavailableError(err))
+				_ = status.WriteError(req.Context(), res, status.ServiceUnavailableError(err))
 				return
 			}
 		}
 
 		observer, err := params.Server.Observer(params.Name.String(), pattern[1:])
 		if err != nil {
-			_ = status.WriteError(res, status.ServiceUnavailableError(err))
+			_ = status.WriteError(req.Context(), res, status.ServiceUnavailableError(err))
 			return
 		}
 		if err := observer.Error(); err != nil {
-			_ = status.WriteError(res, status.ServiceUnavailableError(err))
+			_ = status.WriteError(req.Context(), res, status.ServiceUnavailableError(err))
 			return
 		}
 

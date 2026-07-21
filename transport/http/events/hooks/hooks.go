@@ -67,7 +67,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	if hasBinaryHeaders(req.Header) {
-		_ = status.WriteError(resp, status.BadRequestError(ErrBinaryEncoding))
+		_ = status.WriteError(req.Context(), resp, status.BadRequestError(ErrBinaryEncoding))
 		return
 	}
 
