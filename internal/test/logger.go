@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-sync"
 )
 
 // CapturedRecord is a slog record captured by CaptureHandler.
@@ -20,6 +21,7 @@ type CapturedRecord struct {
 // CaptureHandler records slog records for tests.
 type CaptureHandler struct {
 	Records []CapturedRecord
+	mu      sync.RWMutex
 }
 
 // Enabled reports whether the handler accepts records at level.
@@ -36,12 +38,23 @@ func (h *CaptureHandler) Handle(_ context.Context, record slog.Record) error {
 		}
 		return true
 	})
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
 	h.Records = append(h.Records, CapturedRecord{
 		Level:   record.Level,
 		Message: record.Message,
 		Attrs:   attrs,
 	})
 	return nil
+}
+
+// Snapshot returns the captured records at the time of the call.
+func (h *CaptureHandler) Snapshot() []CapturedRecord {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	return append([]CapturedRecord(nil), h.Records...)
 }
 
 // WithAttrs returns a handler with attrs.

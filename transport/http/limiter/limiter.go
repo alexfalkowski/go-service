@@ -71,7 +71,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	decision, err := h.limiter.TakeDecision(ctx)
 	if err != nil {
-		_ = status.WriteError(res, status.InternalServerError(err))
+		_ = status.WriteError(req.Context(), res, status.InternalServerError(err))
 		return
 	}
 
@@ -83,7 +83,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 			res.Header().Set("Retry-After", strconv.FormatUint(resetAfter, 10))
 		}
 
-		_ = status.WriteError(res, status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests)))
+		_ = status.WriteError(req.Context(), res, status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests)))
 		return
 	}
 

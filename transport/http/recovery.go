@@ -61,8 +61,8 @@ func (*recoveryHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, ne
 				panic(value)
 			}
 
-			err := status.SafeError(http.StatusInternalServerError, runtime.ConvertRecover(value))
-			_ = status.WriteError(res, err)
+			err := runtime.ConvertRecover(value)
+			_ = status.WriteError(req.Context(), res, status.SafeError(http.StatusInternalServerError, err))
 		}
 	}()
 

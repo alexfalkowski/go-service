@@ -3,6 +3,7 @@ package status
 import (
 	"fmt"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
@@ -13,29 +14,19 @@ var (
 	textContentType  = media.MustParse(media.Text).WithUTF8()
 )
 
-// WriteError writes an error response to res.
+// WriteError records err for request-scoped operator diagnostics, then writes its safe response to res.
 //
-// Content-Type:
-// WriteError always writes the response as a plain-text error payload using the go-service specific
-// error media type "text/error; charset=utf-8" and sets "X-Content-Type-Options: nosniff".
-//
-// Status code selection:
-// The HTTP status code is derived from err using Code(err), which understands:
-//   - errors implementing Coder,
-//   - errors created by this package, and
-//   - raw *[http.MaxBytesError] values mapped to 413 Request Entity Too Large, and
-//   - gRPC status errors mapped to HTTP codes.
-//
-// Write behavior:
-// The error message is written as a single line (via [fmt.Fprintln]) containing the first SafeMessage in
-// err's chain. If no safe message is available, WriteError uses the default safe HTTP status message for Code(err).
-// Use SafeError to preserve an internal cause while returning the default safe HTTP status message to the client.
-// If writing the body fails, WriteError returns the write error and does not attempt to write a
-// secondary error response.
-//
-// This helper is conceptually similar to [net/http.Error] but uses go-service status code extraction
-// and the dedicated error media type.
-func WriteError(res http.ResponseWriter, err error) error {
+// The first error written through ctx is retained because it determines the client response. The response
+// rendering and error-return behavior are otherwise identical to previous releases of WriteError. It writes a
+// plain-text `text/error; charset=utf-8` response with `X-Content-Type-Options: nosniff`. The status code is
+// derived with [Code]. The body contains the first safe message in err's chain, or the default message for that
+// code. Use [SafeError] to retain an internal cause without exposing it to the client. WriteError returns a
+// body-write failure without attempting a secondary response.
+func WriteError(ctx context.Context, res http.ResponseWriter, err error) error {
+	if state, _ := ctx.Value(requestErrorKey).(*requestError); state != nil && state.err == nil {
+		state.err = err
+	}
+
 	header := res.Header()
 	header.Del("Content-Length")
 	header.Set("Content-Type", errorContentType)

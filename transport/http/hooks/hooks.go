@@ -170,7 +170,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	}
 
 	if err := h.hook.Verify(req); err != nil {
-		_ = status.WriteError(res, status.BadRequestError(err))
+		_ = status.WriteError(req.Context(), res, status.BadRequestError(err))
 
 		return
 	}

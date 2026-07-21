@@ -5,5 +5,6 @@
 //
 // Status error messages created with Error/Errorf are client-visible when passed to WriteError. Wrapped
 // internal failures created with FromError or SafeError keep their diagnostic Error text, but WriteError
-// sends a lowercase "http: " prefixed status message instead.
+// sends a lowercase "http: " prefixed status message instead. HTTP logging middleware can prepare the request
+// context with WithRequestError to attach that diagnostic error to its access log without exposing it to clients.
 package status

@@ -48,7 +48,7 @@ func TestFromErrorAllowsNil(t *testing.T) {
 func TestWriteErrorUsesSafeMessageForFromError(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	err := httpstatus.WriteError(res, httpstatus.BadRequestError(test.ErrInvalid))
+	err := httpstatus.WriteError(t.Context(), res, httpstatus.BadRequestError(test.ErrInvalid))
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, res.Code)
@@ -58,7 +58,7 @@ func TestWriteErrorUsesSafeMessageForFromError(t *testing.T) {
 func TestWriteErrorUsesSafeMessage(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	err := httpstatus.WriteError(res, httpstatus.SafeError(http.StatusUnauthorized, test.ErrInvalid))
+	err := httpstatus.WriteError(t.Context(), res, httpstatus.SafeError(http.StatusUnauthorized, test.ErrInvalid))
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.Code)
@@ -92,7 +92,7 @@ func TestSafeErrorf(t *testing.T) {
 	require.Contains(t, err.Error(), "load tenant tenant-1")
 
 	res := httptest.NewRecorder()
-	require.NoError(t, httpstatus.WriteError(res, err))
+	require.NoError(t, httpstatus.WriteError(t.Context(), res, err))
 	test.RequireTrimmedResponseBody(t, res, "http: unauthorized")
 }
 
@@ -103,7 +103,7 @@ func TestSafeErrorfWithoutCause(t *testing.T) {
 	require.Contains(t, err.Error(), "load tenant tenant-1")
 
 	res := httptest.NewRecorder()
-	require.NoError(t, httpstatus.WriteError(res, err))
+	require.NoError(t, httpstatus.WriteError(t.Context(), res, err))
 	test.RequireTrimmedResponseBody(t, res, "http: unauthorized")
 }
 
@@ -114,7 +114,7 @@ func TestSafeErrorfWithoutFormat(t *testing.T) {
 	require.Equal(t, http.StatusUnauthorized, httpstatus.Code(err))
 
 	res := httptest.NewRecorder()
-	require.NoError(t, httpstatus.WriteError(res, err))
+	require.NoError(t, httpstatus.WriteError(t.Context(), res, err))
 	test.RequireTrimmedResponseBody(t, res, "http: unauthorized")
 }
 
@@ -142,7 +142,7 @@ func TestSafeErrorUsesRequestEntityTooLargeForMaxBytesError(t *testing.T) {
 func TestWriteErrorUsesDefaultSafeMessageForUnknownStatusCode(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	err := httpstatus.WriteError(res, &test.CoderError{StatusCode: 999})
+	err := httpstatus.WriteError(t.Context(), res, &test.CoderError{StatusCode: 999})
 
 	require.NoError(t, err)
 	require.Equal(t, 999, res.Code)
@@ -154,7 +154,7 @@ func TestWriteErrorUsesClientClosedRequestMessageForCanceledGRPCStatus(t *testin
 	status, ok := grpcstatus.FromError(grpcstatus.Error(codes.Canceled, "client canceled"))
 	require.True(t, ok)
 
-	err := httpstatus.WriteError(res, status.Err())
+	err := httpstatus.WriteError(t.Context(), res, status.Err())
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusClientClosedRequest, res.Code)
@@ -239,7 +239,7 @@ func TestCodeMapsContextErrors(t *testing.T) {
 func TestWriteErrorReturnsWriteFailure(t *testing.T) {
 	res := &test.ErrResponseWriter{}
 
-	err := httpstatus.WriteError(res, httpstatus.BadRequestError(test.ErrInvalid))
+	err := httpstatus.WriteError(t.Context(), res, httpstatus.BadRequestError(test.ErrInvalid))
 
 	require.ErrorIs(t, err, test.ErrFailed)
 	require.Equal(t, http.StatusBadRequest, res.Code)

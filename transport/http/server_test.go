@@ -1,16 +1,21 @@
 package http_test
 
 import (
+	"log/slog"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/context"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
 	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/stretchr/testify/require"
@@ -101,7 +106,8 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 }
 
 func TestServerRecoversPanic(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldHTTP())
+	capture := &test.CaptureHandler{}
+	world := test.NewWorld(t, test.WithWorldHTTP(), test.WithWorldLogger(&logger.Logger{Logger: slog.New(capture)}))
 	world.Handle("GET /panic", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		panic("test panic")
 	}))
@@ -116,6 +122,14 @@ func TestServerRecoversPanic(t *testing.T) {
 		res.WriteHeader(http.StatusEarlyHints)
 		panic("test panic after commit")
 	}))
+	world.HandleOperationFunc("GET /panic-operation", func(http.ResponseWriter, *http.Request) {
+		panic("test operation panic")
+	})
+	world.Handle("GET /panic-after-error", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		_ = status.WriteError(req.Context(), res, status.BadRequestError(test.ErrInvalid))
+		res.(interface{ Flush() }).Flush()
+		panic("test panic after error")
+	}))
 	world.HandleHello()
 	world.Start()
 
@@ -123,17 +137,55 @@ func TestServerRecoversPanic(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	require.Equal(t, "http: internal server error", body)
+	requirePanicLog(t, capture, "test panic", "panic")
 
 	res, body, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-informational"), http.Header{})
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	require.Equal(t, "http: internal server error", body)
+	requirePanicLog(t, capture, "test panic after informational response", "panic-after-informational")
 
 	_, _, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-write"), http.Header{"Accept-Encoding": {"identity"}})
 	require.Error(t, err)
+	requirePanicLog(t, capture, "test panic after commit", "panic-after-write")
+
+	res, body, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-operation"), http.Header{})
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, "http: internal server error", body)
+	requirePanicLog(t, capture, "test operation panic", "panic-operation")
+
+	_, _, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-error"), http.Header{"Accept-Encoding": {"identity"}})
+	require.Error(t, err)
+	requirePanicLog(t, capture, "test panic after error", "panic-after-error")
 
 	res, body, err = world.GetBody(t.Context(), world.PathServerURL("http", "hello"), http.Header{})
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, "hello!", body)
+}
+
+func requirePanicLog(t *testing.T, capture *test.CaptureHandler, panicMessage, service string) {
+	t.Helper()
+
+	for _, record := range capture.Snapshot() {
+		if record.Message != "http: panic" {
+			continue
+		}
+
+		err, ok := record.Attrs["error"].Any().(error)
+		if !ok || !errors.Is(err, runtime.ErrRecovered) || !strings.Contains(err.Error(), panicMessage) {
+			continue
+		}
+
+		require.Equal(t, slog.LevelError, record.Level)
+		require.Equal(t, "http", record.Attrs["system"].String())
+		require.Equal(t, service, record.Attrs["service"].String())
+		require.Equal(t, "get", record.Attrs["method"].String())
+		require.NotEmpty(t, record.Attrs["requestId"].String())
+
+		return
+	}
+
+	require.Failf(t, "panic log not found", "panic message: %q", panicMessage)
 }
