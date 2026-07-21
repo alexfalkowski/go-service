@@ -57,10 +57,12 @@ type KeyFunc func(context.Context) meta.Value
 type KeyMap map[string]KeyFunc
 
 type keys struct {
-	values  map[string]time.Time
-	lock    sync.Mutex
-	ttl     time.Duration
-	maxKeys uint64
+	values        map[string]time.Time
+	lastSweep     time.Time
+	lock          sync.Mutex
+	ttl           time.Duration
+	sweepInterval time.Duration
+	maxKeys       uint64
 }
 
 func (k *keys) storeKey(value meta.Value) string {
@@ -75,7 +77,17 @@ func (k *keys) storeKey(value meta.Value) string {
 		return key
 	}
 
-	k.deleteExpired(now)
+	if uint64(len(k.values)) < k.maxKeys {
+		k.values[key] = now
+		return key
+	}
+
+	// Match the store's sweep cadence so full-map expiry cleanup is amortized during key floods.
+	if k.lastSweep.IsZero() || now.Sub(k.lastSweep) >= k.sweepInterval.Duration() {
+		k.deleteExpired(now)
+		k.lastSweep = now
+	}
+
 	if uint64(len(k.values)) < k.maxKeys {
 		k.values[key] = now
 		return key

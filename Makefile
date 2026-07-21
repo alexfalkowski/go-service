@@ -22,7 +22,7 @@ transport-diagram:
 	@$(MAKE) package=transport create-diagram
 
 # Run all the benchmarks.
-benchmarks: http-benchmarks grpc-benchmarks sql-benchmarks cache-benchmarks bytes-benchmarks \
+benchmarks: http-benchmarks grpc-benchmarks limiter-benchmarks sql-benchmarks cache-benchmarks bytes-benchmarks \
 	strings-benchmarks id-benchmarks net-http-benchmarks http-content-benchmarks
 
 http-benchmarks:
@@ -30,6 +30,9 @@ http-benchmarks:
 
 grpc-benchmarks:
 	@$(MAKE) package=transport/grpc benchtime=100x benchmark
+
+limiter-benchmarks:
+	@$(MAKE) package=transport/limiter benchtime=100x benchmark
 
 sql-benchmarks:
 	@$(MAKE) package=database/sql/driver benchtime=100x benchmark

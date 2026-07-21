@@ -1600,6 +1600,7 @@ make sec
 make benchmarks
 make http-benchmarks
 make grpc-benchmarks
+make limiter-benchmarks
 make sql-benchmarks
 make cache-benchmarks
 make bytes-benchmarks
