@@ -35,7 +35,7 @@ require (
 	github.com/oklog/ulid v1.3.1
 	github.com/open-feature/go-sdk v1.17.2
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.7
-	github.com/prometheus/client_golang v1.23.2
+	github.com/prometheus/client_golang v1.24.0
 	github.com/redis/go-redis/extra/redisotel/v9 v9.21.0
 	github.com/redis/go-redis/v9 v9.21.0
 	github.com/rs/xid v1.6.0
