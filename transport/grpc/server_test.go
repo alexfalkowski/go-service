@@ -7,13 +7,17 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	netgrpc "github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	netserver "github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -118,4 +122,76 @@ func TestServerAppliesCallerServerOption(t *testing.T) {
 
 	require.Error(t, err)
 	require.ErrorContains(t, err, rejected.Error())
+}
+
+func TestServerRecoversUnaryMetadataPanic(t *testing.T) {
+	client := newPanicMetadataServerClient(t)
+
+	_, err := client.SayHello(t.Context(), &v1.SayHelloRequest{Name: "panic"})
+	require.Error(t, err)
+	require.Equal(t, codes.Internal, status.Code(err))
+
+	resp, err := client.SayHello(t.Context(), &v1.SayHelloRequest{Name: "test"})
+	require.NoError(t, err)
+	require.Equal(t, "Hello test", resp.GetMessage())
+}
+
+func TestServerRecoversStreamMetadataPanic(t *testing.T) {
+	client := newPanicMetadataServerClient(t)
+
+	stream, err := client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+
+	_, err = test.SendStreamHello(t, stream, "panic")
+	require.Error(t, err)
+	require.Equal(t, codes.Internal, status.Code(err))
+
+	stream, err = client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+
+	resp, err := test.SendStreamHello(t, stream, "test")
+	require.NoError(t, err)
+	require.Equal(t, "Hello test", resp.GetMessage())
+}
+
+func newPanicMetadataServerClient(t *testing.T) v1.GreeterServiceClient {
+	t.Helper()
+
+	params := grpc.ServerParams{
+		Shutdowner:   test.NewShutdowner(),
+		Config:       test.NewInsecureTransportConfig().GRPC,
+		ID:           &panicOnceIDGenerator{},
+		MethodPolicy: grpc.NewMethodPolicy(),
+	}
+
+	srv, err := grpc.NewServer(params)
+	require.NoError(t, err)
+
+	v1.RegisterGreeterServiceServer(srv.ServiceRegistrar(), test.NewService())
+	srv.GetService().Start()
+	t.Cleanup(func() {
+		require.NoError(t, srv.GetService().Stop(context.Background()))
+	})
+
+	conn, err := netgrpc.NewClient(srv.GetService().String(), netgrpc.WithTransportCredentials(netgrpc.NewInsecureCredentials()))
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
+
+	return v1.NewGreeterServiceClient(conn)
+}
+
+var _ id.Generator = (*panicOnceIDGenerator)(nil)
+
+type panicOnceIDGenerator struct {
+	once sync.Once
+}
+
+func (g *panicOnceIDGenerator) Generate() string {
+	g.once.Do(func() {
+		panic("metadata panic")
+	})
+
+	return "request-id"
 }

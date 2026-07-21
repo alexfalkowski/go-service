@@ -180,6 +180,7 @@ func (s *Server) GetService() *grpcserver.Service {
 
 func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	uis := []grpc.UnaryServerInterceptor{
+		recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)),
 		meta.UnaryServerInterceptor(params.MethodPolicy, params.UserAgent, params.Version, params.ID),
 		grpc.TimeoutUnaryServerInterceptor(params.Config.GetTimeout()),
 	}
@@ -208,7 +209,10 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 }
 
 func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
-	sis := []grpc.StreamServerInterceptor{meta.StreamServerInterceptor(params.MethodPolicy, params.UserAgent, params.Version, params.ID)}
+	sis := []grpc.StreamServerInterceptor{
+		recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)),
+		meta.StreamServerInterceptor(params.MethodPolicy, params.UserAgent, params.Version, params.ID),
+	}
 
 	if params.Logger != nil {
 		sis = append(sis, logger.StreamServerInterceptor(params.MethodPolicy, params.Logger))
