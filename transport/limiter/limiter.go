@@ -70,9 +70,10 @@ func NewLimiter(lc di.Lifecycle, keyMap KeyMap, cfg *Config) (*Limiter, error) {
 		key:    k,
 		window: limiterWindow(cfg.Interval),
 		keys: &keys{
-			values:  map[string]time.Time{},
-			ttl:     time.Duration(sweepMinTTL + sweepInterval),
-			maxKeys: cfg.GetMaxKeys(),
+			values:        map[string]time.Time{},
+			ttl:           time.Duration(sweepMinTTL + sweepInterval),
+			sweepInterval: time.Duration(sweepInterval),
+			maxKeys:       cfg.GetMaxKeys(),
 		},
 	}
 
