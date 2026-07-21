@@ -27,3 +27,13 @@ func RequestError(ctx context.Context) error {
 
 	return state.err
 }
+
+// RecordError captures err for request-scoped operator diagnostics without writing a response.
+//
+// It retains the first error recorded through ctx and does nothing when ctx was not prepared with
+// [WithRequestError].
+func RecordError(ctx context.Context, err error) {
+	if state, _ := ctx.Value(requestErrorKey).(*requestError); state != nil && state.err == nil {
+		state.err = err
+	}
+}

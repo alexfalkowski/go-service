@@ -1,6 +1,7 @@
 package events_test
 
 import (
+	"log/slog"
 	"net/http/httptest"
 	"testing"
 
@@ -12,7 +13,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/events"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
 	transportevents "github.com/alexfalkowski/go-service/v2/transport/http/events"
 	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
@@ -124,6 +127,50 @@ func TestReceiveCanReportProcessingFailure(t *testing.T) {
 	result := world.Sender.Send(ctx, e)
 	test.RequireNACK(t, result)
 	require.Nil(t, world.Event)
+}
+
+func TestReceiveLogsPanickingProcessor(t *testing.T) {
+	capture := &test.CaptureHandler{}
+	world := test.NewWorld(t,
+		test.WithWorldHTTP(),
+		test.WithWorldLogger(&logger.Logger{Logger: slog.New(capture)}),
+	)
+	world.Receiver.Register(t.Context(), "/events", func(context.Context, events.Event) events.Result {
+		panic("processor exploded")
+	})
+	world.Start()
+
+	e := events.NewEvent()
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
+
+	result := world.Sender.Send(world.EventsContext(t.Context()), e)
+	test.RequireNACK(t, result)
+	require.Contains(t, result.Error(), "500")
+	require.NotContains(t, result.Error(), "processor exploded")
+
+	panicLogs := 0
+	for _, record := range capture.Snapshot() {
+		if record.Message != "http: panic" {
+			continue
+		}
+
+		panicLogs++
+		err, ok := record.Attrs["error"].Any().(error)
+		require.True(t, ok)
+		require.ErrorIs(t, err, runtime.ErrRecovered)
+		require.Contains(t, err.Error(), "processor exploded")
+		require.Equal(t, slog.LevelError, record.Level)
+		require.Equal(t, "http", record.Attrs["system"].String())
+		require.Equal(t, "events", record.Attrs["service"].String())
+		require.Equal(t, "post", record.Attrs["method"].String())
+		require.Equal(t, int64(http.StatusInternalServerError), record.Attrs["code"].Int64())
+		require.NotEmpty(t, record.Attrs["duration"].String())
+		require.NotEmpty(t, record.Attrs["requestId"].String())
+	}
+
+	require.Equal(t, 1, panicLogs)
 }
 
 func TestReceiveBypassesTransportTokenAuth(t *testing.T) {
