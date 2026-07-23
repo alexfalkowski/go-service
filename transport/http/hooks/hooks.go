@@ -22,7 +22,7 @@ import (
 // on top of the underlying Standard Webhooks signer/verifier.
 //
 // Signing requires a non-nil generator. Passing a nil generator is valid for verification-only use, but
-// calling [Webhook.Sign] or using the signing [RoundTripper] with a nil generator will panic.
+// calling [Webhook.Sign], [Webhook.GenerateID], or using the signing [RoundTripper] with a nil generator will panic.
 func NewWebhook(hook *hooks.Hook, generator id.Generator) *Webhook {
 	if hook == nil {
 		return nil
@@ -43,6 +43,13 @@ func NewWebhook(hook *hooks.Hook, generator id.Generator) *Webhook {
 type Webhook struct {
 	hook      *hooks.Hook
 	generator id.Generator
+}
+
+// GenerateID returns an id from the configured generator.
+//
+// A non-nil generator is required; calling GenerateID with a nil generator will panic.
+func (h *Webhook) GenerateID() string {
+	return h.generator.Generate()
 }
 
 // Sign signs an outbound webhook request.
@@ -81,8 +88,14 @@ func (h *Webhook) Sign(req *http.Request) error {
 	if req.Header == nil {
 		req.Header = http.Header{}
 	}
+
+	id := WebhookID(req.Context())
+	if id == "" {
+		id = h.generator.Generate()
+	}
+
 	now := time.Now()
-	id := h.generator.Generate()
+
 	signature, err := h.hook.Sign(id, now, payload)
 	if err != nil {
 		return err

@@ -25,6 +25,9 @@ type ReceiverFunc func(context.Context, Event) Result
 // Client sends CloudEvents.
 type Client = client.Client
 
+// ContextWithRetriesConstantBackoff aliases the CloudEvents retry-context helper.
+var ContextWithRetriesConstantBackoff = cloudevents.ContextWithRetriesConstantBackoff
+
 // NewEvent constructs an empty CloudEvent.
 func NewEvent() Event {
 	return cloudevents.NewEvent()

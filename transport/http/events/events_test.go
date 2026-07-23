@@ -111,6 +111,45 @@ func TestReceiveAcceptsPreviousWebhookSecret(t *testing.T) {
 	require.Equal(t, "test", bytes.String(received.Data()))
 }
 
+func TestSenderReusesWebhookIDAcrossRetries(t *testing.T) {
+	receiver := httphooks.NewWebhook(newSingleHook(t, webhookSecret("dGVzdA==")), nil)
+	ids := make(chan string, 2)
+	verificationErrors := make(chan error, 2)
+	attempt := 0
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		verificationErrors <- receiver.Verify(req)
+		ids <- req.Header.Get(webhooks.HeaderWebhookID)
+
+		if attempt == 0 {
+			attempt++
+			res.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+
+		res.WriteHeader(http.StatusNoContent)
+	}))
+	t.Cleanup(server.Close)
+
+	sender := transportevents.NewSender(
+		httphooks.NewWebhook(newSingleHook(t, webhookSecret("dGVzdA==")), &test.IDSequenceGenerator{IDs: []string{"id-1", "id-2"}}),
+	)
+	e := events.NewEvent()
+	e.SetID("event-1")
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
+
+	ctx := events.ContextWithTarget(t.Context(), server.URL+"/events")
+	ctx = events.ContextWithRetriesConstantBackoff(ctx, time.Nanosecond.Duration(), 1)
+	result := sender.Send(ctx, e)
+
+	test.RequireACK(t, result)
+	require.NoError(t, <-verificationErrors)
+	require.NoError(t, <-verificationErrors)
+	require.Equal(t, "id-1", <-ids)
+	require.Equal(t, "id-1", <-ids)
+}
+
 func TestReceiveCanReportProcessingFailure(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 	world.Receiver.Register(t.Context(), "/events", func(_ context.Context, _ events.Event) events.Result {

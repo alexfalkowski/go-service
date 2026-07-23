@@ -11,8 +11,9 @@ import (
 //
 // The constructed client uses the go-service CloudEvents HTTP transport. Outbound requests are wrapped with the
 // webhook signing RoundTripper (see [github.com/alexfalkowski/go-service/v2/transport/http/hooks]) so each request is signed before being sent
-// when hook is non-nil. When hook is nil, the signing RoundTripper behaves as a pass-through wrapper and
-// requests are sent unsigned.
+// when hook is non-nil. Each Send uses one generated Webhook-Id so retries retain the same id while refreshing
+// their timestamp and signature. When hook is nil, the signing RoundTripper behaves as a pass-through wrapper
+// and requests are sent unsigned.
 //
 // If no round tripper is configured via [WithSenderRoundTripper], it uses the default HTTP transport.
 //
@@ -31,17 +32,22 @@ func NewSender(hook *hooks.Webhook, opts ...SenderOption) *Sender {
 	httpClient.CheckRedirect = http.SameOriginRedirect
 
 	sender := events.NewClient(*httpClient)
-	return &Sender{client: sender, encoding: resolved.encoding}
+	return &Sender{client: sender, encoding: resolved.encoding, hook: hook}
 }
 
 // Sender wraps a CloudEvents client and sends outbound events using its configured HTTP encoding.
 type Sender struct {
 	client   events.Client
+	hook     *hooks.Webhook
 	encoding SenderEncoding
 }
 
 // Send transmits event using the configured CloudEvents HTTP encoding.
 func (s *Sender) Send(ctx context.Context, event events.Event) events.Result {
+	if s.hook != nil {
+		ctx = hooks.WithWebhookID(ctx, s.hook.GenerateID())
+	}
+
 	if s.encoding == SenderEncodingBinary {
 		return events.SendBinary(ctx, s.client, event)
 	}
