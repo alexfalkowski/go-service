@@ -6,7 +6,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
@@ -20,7 +19,7 @@ func ExampleClient_Post() {
 	rpc.Register(rpc.RegisterParams{
 		Router: router,
 		Content: content.NewContent(
-			encoding.NewMap(encoding.MapParams{JSON: json.NewEncoder()}),
+			encoding.NewMap(),
 			pool,
 		),
 		Pool: pool,

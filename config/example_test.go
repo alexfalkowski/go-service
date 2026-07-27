@@ -5,7 +5,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/config"
 	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -37,12 +36,10 @@ func ExampleNewConfig() {
 	flags.AddConfig("file:" + path)
 
 	decoder := config.NewDecoder(config.DecoderParams{
-		Flags: flags,
-		Encoder: encoding.NewMap(encoding.MapParams{
-			YAML: yaml.NewEncoder(),
-		}),
-		FS:   fs,
-		Name: env.Name("payments"),
+		Flags:   flags,
+		Encoder: encoding.NewMap(),
+		FS:      fs,
+		Name:    env.Name("payments"),
 	})
 
 	cfg, err := config.NewConfig[exampleConfig](decoder, config.NewValidator())

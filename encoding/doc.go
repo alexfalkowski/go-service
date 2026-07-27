@@ -15,12 +15,14 @@
 //
 // # Wiring
 //
-// Module wires the default encoder implementations and provides a *[Map] that registers the supplied
-// encoders under common kinds used throughout go-service, including:
+// NewMap constructs a *[Map] that registers default encoders under common kinds used throughout
+// go-service, including:
 //   - JSON, HJSON, YAML, TOML, MessagePack
 //   - protobuf binary/text/JSON variants
 //   - gob
 //   - "plain"/bytes passthrough for [io.ReaderFrom]/[io.WriterTo] payloads
+//
+// Module provides the default *[Map] for Fx applications.
 //
 // Start with [Encoder], [Map], [NewMap], and [Module].
 package encoding
