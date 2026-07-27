@@ -3,7 +3,6 @@ package encoding
 import (
 	"maps"
 
-	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/gob"
 	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
@@ -15,53 +14,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/slices"
 )
 
-// MapParams defines the dependencies used to construct an encoding Map.
+// NewMap constructs a Map with the default encoders.
 //
-// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The default wiring is provided by [Module].
-// [NewMap] registers these values as supplied; direct callers that leave a field nil will get a nil
-// encoder for that field's registered kind aliases.
-type MapParams struct {
-	di.In
-
-	// JSON is the encoder implementation registered under kind "json".
-	JSON *json.Encoder
-
-	// HumanJSON is the encoder implementation registered under kind "hjson".
-	HumanJSON *hjson.Encoder
-
-	// YAML is the encoder implementation registered under kinds "yaml" and "yml".
-	YAML *yaml.Encoder
-
-	// TOML is the encoder implementation registered under kind "toml".
-	TOML *toml.Encoder
-
-	// MessagePack is the encoder implementation registered under kind "msgpack".
-	MessagePack *msgpack.Encoder `optional:"true"`
-
-	// ProtoBinary is the encoder implementation registered under common binary kinds
-	// (e.g. "proto", "protobuf", "pb", etc.).
-	ProtoBinary *proto.Binary
-
-	// ProtoText is the encoder implementation registered under common text kinds
-	// (e.g. "prototext", "prototxt", "pbtxt").
-	ProtoText *proto.Text
-
-	// ProtoJSON is the encoder implementation registered under common JSON kinds
-	// (e.g. "protojson", "pbjson").
-	ProtoJSON *proto.JSON
-
-	// GOB is the encoder implementation registered under kind "gob".
-	GOB *gob.Encoder
-
-	// Bytes is the passthrough encoder for [io.ReaderFrom]/[io.WriterTo] payloads, registered under kinds
-	// like "plain", "octet-stream", and "markdown".
-	Bytes *bytes.Encoder
-}
-
-// NewMap constructs a Map from the supplied encoder dependencies.
-//
-// The returned registry includes common kinds used throughout go-service, mapped to the corresponding
-// fields from params:
+// The returned registry includes these kinds:
 //
 //   - Structured config formats: "json", "hjson", "yaml", "yml", "toml", "msgpack"
 //
@@ -77,31 +32,41 @@ type MapParams struct {
 //
 //   - bytes/plain passthrough: "plain", "octet-stream", "markdown"
 //
-// Callers can add additional kinds or override existing kinds via [Map.Register]. NewMap does not
-// synthesize encoders; if a params field is nil, its registered kind aliases resolve to nil.
-func NewMap(params MapParams) *Map {
+// Callers can add additional kinds or override existing kinds via [Map.Register].
+func NewMap() *Map {
+	jsonEncoder := json.NewEncoder()
+	hjsonEncoder := hjson.NewEncoder()
+	yamlEncoder := yaml.NewEncoder()
+	tomlEncoder := toml.NewEncoder()
+	msgpackEncoder := msgpack.NewEncoder()
+	protoBinary := proto.NewBinary()
+	protoText := proto.NewText()
+	protoJSON := proto.NewJSON()
+	gobEncoder := gob.NewEncoder()
+	bytesEncoder := bytes.NewEncoder()
+
 	return &Map{
 		encoders: map[string]Encoder{
-			"json":         params.JSON,
-			"hjson":        params.HumanJSON,
-			"yaml":         params.YAML,
-			"yml":          params.YAML,
-			"toml":         params.TOML,
-			"msgpack":      params.MessagePack,
-			"pb":           params.ProtoBinary,
-			"pbbin":        params.ProtoBinary,
-			"proto":        params.ProtoBinary,
-			"protobin":     params.ProtoBinary,
-			"protobuf":     params.ProtoBinary,
-			"pbtxt":        params.ProtoText,
-			"prototext":    params.ProtoText,
-			"prototxt":     params.ProtoText,
-			"protojson":    params.ProtoJSON,
-			"pbjson":       params.ProtoJSON,
-			"gob":          params.GOB,
-			"markdown":     params.Bytes,
-			"octet-stream": params.Bytes,
-			"plain":        params.Bytes,
+			"json":         jsonEncoder,
+			"hjson":        hjsonEncoder,
+			"yaml":         yamlEncoder,
+			"yml":          yamlEncoder,
+			"toml":         tomlEncoder,
+			"msgpack":      msgpackEncoder,
+			"pb":           protoBinary,
+			"pbbin":        protoBinary,
+			"proto":        protoBinary,
+			"protobin":     protoBinary,
+			"protobuf":     protoBinary,
+			"pbtxt":        protoText,
+			"prototext":    protoText,
+			"prototxt":     protoText,
+			"protojson":    protoJSON,
+			"pbjson":       protoJSON,
+			"gob":          gobEncoder,
+			"markdown":     bytesEncoder,
+			"octet-stream": bytesEncoder,
+			"plain":        bytesEncoder,
 		},
 	}
 }

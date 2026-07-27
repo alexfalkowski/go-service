@@ -32,62 +32,40 @@ func TestEncoder(t *testing.T) {
 }
 
 func TestNewMapRegistersDefaultEncoders(t *testing.T) {
-	jsonEncoder := json.NewEncoder()
-	hjsonEncoder := hjson.NewEncoder()
-	yamlEncoder := yaml.NewEncoder()
-	tomlEncoder := toml.NewEncoder()
-	msgpackEncoder := msgpack.NewEncoder()
-	protoBinary := proto.NewBinary()
-	protoText := proto.NewText()
-	protoJSON := proto.NewJSON()
-	gobEncoder := gob.NewEncoder()
-	bytesEncoder := bytes.NewEncoder()
-
-	encoders := encoding.NewMap(encoding.MapParams{
-		JSON:        jsonEncoder,
-		HumanJSON:   hjsonEncoder,
-		YAML:        yamlEncoder,
-		TOML:        tomlEncoder,
-		MessagePack: msgpackEncoder,
-		ProtoBinary: protoBinary,
-		ProtoText:   protoText,
-		ProtoJSON:   protoJSON,
-		GOB:         gobEncoder,
-		Bytes:       bytesEncoder,
-	})
+	encoders := encoding.NewMap()
 
 	expected := map[string]encoding.Encoder{
-		"json":         jsonEncoder,
-		"hjson":        hjsonEncoder,
-		"yaml":         yamlEncoder,
-		"yml":          yamlEncoder,
-		"toml":         tomlEncoder,
-		"msgpack":      msgpackEncoder,
-		"pb":           protoBinary,
-		"pbbin":        protoBinary,
-		"proto":        protoBinary,
-		"protobin":     protoBinary,
-		"protobuf":     protoBinary,
-		"pbtxt":        protoText,
-		"prototext":    protoText,
-		"prototxt":     protoText,
-		"protojson":    protoJSON,
-		"pbjson":       protoJSON,
-		"gob":          gobEncoder,
-		"markdown":     bytesEncoder,
-		"octet-stream": bytesEncoder,
-		"plain":        bytesEncoder,
+		"json":         json.NewEncoder(),
+		"hjson":        hjson.NewEncoder(),
+		"yaml":         yaml.NewEncoder(),
+		"yml":          yaml.NewEncoder(),
+		"toml":         toml.NewEncoder(),
+		"msgpack":      msgpack.NewEncoder(),
+		"pb":           proto.NewBinary(),
+		"pbbin":        proto.NewBinary(),
+		"proto":        proto.NewBinary(),
+		"protobin":     proto.NewBinary(),
+		"protobuf":     proto.NewBinary(),
+		"pbtxt":        proto.NewText(),
+		"prototext":    proto.NewText(),
+		"prototxt":     proto.NewText(),
+		"protojson":    proto.NewJSON(),
+		"pbjson":       proto.NewJSON(),
+		"gob":          gob.NewEncoder(),
+		"markdown":     bytes.NewEncoder(),
+		"octet-stream": bytes.NewEncoder(),
+		"plain":        bytes.NewEncoder(),
 	}
 
 	for kind, expectedEncoder := range expected {
 		t.Run(kind, func(t *testing.T) {
-			require.Same(t, expectedEncoder, encoders.Get(kind))
+			require.IsType(t, expectedEncoder, encoders.Get(kind))
 		})
 	}
 }
 
 func TestMapRegister(t *testing.T) {
-	encoders := encoding.NewMap(encoding.MapParams{})
+	encoders := encoding.NewMap()
 	custom := test.NewEncoder(test.ErrFailed)
 	replacement := bytes.NewEncoder()
 
@@ -113,4 +91,16 @@ func TestModuleProvidesDefaultEncoders(t *testing.T) {
 			require.NotNil(t, encoders.Get(kind))
 		})
 	}
+}
+
+func TestModuleDoesNotProvideJSONEncoder(t *testing.T) {
+	var encoder *json.Encoder
+
+	app := fx.New(
+		encoding.Module,
+		fx.Populate(&encoder),
+		fx.NopLogger,
+	)
+
+	require.Error(t, app.Err())
 }

@@ -2,31 +2,12 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/gob"
-	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
-	"github.com/alexfalkowski/go-service/v2/encoding/msgpack"
-	"github.com/alexfalkowski/go-service/v2/encoding/proto"
-	"github.com/alexfalkowski/go-service/v2/encoding/toml"
-	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 )
 
 // Encoder contains the real encoders exercised by config, cache, and transport tests.
-var Encoder = encoding.NewMap(encoding.MapParams{
-	JSON:        json.NewEncoder(),
-	HumanJSON:   hjson.NewEncoder(),
-	YAML:        yaml.NewEncoder(),
-	TOML:        toml.NewEncoder(),
-	MessagePack: msgpack.NewEncoder(),
-	ProtoBinary: proto.NewBinary(),
-	ProtoText:   proto.NewText(),
-	ProtoJSON:   proto.NewJSON(),
-	GOB:         gob.NewEncoder(),
-	Bytes:       bytes.NewEncoder(),
-})
+var Encoder = encoding.NewMap()
 
 // Content is the shared HTTP content registry backed by Encoder.
 var Content = content.NewContent(Encoder, Pool)
