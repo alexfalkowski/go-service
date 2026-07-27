@@ -41,34 +41,24 @@ func TestMap(t *testing.T) {
 }
 
 func TestNewMapRegistersDefaultCompressors(t *testing.T) {
-	zstdCompressor := zstd.NewCompressor()
-	s2Compressor := s2.NewCompressor()
-	snappyCompressor := snappy.NewCompressor()
-	noneCompressor := none.NewCompressor()
-
-	compressors := compress.NewMap(compress.MapParams{
-		Zstd:   zstdCompressor,
-		S2:     s2Compressor,
-		Snappy: snappyCompressor,
-		None:   noneCompressor,
-	})
+	compressors := compress.NewMap()
 
 	expected := map[string]compress.Compressor{
-		"zstd":   zstdCompressor,
-		"s2":     s2Compressor,
-		"snappy": snappyCompressor,
-		"none":   noneCompressor,
+		"zstd":   zstd.NewCompressor(),
+		"s2":     s2.NewCompressor(),
+		"snappy": snappy.NewCompressor(),
+		"none":   none.NewCompressor(),
 	}
 
 	for kind, expectedCompressor := range expected {
 		t.Run(kind, func(t *testing.T) {
-			require.Same(t, expectedCompressor, compressors.Get(kind))
+			require.IsType(t, expectedCompressor, compressors.Get(kind))
 		})
 	}
 }
 
 func TestMapRegister(t *testing.T) {
-	compressors := compress.NewMap(compress.MapParams{})
+	compressors := compress.NewMap()
 	custom := test.NewCompressor(test.ErrFailed)
 	replacement := none.NewCompressor()
 
@@ -94,4 +84,16 @@ func TestModuleProvidesDefaultCompressors(t *testing.T) {
 			require.NotNil(t, compressors.Get(kind))
 		})
 	}
+}
+
+func TestModuleDoesNotProvideZstdCompressor(t *testing.T) {
+	var compressor *zstd.Compressor
+
+	app := fx.New(
+		compress.Module,
+		fx.Populate(&compressor),
+		fx.NopLogger,
+	)
+
+	require.Error(t, app.Err())
 }
