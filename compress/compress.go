@@ -5,33 +5,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/compress/s2"
 	"github.com/alexfalkowski/go-service/v2/compress/snappy"
 	"github.com/alexfalkowski/go-service/v2/compress/zstd"
-	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// MapParams defines dependencies used to construct a Map.
-//
-// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The default wiring is provided by [Module].
-type MapParams struct {
-	di.In
-
-	// Zstd is the Zstandard compressor implementation registered under kind "zstd".
-	Zstd *zstd.Compressor
-
-	// S2 is the S2 compressor implementation registered under kind "s2".
-	S2 *s2.Compressor
-
-	// Snappy is the Snappy compressor implementation registered under kind "snappy".
-	Snappy *snappy.Compressor
-
-	// None is the no-op compressor implementation registered under kind "none".
-	None *none.Compressor
-}
-
-// NewMap constructs a Map pre-populated with the default compressors keyed by kind.
-//
-// The standard [Module] supplies non-nil default compressor implementations. Direct
-// calls use the [MapParams] values exactly, so zero-value params register nil
-// implementations for the built-in keys.
+// NewMap constructs a Map with the default compressors.
 //
 // The returned map includes these kinds:
 //
@@ -41,13 +17,13 @@ type MapParams struct {
 //   - "none"
 //
 // Callers can add additional implementations or override existing kinds via [Map.Register].
-func NewMap(params MapParams) *Map {
+func NewMap() *Map {
 	return &Map{
 		compressors: map[string]Compressor{
-			"zstd":   params.Zstd,
-			"s2":     params.S2,
-			"snappy": params.Snappy,
-			"none":   params.None,
+			"zstd":   zstd.NewCompressor(),
+			"s2":     s2.NewCompressor(),
+			"snappy": snappy.NewCompressor(),
+			"none":   none.NewCompressor(),
 		},
 	}
 }

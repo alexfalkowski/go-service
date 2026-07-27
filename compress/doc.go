@@ -17,12 +17,14 @@
 //
 // # Wiring
 //
-// [Module] wires the default compressor implementations and provides a *[Map] pre-populated with:
+// [NewMap] constructs a *[Map] with the default compressors:
 //
 //   - "zstd"
 //   - "s2"
 //   - "snappy"
 //   - "none"
+//
+// [Module] provides the default *[Map] for Fx applications.
 //
 // You can extend or override supported kinds by calling [Map.Register] after construction.
 //
