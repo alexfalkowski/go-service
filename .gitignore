@@ -9,6 +9,7 @@ DOCS.md
 FEATURES.md
 PROJECTS.md
 RELIABILITY.md
+PLAN.md
 vendor/
 test/reports/*
 !test/reports/.keep
