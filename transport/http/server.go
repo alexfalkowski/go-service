@@ -204,7 +204,7 @@ func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 
 	tlsConfig, err := server.NewConfig(fs, cfg.TLS)
 	if err != nil {
-		return nil, prefix(err)
+		return nil, err
 	}
 
 	config.TLS = tlsConfig
