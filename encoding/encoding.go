@@ -30,7 +30,7 @@ import (
 //
 //   - gob: "gob"
 //
-//   - bytes/plain passthrough: "plain", "octet-stream", "markdown"
+//   - bytes/plain passthrough: "plain", "octet-stream"
 //
 // Callers can add additional kinds or override existing kinds via [Map.Register].
 func NewMap() *Map {
@@ -64,7 +64,6 @@ func NewMap() *Map {
 			"protojson":    protoJSON,
 			"pbjson":       protoJSON,
 			"gob":          gobEncoder,
-			"markdown":     bytesEncoder,
 			"octet-stream": bytesEncoder,
 			"plain":        bytesEncoder,
 		},

@@ -52,7 +52,6 @@ func TestNewMapRegistersDefaultEncoders(t *testing.T) {
 		"protojson":    proto.NewJSON(),
 		"pbjson":       proto.NewJSON(),
 		"gob":          gob.NewEncoder(),
-		"markdown":     bytes.NewEncoder(),
 		"octet-stream": bytes.NewEncoder(),
 		"plain":        bytes.NewEncoder(),
 	}

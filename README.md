@@ -294,10 +294,10 @@ Encoding kinds used by subsystems that support encoding:
 - `protojson`, `pbjson`
 - `prototext`, `prototxt`, `pbtxt`
 - `gob`
-- `plain`, `octet-stream`, `markdown`
+- `plain`, `octet-stream`
 
 > [!NOTE]
-> - `plain`, `octet-stream`, and `markdown` all map to the bytes passthrough encoder.
+> - `plain` and `octet-stream` map to the bytes passthrough encoder.
 > - Protobuf binary/text/JSON kinds have multiple aliases; the list above reflects the built-in registry.
 
 ---
@@ -1094,7 +1094,7 @@ Built-in text/object payload media types include:
 - `application/hjson`
 - `application/yaml`, `application/yml`
 - `application/toml`
-- `application/octet-stream`, `text/plain`, `text/markdown`
+- `application/octet-stream`, `text/plain`
 
 Internal binary payload media types include:
 

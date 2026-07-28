@@ -33,9 +33,6 @@ const JSON = "application/json"
 // This is commonly used as the Content-Type for HumanJSON request/response bodies.
 const HumanJSON = "application/hjson"
 
-// Markdown is the media type for Markdown documents.
-const Markdown = "text/markdown"
-
 // MessagePack is the vendor media type for MessagePack payloads.
 const MessagePack = "application/vnd.msgpack"
 

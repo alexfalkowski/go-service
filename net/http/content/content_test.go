@@ -239,7 +239,6 @@ func mediaTests() []mediaTest {
 		{name: "gob", mediaType: "application/gob", subtype: "gob", kind: "gob"},
 		{name: "plain", mediaType: media.Text, subtype: "plain", kind: "plain"},
 		{name: "octet-stream", mediaType: "application/octet-stream", subtype: "octet-stream", kind: "octet-stream"},
-		{name: "markdown", mediaType: media.Markdown, subtype: "markdown", kind: "markdown"},
 		{name: "invalid", mediaType: "test", subtype: "json", kind: "json"},
 		{name: "unknown", mediaType: "application/test", subtype: "json", kind: "json"},
 	}
