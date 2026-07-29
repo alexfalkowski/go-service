@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/health"
@@ -27,6 +28,7 @@ import (
 //   - [env.Module] (ID/UserAgent/UserID constructors; Name and Version are supplied by CLI wiring or custom callers)
 //   - [compress.Module] (compression registry and default codecs)
 //   - [encoding.Module] (encoding registry and default encoders)
+//   - [stream.Module] (streaming encoding registry and default streaming encoders/decoders)
 //   - [crypto.Module] (crypto primitives and helpers)
 //   - [time.Module] (time providers/utilities)
 //   - [sync.Module] (shared buffer pool wiring)
@@ -38,6 +40,7 @@ var Library = di.Module(
 	env.Module,
 	compress.Module,
 	encoding.Module,
+	stream.Module,
 	crypto.Module,
 	time.Module,
 	sync.Module,

@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
@@ -60,7 +61,15 @@ type Handler struct {
 //   - If the limiter returns an error, it writes an internal server error response.
 //   - It writes RateLimit and RateLimit-Policy headers describing the current decision.
 //   - If the request is not allowed, it writes an HTTP 429 response with Retry-After when reset timing is available.
-//   - Otherwise it calls next.
+//   - Otherwise it stores the underlying limiter on the request context (see [meta.WithLimiter]) and calls next.
+//
+// Context population:
+//
+// The stream-open decision above charges one token per request, matching every other route. Streaming
+// routes charge additional tokens per message by retrieving the same limiter from the context via
+// [meta.Limiter] and calling Take again from [net/http/content.Stream.Send] and
+// [net/http/content.RequestStream.Recv]; the RateLimit/RateLimit-Policy headers above still describe only
+// this stream-open decision, since HTTP headers cannot be re-sent once a streaming response is committed.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if h.routePolicy.IsOperation(req) {
 		next(res, req)
@@ -87,7 +96,8 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	next(res, req)
+	ctx = meta.WithLimiter(ctx, h.limiter.Limiter)
+	next(res, req.WithContext(ctx))
 }
 
 // NewClientLimiter constructs an HTTP client-side rate limiter.

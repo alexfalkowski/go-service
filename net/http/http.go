@@ -93,6 +93,18 @@ type Server = http.Server
 // standard library semantics.
 type ResponseWriter = http.ResponseWriter
 
+// Flusher is an alias for [net/http.Flusher].
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Flusher = http.Flusher
+
+// ResponseController is an alias for [net/http.ResponseController].
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type ResponseController = http.ResponseController
+
 // RoundTripper is an alias for [net/http.RoundTripper].
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
@@ -124,6 +136,9 @@ var ErrUseLastResponse = http.ErrUseLastResponse
 
 // ErrServerClosed is an alias for [http.ErrServerClosed].
 var ErrServerClosed = http.ErrServerClosed
+
+// ErrAbortHandler is an alias for [http.ErrAbortHandler].
+var ErrAbortHandler = http.ErrAbortHandler
 
 // NoBody is an alias for [http.NoBody].
 var NoBody = http.NoBody
@@ -246,6 +261,13 @@ func NewChainedHandlers(handlers ...ChainedHandler) *ChainedHandlers {
 // This is a thin wrapper around [net/http.MaxBytesHandler].
 func MaxBytesHandler(h Handler, n int64) Handler {
 	return http.MaxBytesHandler(h, n)
+}
+
+// NewResponseController constructs a ResponseController for rw.
+//
+// This is a thin wrapper around [net/http.NewResponseController].
+func NewResponseController(rw ResponseWriter) *ResponseController {
+	return http.NewResponseController(rw)
 }
 
 // NewTelemetryHandler wraps handler with OpenTelemetry instrumentation when tracing or metrics are enabled.

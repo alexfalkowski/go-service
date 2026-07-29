@@ -87,18 +87,13 @@ func RestRequestError(_ context.Context, _ *Request) (*Response, error) {
 }
 
 func registerRest(router *http.Router) {
-	rest.Register(rest.RegisterParams{
-		Router:  router,
-		Pool:    Pool,
-		Content: Content,
-	})
+	rest.Register(router, Content, Pool, 0, 0)
 }
 
 func restClient(client *http.Client, os *worldOpts) *rest.Client {
 	if os.rest {
 		return rest.NewClient(
 			rest.WithClientRoundTripper(client.Transport),
-			rest.WithClientTimeout("10s"),
 		)
 	}
 

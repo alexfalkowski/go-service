@@ -7,8 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	hm "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
-	"go.uber.org/fx/fxtest"
+	httpmetrics "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
 )
 
 var errInvalid = errors.New("invalid")
@@ -155,7 +154,7 @@ func EnableMetricsReader(tb testing.TB) metrics.Reader {
 
 	reader := metrics.NewManualReader()
 	metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   fxtest.NewLifecycle(tb),
+		Lifecycle:   QuietLifecycle(tb),
 		Config:      &metrics.Config{},
 		Reader:      reader,
 		ID:          ID,
@@ -173,7 +172,7 @@ func meter(lc di.Lifecycle, router *http.Router, os *worldOpts) (metrics.Meter, 
 	}
 
 	config := NewPrometheusMetricsConfig()
-	hm.Register(Name, config, router)
+	httpmetrics.Register(Name, config, router)
 
 	return NewMeter(lc, config)
 }

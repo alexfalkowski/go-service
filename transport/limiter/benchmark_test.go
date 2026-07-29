@@ -4,16 +4,16 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 // BenchmarkLimiterManyDistinctKeys measures limiter behavior after its independent-key cap is reached.
 func BenchmarkLimiterManyDistinctKeys(b *testing.B) {
-	lc := fxtest.NewLifecycle(b)
+	lc := test.QuietLifecycle(b)
 	lim, err := limiter.NewLimiter(lc, limiter.KeyMap{"user-agent": meta.UserAgent}, &limiter.Config{
 		Kind:     "user-agent",
 		Tokens:   1,

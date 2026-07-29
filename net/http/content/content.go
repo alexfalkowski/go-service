@@ -2,6 +2,7 @@ package content
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-sync"
@@ -13,14 +14,18 @@ const TypeKey = "Content-Type"
 // AcceptKey is the HTTP header key used for Accept.
 const AcceptKey = "Accept"
 
-// NewContent constructs a Content that resolves encoders from enc and buffers responses using pool.
-func NewContent(enc *encoding.Map, pool *sync.BufferPool) *Content {
-	return &Content{enc: enc, pool: pool}
+// NewContent constructs a Content that resolves single-value encoders from enc, streaming encoders/decoders
+// from sm, and buffers responses using pool.
+func NewContent(enc *encoding.Map, sm *stream.Map, pool *sync.BufferPool) *Content {
+	return &Content{enc: enc, sm: sm, pool: pool}
 }
 
 // Content resolves encoders from HTTP media types and provides helpers for content-aware request/response handling.
 //
-// It uses an [encoding.Map] registry to resolve an encoder by media subtype (e.g. "json", "hjson", "yaml", "toml").
+// It uses an [encoding.Map] registry to resolve a single-value encoder by media subtype (e.g. "json", "hjson",
+// "yaml", "toml"), and a [stream.Map] registry to resolve a streaming encoder/decoder by media subtype for
+// streaming routes (e.g. "x-ndjson"). The two registries are intentionally separate: an unregistered streaming
+// kind must fail explicitly rather than silently falling back to single-value JSON (see [NewStreamMedia]).
 //
 // Fallback behavior:
 //   - If media type parsing fails, Content falls back to JSON.
@@ -35,6 +40,7 @@ func NewContent(enc *encoding.Map, pool *sync.BufferPool) *Content {
 //     writing to the live response writer, so late encode failures do not commit partial success bodies.
 type Content struct {
 	enc  *encoding.Map
+	sm   *stream.Map
 	pool *sync.BufferPool
 }
 
@@ -94,6 +100,21 @@ func (c *Content) NewFromRequestBody(req *http.Request) (Media, error) {
 // If parsing fails, it falls back to JSON.
 func (c *Content) NewFromMedia(mediaType string) Media {
 	return NewMedia(mediaType, c.enc)
+}
+
+// NewStreamFromMedia parses mediaType and resolves a streaming encoder/decoder pair, the streaming
+// counterpart of NewFromMedia.
+//
+// Unlike NewFromMedia, there is no JSON fallback: an unparseable or unregistered streaming media type
+// returns [ErrUnsupportedStreamMedia] (see [NewStreamMedia]), including when c has no streaming
+// registry configured — that is indistinguishable from "this kind isn't registered" to the caller, and
+// is handled the same way rather than through a separate error.
+//
+// This is the entry point a caller without an *[http.Request] to negotiate from (for example
+// [github.com/alexfalkowski/go-service/v2/net/http/client.Client]) uses to resolve a streaming media
+// type directly, mirroring how [Content.NewFromMedia] already does this for single-value media.
+func (c *Content) NewStreamFromMedia(mediaType string) (StreamMedia, error) {
+	return NewStreamMedia(mediaType, c.sm)
 }
 
 func (c *Content) newRequestMedia(mediaType string) Media {

@@ -60,10 +60,11 @@ func WithRoundTripper(rt http.RoundTripper) ClientOption {
 	})
 }
 
-// WithTimeout sets the overall request timeout on the underlying [http.Client].
+// WithTimeout sets the overall timeout for unary [Client.Do] calls.
 //
-// The timeout value is assigned to [http.Client.Timeout] (total time limit for a request, including
-// connection time, redirects, and reading the response body).
+// The timeout includes connection time, redirects, and reading the response body. It is applied to
+// the request context rather than [http.Client.Timeout], so [Stream] and [RequestStream] remain
+// long-lived and are bounded only by their caller-provided contexts.
 //
 // If not provided, NewClient defaults to [time.DefaultTimeout].
 func WithTimeout(timeout time.Duration) ClientOption {
@@ -73,6 +74,13 @@ func WithTimeout(timeout time.Duration) ClientOption {
 }
 
 // WithMaxResponseSize sets the maximum response body size buffered by [Client.Do].
+//
+// For streaming calls made through [Stream] or [RequestStream], the same size instead bounds each
+// decoded value individually rather than the whole response: a stream has no natural total size, so a
+// cumulative cap would either be meaningless for a long-lived stream or reject a legitimately large
+// number of small values. This matches the inbound per-value cap applied to streaming request bodies
+// on the server (see the transport/http/body streaming middleware), so operators use one size
+// vocabulary for both directions.
 //
 // If not provided, NewClient defaults to [bytes.DefaultSize].
 func WithMaxResponseSize(size bytes.Size) ClientOption {
@@ -95,15 +103,19 @@ func WithRedirect(redirect Redirect) ClientOption {
 
 // NewClient constructs a Client that encodes requests and decodes responses using content.
 //
-// It reuses buffers from pool and applies the configured transport, timeout, and redirect policy.
+// It reuses buffers from pool and applies the configured transport, unary timeout, and redirect policy.
 //
-// The underlying *[http.Client] is constructed via [http.NewClient], which sets [http.Client.Timeout] and
-// instruments requests with OpenTelemetry when tracing or metrics are enabled.
+// The underlying *[http.Client] is constructed via [http.NewClient] with no timeout. [WithTimeout]
+// applies the configured deadline only to [Client.Do], preserving long-lived streaming calls.
+//
+// [Stream] and [RequestStream] resolve streaming media types through content (see
+// [github.com/alexfalkowski/go-service/v2/net/http/content.Content.NewStreamFromMedia]).
 //
 // Callers should treat the returned Client as safe for concurrent use.
 func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOption) *Client {
 	clientOptions := options(opts...)
-	client := http.NewClient(clientOptions.roundTripper, clientOptions.timeout)
+
+	client := http.NewClient(clientOptions.roundTripper, 0)
 
 	switch clientOptions.redirect {
 	case RedirectIgnore:
@@ -112,7 +124,13 @@ func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOp
 		client.CheckRedirect = http.SameOriginRedirect
 	}
 
-	return &Client{client: client, content: content, pool: pool, maxResponseSize: clientOptions.maxResponseSize.Bytes()}
+	return &Client{
+		client:          client,
+		content:         content,
+		pool:            pool,
+		timeout:         clientOptions.timeout,
+		maxResponseSize: clientOptions.maxResponseSize.Bytes(),
+	}
 }
 
 // Options describes the request/response payloads and media types for a single call.
@@ -159,6 +177,7 @@ type Client struct {
 	client          *http.Client
 	content         *content.Content
 	pool            *sync.BufferPool
+	timeout         time.Duration
 	maxResponseSize int64
 }
 
@@ -218,32 +237,15 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 // Notes:
 //   - Callers may pass the zero Options value when no request/response bodies are needed.
 //   - This method buffers response bodies in memory up to the configured limit.
-//
-//nolint:cyclop
 func (c *Client) Do(ctx context.Context, method, url string, opts Options) error {
-	requestMedia := c.content.NewFromMedia(opts.ContentType)
-
-	body := io.Reader(http.NoBody)
-	if opts.HasRequest() {
-		var requestBody bytes.Buffer
-		if err := requestMedia.Encoder.Encode(&requestBody, opts.Request); err != nil {
-			return errors.Prefix("http: encode", err)
-		}
-
-		// Do not use a pooled buffer for the request body: net/http may keep
-		// reading it from a transport goroutine after Do returns.
-		body = bytes.NewReader(requestBody.Bytes())
-	}
-
-	request, err := http.NewRequestWithContext(ctx, method, url, body)
+	request, err := c.newRequest(ctx, method, url, opts)
 	if err != nil {
-		return errors.Prefix("http: new request", err)
+		return err
 	}
 
-	request.Header.Set(content.TypeKey, requestMedia.String())
-	if !strings.IsEmpty(opts.Accept) {
-		request.Header.Set(content.AcceptKey, opts.Accept)
-	}
+	requestContext, cancel := context.WithTimeout(ctx, c.timeout)
+	defer cancel()
+	request = request.WithContext(requestContext)
 
 	response, err := c.client.Do(request)
 	if err != nil {
@@ -261,23 +263,111 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 
 	// The server handlers return text/error to indicate an error.
 	responseMedia := c.content.NewFromMedia(responseContentType(response.Header, opts))
-	if responseMedia.IsError() {
-		code := response.StatusCode
-		if !isErrorStatus(code) {
-			code = http.StatusInternalServerError
-		}
-
-		return status.Error(code, strings.TrimSpace(responseBody.String()))
-	}
-
-	if isErrorStatus(response.StatusCode) {
-		return status.Error(response.StatusCode, defaultErrorMessage(response.StatusCode))
+	if err := mediaStatusError(response, responseMedia, responseBody.String()); err != nil {
+		return err
 	}
 
 	if opts.HasResponse() {
 		if err := responseMedia.Encoder.Decode(responseBody, opts.Response); err != nil {
 			return errors.Prefix("http: decode", err)
 		}
+	}
+
+	return nil
+}
+
+// newRequest builds an outgoing request for method/url, encoding opts.Request (if set) into the
+// request body using the encoder selected by opts.ContentType, and setting the Content-Type/Accept
+// headers.
+//
+// This is shared by Do and Stream; RequestStream builds its own pipe-backed request instead, since a
+// bidirectional streaming request has no single-value body to encode upfront.
+func (c *Client) newRequest(ctx context.Context, method, url string, opts Options) (*http.Request, error) {
+	requestMedia := c.content.NewFromMedia(opts.ContentType)
+
+	body := io.Reader(http.NoBody)
+	if opts.HasRequest() {
+		var requestBody bytes.Buffer
+		if err := requestMedia.Encoder.Encode(&requestBody, opts.Request); err != nil {
+			return nil, errors.Prefix("http: encode", err)
+		}
+
+		// Do not use a pooled buffer for the request body: net/http may keep
+		// reading it from a transport goroutine after Do returns.
+		body = bytes.NewReader(requestBody.Bytes())
+	}
+
+	request, err := http.NewRequestWithContext(ctx, method, url, body)
+	if err != nil {
+		return nil, errors.Prefix("http: new request", err)
+	}
+
+	request.Header.Set(content.TypeKey, requestMedia.String())
+	if !strings.IsEmpty(opts.Accept) {
+		request.Header.Set(content.AcceptKey, opts.Accept)
+	}
+
+	return request, nil
+}
+
+func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {
+	_, err := buffer.ReadFrom(io.LimitReader(body, c.maxResponseSize+1))
+	if err != nil {
+		return errors.Prefix("http: copy", err)
+	}
+
+	if int64(buffer.Len()) > c.maxResponseSize {
+		return status.SafeError(http.StatusRequestEntityTooLarge, nil)
+	}
+
+	return nil
+}
+
+// checkResponseStatus applies [mediaStatusError] to response, reading a bounded prefix of
+// response.Body into a pooled buffer only when the response uses the text/error media convention.
+//
+// Unlike Do, which always buffers the whole response body upfront, this only reads the body when the
+// error signal actually requires a message, so a non-error streaming response is left untouched for
+// the caller's decoder.
+func (c *Client) checkResponseStatus(response *http.Response, opts Options) error {
+	responseMedia := c.content.NewFromMedia(responseContentType(response.Header, opts))
+
+	message := strings.Empty
+	if responseMedia.IsError() {
+		buffer := c.pool.Get()
+		defer c.pool.Put(buffer)
+
+		if err := c.readResponse(buffer, response.Body); err != nil {
+			return err
+		}
+
+		message = buffer.String()
+	}
+
+	return mediaStatusError(response, responseMedia, message)
+}
+
+// mediaStatusError returns a [status.Error] when response indicates an error, either through the
+// text/error media convention (responseMedia.IsError(), using message as the trimmed error body text)
+// or a 4xx/5xx status code with no such convention. It returns nil when response is not an error by
+// either signal.
+//
+// This is the shared decision behind Do's response handling and the equivalent check applied to the
+// initial response of a [Stream] or [RequestStream] call, before either streams values from/to the
+// caller-supplied handler. Factoring it out keeps both paths honoring the same text/error and status
+// code contract instead of the streaming path silently dropping it (see [Client.checkResponseStatus]).
+func mediaStatusError(response *http.Response, responseMedia content.Media, message string) error {
+	if responseMedia.IsError() {
+		code := response.StatusCode
+		if !isErrorStatus(code) {
+			code = http.StatusInternalServerError
+		}
+
+		return status.Error(code, strings.TrimSpace(message))
+	}
+
+	if isErrorStatus(response.StatusCode) {
+		return status.Error(response.StatusCode, defaultErrorMessage(response.StatusCode))
 	}
 
 	return nil
@@ -303,31 +393,18 @@ func responseContentType(header http.Header, opts Options) string {
 	return opts.ContentType
 }
 
-func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {
-	_, err := buffer.ReadFrom(io.LimitReader(body, c.maxResponseSize+1))
-	if err != nil {
-		return errors.Prefix("http: copy", err)
-	}
-
-	if int64(buffer.Len()) > c.maxResponseSize {
-		return status.SafeError(http.StatusRequestEntityTooLarge, nil)
-	}
-
-	return nil
-}
-
 func options(opts ...ClientOption) *clientOpts {
 	clientOptions := &clientOpts{redirect: RedirectSameOrigin}
 	for _, o := range opts {
 		o.apply(clientOptions)
 	}
 
-	if clientOptions.timeout <= 0 {
-		clientOptions.timeout = time.DefaultTimeout
-	}
-
 	if clientOptions.maxResponseSize <= 0 {
 		clientOptions.maxResponseSize = bytes.DefaultSize
+	}
+
+	if clientOptions.timeout <= 0 {
+		clientOptions.timeout = time.DefaultTimeout
 	}
 
 	if clientOptions.roundTripper == nil {

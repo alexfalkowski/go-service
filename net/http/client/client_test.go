@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -13,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,6 +30,22 @@ func TestDoAllowsResponseAtMaxResponseSize(t *testing.T) {
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.NoError(t, err)
+}
+
+func TestDoUsesConfiguredTimeout(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Set(content.TypeKey, media.Text)
+		res.WriteHeader(http.StatusOK)
+		res.(http.Flusher).Flush()
+		<-req.Context().Done()
+	}))
+	t.Cleanup(server.Close)
+
+	c := client.NewClient(test.Content, test.Pool, client.WithTimeout(10*time.Millisecond))
+
+	err := c.Get(t.Context(), server.URL, client.Options{})
+
+	require.ErrorIs(t, err, context.DeadlineExceeded)
 }
 
 func TestDoRejectsResponseOverMaxResponseSize(t *testing.T) {
@@ -302,6 +321,94 @@ func TestDoRedirectIgnoreRejectsRedirectRoundTrip(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, []string{"https://example.com/start"}, urls)
+}
+
+func TestDoReturnsEncodeErrorFromNewRequest(t *testing.T) {
+	enc := encoding.NewMap()
+	enc.Register("json", test.NewEncoder(test.ErrFailed))
+	cont := content.NewContent(enc, test.StreamEncoder, test.Pool)
+
+	c := client.NewClient(cont, test.Pool)
+
+	err := c.Post(t.Context(), "http://example.com", client.Options{ContentType: media.JSON, Request: &test.Request{Name: "Bob"}})
+
+	require.Error(t, err)
+	require.ErrorIs(t, err, test.ErrFailed)
+}
+
+func TestDoReturnsNewRequestError(t *testing.T) {
+	c := client.NewClient(test.Content, test.Pool)
+
+	err := c.Do(t.Context(), "BAD METHOD", "http://example.com", client.Options{})
+
+	require.Error(t, err)
+}
+
+func TestDoReturnsTransportError(t *testing.T) {
+	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		return nil, test.ErrFailed
+	})
+
+	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(rt))
+
+	err := c.Get(t.Context(), "http://example.com", client.Options{})
+
+	require.Error(t, err)
+	require.ErrorIs(t, err, test.ErrFailed)
+}
+
+func TestDoReturnsCopyErrorFromReadResponse(t *testing.T) {
+	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: &test.ErrReaderCloser{}, Request: req}, nil
+	})
+
+	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(rt))
+
+	err := c.Get(t.Context(), "http://example.com", client.Options{})
+
+	require.Error(t, err)
+	require.ErrorIs(t, err, test.ErrFailed)
+}
+
+func TestDoReturnsDecodeError(t *testing.T) {
+	enc := encoding.NewMap()
+	enc.Register("json", test.NewEncoder(test.ErrFailed))
+	cont := content.NewContent(enc, test.StreamEncoder, test.Pool)
+
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.Header().Set(content.TypeKey, media.JSON)
+		_, _ = io.WriteString(res, "{}")
+	}))
+	t.Cleanup(server.Close)
+
+	c := client.NewClient(cont, test.Pool)
+
+	var res test.Response
+	err := c.Get(t.Context(), server.URL, client.Options{Response: &res})
+
+	require.Error(t, err)
+	require.ErrorIs(t, err, test.ErrFailed)
+}
+
+func TestStreamReturnsCopyErrorFromCheckResponseStatus(t *testing.T) {
+	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Header:     http.Header{content.TypeKey: []string{media.Error}},
+			Body:       &test.ErrReaderCloser{},
+			Request:    req,
+		}, nil
+	})
+
+	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(rt))
+
+	err := c.Stream(t.Context(), http.MethodGet, "http://example.com", client.Options{},
+		func(_ context.Context, _ *client.ResponseStream) error {
+			return nil
+		})
+
+	require.Error(t, err)
+	require.ErrorIs(t, err, test.ErrFailed)
 }
 
 type authRoundTripper struct {

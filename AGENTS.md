@@ -442,6 +442,59 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   accidental double-counting; report only concrete bugs such as missing message
   limiting, ignored explicit limiter config, or incorrect status/header
   behavior.
+- HTTP streaming routes (`net/http/content.Stream`/`RequestStream`) mirror the
+  gRPC stream limiter behavior above: `transport/http/limiter.Handler` still
+  charges one token when the request/stream opens (its existing single
+  `TakeDecision` call, unchanged for every route), and on top of that it stores
+  the underlying `*transport/limiter.Limiter` on the request context via
+  `net/http/meta.WithLimiter` when the request is allowed. `Stream.Send` and
+  `RequestStream.Recv` retrieve it via `net/http/meta.Limiter` and each charge
+  one additional token per message, so a streaming route pays the same
+  stream-open-plus-per-message cost gRPC streams do; non-streaming routes never
+  read that context value, so it is harmless overhead for them. A denial
+  discovered by `Send`/`Recv` before the first successful `Send` is an ordinary
+  pre-commit `429` through `status.Error`, matching the middleware's own
+  rejection; a denial discovered after the response is committed cannot be a
+  `429` (headers are already sent), so it aborts the response like any other
+  post-commit streaming error. The
+  `RateLimit`/`RateLimit-Policy` response headers are set once, from the
+  stream-open decision only, and are not re-emitted per message, since HTTP
+  headers cannot change after a streaming response is committed — unlike
+  gRPC, which can fall back to trailers. Do not flag the missing per-message
+  header updates or the context-value plumbing as bugs; report only concrete
+  issues such as a streaming route never being charged, a charge applied
+  without a captured limiter, or a mid-stream denial incorrectly writing a
+  status after commit.
+- HTTP streaming responses (`net/http/content.NewStreamHandler`,
+  `NewRequestStreamHandler`) intentionally opt out of gzip by setting
+  `gzhttp.HeaderNoCompression` before the first byte is written. This is a
+  deliberate cost/interop decision, not an oversight: per-value flush emits a
+  separate gzip flush block per message (poor value for small NDJSON records),
+  and `gzhttp`'s deferred `Close` on an aborted stream can still emit a
+  complete, valid gzip footer, which is a residual interop risk for a client
+  whose gzip reader stops at that footer rather than reading ahead into the
+  truncated chunked stream (Go's own client does read ahead and still observes
+  the abort). Do not flag the missing compression for streaming responses as a
+  performance regression; report only concrete bugs such as the header not
+  being set before commit, or a streaming route that is compressed despite it.
+- Bidirectional HTTP streaming routes (`net/http/content.NewRequestStreamHandler`,
+  and the route helpers that use it: `net/http/rest`'s `StreamRouteRequest`,
+  `StreamPost`, `StreamPut`, `StreamPatch`, and `net/http/rpc.StreamRoute`)
+  require HTTP/2 (including h2c). `NewRequestStreamHandler` rejects a request
+  with `req.ProtoMajor < 2` with `505 HTTP Version Not Supported` before the
+  handler runs. This is intentional and measured, not a missing feature: an
+  HTTP/1.x request body is buffered ahead of the handler by intermediaries and
+  the Go transport, so a bidi handler that both reads the request stream and
+  writes the response stream hangs rather than failing outright over h1 — the
+  pre-handler rejection is what turns that hang into an immediate, diagnosable
+  error. Send-only streaming routes (`net/http/content.NewStreamHandler`, and
+  `net/http/rest`'s `StreamRoute`/`StreamGet`, `net/http/rpc` has no send-only
+  helper) have no such requirement and stay fully supported on HTTP/1.1
+  chunked responses, since only the bidi handle interleaves reads and writes.
+  Do not flag the 505 rejection, or the asymmetry between the bidi and
+  send-only helpers, as a bug; report only concrete issues such as the gate
+  firing for a send-only route, failing to fire for a bidi route, or an h2/h2c
+  deployment still hanging instead of failing.
 - HTTP telemetry logger service/method derivation may include request URL path
   segments for non-canonical HTTP routes. This is intentional for client and
   server debugging because HTTP clients can call arbitrary paths and route
@@ -640,3 +693,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   perform internet/network time queries. Report only concrete breakage such as
   all configured providers currently failing in CI, ignored timeouts, removed
   provider redundancy, or a documented promise of hermetic/offline specs.
+- Agents verifying changes in a sandboxed shell should run `make specs`
+  (optionally `package=<path>` to scope it) rather than a raw `go test`
+  invocation, especially for anything touching or depending on the `time`
+  package. In at least one sandboxed agent environment, raw `go test` against
+  `time`'s NTP/NTS tests failed reproducibly (`dial udp/tcp ...: operation not
+  permitted`) while `package=time make specs` passed reproducibly for the same
+  code, same machine, same session — `make specs` wraps the same `go test`
+  invocation (see `bin/build/go/test`), so the difference is in how that
+  sandbox's tooling permission/network layer treats the two invocations, not
+  in what the repo's tests do. Do not conclude live NTP/NTS coverage is broken
+  from a raw `go test` failure alone; reproduce through `make specs` before
+  treating it as a real breakage.

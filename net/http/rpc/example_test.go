@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
@@ -16,14 +17,11 @@ func ExampleClient_Post() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
 	pool := sync.NewBufferPool()
-	rpc.Register(rpc.RegisterParams{
-		Router: router,
-		Content: content.NewContent(
-			encoding.NewMap(),
-			pool,
-		),
-		Pool: pool,
-	})
+	rpc.Register(router, content.NewContent(
+		encoding.NewMap(),
+		stream.NewMap(),
+		pool,
+	), pool, 0, 0)
 
 	rpc.Route("/hello", func(_ context.Context, req *exampleRequest) (*exampleResponse, error) {
 		return &exampleResponse{Message: "hello " + req.Name}, nil

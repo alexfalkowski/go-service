@@ -60,7 +60,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
 	grpcPolicy := grpc.NewMethodPolicy()
-	lc := fxtest.NewLifecycle(tb)
+	lc := QuietLifecycle(tb)
 	tracer := NewOTLPTracerConfig()
 	generator := uuid.NewGenerator()
 	drain := server.NewDrain()

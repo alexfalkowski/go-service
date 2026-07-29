@@ -6,15 +6,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 // ResetTelemetry disables global telemetry state for benchmarks and tests.
 func ResetTelemetry(tb testing.TB) {
 	tb.Helper()
 
-	require.NoError(tb, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(tb)}))
-	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(tb)})
+	require.NoError(tb, tracer.Register(tracer.TracerParams{Lifecycle: QuietLifecycle(tb)}))
+	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: QuietLifecycle(tb)})
 }
 
 // EnableMetrics installs the shared test meter provider.
@@ -26,7 +25,7 @@ func EnableMetrics(tb testing.TB) {
 	tb.Helper()
 
 	metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   fxtest.NewLifecycle(tb),
+		Lifecycle:   QuietLifecycle(tb),
 		Config:      &metrics.Config{},
 		Reader:      metrics.NewManualReader(),
 		ID:          ID,
@@ -45,8 +44,8 @@ func EnableTracer(tb testing.TB) {
 	tb.Helper()
 
 	require.NoError(tb, tracer.Register(tracer.TracerParams{
-		Lifecycle:   fxtest.NewLifecycle(tb),
-		Config:      &tracer.Config{Kind: "otlp", URL: "https://localhost:4318/v1/traces"},
+		Lifecycle:   QuietLifecycle(tb),
+		Config:      &tracer.Config{Kind: "otlp", URL: otlpHTTPSURL + "/v1/traces"},
 		ID:          ID,
 		Name:        Name,
 		Version:     Version,
