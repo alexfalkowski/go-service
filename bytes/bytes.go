@@ -11,6 +11,12 @@ import (
 // standard library implementation.
 type Buffer = bytes.Buffer
 
+// Reader is an alias for [bytes.Reader].
+//
+// It is provided so go-service code can depend on a consistent import path while still using the
+// standard library implementation.
+type Reader = bytes.Reader
+
 // NewBuffer returns a new Buffer initialized with buf's contents.
 //
 // This is a thin wrapper around [bytes.NewBuffer]. The returned buffer uses buf as its initial

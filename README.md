@@ -299,6 +299,9 @@ Encoding kinds used by subsystems that support encoding:
 > [!NOTE]
 > - `plain` and `octet-stream` map to the bytes passthrough encoder.
 > - Protobuf binary/text/JSON kinds have multiple aliases; the list above reflects the built-in registry.
+> - `encoding/stream.Map` is a separate registry for streaming (multi-value) encoding — `json`, `msgpack`,
+>   `gob`, `yaml` — used by [HTTP streaming (NDJSON)](#http-streaming-ndjson), not by this single-value
+>   registry.
 
 ---
 
@@ -1114,6 +1117,40 @@ Built-in protobuf-oriented media type aliases include:
 >
 > `application/vnd.msgpack` and `application/gob` can be resolved as media types, but REST/RPC request-body decoding rejects them with HTTP 415.
 
+### HTTP streaming (NDJSON)
+
+REST and RPC support streaming routes alongside the single-value helpers above, for responses (and,
+over HTTP/2, requests) that arrive as a sequence of values instead of one buffered payload:
+
+| single-value | streaming | direction | HTTP/2 required |
+| --- | --- | --- | --- |
+| `rest.Get`/`rest.Route` | `rest.StreamGet`/`rest.StreamRoute` | send-only | no |
+| `rest.Post`/`rest.Put`/`rest.Patch`/`rest.RouteRequest` | `rest.StreamPost`/`rest.StreamPut`/`rest.StreamPatch`/`rest.StreamRouteRequest` | bidirectional | yes |
+| `rpc.Route` | `rpc.StreamRoute` | bidirectional | yes |
+
+A send-only streaming handler gets a `*content.Stream[Res]` with `Send`; a bidirectional streaming
+handler gets a `*content.RequestStream[Req, Res]` with both `Send` and `Recv`. Client calls use the
+matching `client.Stream`/`client.RequestStream` functions, which take the same kind of callback.
+See `net/http/client`'s `ExampleClient_RequestStream` for a complete HTTP/2 bidirectional client call.
+
+The initial wire format is NDJSON (`application/x-ndjson`), newline-delimited JSON values, resolved
+through a separate streaming encoder/decoder registry (`encoding/stream.Map`) from the single-value one
+above — an unregistered or unparseable streaming media type is rejected outright rather than falling
+back to JSON, unlike single-value negotiation.
+
+> [!NOTE]
+> - Bidirectional streaming routes require HTTP/2 (including h2c); a request over HTTP/1.x is rejected
+>   with `505 HTTP Version Not Supported` before the handler runs. Send-only streaming routes have no
+>   such requirement and stay fully supported on HTTP/1.1 chunked responses.
+> - Streaming responses are not gzip-compressed, regardless of the client's `Accept-Encoding`.
+> - `max_receive_size` applies per decoded value on a streaming request body, not as a cumulative total
+>   across the whole stream; overall stream volume is controlled by the configured rate limiter instead,
+>   which charges one token per streamed message in addition to the token charged when the stream opens.
+> - A successful `Send` extends the HTTP server's configured write timeout, so a slow-but-active stream
+>   is not severed by a whole-stream deadline; bound a client-side streaming call with the request
+>   context instead of the client's overall request timeout.
+> - Streaming requests are never retried by the client's retry middleware.
+
 ### HTTP route misses
 
 The HTTP transport wraps the mux with `net/http.NewNotFoundHandler` so generated 404 responses can be rendered consistently while preserving other mux responses such as 405 Method Not Allowed.
@@ -1152,7 +1189,7 @@ transport:
 > - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
 > - `transport.grpc.timeout` bounds unary RPC handlers and feeds gRPC server keepalive/connection defaults; it does not cap stream lifetime. Long-lived streams remain open until client cancellation or stream-specific controls apply.
 > - `max_receive_size` limits inbound payload size. A zero value uses the default `4MB`.
-> - For HTTP, `max_receive_size` applies per request body. For gRPC, it applies per inbound unary request and per inbound stream message.
+> - For HTTP, `max_receive_size` applies per request body, except for bidirectional streaming routes (see [HTTP streaming (NDJSON)](#http-streaming-ndjson)), where it applies per decoded value instead, with no cumulative total. For gRPC, it applies per inbound unary request and per inbound stream message.
 > - MVC does not enforce its own body-size caps; supported HTTP server wiring applies `max_receive_size` before MVC handlers run, and go-service HTTP clients apply their configured response-size cap when reading responses.
 
 Receive-limit example:

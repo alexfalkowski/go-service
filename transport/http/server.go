@@ -102,13 +102,19 @@ type ServerParams struct {
 //   - optional token verification ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Verifier` is non-nil
 //   - optional rate limiting ([github.com/alexfalkowski/go-service/v2/transport/http/limiter]) when `params.Limiter` is non-nil
 //   - optional access control ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Access` is non-nil
-//   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v2/transport/http/body])
+//   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v2/transport/http/body]); routes
+//     registered as streaming (see `params.RoutePolicy`) are never buffered by this middleware, and
+//     bidirectional streaming routes cap each decoded request value independently at the content layer
+//     instead (see [github.com/alexfalkowski/go-service/v2/net/http/content.RequestStream.Recv])
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - gzip compression wrapping the final mux handler, including not-found fallbacks ([github.com/klauspost/compress/gzhttp.GzipHandler] with [http.NewNotFoundHandler])
 //
 // Route policy from `params.RoutePolicy` controls middleware bypasses. Registered operation routes
 // (health/metrics/etc.) bypass logging, token verification, rate limiting, and access control.
-// Registered unauthenticated routes bypass token verification and access control only.
+// Registered unauthenticated routes bypass token verification and access control only. Registered
+// streaming routes are never buffered by the inbound body middleware (see
+// [github.com/alexfalkowski/go-service/v2/transport/http/body.NewHandler]); they keep the
+// declared-Content-Length short-circuit but no cumulative mid-stream limit.
 //
 // TLS:
 //
@@ -149,7 +155,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(token.NewAccessHandler(params.RoutePolicy, params.Access))
 	}
 
-	neg.Use(body.NewHandler(params.Config.GetMaxReceiveSize().Bytes()))
+	neg.Use(body.NewHandler(params.RoutePolicy, params.Config.GetMaxReceiveSize().Bytes()))
 
 	for _, hd := range params.Handlers {
 		neg.Use(hd)

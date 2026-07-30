@@ -3,12 +3,15 @@ package http_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/client"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -185,4 +188,112 @@ func TestRestInvalidStatusCode(t *testing.T) {
 
 	err = world.Rest.Patch(t.Context(), url, opts)
 	require.Error(t, err)
+}
+
+func TestRestStreamPostRecvAndSendOverRealServer(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
+
+	rest.StreamPost("/hello", func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+		for {
+			req, err := stream.Recv()
+			if err != nil {
+				if stream.IsFinished(err) {
+					return nil
+				}
+
+				return err
+			}
+
+			if err := stream.Send(&test.Response{Greeting: "Hello " + req.Name}); err != nil {
+				return err
+			}
+		}
+	})
+
+	url := world.PathServerURL("https", "hello")
+
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+
+	var greetings []string
+	err := world.Rest.RequestStream(ctx, http.MethodPost, url, rest.Options{ContentType: media.NDJSON, Accept: media.NDJSON},
+		func(_ context.Context, stream *client.RequestResponseStream) error {
+			for _, name := range []string{"Bob", "Alice"} {
+				if err := stream.Send(&test.Request{Name: name}); err != nil {
+					return err
+				}
+
+				var res test.Response
+				if err := stream.Recv(&res); err != nil {
+					return err
+				}
+
+				greetings = append(greetings, res.Greeting)
+			}
+
+			return nil
+		})
+	require.NoError(t, err)
+	require.Equal(t, []string{"Hello Bob", "Hello Alice"}, greetings)
+}
+
+func TestRestStreamPostRefreshesReadDeadlineOverH2C(t *testing.T) {
+	config := test.NewInsecureTransportConfig()
+	config.HTTP.Timeout = 100 * time.Millisecond
+	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
+	rest.Register(world.Router, test.Content, test.Pool, config.HTTP.GetTimeout(), config.HTTP.GetMaxReceiveSize())
+
+	rest.StreamPost("/hello", func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+		for {
+			req, err := stream.Recv()
+			if err != nil {
+				if stream.IsFinished(err) {
+					return nil
+				}
+
+				return err
+			}
+
+			if err := stream.Send(&test.Response{Greeting: "Hello " + req.Name}); err != nil {
+				return err
+			}
+		}
+	})
+	world.Start()
+
+	transport := http.Transport(nil)
+	transport.Protocols.SetHTTP1(false)
+
+	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(transport))
+
+	url := world.PathServerURL("http", "hello")
+
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+
+	var greetings []string
+	err := c.RequestStream(ctx, http.MethodPost, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON},
+		func(_ context.Context, stream *client.RequestResponseStream) error {
+			for index, name := range []string{"Bob", "Alice", "Carol", "Dan"} {
+				if index > 0 {
+					time.Sleep(40 * time.Millisecond)
+				}
+
+				if err := stream.Send(&test.Request{Name: name}); err != nil {
+					return err
+				}
+
+				var res test.Response
+				if err := stream.Recv(&res); err != nil {
+					return err
+				}
+
+				greetings = append(greetings, res.Greeting)
+			}
+
+			time.Sleep(120 * time.Millisecond)
+			return stream.Send(&test.Request{Name: "Eve"})
+		})
+	require.Error(t, err)
+	require.Equal(t, []string{"Hello Bob", "Hello Alice", "Hello Carol", "Hello Dan"}, greetings)
 }

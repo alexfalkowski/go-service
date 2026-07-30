@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
@@ -12,10 +13,32 @@ import (
 )
 
 func TestPostRequiresRequest(t *testing.T) {
-	client := rpc.NewClient("http://example.com")
+	client := rpc.NewClient("http://example.com", rpc.WithClientTimeout("1s"))
 
 	var res test.Response
 	require.ErrorIs(t, client.Post(t.Context(), "/hello", nil, &res), rpc.ErrInvalidRequest)
+}
+
+func TestPostUsesConfiguredTimeout(t *testing.T) {
+	rpc.Register(nil, test.Content, test.Pool, 0, 0)
+
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Set("Content-Type", media.JSON)
+		res.WriteHeader(http.StatusOK)
+		res.(http.Flusher).Flush()
+		<-req.Context().Done()
+	}))
+	t.Cleanup(server.Close)
+
+	client := rpc.NewClient(server.URL,
+		rpc.WithClientContentType(media.JSON),
+		rpc.WithClientTimeout("10ms"),
+	)
+	var res test.Response
+
+	err := client.Post(t.Context(), "/hello", &test.Request{Name: "Bob"}, &res)
+
+	require.ErrorIs(t, err, context.DeadlineExceeded)
 }
 
 func TestPostRequiresNonNilTypedRequest(t *testing.T) {
@@ -44,11 +67,7 @@ func TestPostRequiresNonNilTypedResponse(t *testing.T) {
 func TestPostUsesAccept(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rpc.Register(rpc.RegisterParams{
-		Router:  router,
-		Content: test.Content,
-		Pool:    test.Pool,
-	})
+	rpc.Register(router, test.Content, test.Pool, 0, 0)
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	server := httptest.NewServer(mux)

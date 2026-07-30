@@ -85,6 +85,39 @@ func TestHandlerSkipsOperationPath(t *testing.T) {
 	require.Empty(t, logs.String())
 }
 
+func TestHandlerLogsRecoveredPanic(t *testing.T) {
+	var logs bytes.Buffer
+	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+	handler := httplogger.NewHandler(http.NewRoutePolicy(), &logger.Logger{Logger: slogLogger})
+	res := httptest.NewRecorder()
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/greeter/say-hello", http.NoBody)
+
+	require.PanicsWithValue(t, "boom", func() {
+		handler.ServeHTTP(res, req, func(_ http.ResponseWriter, _ *http.Request) {
+			panic("boom")
+		})
+	})
+
+	require.Contains(t, logs.String(), `"msg":"http: panic"`)
+	require.Contains(t, logs.String(), `"level":"ERROR"`)
+}
+
+func TestHandlerSuppressesAbortHandlerPanicLog(t *testing.T) {
+	var logs bytes.Buffer
+	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+	handler := httplogger.NewHandler(http.NewRoutePolicy(), &logger.Logger{Logger: slogLogger})
+	res := httptest.NewRecorder()
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/greeter/say-hello", http.NoBody)
+
+	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
+		handler.ServeHTTP(res, req, func(_ http.ResponseWriter, _ *http.Request) {
+			panic(http.ErrAbortHandler)
+		})
+	})
+
+	require.Empty(t, logs.String())
+}
+
 func TestRoundTripperLogsTransportError(t *testing.T) {
 	var logs bytes.Buffer
 	transportErr := errors.New("dial failed")

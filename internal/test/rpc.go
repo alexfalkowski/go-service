@@ -70,9 +70,5 @@ func ErrorsInternalProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*
 }
 
 func (w *World) registerRPC() {
-	rpc.Register(rpc.RegisterParams{
-		Router:  w.Router,
-		Pool:    Pool,
-		Content: Content,
-	})
+	rpc.Register(w.Router, Content, Pool, 0, 0)
 }

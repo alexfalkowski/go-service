@@ -1,9 +1,8 @@
 package test
 
 import (
-	"sync"
-
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-sync"
 )
 
 // NewShutdowner returns a Shutdowner that records whether shutdown was requested.

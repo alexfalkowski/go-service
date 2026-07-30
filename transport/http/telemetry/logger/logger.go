@@ -63,7 +63,13 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	attrs = append(attrs, logger.String(meta.MethodKey, method))
 	defer func() {
 		if value := recover(); value != nil {
-			h.logPanic(ctx, attrs, runtime.ConvertRecover(value), time.Since(start).String())
+			// A streaming handler that already committed its response aborts via
+			// http.ErrAbortHandler (see net/http/content's streaming error contract) so net/http can
+			// sever the in-flight connection. That is an intentional, expected outcome of a truncated
+			// stream, not a bug, so it must not be logged as a recovered panic.
+			if err, ok := value.(error); !ok || !errors.Is(err, http.ErrAbortHandler) {
+				h.logPanic(ctx, attrs, runtime.ConvertRecover(value), time.Since(start).String())
+			}
 			panic(value)
 		}
 	}()

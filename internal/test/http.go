@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -50,6 +51,29 @@ func (w *ErrResponseWriter) Write([]byte) (int, error) {
 
 // WriteHeader stores code in the Code field.
 func (w *ErrResponseWriter) WriteHeader(code int) {
+	w.Code = code
+}
+
+// NoFlushResponseWriter is an [http.ResponseWriter] test double whose writes succeed but which does
+// not implement [http.Flusher], so [http.ResponseController.Flush] reports
+// [http.ErrNotSupported] against it.
+type NoFlushResponseWriter struct {
+	Body bytes.Buffer
+	Code int
+}
+
+// Header is always empty.
+func (w *NoFlushResponseWriter) Header() http.Header {
+	return http.Header{}
+}
+
+// Write appends p to Body.
+func (w *NoFlushResponseWriter) Write(p []byte) (int, error) {
+	return w.Body.Write(p)
+}
+
+// WriteHeader stores code in the Code field.
+func (w *NoFlushResponseWriter) WriteHeader(code int) {
 	w.Code = code
 }
 

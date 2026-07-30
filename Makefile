@@ -72,6 +72,10 @@ encoding-fuzz:
 	@$(MAKE) package=encoding/hjson name=FuzzUnmarshal fuzz
 	@$(MAKE) package=encoding/json name=FuzzUnmarshal fuzz
 	@$(MAKE) package=encoding/msgpack name=FuzzUnmarshal fuzz
+	@$(MAKE) package=encoding/stream/gob name=FuzzUnmarshal fuzz
+	@$(MAKE) package=encoding/stream/json name=FuzzUnmarshal fuzz
+	@$(MAKE) package=encoding/stream/msgpack name=FuzzUnmarshal fuzz
+	@$(MAKE) package=encoding/stream/yaml name=FuzzUnmarshal fuzz
 	@$(MAKE) package=encoding/toml name=FuzzUnmarshal fuzz
 	@$(MAKE) package=encoding/yaml name=FuzzUnmarshal fuzz
 

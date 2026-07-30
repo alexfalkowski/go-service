@@ -7,6 +7,7 @@ func NewRoutePolicy() *RoutePolicy {
 	return &RoutePolicy{
 		operations:      map[string]struct{}{},
 		unauthenticated: map[string]struct{}{},
+		streaming:       map[string]struct{}{},
 	}
 }
 
@@ -18,6 +19,7 @@ func NewRoutePolicy() *RoutePolicy {
 type RoutePolicy struct {
 	operations      map[string]struct{}
 	unauthenticated map[string]struct{}
+	streaming       map[string]struct{}
 }
 
 // Operation marks pattern as a service-owned operation path.
@@ -30,6 +32,12 @@ func (r *RoutePolicy) Operation(pattern string) {
 // AllowUnauthenticated marks pattern as not requiring transport token authentication.
 func (r *RoutePolicy) AllowUnauthenticated(pattern string) {
 	r.unauthenticated[pattern] = struct{}{}
+}
+
+// Streaming marks pattern as a route whose request body, response body, or both are streamed
+// incrementally rather than buffered whole.
+func (r *RoutePolicy) Streaming(pattern string) {
+	r.streaming[pattern] = struct{}{}
 }
 
 // IsOperation reports whether req targets a registered operation path.
@@ -50,6 +58,22 @@ func (r *RoutePolicy) IsUnauthenticated(req *Request) bool {
 	}
 
 	_, ok := r.unauthenticated[req.URL.Path]
+	return ok
+}
+
+// IsStreaming reports whether req targets a route whose request body, response body, or both are
+// streamed incrementally rather than buffered whole.
+func (r *RoutePolicy) IsStreaming(req *Request) bool {
+	if !strings.IsEmpty(req.Pattern) {
+		_, ok := r.streaming[req.Pattern]
+		return ok
+	}
+
+	if _, ok := r.streaming[routeRequestPattern(req)]; ok {
+		return true
+	}
+
+	_, ok := r.streaming[req.URL.Path]
 	return ok
 }
 
@@ -83,6 +107,13 @@ func (r *Router) HandleOperationFunc(pattern string, handler HandlerFunc) {
 // HandleUnauthenticated registers handler and marks pattern as not requiring transport token authentication.
 func (r *Router) HandleUnauthenticated(pattern string, handler Handler) {
 	r.routePolicy.AllowUnauthenticated(pattern)
+	r.Handle(pattern, handler)
+}
+
+// HandleStreaming registers handler and marks pattern as a route whose request body, response body,
+// or both are streamed incrementally rather than buffered whole.
+func (r *Router) HandleStreaming(pattern string, handler Handler) {
+	r.routePolicy.Streaming(pattern)
 	r.Handle(pattern, handler)
 }
 

@@ -92,7 +92,10 @@ func TestRoundTripperWithTokenDoesNotSendAuthorizationToCrossOriginRedirect(t *t
 	require.NoError(t, err)
 
 	client := &http.Client{Transport: rt}
-	res, err := client.Get(trusted.URL + "/start")
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, trusted.URL+"/start", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := client.Do(req)
 	require.ErrorIs(t, err, http.ErrUseLastResponse)
 	require.Nil(t, res)
 	require.Equal(t, "Bearer secret", trustedAuthorization)

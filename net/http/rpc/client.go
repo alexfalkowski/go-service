@@ -69,10 +69,10 @@ func WithClientAccept(accept string) ClientOption {
 	})
 }
 
-// WithClientTimeout sets the client timeout using a duration string (for example "1s" or "500ms").
+// WithClientTimeout sets the unary client timeout using a duration string (for example "1s" or
+// "500ms").
 //
-// The duration string is parsed using [time.MustParseDuration] and will panic if it cannot be parsed.
-// The resulting duration is applied to the underlying [http.Client.Timeout].
+// The duration string is parsed using [time.MustParseDuration] and panics if it cannot be parsed.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = time.MustParseDuration(timeout)
@@ -86,8 +86,8 @@ func WithClientTimeout(timeout string) ClientOption {
 // nil dependencies.
 //
 // The returned client issues RPC-style POST requests to the provided base url using the configured
-// Content-Type and transport options. Redirect following is disabled by default (redirect responses
-// are returned instead of being followed).
+// Content-Type, transport, and unary timeout options. Redirect following is disabled by default
+// (redirect responses are returned instead of being followed).
 func NewClient(url string, opts ...ClientOption) *Client {
 	os := options(opts...)
 	client := client.NewClient(cont, pool,

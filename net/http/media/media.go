@@ -36,6 +36,11 @@ const HumanJSON = "application/hjson"
 // MessagePack is the vendor media type for MessagePack payloads.
 const MessagePack = "application/vnd.msgpack"
 
+// NDJSON is the media type for newline-delimited JSON streams.
+//
+// This is used for streaming HTTP request/response bodies backed by encoding/stream/json.
+const NDJSON = "application/x-ndjson"
+
 // Protobuf is the media type for protobuf binary payloads.
 //
 // This is commonly used when transporting protobuf wire-format bodies over HTTP.

@@ -37,7 +37,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/retry"
 )
 
-const timeout = 2 * time.Second
+const (
+	timeout      = 2 * time.Second
+	otlpHTTPURL  = "http://localhost:4318"
+	otlpHTTPSURL = "https://localhost:4318"
+)
 
 // Validator is the shared config validator used by test helpers.
 var Validator = config.NewValidator()
@@ -262,7 +266,7 @@ func NewOTLPLoggerConfig() *logger.Config {
 	return &logger.Config{
 		Kind:  "otlp",
 		Level: "debug",
-		URL:   "http://localhost:3100/loki/api/v1/push",
+		URL:   otlpHTTPURL + "/v1/logs",
 		Headers: header.Map{
 			"Authorization": FilePath("secrets/telemetry"),
 		},
@@ -304,7 +308,7 @@ func NewPrometheusMetricsConfig() *metrics.Config {
 func NewOTLPMetricsConfig() *metrics.Config {
 	return &metrics.Config{
 		Kind: "otlp",
-		URL:  "http://localhost:9009/otlp/v1/metrics",
+		URL:  otlpHTTPURL + "/v1/metrics",
 		Headers: header.Map{
 			"Authorization": FilePath("secrets/telemetry"),
 		},
@@ -315,7 +319,7 @@ func NewOTLPMetricsConfig() *metrics.Config {
 func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
 		Kind: "otlp",
-		URL:  "http://localhost:4318/v1/traces",
+		URL:  otlpHTTPURL + "/v1/traces",
 		Headers: header.Map{
 			"Authorization": FilePath("secrets/telemetry"),
 		},

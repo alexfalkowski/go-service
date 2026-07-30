@@ -34,6 +34,24 @@ func TestWithContentAllowsPartialContent(t *testing.T) {
 	require.Same(t, res, httpmeta.Response(ctx))
 }
 
+func TestLimiterReturnsNilWithoutWithLimiter(t *testing.T) {
+	require.Nil(t, httpmeta.Limiter(t.Context()))
+}
+
+func TestWithLimiterAllowsNil(t *testing.T) {
+	ctx := httpmeta.WithLimiter(t.Context(), nil)
+
+	require.Nil(t, httpmeta.Limiter(ctx))
+}
+
+func TestWithLimiterStoresLimiter(t *testing.T) {
+	lim := &test.AllowAllLimiter{}
+
+	ctx := httpmeta.WithLimiter(t.Context(), lim)
+
+	require.Same(t, lim, httpmeta.Limiter(ctx))
+}
+
 func TestRoundTripperAppendDoesNotOverwriteRequestID(t *testing.T) {
 	roundTripper := httpmeta.NewRoundTripper(
 		env.UserAgent("agent"),

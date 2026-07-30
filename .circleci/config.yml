@@ -12,7 +12,7 @@ commands:
       - sync-submodules
 
 executors:
-  go-with-postgres-valkey-status-mimir:
+  go-with-postgres-valkey-status-observability:
     docker:
       - image: alexfalkowski/go:4.31
       - image: postgres:18-trixie
@@ -25,8 +25,7 @@ executors:
         command: server -config env:CONFIG
         environment:
           CONFIG: yml:ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50CmhlYWx0aDoKICBkdXJhdGlvbjogMXMKICB0aW1lb3V0OiAxcwppZDoKICBraW5kOiB1dWlkCnRlbGVtZXRyeToKICBsb2dnZXI6CiAgICBraW5kOiB0ZXh0CiAgICBsZXZlbDogaW5mbwp0cmFuc3BvcnQ6CiAgaHR0cDoKICAgIGFkZHJlc3M6IHRjcDovLzo2MDAwCiAgICB0aW1lb3V0OiAxMHMK
-      - image: grafana/mimir:latest
-        command: -server.http-listen-port=9009 -auth.multitenancy-enabled=false -ingester.ring.replication-factor=1
+      - image: grafana/otel-lgtm:latest
   release:
     docker:
       - image: alexfalkowski/release:8.27
@@ -36,14 +35,14 @@ executors:
 
 jobs:
   build:
-    executor: go-with-postgres-valkey-status-mimir
+    executor: go-with-postgres-valkey-status-observability
     working_directory: ~/go-service
     steps:
       - checkout-submodules
       - run: make source-key
       - run: mkcert -install
       - run: make create-certs
-      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:6000 -wait tcp://localhost:9009 -timeout 1m
+      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:6000 -wait tcp://localhost:4318 -timeout 1m
       - restore_cache:
           name: restore go cache
           keys:

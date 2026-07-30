@@ -61,3 +61,32 @@ func NewHandler(handler http.Handler, limit int64) http.Handler {
 		handler.ServeHTTP(res, req)
 	})
 }
+
+// NewLazyHandler wraps handler without buffering the request body.
+//
+// Unlike NewHandler, it never reads req.Body itself: handler reads the body directly, so handler can
+// begin processing before the full body has arrived. This suits routes whose body is read incrementally
+// (streaming routes) rather than decoded all at once.
+//
+// It rejects requests before calling handler when Content-Length is declared and greater than limit,
+// matching NewHandler's short-circuit for requests that announce their size upfront. Beyond that,
+// NewLazyHandler does not enforce limit itself: it does not wrap req.Body in a [http.MaxBytesReader] or
+// similar cumulative-total reader, because a streaming route has no meaningful cumulative body size to
+// cap (see the go-service streaming design's B18 decision) — a long-lived request stream with many
+// values is not bounded by a single byte ceiling the way a one-shot buffered body is. A chunked request
+// has no declared Content-Length, so for those requests this short-circuit cannot fire at all, and
+// nothing in this handler enforces a limit mid-read.
+//
+// Callers that need a per-decoded-value cap on a lazily-limited body must apply it themselves at the
+// point a value boundary is known, the way [github.com/alexfalkowski/go-service/v2/net/http/content.RequestStream.Recv]
+// does; that per-value cap produces a [http.MaxBytesError] from Recv, not from this handler.
+func NewLazyHandler(handler http.Handler, limit int64) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		if req.ContentLength > limit {
+			_ = status.WriteError(req.Context(), res, &http.MaxBytesError{Limit: limit})
+			return
+		}
+
+		handler.ServeHTTP(res, req)
+	})
+}

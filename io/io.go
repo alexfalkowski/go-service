@@ -59,6 +59,25 @@ func NopCloser(r Reader) ReadCloser {
 	return io.NopCloser(r)
 }
 
+// PipeReader is an alias for [io.PipeReader].
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type PipeReader = io.PipeReader
+
+// PipeWriter is an alias for [io.PipeWriter].
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type PipeWriter = io.PipeWriter
+
+// Pipe creates a synchronous in-memory pipe connecting a [PipeReader] and a [PipeWriter].
+//
+// This is a thin wrapper around [io.Pipe].
+func Pipe() (*PipeReader, *PipeWriter) {
+	return io.Pipe()
+}
+
 // LimitReader returns a [Reader] that reads from r but stops with [EOF] after n bytes.
 //
 // This is a thin wrapper around [io.LimitReader].

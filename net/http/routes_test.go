@@ -36,25 +36,24 @@ func TestRoutePolicyClassifiesUnauthenticatedRequests(t *testing.T) {
 	policy := http.NewRoutePolicy()
 	policy.AllowUnauthenticated("POST /events")
 
-	tests := []struct {
-		name   string
-		method string
-		path   string
-		match  bool
-	}{
+	runRouteMatchCases(t, []routeMatchCase{
 		{name: "registered event receiver", method: http.MethodPost, path: "/events", match: true},
 		{name: "wrong method", method: http.MethodGet, path: "/events", match: false},
 		{name: "application event path", method: http.MethodPost, path: "/admin/events", match: false},
 		{name: "nested event path", method: http.MethodPost, path: "/events/foo", match: false},
-	}
+	}, policy.IsUnauthenticated)
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequestWithContext(t.Context(), tt.method, tt.path, http.NoBody)
+func TestRoutePolicyClassifiesStreamingRequests(t *testing.T) {
+	policy := http.NewRoutePolicy()
+	policy.Streaming("POST /stream")
 
-			require.Equal(t, tt.match, policy.IsUnauthenticated(req))
-		})
-	}
+	runRouteMatchCases(t, []routeMatchCase{
+		{name: "registered streaming route", method: http.MethodPost, path: "/stream", match: true},
+		{name: "wrong method", method: http.MethodGet, path: "/stream", match: false},
+		{name: "application streaming path", method: http.MethodPost, path: "/admin/stream", match: false},
+		{name: "nested streaming path", method: http.MethodPost, path: "/stream/foo", match: false},
+	}, policy.IsStreaming)
 }
 
 func TestRouterRegistersHandlerAndPolicy(t *testing.T) {
@@ -74,4 +73,42 @@ func TestRouterRegistersHandlerAndPolicy(t *testing.T) {
 	require.Equal(t, "POST /events/{tenant}", req.Pattern)
 	require.True(t, policy.IsUnauthenticated(req))
 	require.Equal(t, http.StatusAccepted, res.Code)
+}
+
+func TestRouterRegistersHandlerAndStreamingPolicy(t *testing.T) {
+	mux := http.NewServeMux()
+	policy := http.NewRoutePolicy()
+	router := http.NewRouter(mux, policy)
+
+	router.HandleStreaming("POST /stream/{id}", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/stream/acme", http.NoBody)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	require.Equal(t, "POST /stream/{id}", req.Pattern)
+	require.True(t, policy.IsStreaming(req))
+	require.Equal(t, http.StatusOK, res.Code)
+}
+
+type routeMatchCase struct {
+	name   string
+	method string
+	path   string
+	match  bool
+}
+
+func runRouteMatchCases(t *testing.T, cases []routeMatchCase, check func(*http.Request) bool) {
+	t.Helper()
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(t.Context(), tt.method, tt.path, http.NoBody)
+
+			require.Equal(t, tt.match, check(req))
+		})
+	}
 }

@@ -38,10 +38,11 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	})
 }
 
-// WithClientTimeout sets the client timeout using a duration string (for example "1s" or "500ms").
+// WithClientTimeout sets the unary client timeout using a duration string (for example "1s" or
+// "500ms").
 //
-// The duration string is parsed using [time.MustParseDuration] and will panic if it cannot be parsed.
-// The resulting duration is applied to the underlying [http.Client.Timeout].
+// The duration string is parsed using [time.MustParseDuration] and panics if it cannot be parsed.
+// Streaming calls remain bounded by their caller-provided contexts.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = time.MustParseDuration(timeout)
@@ -55,7 +56,8 @@ func WithClientTimeout(timeout string) ClientOption {
 // nil dependencies.
 //
 // Behavior:
-//   - It constructs a content-aware [client.Client] configured with the selected RoundTripper and timeout.
+//   - It constructs a content-aware [client.Client] configured with the selected RoundTripper and unary
+//     timeout. Stream calls use their request contexts instead.
 //   - It disables automatic redirect following (returns redirect responses instead of following them).
 func NewClient(opts ...ClientOption) *Client {
 	os := options(opts...)
