@@ -46,7 +46,9 @@ type Handler struct {
 //   - code: HTTP response status code
 //   - error: the request diagnostic error, when present
 //
-// Recovered panics are logged at error level with their original diagnostic error.
+// Recovered panics are logged at error level with their original diagnostic error. An aborted committed
+// stream (see [http.ErrAbortHandler]) is the one exception: it still produces the ordinary outcome log line
+// above, not a panic log, since the response was already committed.
 //
 // Log level is derived from the status code:
 //   - 4xx → warn
@@ -61,19 +63,28 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	attrs = append(attrs, logger.String(meta.SystemKey, "http"))
 	attrs = append(attrs, logger.String(meta.ServiceKey, service))
 	attrs = append(attrs, logger.String(meta.MethodKey, method))
+
+	isOperation := h.routePolicy.IsOperation(req)
+	m := snoop.Metrics{Code: http.StatusOK}
 	defer func() {
 		if value := recover(); value != nil {
 			// A streaming handler that already committed its response aborts via
 			// http.ErrAbortHandler (see net/http/content's streaming error contract) so net/http can
 			// sever the in-flight connection. That is an intentional, expected outcome of a truncated
-			// stream, not a bug, so it must not be logged as a recovered panic.
-			if err, ok := value.(error); !ok || !errors.Is(err, http.ErrAbortHandler) {
-				h.logPanic(ctx, attrs, runtime.ConvertRecover(value), time.Since(start).String())
+			// stream, not a bug, so it must not be logged as a recovered panic — but the request still
+			// gets its ordinary outcome log line, carrying the diagnostic error finalizeStream recorded.
+			if err, ok := value.(error); ok && errors.Is(err, http.ErrAbortHandler) {
+				if !isOperation {
+					h.logOutcome(ctx, attrs, method, service, m)
+				}
+				panic(value)
 			}
+
+			h.logPanic(ctx, attrs, runtime.ConvertRecover(value), time.Since(start).String())
 			panic(value)
 		}
 	}()
-	if h.routePolicy.IsOperation(req) {
+	if isOperation {
 		next(res, req.WithContext(ctx))
 		if err := status.RequestError(ctx); errors.Is(err, runtime.ErrRecovered) {
 			h.logPanic(ctx, attrs, err, time.Since(start).String())
@@ -82,16 +93,14 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
-	attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
+	m.CaptureMetrics(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 	if err := status.RequestError(ctx); errors.Is(err, runtime.ErrRecovered) {
+		attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
 		h.logPanic(ctx, attrs, err, "")
 		return
 	}
 
-	message := logger.NewMessage(httpMessage(strings.Join(strings.Space, method, service)), status.RequestError(ctx))
-
-	h.logger.LogAttrs(ctx, codeToLevel(m.Code), message, attrs...)
+	h.logOutcome(ctx, attrs, method, service, m)
 }
 
 func (h *Handler) logPanic(ctx context.Context, attrs []logger.Attr, err error, duration string) {
@@ -100,6 +109,13 @@ func (h *Handler) logPanic(ctx context.Context, attrs []logger.Attr, err error, 
 	}
 
 	h.logger.LogAttrs(ctx, logger.LevelError, logger.NewMessage("http: panic", err), attrs...)
+}
+
+func (h *Handler) logOutcome(ctx context.Context, attrs []logger.Attr, method, service string, m snoop.Metrics) {
+	attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
+	message := logger.NewMessage(httpMessage(strings.Join(strings.Space, method, service)), status.RequestError(ctx))
+
+	h.logger.LogAttrs(ctx, codeToLevel(m.Code), message, attrs...)
 }
 
 // NewRoundTripper constructs HTTP client logging middleware.

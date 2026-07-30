@@ -108,14 +108,21 @@ func TestHandlerSuppressesAbortHandlerPanicLog(t *testing.T) {
 	handler := httplogger.NewHandler(http.NewRoutePolicy(), &logger.Logger{Logger: slogLogger})
 	res := httptest.NewRecorder()
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/greeter/say-hello", http.NoBody)
+	streamErr := errors.New("stream aborted")
 
 	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
-		handler.ServeHTTP(res, req, func(_ http.ResponseWriter, _ *http.Request) {
+		handler.ServeHTTP(res, req, func(res http.ResponseWriter, req *http.Request) {
+			res.WriteHeader(http.StatusOK)
+			status.RecordError(req.Context(), streamErr)
 			panic(http.ErrAbortHandler)
 		})
 	})
 
-	require.Empty(t, logs.String())
+	require.NotContains(t, logs.String(), `"msg":"http: panic"`)
+	require.Contains(t, logs.String(), `"msg":"http: say-hello greeter"`)
+	require.Contains(t, logs.String(), `"level":"INFO"`)
+	require.Contains(t, logs.String(), `"code":200`)
+	require.Contains(t, logs.String(), `"error":"stream aborted"`)
 }
 
 func TestRoundTripperLogsTransportError(t *testing.T) {
