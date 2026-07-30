@@ -14,7 +14,7 @@ commands:
 executors:
   go-with-postgres-valkey-status-observability:
     docker:
-      - image: alexfalkowski/go:4.31
+      - image: alexfalkowski/go:4.32
       - image: postgres:18-trixie
         environment:
           POSTGRES_DB: test
