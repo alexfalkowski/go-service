@@ -56,7 +56,8 @@ func Patch[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 // RouteRequest registers a handler under pattern that decodes a request and encodes a response.
 //
 // The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler], which:
-//   - decodes the request body using Content-Type, falling back to JSON when Content-Type is absent or unknown,
+//   - decodes the request body using Content-Type, falling back to JSON when Content-Type is absent and
+//     rejecting it with 415 when it is unparseable, unregistered, or intentionally undecodable,
 //   - decodes the request body into a newly allocated request model, and
 //   - encodes the returned response model using the negotiated media type.
 //

@@ -38,3 +38,27 @@ func BenchmarkNewFromMediaWithParameters(b *testing.B) {
 		benchmarkMedia = test.Content.NewFromMedia("application/json; profile=test")
 	}
 }
+
+// BenchmarkNewFromRequestBodyJSON tracks the strict request-body resolution's switch-hit fast path
+// (exact "application/json", no parameters), avoiding [net/http/media.Parse] on the hot request path.
+func BenchmarkNewFromRequestBodyJSON(b *testing.B) {
+	req := httptest.NewRequestWithContext(b.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.TypeKey, media.JSON)
+
+	b.ReportAllocs()
+	for b.Loop() {
+		benchmarkMedia, _ = test.Content.NewFromRequestBody(req)
+	}
+}
+
+// BenchmarkNewFromRequestBodyWithParameters tracks the strict request-body resolution's parser branch,
+// taken for any parameterized Content-Type such as "application/json; charset=utf-8".
+func BenchmarkNewFromRequestBodyWithParameters(b *testing.B) {
+	req := httptest.NewRequestWithContext(b.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.TypeKey, media.JSON+"; charset=utf-8")
+
+	b.ReportAllocs()
+	for b.Loop() {
+		benchmarkMedia, _ = test.Content.NewFromRequestBody(req)
+	}
+}

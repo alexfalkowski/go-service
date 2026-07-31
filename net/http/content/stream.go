@@ -127,10 +127,6 @@ func NewRequestStreamHandler[Req any, Res any](cont *Content, timeout time.Durat
 		}
 
 		reqMedia, err := cont.NewStreamFromContentType(req)
-		if err == nil && reqMedia.NewDecoder == nil {
-			err = ErrUnsupportedStreamMedia
-		}
-
 		if err != nil {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusUnsupportedMediaType, err))
 			return

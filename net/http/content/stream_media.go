@@ -76,6 +76,31 @@ func (c *Content) NewStreamFromAccept(req *http.Request) (StreamMedia, error) {
 //
 // Unlike [Content.NewFromContentType], an unregistered or unparsable media type returns
 // [ErrUnsupportedStreamMedia] instead of falling back to JSON.
+//
+// This is the streaming counterpart of [Content.NewFromRequestBody]: after NewStreamMedia resolves the
+// media type, it re-checks the resolved kind against the same request-decode policy that guards
+// unary request bodies (see the decoder-bounds rule in the package documentation), so a streaming media
+// type that maps to a banned kind is rejected here even though NewStreamMedia itself has no opinion on
+// that policy. NewStreamFromAccept and [Content.NewStreamFromMedia] are not policed this way: only this
+// constructor decodes an untrusted request body (see [StreamMedia.NewDecoder]'s other caller, the
+// client's response-stream path, which must keep decoding every registered kind).
 func (c *Content) NewStreamFromContentType(req *http.Request) (StreamMedia, error) {
-	return NewStreamMedia(req.Header.Get(TypeKey), c.sm)
+	m, err := NewStreamMedia(req.Header.Get(TypeKey), c.sm)
+	if err != nil {
+		return StreamMedia{}, err
+	}
+
+	// Re-resolve the kind rather than carrying it on StreamMedia, keeping the struct free of a field
+	// that exists only for this one caller. A missing entry, a nil decoder constructor, or a banned kind
+	// are all treated as unsupported so this fails closed: neither the missing-entry nor the banned-kind
+	// arm can currently fire, because streamKinds' only mapping ("x-ndjson" to "json") already passed the
+	// lookup inside NewStreamMedia and "json" is not a banned kind. Both stay as guards for a future
+	// streamKinds entry that maps to a banned kind, or a NewStreamMedia change that admits an unknown
+	// subtype.
+	kind, ok := streamKinds[m.Subtype()]
+	if !ok || m.NewDecoder == nil || !canDecodeRequest(kind) {
+		return StreamMedia{}, ErrUnsupportedStreamMedia
+	}
+
+	return m, nil
 }
