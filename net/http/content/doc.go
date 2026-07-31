@@ -6,7 +6,9 @@
 // # Media types and encoders
 //
 // The core type is [Content], which uses an `encoding.Map` registry to resolve an encoder by
-// media subtype (e.g. "json", "hjson", "yaml", "toml", "proto").
+// media subtype (e.g. "json", "hjson", "yaml", "toml", "protobuf"). A subtype absent from the registry,
+// such as "proto" or "pbjson", may still resolve if this package aliases it to a registered kind (see
+// [unaryKind]'s local alias table).
 //
 // [Content] can derive a [Media] from either:
 //   - an incoming HTTP request's Content-Type header, falling back to Accept ([Content.NewFromRequest]),

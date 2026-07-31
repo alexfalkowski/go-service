@@ -130,9 +130,10 @@ func StreamPatch[Req any, Res any](pattern string, handler content.RequestStream
 //
 // The handler is built using
 // [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler], which:
-//   - resolves the request decoder from Content-Type and the response encoder from the first Accept
-//     media type (falling back to Content-Type), both via the streaming media registry, and
-//   - rejects an unregistered or unparseable streaming media type with 415.
+//   - resolves the request decoder from Content-Type, rejecting an unregistered or unparseable
+//     streaming media type with 415, and
+//   - resolves the response encoder from Accept (falling back to Content-Type), rejecting an Accept
+//     that cannot be satisfied with 406.
 //
 // HTTP/2 requirement:
 // Bidirectional streaming requires HTTP/2 (including h2c): an HTTP/1.x request body is buffered ahead
@@ -160,9 +161,9 @@ func StreamRouteRequest[Req any, Res any](pattern string, handler content.Reques
 // streams incrementally rather than being buffered whole; the request body is not streamed.
 //
 // The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content.NewStreamHandler], which:
-//   - selects a streaming encoder based on the first Accept media type, falling back to Content-Type
-//     when Accept is absent, via the streaming media registry, and
-//   - rejects an unregistered or unparseable streaming media type with 415.
+//   - selects a streaming encoder based on Accept, falling back to Content-Type when Accept is absent,
+//     via the streaming media registry, and
+//   - rejects an Accept that cannot be satisfied with 406.
 //
 // Unlike StreamRouteRequest and its method-qualified helpers, StreamRoute has no HTTP/2 requirement
 // and stays fully supported on HTTP/1.1 chunked responses.

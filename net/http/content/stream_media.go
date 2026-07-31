@@ -3,9 +3,14 @@ package content
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/accept"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
+
+// ndjsonType is the parsed form of [media.NDJSON], the only streaming media type this package currently
+// produces. matchStreamAccept uses its major type to decide whether an Accept wildcard is satisfiable.
+var ndjsonType = media.MustParse(media.NDJSON)
 
 // streamKinds maps a media subtype to the [stream.Map] kind that encodes/decodes it.
 //
@@ -58,17 +63,111 @@ type StreamMedia struct {
 	media.Type
 }
 
-// NewStreamFromAccept parses the first request Accept media type and resolves a streaming encoder.
+// NewStreamFromAccept resolves the request Accept header to a streaming encoder, falling back to
+// Content-Type when Accept is absent, and to [media.NDJSON] when neither is set.
 //
-// If Accept is not set, it falls back to Content-Type. Unlike [Content.NewFromAccept], an unregistered
-// or unparsable media type returns [ErrUnsupportedStreamMedia] instead of falling back to JSON.
+// An Accept list is satisfiable for the server's producible streaming media type if it contains an
+// exact match, or a matching wildcard ("*/*", or "type/*" where type matches the producible type's own
+// major type), anywhere in the list. Per RFC 9110 §12.5.1, the most specific reference present controls
+// regardless of list order: an exact subtype match takes precedence over any wildcard, and a "type/*"
+// wildcard takes precedence over the bare "*/*" wildcard. Only that controlling reference's explicit
+// q=0 exclusion (see [github.com/alexfalkowski/go-service/v2/net/http/accept.IsZeroQuality]) decides
+// satisfiability — a q=0 on a less specific reference elsewhere in the list has no effect once a more
+// specific reference is present, and conversely a q=0 on the controlling reference cannot be overridden
+// by a less specific, non-excluded reference. A satisfiable list resolves to its exact match if the
+// controlling reference was one, otherwise to media.NDJSON.
+//
+// Unlike [Content.NewFromAccept], a non-empty Accept list that is not satisfiable this way returns
+// [ErrUnsupportedStreamMedia] instead of falling back to JSON or to Content-Type: a client that named
+// only concrete, unproducible media types must get an explicit rejection, not a silently different wire
+// format.
 func (c *Content) NewStreamFromAccept(req *http.Request) (StreamMedia, error) {
-	mediaType := firstListItem(req.Header.Get(AcceptKey))
-	if strings.IsEmpty(mediaType) {
-		mediaType = req.Header.Get(TypeKey)
+	header := req.Header.Get(AcceptKey)
+	if strings.IsEmpty(header) {
+		mediaType := req.Header.Get(TypeKey)
+		if strings.IsEmpty(mediaType) {
+			mediaType = media.NDJSON
+		}
+
+		return NewStreamMedia(mediaType, c.sm)
+	}
+
+	mediaType, ok := matchStreamAccept(header)
+	if !ok {
+		return StreamMedia{}, ErrUnsupportedStreamMedia
 	}
 
 	return NewStreamMedia(mediaType, c.sm)
+}
+
+// matchStreamAccept reports whether header, an Accept header value, is satisfiable for a registered
+// streamKinds entry, and if so, which media type to resolve.
+//
+// It finds the most specific reference to the producible type present anywhere in the list — an exact
+// subtype match, else a "type/*" wildcard [accept.IsWildcard] reports as satisfied by [ndjsonType]
+// ("text/*" does not satisfy an "application/x-ndjson" route the way "*/*" or "application/*" does),
+// else the bare "*/*" wildcard — and returns satisfiable only if that one reference is not
+// [accept.IsZeroQuality]; a less specific reference's own quality, zero or not, is irrelevant once a
+// more specific reference is found. This matches RFC 9110 §12.5.1's "most specific reference" rule
+// regardless of list order. When satisfiable, it returns the exact match's media type if the
+// controlling reference was one, otherwise [media.NDJSON]. An unparsable item is skipped rather than
+// rejecting the whole list, the same way an unparsable single Accept value already falls through to
+// [NewStreamMedia]'s own rejection when nothing else in the list matches.
+func matchStreamAccept(header string) (string, bool) {
+	var exact, major, bare streamAcceptMatch
+
+	for _, item := range accept.Items(header) {
+		value, err := media.Parse(item)
+		if err != nil {
+			continue
+		}
+
+		zero := accept.IsZeroQuality(item)
+
+		if _, ok := streamKinds[value.Subtype()]; ok {
+			exact.consider(zero, value.String())
+			continue
+		}
+
+		if !accept.IsWildcard(value, ndjsonType) {
+			continue
+		}
+
+		if value.Major() == "*" {
+			bare.consider(zero, media.NDJSON)
+		} else {
+			major.consider(zero, media.NDJSON)
+		}
+	}
+
+	switch {
+	case exact.found:
+		return exact.value, !exact.zero
+	case major.found:
+		return major.value, !major.zero
+	case bare.found:
+		return bare.value, !bare.zero
+	default:
+		return "", false
+	}
+}
+
+// streamAcceptMatch is the controlling Accept item found so far for one specificity tier (exact
+// subtype, "type/*" wildcard, or bare "*/*" wildcard) in [matchStreamAccept]'s scan.
+type streamAcceptMatch struct {
+	value string
+	found bool
+	zero  bool
+}
+
+// consider records item as this tier's controlling reference if none has been recorded yet. Only the
+// first occurrence within a tier is kept: RFC 9110 §12.5.1 lets the most specific tier present control
+// regardless of order, and within one tier this package has no further precedence rule to break a tie
+// between duplicate references, so the first one found is as good as any.
+func (m *streamAcceptMatch) consider(zero bool, value string) {
+	if !m.found {
+		m.found, m.zero, m.value = true, zero, value
+	}
 }
 
 // NewStreamFromContentType parses the request Content-Type header and resolves a streaming decoder.

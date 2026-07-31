@@ -87,8 +87,9 @@ func (d *OpaqueErrorDecoder) Close() error {
 }
 
 // TripleReadDecoder is a [stream.Decoder] test double that reads R one byte at a time exactly three
-// times per Decode call, regardless of intervening errors, exercising a capReader's sticky repeat-Read
-// guard: a Read call made after the reader has already latched a size-limit error from a previous call.
+// times per Decode call, regardless of intervening errors, exercising a
+// [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]'s sticky repeat-Read guard: a Read
+// call made after the reader has already latched a size-limit error from a previous call.
 type TripleReadDecoder struct {
 	R io.Reader
 }
@@ -114,9 +115,11 @@ func (d *TripleReadDecoder) Close() error {
 // SingleReadDecoder is a [stream.Decoder] test double that performs exactly one large Read against R
 // and always reports a successful decode, regardless of how many bytes that Read actually consumed.
 // A real streaming decoder's internal buffering strategy can vary by Go toolchain (for example under
-// GOEXPERIMENT=jsonv2), which can make it read incrementally and trip a capReader's live per-Read cap
-// check before Decode ever returns success. SingleReadDecoder bypasses that variability so a capReader
-// post-decode size check can be exercised deterministically.
+// GOEXPERIMENT=jsonv2), which can make it read incrementally and trip a
+// [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]'s live per-Read cap check before
+// Decode ever returns success. SingleReadDecoder bypasses that variability so a
+// [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader] post-decode size check can be
+// exercised deterministically.
 type SingleReadDecoder struct {
 	R io.Reader
 }

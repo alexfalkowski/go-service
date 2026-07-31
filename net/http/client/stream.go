@@ -1,13 +1,12 @@
 package client
 
 import (
-	"bytes"
-
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/budget"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -433,7 +432,7 @@ func (s *RequestResponseStream) finish(handlerErr error) error {
 // size-capped reader over the response body.
 type responseDecoder struct {
 	decoder stream.Decoder
-	capped  *capReader
+	capped  *budget.Reader
 }
 
 func newResponseDecoder(c *Client, response *http.Response, opts Options) (*responseDecoder, error) {
@@ -446,7 +445,7 @@ func newResponseDecoder(c *Client, response *http.Response, opts Options) (*resp
 		return nil, errors.Prefix("http: stream media", err)
 	}
 
-	capped := &capReader{r: response.Body, max: c.maxResponseSize}
+	capped := budget.NewReader(response.Body, c.maxResponseSize)
 
 	return &responseDecoder{decoder: resMedia.NewDecoder(capped), capped: capped}, nil
 }
@@ -455,8 +454,9 @@ func newResponseDecoder(c *Client, response *http.Response, opts Options) (*resp
 // runs after Decode returns (mirroring [Client.readResponse]'s read-then-check pattern) rather than
 // truncating capped's reads, because truncating mid-read would silently drop bytes the decoder never
 // asked to give back — those bytes belong to the underlying response body, not to this one value, and
-// dropping them would desynchronize every later value in the stream. See [capReader] for the read-time
-// half of the guard, which still bounds a single pathological value across repeated Read calls.
+// dropping them would desynchronize every later value in the stream. See
+// [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader] for the read-time half of the guard,
+// which still bounds a single pathological value across repeated Read calls.
 //
 // A decoder is not guaranteed to return capped's Read-time error unwrapped: it may fold it into its own
 // error value instead (observed with the standard library JSON decoder under GOEXPERIMENT=jsonv2, which
@@ -464,18 +464,18 @@ func newResponseDecoder(c *Client, response *http.Response, opts Options) (*resp
 // capped's own latched error directly once Decode fails, rather than trusting Decode's returned error
 // to still be classifiable as the size-limit error.
 func (d *responseDecoder) recv(v any) error {
-	d.capped.resetValue(bufferedLen(d.decoder))
+	d.capped.Reset(budget.BufferedLen(d.decoder))
 
 	if err := d.decoder.Decode(v); err != nil {
-		if d.capped.err != nil {
-			return d.capped.err
+		if d.capped.Err() != nil {
+			return status.SafeError(http.StatusRequestEntityTooLarge, nil)
 		}
 
 		return err
 	}
 
-	if d.capped.exceededBy(bufferedLen(d.decoder)) {
-		return entityTooLargeError()
+	if d.capped.Exceeds(budget.BufferedLen(d.decoder)) {
+		return status.SafeError(http.StatusRequestEntityTooLarge, nil)
 	}
 
 	return nil
@@ -483,103 +483,4 @@ func (d *responseDecoder) recv(v any) error {
 
 func (d *responseDecoder) close() error {
 	return d.decoder.Close()
-}
-
-// capReader wraps an [io.Reader] with a byte counter that can be reset between decoded values, so a
-// streaming decoder bound to it for its whole lifetime (see [stream.Decoder]) gets a per-value cap
-// rather than a cumulative one (see [WithMaxResponseSize]).
-//
-// capReader never truncates or discards a Read call's data: every byte pulled from the underlying
-// reader is always returned to the caller, so a decoder's own internal buffering can never be
-// desynchronized by this guard (compare [http.MaxBytesReader], which truncates because it protects a
-// single one-shot body that is abandoned entirely once the limit is hit — this reader is reused across
-// many values, so "abandon the rest" is not an option). Read still refuses to pull more data once the
-// budget from a previous Read within the same value is already spent, which bounds a single
-// pathological value across repeated Read calls; [responseDecoder.recv] additionally checks the total
-// after each successful Decode, which catches a value whose entire content arrived in one Read call
-// that already exceeded the budget.
-//
-// Read-ahead correction: a decoder such as [encoding/stream/json.Decoder] fills its own internal buffer
-// in chunks, so one Decode call can pull bytes belonging to a later value out of the underlying reader
-// (confirmed by a direct repro: decoding the first of two small NDJSON lines read the whole remaining
-// buffer, attributing both lines' bytes to the first value and rejecting it as oversized even though
-// neither line alone was near the cap). [responseDecoder.recv] corrects for this via [bufferedLen],
-// which subtracts whatever the decoder still holds unconsumed in its own buffer (see [stream.Decoder]'s
-// wrapped [encoding/json.Decoder.Buffered]) from the raw bytes capReader counted for this call, so only
-// bytes actually consumed to produce the value just decoded count against its cap. This works for every
-// stream kind negotiable today (only "json"/NDJSON is registered for streaming); a decoder whose
-// Buffered method does not match gets no correction and falls back to a bound on reads attributed to
-// one value rather than a byte-exact boundary — still enough to prevent a single decoded value from
-// driving an unbounded read of the underlying stream, without the data-loss risk a truncating reader
-// would add.
-type capReader struct {
-	r    io.Reader
-	err  error
-	max  int64
-	read int64
-}
-
-// resetValue rearms the byte counter for the next decoded value, clearing any size-limit error latched
-// by the previous value's Read calls. bufferedAhead has already been read from the underlying stream by
-// the decoder while handling the previous value, so it starts this value's accounting rather than being
-// discarded when the counter resets.
-func (r *capReader) resetValue(bufferedAhead int64) {
-	r.read = bufferedAhead
-	r.err = nil
-}
-
-// exceededBy reports whether the bytes read since the last resetValue, minus bufferedAhead, exceed the
-// configured cap. bufferedAhead is the decoder's own read-ahead for a later value (see [bufferedLen]);
-// subtracting it corrects for a decoder that pulled more than one value's worth of bytes out of the
-// reader in a single underlying Read. The corrected count is clamped to zero.
-func (r *capReader) exceededBy(bufferedAhead int64) bool {
-	attributed := max(r.read-bufferedAhead, 0)
-
-	return attributed > r.max
-}
-
-// bufferedLen returns the number of bytes decoder has already pulled from its underlying reader for a
-// value it has not decoded yet, so a caller can subtract them from the raw bytes [capReader] counted for
-// the value it just decoded (see [capReader.exceededBy]).
-//
-// This only recognizes decoders whose Buffered method matches [encoding/json.Decoder.Buffered]'s shape
-// and returns a concrete [bytes.Reader]. It returns 0 for any decoder that does not match, which is
-// always safe: the correction is skipped, not a wrong non-zero answer.
-func bufferedLen(decoder stream.Decoder) int64 {
-	buffered, ok := decoder.(interface{ Buffered() io.Reader })
-	if !ok {
-		return 0
-	}
-
-	reader, ok := buffered.Buffered().(*bytes.Reader)
-	if !ok {
-		return 0
-	}
-
-	return int64(reader.Len())
-}
-
-// Read implements [io.Reader]. Once the bytes read since the last resetValue already reach the
-// configured cap, Read refuses to read more and returns
-// status.SafeError(http.StatusRequestEntityTooLarge, nil) — the same error [Client.readResponse] uses
-// for its non-streaming size limit — and every subsequent call returns that same error until
-// resetValue is called.
-func (r *capReader) Read(p []byte) (int, error) {
-	if r.err != nil {
-		return 0, r.err
-	}
-
-	if r.read >= r.max {
-		r.err = entityTooLargeError()
-		return 0, r.err
-	}
-
-	n, err := r.r.Read(p)
-	r.read += int64(n)
-
-	return n, err
-}
-
-func entityTooLargeError() error {
-	return status.SafeError(http.StatusRequestEntityTooLarge, nil)
 }
