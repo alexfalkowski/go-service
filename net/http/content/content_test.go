@@ -159,7 +159,7 @@ func TestNewFromContentTypeFallsBackFromInternalErrorMedia(t *testing.T) {
 }
 
 func TestNewFromRequestBodyRejectsUnsafeBinaryMedia(t *testing.T) {
-	for _, mediaType := range []string{"application/gob", media.MessagePack + "; profile=test"} {
+	for _, mediaType := range []string{"application/gob", media.MessagePack, media.MessagePack + "; profile=test"} {
 		t.Run(mediaType, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 			req.Header.Set(content.TypeKey, mediaType)
@@ -169,6 +169,144 @@ func TestNewFromRequestBodyRejectsUnsafeBinaryMedia(t *testing.T) {
 			require.ErrorIs(t, err, content.ErrUnsupportedRequestMedia)
 			require.False(t, media.CanDecodeRequest())
 		})
+	}
+}
+
+func TestNewFromRequestBodyRejectsUnknownContentType(t *testing.T) {
+	for _, mediaType := range []string{"application/cbor", "/"} {
+		t.Run(mediaType, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+			req.Header.Set(content.TypeKey, mediaType)
+
+			media, err := test.Content.NewFromRequestBody(req)
+
+			require.ErrorIs(t, err, content.ErrUnsupportedRequestMedia)
+			require.False(t, media.CanDecodeRequest())
+		})
+	}
+}
+
+func TestNewFromRequestBodyRejectsNilRegisteredCodec(t *testing.T) {
+	tests := []struct {
+		name        string
+		register    string
+		contentType string
+	}{
+		{name: "absent content type, json nil-registered", register: "json", contentType: ""},
+		{name: "text/error, plain nil-registered", register: "plain", contentType: media.Error},
+		{name: "msgpack, msgpack nil-registered", register: "msgpack", contentType: media.MessagePack},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			enc := encoding.NewMap()
+			enc.Register(tt.register, nil)
+			cont := content.NewContent(enc, test.StreamEncoder, test.Pool)
+
+			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+			if tt.contentType != "" {
+				req.Header.Set(content.TypeKey, tt.contentType)
+			}
+
+			media, err := cont.NewFromRequestBody(req)
+
+			require.ErrorIs(t, err, content.ErrUnsupportedRequestMedia)
+			require.False(t, media.CanDecodeRequest())
+		})
+	}
+}
+
+func TestNewFromRequestBodyDefaultsToJSONWhenContentTypeAbsent(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+
+	media, err := test.Content.NewFromRequestBody(req)
+
+	require.NoError(t, err)
+	require.Equal(t, "json", media.Subtype())
+	require.Same(t, test.Encoder.Get("json"), media.Encoder)
+	require.True(t, media.CanDecodeRequest())
+}
+
+func TestNewFromRequestBodyTreatsParameterizedInternalErrorContentTypeAsText(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.TypeKey, media.Error+"; charset=utf-8")
+
+	m, err := test.Content.NewFromRequestBody(req)
+
+	require.NoError(t, err)
+	require.Equal(t, "plain", m.Subtype())
+	require.Same(t, test.Encoder.Get("plain"), m.Encoder)
+	require.True(t, m.CanDecodeRequest())
+}
+
+func TestNewFromRequestBodyDecodesFallthroughReachableMediaTypes(t *testing.T) {
+	// Guards against the identity fallthrough (knownMedia -> media.Parse -> enc.Get(subtype)) being
+	// reverted into an allowlist: these media types have no dedicated knownMedia case and must keep
+	// resolving through the general parser path.
+	for _, tc := range []struct {
+		mediaType string
+		subtype   string
+	}{
+		{mediaType: "application/pb", subtype: "pb"},
+		{mediaType: "application/protobin", subtype: "protobin"},
+		{mediaType: "application/octet-stream", subtype: "octet-stream"},
+		{mediaType: media.Text, subtype: "plain"},
+	} {
+		t.Run(tc.mediaType, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+			req.Header.Set(content.TypeKey, tc.mediaType)
+
+			media, err := test.Content.NewFromRequestBody(req)
+
+			require.NoError(t, err)
+			require.Equal(t, tc.subtype, media.Subtype())
+			require.Same(t, test.Encoder.Get(tc.subtype), media.Encoder)
+			require.True(t, media.CanDecodeRequest())
+		})
+	}
+}
+
+func TestNewFromAcceptResolvesJSONForWildcardOrUnknown(t *testing.T) {
+	// Outbound (Accept) negotiation keeps its JSON fallback for an unproducible or absent preference;
+	// strict Accept parsing (q-values, wildcards) is out of scope for this package.
+	for _, tc := range []struct {
+		name   string
+		accept string
+	}{
+		{name: "wildcard", accept: "*/*"},
+		{name: "unproducible", accept: media.HTML},
+		{name: "absent", accept: ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+			if tc.accept != "" {
+				req.Header.Set(content.AcceptKey, tc.accept)
+			}
+
+			m := test.Content.NewFromAccept(req)
+
+			require.Equal(t, "json", m.Subtype())
+			require.Same(t, test.Encoder.Get("json"), m.Encoder)
+		})
+	}
+}
+
+func TestEveryEncoderKindIsClassified(t *testing.T) {
+	// Every kind in the default registry must be explicitly classified, so a new codec cannot become
+	// request-decodable without a decision. See undecodableKinds in media.go.
+	classified := map[string]bool{
+		"json": true, "hjson": true, "yaml": true, "yml": true, "toml": true,
+		"plain": true, "octet-stream": true,
+		"pb": true, "pbbin": true, "proto": true, "protobin": true, "protobuf": true,
+		"pbtxt": true, "prototext": true, "prototxt": true,
+		"protojson": true, "pbjson": true,
+		"msgpack": false, "gob": false,
+	}
+
+	for _, kind := range encoding.NewMap().Keys() {
+		expected, ok := classified[kind]
+		require.True(t, ok, "kind %q needs an explicit request-decode classification", kind)
+		require.Equal(t, expected, content.NewMedia("application/"+kind, encoding.NewMap()).CanDecodeRequest(), "kind %q", kind)
 	}
 }
 

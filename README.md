@@ -302,6 +302,9 @@ Encoding kinds used by subsystems that support encoding:
 > - `encoding/stream.Map` is a separate registry for streaming (multi-value) encoding — `json`, `msgpack`,
 >   `gob`, `yaml` — used by [HTTP streaming (NDJSON)](#http-streaming-ndjson), not by this single-value
 >   registry.
+> - Not every kind in this registry is interchangeable for HTTP request-body decoding: `msgpack` and
+>   `gob` remain valid response codecs but are rejected as a request `Content-Type`. See
+>   [HTTP content types](#http-content-types).
 
 ---
 
@@ -1089,7 +1092,7 @@ act as the event authentication boundary.
 
 ### HTTP content types
 
-The HTTP REST and RPC helpers decode request bodies from the request `Content-Type`, falling back to JSON when `Content-Type` is absent or unknown. Response encoding uses the first `Accept` media type when present, falling back to the request `Content-Type` when `Accept` is absent. Client helpers can set `ContentType` for the request body and `Accept` for an independent response format.
+The HTTP REST and RPC helpers decode request bodies from the request `Content-Type`, falling back to JSON when `Content-Type` is absent. An unparseable, unregistered, or intentionally undecodable `Content-Type` is rejected with HTTP 415 rather than falling back to JSON. Response encoding uses the first `Accept` media type when present, falling back to the request `Content-Type` when `Accept` is absent. Client helpers can set `ContentType` for the request body and `Accept` for an independent response format.
 
 Built-in text/object payload media types include:
 
@@ -1112,10 +1115,16 @@ Built-in protobuf-oriented media type aliases include:
 
 > [!NOTE]
 > - `application/hjson` maps to the built-in `hjson` encoder kind.
-> - Unknown or invalid request media types fall back to JSON selection.
+> - Unknown or invalid media types fall back to JSON selection only for outbound (`Accept`-driven)
+>   negotiation. An absent request `Content-Type` still defaults to JSON, but an unknown or invalid one
+>   is rejected with HTTP 415 rather than decoded as a different format than the caller declared.
 > - `text/error` is reserved for error responses and should not be sent by clients as a request content type.
 >
-> `application/vnd.msgpack` and `application/gob` can be resolved as media types, but REST/RPC request-body decoding rejects them with HTTP 415.
+> `application/vnd.msgpack` and `application/gob` can be resolved as media types and remain valid
+> response codecs, but REST/RPC request-body decoding — for both single-value and streaming
+> (NDJSON) requests — rejects them with HTTP 415. This follows the decoder-bounds rule documented in
+> `net/http/content`'s package documentation: a codec is admissible for decoding untrusted input only
+> when it is both ratio-bounded and depth-bounded, which msgpack and gob are not.
 
 ### HTTP streaming (NDJSON)
 

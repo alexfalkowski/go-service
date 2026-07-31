@@ -268,6 +268,14 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	}
 
 	if opts.HasResponse() {
+		// With the default encoder registry, responseMedia.Encoder is never nil here: the only media
+		// type NewFromMedia resolves without an encoder is text/error, and mediaStatusError above always
+		// turns that into an error before this point. That is not a structural guarantee, though —
+		// nil-registering "json" makes NewFromMedia return a non-error Media with a nil Encoder — so a
+		// caller supplying a customized registry can still reach a nil dereference here. Response
+		// decoding is intentionally not subject to the request-decode policy that guards
+		// Content.NewFromRequestBody (a configured response endpoint is a different trust context from
+		// an inbound request body); see the decoder-bounds rule in net/http/content's documentation.
 		if err := responseMedia.Encoder.Decode(responseBody, opts.Response); err != nil {
 			return errors.Prefix("http: decode", err)
 		}

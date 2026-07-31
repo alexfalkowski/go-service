@@ -25,6 +25,29 @@ var (
 	yamlType         = media.MustParse(media.YAML)
 )
 
+// undecodableKinds are the codec registry kinds that must not decode an untrusted server request body,
+// because their decoders are neither ratio-bounded nor depth-bounded: a small body can drive an
+// unbounded allocation or an unbounded recursion depth. See the decoder-bounds rule in the package
+// documentation.
+//
+// It is keyed on registry kind rather than media subtype so every alias of a kind is covered, and so a
+// streaming media type that maps to a banned kind inherits the ban. It governs server request decoding
+// only, not client response decoding: a response comes from a configured endpoint, a request body does
+// not.
+var undecodableKinds = map[string]bool{
+	messagePackSubtype: true,
+	gobSubtype:         true,
+}
+
+// canDecodeRequest reports whether kind may decode a server request body.
+//
+// An unknown kind is a different question from an unbounded one, so this deliberately does not guard
+// against the empty kind — canDecodeRequest("") returns true. Each caller establishes that it holds a
+// real kind first: the unary path via a non-nil Encoder, the streaming path via its streamKinds lookup.
+func canDecodeRequest(kind string) bool {
+	return !undecodableKinds[kind]
+}
+
 // NewMedia builds a Media from a media type string and encoder map.
 //
 // Encoder selection:
@@ -61,9 +84,15 @@ func (t Media) IsError() bool {
 }
 
 // CanDecodeRequest reports whether the media type is allowed for decoding HTTP request bodies.
+//
+// A nil Encoder means the media type resolved to no codec at all, which is never decodable. Otherwise
+// the codec must satisfy the decoder-bounds rule; see undecodableKinds.
+//
+// This answers for the media type this Media actually holds. A Media produced by the outbound JSON
+// fallback therefore reports JSON's answer, because JSON is genuinely what it holds; only
+// Content.NewFromRequestBody resolves a request Content-Type strictly.
 func (t Media) CanDecodeRequest() bool {
-	subtype := t.Subtype()
-	return subtype != gobSubtype && subtype != messagePackSubtype
+	return t.Encoder != nil && canDecodeRequest(t.Subtype())
 }
 
 // WithUTF8 returns the media type with a UTF-8 charset parameter for text media types.
