@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
@@ -14,7 +15,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
-	"github.com/klauspost/compress/gzhttp"
 )
 
 // ClientOption configures HTTP client construction.
@@ -55,7 +55,7 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 // When enabled, the composed RoundTripper will advertise support for gzip and transparently decompress
 // gzipped responses when the server sends them.
 //
-// This option uses [github.com/klauspost/compress/gzhttp] and wraps the underlying transport.
+// This option uses [github.com/alexfalkowski/go-service/v2/net/http/compress] and wraps the underlying transport.
 func WithClientCompression() ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.compression = true
@@ -222,7 +222,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if resolved.compression {
-		hrt = gzhttp.Transport(hrt, gzhttp.TransportEnableGzip(true))
+		hrt = compress.Transport(hrt)
 	}
 
 	if resolved.gen != nil {
