@@ -7,11 +7,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/ptr"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/klauspost/compress/gzhttp"
 )
 
 // StreamHandler handles a send-only stream: the response streams, the request does not.
@@ -71,7 +71,7 @@ func NewStreamHandler[Res any](cont *Content, timeout time.Duration, handler Str
 
 		ctx = meta.WithContent(ctx, req, res, nil)
 		res.Header().Set(TypeKey, resMedia.WithUTF8())
-		res.Header().Set(gzhttp.HeaderNoCompression, "1")
+		res.Header().Set(compress.HeaderNoCompression, "1")
 
 		buffer := cont.pool.Get()
 		defer cont.pool.Put(buffer)
@@ -148,7 +148,7 @@ func NewRequestStreamHandler[Req any, Res any](cont *Content, timeout time.Durat
 
 		ctx = meta.WithContent(ctx, req, res, nil)
 		res.Header().Set(TypeKey, resMedia.WithUTF8())
-		res.Header().Set(gzhttp.HeaderNoCompression, "1")
+		res.Header().Set(compress.HeaderNoCompression, "1")
 
 		buffer := cont.pool.Get()
 		defer cont.pool.Put(buffer)

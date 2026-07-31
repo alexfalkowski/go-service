@@ -12,13 +12,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/klauspost/compress/gzhttp"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,7 +39,7 @@ func TestNewStreamHandlerSendsValuesAndOptsOutOfGzip(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, media.NDJSON, res.Header().Get(content.TypeKey))
-	require.NotEmpty(t, res.Header().Get(gzhttp.HeaderNoCompression))
+	require.NotEmpty(t, res.Header().Get(compress.HeaderNoCompression))
 
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
@@ -51,7 +51,7 @@ func TestNewStreamHandlerGzipHandlerPassesThroughUncompressed(t *testing.T) {
 	inner := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "Hello Bob"})
 	})
-	handler := gzhttp.GzipHandler(inner)
+	handler := compress.GzipHandler(inner)
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(content.AcceptKey, media.NDJSON)

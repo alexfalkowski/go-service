@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
@@ -22,7 +23,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	sync "github.com/alexfalkowski/go-sync"
-	"github.com/klauspost/compress/gzhttp"
 )
 
 // ServerParams defines dependencies for constructing an HTTP transport [Server].
@@ -107,7 +107,8 @@ type ServerParams struct {
 //     bidirectional streaming routes cap each decoded request value independently at the content layer
 //     instead (see [github.com/alexfalkowski/go-service/v2/net/http/content.RequestStream.Recv])
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
-//   - gzip compression wrapping the final mux handler, including not-found fallbacks ([github.com/klauspost/compress/gzhttp.GzipHandler] with [http.NewNotFoundHandler])
+//   - gzip compression wrapping the final mux handler, including not-found fallbacks
+//     ([github.com/alexfalkowski/go-service/v2/net/http/compress.GzipHandler] with [http.NewNotFoundHandler])
 //
 // Route policy from `params.RoutePolicy` controls middleware bypasses. Registered operation routes
 // (health/metrics/etc.) bypass logging, token verification, rate limiting, and access control.
@@ -162,7 +163,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	handler := http.NewNotFoundHandler(params.Mux, params.Pool, mvc.NotFoundHandler(), content.NotFoundHandler())
-	neg.UseHandler(gzhttp.GzipHandler(handler))
+	neg.UseHandler(compress.GzipHandler(handler))
 
 	handler = http.NewTelemetryHandler(neg, "http.server")
 	httpServer := http.NewServer(params.Config.Options, params.Config.GetTimeout(), handler)
