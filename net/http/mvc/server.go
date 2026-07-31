@@ -64,6 +64,10 @@ func Patch[Model any](pattern string, controller Controller[Model]) bool {
 // corresponding status code (see [github.com/alexfalkowski/go-service/v2/net/http/status.Code]) only after rendering succeeds. The raw error remains
 // available as `mvcModelError` metadata for compatibility; templates that render it can expose diagnostic details.
 // If rendering itself fails, the handler writes the render error status instead.
+//
+// Controller errors and rendering failures are recorded as request-scoped operator diagnostics via
+// [github.com/alexfalkowski/go-service/v2/net/http/status.RecordError], surfaced through the HTTP access log.
+// When more than one error occurs, the first error is retained.
 func Route[Model any](pattern string, controller Controller[Model]) bool {
 	if !IsDefined() {
 		return false
@@ -77,6 +81,8 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 
 		view, model, err := controller(ctx)
 		if err != nil {
+			status.RecordError(ctx, err)
+
 			code := status.Code(err)
 			message := errors.SafeMessage(err, status.DefaultMessage(code))
 			model := &Error{Code: code, Message: message}

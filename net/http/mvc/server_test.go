@@ -9,6 +9,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
@@ -32,10 +33,13 @@ func TestStaticPathValueRejectsTraversal(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/robots.txt", http.NoBody)
 	handler, _ := mux.Handler(req)
 	req.SetPathValue("file", "../views/hello.tmpl")
+	ctx := status.WithRequestError(req.Context())
+	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
+	require.ErrorIs(t, status.RequestError(ctx), fs.ErrInvalid)
 }
 
 func TestStaticPathValueSetsContentType(t *testing.T) {
@@ -136,11 +140,36 @@ func TestStaticFileRejectsPermissionDenied(t *testing.T) {
 	require.True(t, mvc.StaticFile("/asset", "asset.txt"))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset", http.NoBody)
+	ctx := status.WithRequestError(req.Context())
+	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusForbidden, res.Code)
+	require.ErrorIs(t, status.RequestError(ctx), fs.ErrPermission)
+}
+
+func TestStaticFileRecordsRequestErrorWhenStatFails(t *testing.T) {
+	mux := http.NewServeMux()
+	mvc.Register(mvc.RegisterParams{
+		Router:      newTestRouter(mux),
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem:  statErrorFileSystem{},
+		Pool:        test.Pool,
+		Layout:      test.Layout,
+	})
+	require.True(t, mvc.StaticFile("/asset", "asset.txt"))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset", http.NoBody)
+	ctx := status.WithRequestError(req.Context())
+	req = req.WithContext(ctx)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusInternalServerError, res.Code)
+	require.ErrorIs(t, status.RequestError(ctx), test.ErrFailed)
 }
 
 func TestStaticFileSetsCacheControl(t *testing.T) {
@@ -347,12 +376,15 @@ func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(content.TypeKey, media.HTML)
+	ctx := status.WithRequestError(req.Context())
+	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
 	test.RequireResponseBodyContains(t, res, "400 http: bad request invalid argument")
+	require.ErrorIs(t, status.RequestError(ctx), fs.ErrInvalid)
 }
 
 func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
@@ -375,12 +407,15 @@ func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(content.TypeKey, media.HTML)
+	ctx := status.WithRequestError(req.Context())
+	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	test.RequireEmptyResponseBody(t, res)
+	require.Error(t, status.RequestError(ctx))
 }
 
 func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
@@ -436,12 +471,15 @@ func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(content.TypeKey, media.HTML)
+	ctx := status.WithRequestError(req.Context())
+	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	test.RequireEmptyResponseBody(t, res)
+	require.ErrorIs(t, status.RequestError(ctx), fs.ErrInvalid)
 }
 
 func TestNotFoundHandlesNotFound(t *testing.T) {
@@ -591,12 +629,15 @@ func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", http.NoBody)
+	ctx := status.WithRequestError(req.Context())
+	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
 
 	mvc.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	test.RequireEmptyResponseBody(t, res)
+	require.ErrorIs(t, status.RequestError(ctx), mvc.ErrMissingView)
 }
 
 func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
@@ -665,4 +706,24 @@ type permissionFileSystem struct{}
 
 func (permissionFileSystem) Open(string) (fs.File, error) {
 	return nil, fs.ErrPermission
+}
+
+type statErrorFileSystem struct{}
+
+func (statErrorFileSystem) Open(string) (fs.File, error) {
+	return &statErrorFile{}, nil
+}
+
+type statErrorFile struct{}
+
+func (statErrorFile) Stat() (fs.FileInfo, error) {
+	return nil, test.ErrFailed
+}
+
+func (statErrorFile) Read([]byte) (int, error) {
+	return 0, io.EOF
+}
+
+func (statErrorFile) Close() error {
+	return nil
 }

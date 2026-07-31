@@ -175,6 +175,7 @@ func writeView(ctx context.Context, res http.ResponseWriter, view *View, model a
 
 func renderView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) error {
 	if view == nil {
+		status.RecordError(ctx, ErrMissingView)
 		return ErrMissingView
 	}
 
@@ -182,6 +183,7 @@ func renderView(ctx context.Context, res http.ResponseWriter, view *View, model 
 	defer pool.Put(buffer)
 
 	if err := view.render(ctx, buffer, model); err != nil {
+		status.RecordError(ctx, err)
 		return err
 	}
 
