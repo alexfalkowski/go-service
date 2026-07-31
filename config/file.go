@@ -14,7 +14,7 @@ import (
 // If no encoder is registered for the extension, Decode will return ErrNoEncoder.
 //
 // The file path is normalized by the underlying filesystem using [os.FS.CleanPath] during Decode, so
-// inputs such as "~/config.yml" are handled consistently with other go-service filesystem helpers.
+// inputs such as "~/config.yaml" are handled consistently with other go-service filesystem helpers.
 func NewFile(location string, enc *encoding.Map, fs *os.FS) *File {
 	return &File{location: location, enc: enc, fs: fs}
 }

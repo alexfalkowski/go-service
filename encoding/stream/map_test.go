@@ -37,13 +37,12 @@ func TestNewMapRegistersDefaultEncodersAndDecoders(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
 
-			newEncoder := m.GetEncoder(kind)
-			newDecoder := m.GetDecoder(kind)
-			require.NotNil(t, newEncoder)
-			require.NotNil(t, newDecoder)
+			codec := m.Get(kind)
+			require.NotNil(t, codec.Encoder)
+			require.NotNil(t, codec.Decoder)
 
-			require.IsType(t, expectedEncoders[kind], newEncoder(io.Discard))
-			require.IsType(t, expectedDecoders[kind], newDecoder(strings.NewReader("")))
+			require.IsType(t, expectedEncoders[kind], codec.Encoder(io.Discard))
+			require.IsType(t, expectedDecoders[kind], codec.Decoder(strings.NewReader("")))
 		})
 	}
 }
@@ -53,11 +52,10 @@ func TestMapGetIsNilSafe(t *testing.T) {
 
 	var m *stream.Map
 
-	require.Nil(t, m.GetEncoder("json"))
-	require.Nil(t, m.GetDecoder("json"))
+	require.Equal(t, stream.Codec{}, m.Get("json"))
 }
 
-func TestMapGetReturnsNilForUnknownKind(t *testing.T) {
+func TestMapGetReturnsZeroCodecForUnknownKind(t *testing.T) {
 	t.Parallel()
 
 	m := stream.NewMap()
@@ -66,48 +64,48 @@ func TestMapGetReturnsNilForUnknownKind(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
 
-			require.Nil(t, m.GetEncoder(kind))
-			require.Nil(t, m.GetDecoder(kind))
+			require.Equal(t, stream.Codec{}, m.Get(kind))
 		})
 	}
 }
 
-func TestMapKeysIsUnionOfEncodersAndDecoders(t *testing.T) {
+func TestMapKeysIncludesPartiallyRegisteredKinds(t *testing.T) {
 	t.Parallel()
 
 	m := stream.NewMap()
-	m.RegisterEncoder("encode-only", func(w io.Writer) stream.Encoder { return json.NewEncoder(w) })
-	m.RegisterDecoder("decode-only", func(r io.Reader) stream.Decoder { return json.NewDecoder(r) })
+	m.Register("encode-only", stream.Codec{Encoder: func(w io.Writer) stream.Encoder { return json.NewEncoder(w) }})
+	m.Register("decode-only", stream.Codec{Decoder: func(r io.Reader) stream.Decoder { return json.NewDecoder(r) }})
 
 	require.ElementsMatch(t, []string{"json", "msgpack", "gob", "yaml", "encode-only", "decode-only"}, m.Keys())
 }
 
-func TestMapRegisterEncoder(t *testing.T) {
+func TestMapRegister(t *testing.T) {
 	t.Parallel()
 
 	m := stream.NewMap()
-	custom := func(w io.Writer) stream.Encoder { return json.NewEncoder(w) }
+	encoder := func(w io.Writer) stream.Encoder { return json.NewEncoder(w) }
+	decoder := func(r io.Reader) stream.Decoder { return json.NewDecoder(r) }
 
-	m.RegisterEncoder("custom", custom)
-	require.Equal(t, reflect.ValueOf(custom).Pointer(), reflect.ValueOf(m.GetEncoder("custom")).Pointer())
+	m.Register("custom", stream.Codec{Encoder: encoder, Decoder: decoder})
+	codec := m.Get("custom")
+	require.Equal(t, reflect.ValueOf(encoder).Pointer(), reflect.ValueOf(codec.Encoder).Pointer())
+	require.Equal(t, reflect.ValueOf(decoder).Pointer(), reflect.ValueOf(codec.Decoder).Pointer())
 
-	replacement := func(w io.Writer) stream.Encoder { return msgpack.NewEncoder(w) }
-	m.RegisterEncoder("custom", replacement)
-	require.Equal(t, reflect.ValueOf(replacement).Pointer(), reflect.ValueOf(m.GetEncoder("custom")).Pointer())
-}
+	replacementEncoder := func(w io.Writer) stream.Encoder { return msgpack.NewEncoder(w) }
+	replacementDecoder := func(r io.Reader) stream.Decoder { return yaml.NewDecoder(r) }
 
-func TestMapRegisterDecoder(t *testing.T) {
-	t.Parallel()
+	m.Register("custom", stream.Codec{Encoder: replacementEncoder, Decoder: replacementDecoder})
+	codec = m.Get("custom")
+	require.Equal(t, reflect.ValueOf(replacementEncoder).Pointer(), reflect.ValueOf(codec.Encoder).Pointer())
+	require.Equal(t, reflect.ValueOf(replacementDecoder).Pointer(), reflect.ValueOf(codec.Decoder).Pointer())
 
-	m := stream.NewMap()
-	custom := func(r io.Reader) stream.Decoder { return json.NewDecoder(r) }
-
-	m.RegisterDecoder("custom", custom)
-	require.Equal(t, reflect.ValueOf(custom).Pointer(), reflect.ValueOf(m.GetDecoder("custom")).Pointer())
-
-	replacement := func(r io.Reader) stream.Decoder { return yaml.NewDecoder(r) }
-	m.RegisterDecoder("custom", replacement)
-	require.Equal(t, reflect.ValueOf(replacement).Pointer(), reflect.ValueOf(m.GetDecoder("custom")).Pointer())
+	// Register replaces the codec in full rather than merging fields: registering a partial Codec must
+	// clear the side that is left unset, not keep the previous decoder around.
+	anotherEncoder := func(w io.Writer) stream.Encoder { return json.NewEncoder(w) }
+	m.Register("custom", stream.Codec{Encoder: anotherEncoder})
+	codec = m.Get("custom")
+	require.Equal(t, reflect.ValueOf(anotherEncoder).Pointer(), reflect.ValueOf(codec.Encoder).Pointer())
+	require.Nil(t, codec.Decoder)
 }
 
 func TestModuleProvidesDefaultMap(t *testing.T) {
@@ -126,8 +124,9 @@ func TestModuleProvidesDefaultMap(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
 
-			require.NotNil(t, m.GetEncoder(kind))
-			require.NotNil(t, m.GetDecoder(kind))
+			codec := m.Get(kind)
+			require.NotNil(t, codec.Encoder)
+			require.NotNil(t, codec.Decoder)
 		})
 	}
 }

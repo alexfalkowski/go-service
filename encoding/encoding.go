@@ -1,103 +1,38 @@
 package encoding
 
-import (
-	"maps"
+import "github.com/alexfalkowski/go-service/v2/io"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/gob"
-	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
-	"github.com/alexfalkowski/go-service/v2/encoding/msgpack"
-	"github.com/alexfalkowski/go-service/v2/encoding/proto"
-	"github.com/alexfalkowski/go-service/v2/encoding/toml"
-	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
-	"github.com/alexfalkowski/go-service/v2/slices"
-)
+// Encoder encodes values to a writer and decodes values from a reader.
+//
+// Encoder is intentionally minimal so multiple concrete encodings (JSON/YAML/TOML/protobuf/gob, etc.)
+// can be used interchangeably.
+//
+// # Encode contract
+//
+// Encode must serialize v to w. Implementations may require that v satisfies additional interfaces
+// or is of a particular shape (for example a protobuf encoder may require v to implement
+// google.golang.org/protobuf/proto.Message).
+//
+// # Decode contract
+//
+// Decode must read from r and populate v. In most cases v is expected to be a pointer to the target
+// value so the decoder can mutate it (e.g. *MyStruct). Implementations may return an error if v is not
+// a supported type (for example [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType]).
+//
+// Structured single-value decoders should reject additional encoded values after the first payload,
+// either by consuming the whole input or by returning [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrTrailingData]. Stream or
+// passthrough encoders may delegate full-consumption semantics to the concrete value they decode into.
+//
+// Some implementations buffer the remaining contents of r before decoding. When r contains untrusted
+// input, callers must bound it before calling Decode. Standard go-service HTTP and cache wiring applies
+// those limits before values reach encoders.
+//
+// Implementations should return any underlying I/O errors and any parse/unmarshal errors produced by
+// their respective codecs.
+type Encoder interface {
+	// Encode writes a serialized representation of v to w.
+	Encode(w io.Writer, v any) error
 
-// NewMap constructs a Map with the default encoders.
-//
-// The returned registry includes these kinds:
-//
-//   - Structured config formats: "json", "hjson", "yaml", "yml", "toml", "msgpack"
-//
-//   - Protobuf formats:
-//
-//   - binary: "proto", "protobuf", "pb", "protobin", "pbbin"
-//
-//   - text: "prototext", "prototxt", "pbtxt"
-//
-//   - JSON: "protojson", "pbjson"
-//
-//   - gob: "gob"
-//
-//   - bytes/plain passthrough: "plain", "octet-stream"
-//
-// Callers can add additional kinds or override existing kinds via [Map.Register].
-func NewMap() *Map {
-	jsonEncoder := json.NewEncoder()
-	hjsonEncoder := hjson.NewEncoder()
-	yamlEncoder := yaml.NewEncoder()
-	tomlEncoder := toml.NewEncoder()
-	msgpackEncoder := msgpack.NewEncoder()
-	protoBinary := proto.NewBinary()
-	protoText := proto.NewText()
-	protoJSON := proto.NewJSON()
-	gobEncoder := gob.NewEncoder()
-	bytesEncoder := bytes.NewEncoder()
-
-	return &Map{
-		encoders: map[string]Encoder{
-			"json":         jsonEncoder,
-			"hjson":        hjsonEncoder,
-			"yaml":         yamlEncoder,
-			"yml":          yamlEncoder,
-			"toml":         tomlEncoder,
-			"msgpack":      msgpackEncoder,
-			"pb":           protoBinary,
-			"pbbin":        protoBinary,
-			"proto":        protoBinary,
-			"protobin":     protoBinary,
-			"protobuf":     protoBinary,
-			"pbtxt":        protoText,
-			"prototext":    protoText,
-			"prototxt":     protoText,
-			"protojson":    protoJSON,
-			"pbjson":       protoJSON,
-			"gob":          gobEncoder,
-			"octet-stream": bytesEncoder,
-			"plain":        bytesEncoder,
-		},
-	}
-}
-
-// Map provides lookup and registration of encoders by kind.
-//
-// This type is a thin convenience around a string-keyed map and is commonly used with configuration
-// to select an encoder at runtime.
-//
-// Map is not concurrency-safe. If you mutate it via Register, do so during initialization.
-type Map struct {
-	encoders map[string]Encoder
-}
-
-// Register associates kind with enc, overwriting any existing encoder.
-//
-// If kind already exists, the previous encoder is replaced.
-func (f *Map) Register(kind string, enc Encoder) {
-	f.encoders[kind] = enc
-}
-
-// Get returns the encoder registered for kind.
-//
-// If no encoder is registered for kind, or if kind was registered with a nil encoder, Get returns nil.
-// Callers typically treat nil as "unknown or unavailable kind" and fall back to a default encoder elsewhere.
-func (f *Map) Get(kind string) Encoder {
-	return f.encoders[kind]
-}
-
-// Keys returns the list of registered encoder kinds.
-//
-// Keys includes kinds registered with nil encoders. The returned slice is not guaranteed to be sorted.
-func (f *Map) Keys() []string {
-	return slices.Collect(maps.Keys(f.encoders))
+	// Decode reads from r and decodes into v.
+	Decode(r io.Reader, v any) error
 }

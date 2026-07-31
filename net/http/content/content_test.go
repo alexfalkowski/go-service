@@ -131,7 +131,7 @@ func TestNewFromRequestFallsBackFromInternalErrorMedia(t *testing.T) {
 	media := test.Content.NewFromRequest(req)
 
 	require.Equal(t, "plain", media.Subtype())
-	require.Same(t, test.Encoder.Get("plain"), media.Encoder)
+	require.Same(t, test.Encoder.Get("bytes"), media.Encoder)
 }
 
 func TestNewFromContentType(t *testing.T) {
@@ -155,7 +155,7 @@ func TestNewFromContentTypeFallsBackFromInternalErrorMedia(t *testing.T) {
 	media := test.Content.NewFromContentType(req)
 
 	require.Equal(t, "plain", media.Subtype())
-	require.Same(t, test.Encoder.Get("plain"), media.Encoder)
+	require.Same(t, test.Encoder.Get("bytes"), media.Encoder)
 }
 
 func TestNewFromRequestBodyRejectsUnsafeBinaryMedia(t *testing.T) {
@@ -193,7 +193,7 @@ func TestNewFromRequestBodyRejectsNilRegisteredCodec(t *testing.T) {
 		contentType string
 	}{
 		{name: "absent content type, json nil-registered", register: "json", contentType: ""},
-		{name: "text/error, plain nil-registered", register: "plain", contentType: media.Error},
+		{name: "text/error, bytes nil-registered", register: "bytes", contentType: media.Error},
 		{name: "msgpack, msgpack nil-registered", register: "msgpack", contentType: media.MessagePack},
 	}
 
@@ -235,22 +235,23 @@ func TestNewFromRequestBodyTreatsParameterizedInternalErrorContentTypeAsText(t *
 
 	require.NoError(t, err)
 	require.Equal(t, "plain", m.Subtype())
-	require.Same(t, test.Encoder.Get("plain"), m.Encoder)
+	require.Same(t, test.Encoder.Get("bytes"), m.Encoder)
 	require.True(t, m.CanDecodeRequest())
 }
 
 func TestNewFromRequestBodyDecodesFallthroughReachableMediaTypes(t *testing.T) {
-	// Guards against the identity fallthrough (knownMedia -> media.Parse -> enc.Get(subtype)) being
-	// reverted into an allowlist: these media types have no dedicated knownMedia case and must keep
+	// Guards against the identity fallthrough (knownMedia -> media.Parse -> enc.Get(unaryKind(subtype)))
+	// being reverted into an allowlist: these media types have no dedicated knownMedia case and must keep
 	// resolving through the general parser path.
 	for _, tc := range []struct {
 		mediaType string
 		subtype   string
+		kind      string
 	}{
-		{mediaType: "application/pb", subtype: "pb"},
-		{mediaType: "application/protobin", subtype: "protobin"},
-		{mediaType: "application/octet-stream", subtype: "octet-stream"},
-		{mediaType: media.Text, subtype: "plain"},
+		{mediaType: "application/pb", subtype: "pb", kind: "protobuf"},
+		{mediaType: "application/protobin", subtype: "protobin", kind: "protobuf"},
+		{mediaType: "application/octet-stream", subtype: "octet-stream", kind: "bytes"},
+		{mediaType: media.Text, subtype: "plain", kind: "bytes"},
 	} {
 		t.Run(tc.mediaType, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
@@ -260,7 +261,7 @@ func TestNewFromRequestBodyDecodesFallthroughReachableMediaTypes(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Equal(t, tc.subtype, media.Subtype())
-			require.Same(t, test.Encoder.Get(tc.subtype), media.Encoder)
+			require.Same(t, test.Encoder.Get(tc.kind), media.Encoder)
 			require.True(t, media.CanDecodeRequest())
 		})
 	}
@@ -295,11 +296,8 @@ func TestEveryEncoderKindIsClassified(t *testing.T) {
 	// Every kind in the default registry must be explicitly classified, so a new codec cannot become
 	// request-decodable without a decision. See undecodableKinds in media.go.
 	classified := map[string]bool{
-		"json": true, "hjson": true, "yaml": true, "yml": true, "toml": true,
-		"plain": true, "octet-stream": true,
-		"pb": true, "pbbin": true, "proto": true, "protobin": true, "protobuf": true,
-		"pbtxt": true, "prototext": true, "prototxt": true,
-		"protojson": true, "pbjson": true,
+		"json": true, "hjson": true, "yaml": true, "toml": true, "bytes": true,
+		"protobuf": true, "prototext": true, "protojson": true,
 		"msgpack": false, "gob": false,
 	}
 
@@ -361,22 +359,22 @@ func mediaTests() []mediaTest {
 		{name: "json", mediaType: media.JSON, subtype: "json", kind: "json"},
 		{name: "hjson", mediaType: media.HumanJSON, subtype: "hjson", kind: "hjson"},
 		{name: "yaml", mediaType: media.YAML, subtype: "yaml", kind: "yaml"},
-		{name: "yml", mediaType: "application/yml", subtype: "yml", kind: "yml"},
+		{name: "yml", mediaType: "application/yml", subtype: "yml", kind: "yaml"},
 		{name: "toml", mediaType: media.TOML, subtype: "toml", kind: "toml"},
 		{name: "msgpack", mediaType: media.MessagePack, subtype: "msgpack", kind: "msgpack"},
 		{name: "protobuf", mediaType: media.Protobuf, subtype: "protobuf", kind: "protobuf"},
-		{name: "proto", mediaType: "application/proto", subtype: "proto", kind: "proto"},
-		{name: "pb", mediaType: "application/pb", subtype: "pb", kind: "pb"},
-		{name: "protobin", mediaType: "application/protobin", subtype: "protobin", kind: "protobin"},
-		{name: "pbbin", mediaType: "application/pbbin", subtype: "pbbin", kind: "pbbin"},
-		{name: "protobuf json", mediaType: media.ProtobufJSON, subtype: "pbjson", kind: "pbjson"},
+		{name: "proto", mediaType: "application/proto", subtype: "proto", kind: "protobuf"},
+		{name: "pb", mediaType: "application/pb", subtype: "pb", kind: "protobuf"},
+		{name: "protobin", mediaType: "application/protobin", subtype: "protobin", kind: "protobuf"},
+		{name: "pbbin", mediaType: "application/pbbin", subtype: "pbbin", kind: "protobuf"},
+		{name: "protobuf json", mediaType: media.ProtobufJSON, subtype: "pbjson", kind: "protojson"},
 		{name: "protojson", mediaType: "application/protojson", subtype: "protojson", kind: "protojson"},
-		{name: "protobuf text", mediaType: media.ProtobufText, subtype: "pbtxt", kind: "pbtxt"},
+		{name: "protobuf text", mediaType: media.ProtobufText, subtype: "pbtxt", kind: "prototext"},
 		{name: "prototext", mediaType: "application/prototext", subtype: "prototext", kind: "prototext"},
-		{name: "prototxt", mediaType: "application/prototxt", subtype: "prototxt", kind: "prototxt"},
+		{name: "prototxt", mediaType: "application/prototxt", subtype: "prototxt", kind: "prototext"},
 		{name: "gob", mediaType: "application/gob", subtype: "gob", kind: "gob"},
-		{name: "plain", mediaType: media.Text, subtype: "plain", kind: "plain"},
-		{name: "octet-stream", mediaType: "application/octet-stream", subtype: "octet-stream", kind: "octet-stream"},
+		{name: "plain", mediaType: media.Text, subtype: "plain", kind: "bytes"},
+		{name: "octet-stream", mediaType: "application/octet-stream", subtype: "octet-stream", kind: "bytes"},
 		{name: "invalid", mediaType: "test", subtype: "json", kind: "json"},
 		{name: "unknown", mediaType: "application/test", subtype: "json", kind: "json"},
 	}

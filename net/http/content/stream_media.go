@@ -33,13 +33,12 @@ func NewStreamMedia(mediaType string, sm *stream.Map) (StreamMedia, error) {
 		return StreamMedia{}, ErrUnsupportedStreamMedia
 	}
 
-	newEncoder := sm.GetEncoder(kind)
-	newDecoder := sm.GetDecoder(kind)
-	if newEncoder == nil && newDecoder == nil {
+	codec := sm.Get(kind)
+	if codec.Encoder == nil && codec.Decoder == nil {
 		return StreamMedia{}, ErrUnsupportedStreamMedia
 	}
 
-	return StreamMedia{NewEncoder: newEncoder, NewDecoder: newDecoder, Type: value}, nil
+	return StreamMedia{NewEncoder: codec.Encoder, NewDecoder: codec.Decoder, Type: value}, nil
 }
 
 // StreamMedia describes a resolved streaming media type and its encoder/decoder constructors.

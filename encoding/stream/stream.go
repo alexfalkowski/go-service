@@ -58,10 +58,10 @@ type Decoder interface {
 	Close() error
 }
 
-// EncoderFunc constructs an [Encoder] bound to w. Registered in a [Map] by kind via
-// [Map.RegisterEncoder], and returned by [Map.GetEncoder].
+// EncoderFunc constructs an [Encoder] bound to w. Registered in a [Map] by kind as part of a [Codec]
+// via [Map.Register], and returned by [Map.Get].
 type EncoderFunc func(w io.Writer) Encoder
 
-// DecoderFunc constructs a [Decoder] bound to r. Registered in a [Map] by kind via
-// [Map.RegisterDecoder], and returned by [Map.GetDecoder].
+// DecoderFunc constructs a [Decoder] bound to r. Registered in a [Map] by kind as part of a [Codec]
+// via [Map.Register], and returned by [Map.Get].
 type DecoderFunc func(r io.Reader) Decoder

@@ -13,7 +13,9 @@ import (
 
 func TestNewStreamFromContentTypeRejectsEncoderOnlyKind(t *testing.T) {
 	sm := stream.NewMap()
-	sm.RegisterDecoder("json", nil)
+	codec := sm.Get("json")
+	codec.Decoder = nil
+	sm.Register("json", codec)
 	cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)

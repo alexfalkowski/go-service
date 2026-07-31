@@ -52,7 +52,7 @@ func TestReadSource(t *testing.T) {
 	values := []*test.KeyValue[string, string]{
 		{Key: "env:DUMMY", Value: "yes"},
 		{Key: "env:EMPTY", Value: ""},
-		{Key: test.FilePath("configs/invalid.yml"), Value: "not:\n  our:\n    config: test"},
+		{Key: test.FilePath("configs/invalid.yaml"), Value: "not:\n  our:\n    config: test"},
 		{Key: "none", Value: "none"},
 	}
 

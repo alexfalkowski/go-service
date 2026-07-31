@@ -6,7 +6,7 @@ timeout = "10s"
 
 [cache]
 kind = "redis"
-encoder = "proto"
+encoder = "protobuf"
 compressor = "snappy"
 max_size = "4MB"
 max_entries = 1024

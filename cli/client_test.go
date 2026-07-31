@@ -159,8 +159,8 @@ func TestApplicationClientShutdownExitCodeIsReturnedWhenStopFails(t *testing.T) 
 
 func TestApplicationClientInvalidConfig(t *testing.T) {
 	configs := []string{
-		test.FilePath("configs/invalid_http.config.yml"),
-		test.FilePath("configs/invalid_grpc.config.yml"),
+		test.FilePath("configs/invalid_http.config.yaml"),
+		test.FilePath("configs/invalid_grpc.config.yaml"),
 	}
 
 	for _, config := range configs {

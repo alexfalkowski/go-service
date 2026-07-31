@@ -381,7 +381,9 @@ func TestNewRequestStreamHandlerRecvRejectsValueOverCapRegardlessOfDecoderBehavi
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sm := stream.NewMap()
-			sm.RegisterDecoder("json", tt.decoder)
+			codec := sm.Get("json")
+			codec.Decoder = tt.decoder
+			sm.Register("json", codec)
 			cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 			var recvErr error
@@ -624,7 +626,9 @@ func TestNewRequestStreamHandlerRecvBufferedLenFallback(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sm := stream.NewMap()
-			sm.RegisterDecoder("json", func(io.Reader) stream.Decoder { return tt.decoder })
+			codec := sm.Get("json")
+			codec.Decoder = func(io.Reader) stream.Decoder { return tt.decoder }
+			sm.Register("json", codec)
 			cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 			handler := content.NewRequestStreamHandler(cont, 0, 0, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
@@ -647,7 +651,9 @@ func TestNewRequestStreamHandlerRecvBufferedLenFallback(t *testing.T) {
 
 func TestNewRequestStreamHandlerRecvRecoversStickyCapReaderError(t *testing.T) {
 	sm := stream.NewMap()
-	sm.RegisterDecoder("json", func(r io.Reader) stream.Decoder { return &test.TripleReadDecoder{R: r} })
+	codec := sm.Get("json")
+	codec.Decoder = func(r io.Reader) stream.Decoder { return &test.TripleReadDecoder{R: r} }
+	sm.Register("json", codec)
 	cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 	handler := content.NewRequestStreamHandler(cont, 0, bytes.Size(1), func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
@@ -668,7 +674,9 @@ func TestNewRequestStreamHandlerRecvRecoversStickyCapReaderError(t *testing.T) {
 
 func TestNewStreamHandlerRejectsNilEncoderForRegisteredKind(t *testing.T) {
 	sm := stream.NewMap()
-	sm.RegisterEncoder("json", nil)
+	codec := sm.Get("json")
+	codec.Encoder = nil
+	sm.Register("json", codec)
 	cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 	handler := content.NewStreamHandler(cont, 0, func(_ context.Context, _ *content.Stream[test.Response]) error {
@@ -684,44 +692,38 @@ func TestNewStreamHandlerRejectsNilEncoderForRegisteredKind(t *testing.T) {
 	require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
 }
 
-func TestNewRequestStreamHandlerRejectsNilDecoderForRegisteredKind(t *testing.T) {
-	sm := stream.NewMap()
-	sm.RegisterDecoder("json", nil)
-	cont := content.NewContent(test.Encoder, sm, test.Pool)
+func TestNewRequestStreamHandlerRejectsNilCodecFieldForRegisteredKind(t *testing.T) {
+	tests := []struct {
+		name   string
+		mutate func(*stream.Codec)
+	}{
+		{name: "nil decoder", mutate: func(c *stream.Codec) { c.Decoder = nil }},
+		{name: "nil encoder", mutate: func(c *stream.Codec) { c.Encoder = nil }},
+	}
 
-	handler := content.NewRequestStreamHandler(cont, 0, 0, func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
-		return nil
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sm := stream.NewMap()
+			codec := sm.Get("json")
+			tt.mutate(&codec)
+			sm.Register("json", codec)
+			cont := content.NewContent(test.Encoder, sm, test.Pool)
 
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
-	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
+			handler := content.NewRequestStreamHandler(cont, 0, 0, func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
+				return nil
+			})
 
-	handler.ServeHTTP(res, req)
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+			req.ProtoMajor = 2
+			req.Header.Set(content.TypeKey, media.NDJSON)
+			req.Header.Set(content.AcceptKey, media.NDJSON)
+			res := httptest.NewRecorder()
 
-	require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
-}
+			handler.ServeHTTP(res, req)
 
-func TestNewRequestStreamHandlerRejectsNilEncoderForRegisteredKind(t *testing.T) {
-	sm := stream.NewMap()
-	sm.RegisterEncoder("json", nil)
-	cont := content.NewContent(test.Encoder, sm, test.Pool)
-
-	handler := content.NewRequestStreamHandler(cont, 0, 0, func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
-		return nil
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
-	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
+			require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
+		})
+	}
 }
 
 func decodeNDJSONGreeting(t *testing.T, scanner *bufio.Scanner) string {

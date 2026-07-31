@@ -10,7 +10,7 @@ import (
 func ExampleServer() {
 	application := cli.NewApplication(func(commander cli.Commander) {
 		server := commander.AddServer("serve", "Run the service", module.Server)
-		server.AddConfig("file:./config.yml")
+		server.AddConfig("file:./config.yaml")
 	})
 
 	_ = application
@@ -29,7 +29,7 @@ func ExampleClient() {
 
 	application := cli.NewApplication(func(commander cli.Commander) {
 		client := commander.AddClient("migrate", "Run client tasks", module.Client, task)
-		client.AddConfig("file:./config.yml")
+		client.AddConfig("file:./config.yaml")
 	})
 
 	_ = application

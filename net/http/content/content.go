@@ -108,7 +108,7 @@ func (c *Content) NewFromRequestBody(req *http.Request) (Media, error) {
 	// the text codec directly rather than through newKnownMedia, whose nil-codec path would fall back to
 	// JSON; a nil encoder here is rejected by CanDecodeRequest below.
 	if m.IsError() {
-		m = Media{Type: textType, Encoder: c.enc.Get("plain")}
+		m = Media{Type: textType, Encoder: c.enc.Get("bytes")}
 	}
 
 	if !m.CanDecodeRequest() {
@@ -150,7 +150,7 @@ func (c *Content) requestMedia(mediaType string) (Media, error) {
 		return Media{Type: value}, nil
 	}
 
-	encoder := c.enc.Get(value.Subtype())
+	encoder := c.enc.Get(unaryKind(value.Subtype()))
 	if encoder == nil {
 		return Media{}, ErrUnsupportedRequestMedia
 	}
@@ -183,7 +183,7 @@ func (c *Content) NewStreamFromMedia(mediaType string) (StreamMedia, error) {
 func (c *Content) newRequestMedia(mediaType string) Media {
 	m := NewMedia(mediaType, c.enc)
 	if m.IsError() {
-		return newKnownMedia(textType, "plain", c.enc)
+		return newMedia(textType, c.enc)
 	}
 
 	return m

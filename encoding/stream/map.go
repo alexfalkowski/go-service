@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/slices"
 )
 
-// NewMap constructs a Map with the default streaming encoder/decoder constructors.
+// NewMap constructs a Map with the default streaming codecs.
 //
 // The returned registry includes these kinds: "json", "msgpack", "gob", "yaml".
 //
@@ -23,98 +23,71 @@ import (
 // shape; the concrete types satisfy [Encoder]/[Decoder] structurally, so the conversion is just an
 // ordinary interface assignment on return.
 //
-// Callers can add additional kinds or override existing kinds via [Map.RegisterEncoder] and
-// [Map.RegisterDecoder].
+// Callers can add additional kinds or override existing kinds via [Map.Register].
 func NewMap() *Map {
 	return &Map{
-		encoders: map[string]EncoderFunc{
-			"json":    func(w io.Writer) Encoder { return json.NewEncoder(w) },
-			"msgpack": func(w io.Writer) Encoder { return msgpack.NewEncoder(w) },
-			"gob":     func(w io.Writer) Encoder { return gob.NewEncoder(w) },
-			"yaml":    func(w io.Writer) Encoder { return yaml.NewEncoder(w) },
-		},
-		decoders: map[string]DecoderFunc{
-			"json":    func(r io.Reader) Decoder { return json.NewDecoder(r) },
-			"msgpack": func(r io.Reader) Decoder { return msgpack.NewDecoder(r) },
-			"gob":     func(r io.Reader) Decoder { return gob.NewDecoder(r) },
-			"yaml":    func(r io.Reader) Decoder { return yaml.NewDecoder(r) },
+		codecs: map[string]Codec{
+			"json":    {Encoder: func(w io.Writer) Encoder { return json.NewEncoder(w) }, Decoder: func(r io.Reader) Decoder { return json.NewDecoder(r) }},
+			"msgpack": {Encoder: func(w io.Writer) Encoder { return msgpack.NewEncoder(w) }, Decoder: func(r io.Reader) Decoder { return msgpack.NewDecoder(r) }},
+			"gob":     {Encoder: func(w io.Writer) Encoder { return gob.NewEncoder(w) }, Decoder: func(r io.Reader) Decoder { return gob.NewDecoder(r) }},
+			"yaml":    {Encoder: func(w io.Writer) Encoder { return yaml.NewEncoder(w) }, Decoder: func(r io.Reader) Decoder { return yaml.NewDecoder(r) }},
 		},
 	}
 }
 
-// Map provides lookup and registration of streaming encoder/decoder constructors by kind.
+// Codec bundles the encoder and decoder constructors registered for one kind.
+//
+// Either field may be nil when the kind supports only one direction; callers must check the field they
+// intend to use before calling it.
+type Codec struct {
+	// Encoder constructs an [Encoder] bound to a writer, or nil if this kind has no registered encoder.
+	Encoder EncoderFunc
+
+	// Decoder constructs a [Decoder] bound to a reader, or nil if this kind has no registered decoder.
+	Decoder DecoderFunc
+}
+
+// Map provides lookup and registration of streaming codecs by kind.
 //
 // Unlike [github.com/alexfalkowski/go-service/v2/encoding.Map], which registers ready-to-use
 // encoder instances, Map registers constructor functions. Each streaming Encode/Decode call needs a
 // fresh [Encoder] or [Decoder] bound to its own writer or reader, so the registry stores how to build
 // one rather than a shared instance.
 //
-// Map is not concurrency-safe. If you mutate it via RegisterEncoder or RegisterDecoder, do so during
-// initialization.
+// Map is not concurrency-safe. If you mutate it via Register, do so during initialization.
 type Map struct {
-	encoders map[string]EncoderFunc
-	decoders map[string]DecoderFunc
+	codecs map[string]Codec
 }
 
-// RegisterEncoder associates kind with fn, overwriting any existing encoder constructor.
+// Register associates kind with codec, overwriting any existing codec in full.
 //
-// If kind already exists, the previous encoder constructor is replaced.
-func (m *Map) RegisterEncoder(kind string, fn EncoderFunc) {
-	m.encoders[kind] = fn
+// If kind already exists, the previous codec is replaced entirely — Register does not merge codec's
+// Encoder/Decoder fields with whatever was previously registered, so registering a partial Codec (for
+// example, only Encoder set) clears the other field for kind.
+func (m *Map) Register(kind string, codec Codec) {
+	m.codecs[kind] = codec
 }
 
-// RegisterDecoder associates kind with fn, overwriting any existing decoder constructor.
+// Get returns the codec registered for kind.
 //
-// If kind already exists, the previous decoder constructor is replaced.
-func (m *Map) RegisterDecoder(kind string, fn DecoderFunc) {
-	m.decoders[kind] = fn
-}
-
-// GetEncoder returns the encoder constructor registered for kind.
+// If no codec is registered for kind, Get returns the zero [Codec] (both fields nil). Callers typically
+// treat a nil Encoder or Decoder field as "unknown or unavailable kind" and fail explicitly rather than
+// falling back to a default.
 //
-// If no encoder constructor is registered for kind, or if kind was registered with a nil
-// constructor, GetEncoder returns nil. Callers typically treat nil as "unknown or unavailable kind"
-// and fail explicitly rather than falling back to a default encoder.
-//
-// GetEncoder is nil-safe: it returns nil for a nil m, so resolving against an unconfigured registry
+// Get is nil-safe: it returns the zero Codec for a nil m, so resolving against an unconfigured registry
 // fails the same way resolving an unregistered kind does, rather than panicking.
-func (m *Map) GetEncoder(kind string) EncoderFunc {
+func (m *Map) Get(kind string) Codec {
 	if m == nil {
-		return nil
+		return Codec{}
 	}
 
-	return m.encoders[kind]
+	return m.codecs[kind]
 }
 
-// GetDecoder returns the decoder constructor registered for kind.
+// Keys returns the registered kinds.
 //
-// If no decoder constructor is registered for kind, or if kind was registered with a nil
-// constructor, GetDecoder returns nil. Callers typically treat nil as "unknown or unavailable kind"
-// and fail explicitly rather than falling back to a default decoder.
-//
-// GetDecoder is nil-safe: it returns nil for a nil m, so resolving against an unconfigured registry
-// fails the same way resolving an unregistered kind does, rather than panicking.
-func (m *Map) GetDecoder(kind string) DecoderFunc {
-	if m == nil {
-		return nil
-	}
-
-	return m.decoders[kind]
-}
-
-// Keys returns the union of registered encoder and decoder kinds.
-//
-// Keys includes kinds registered with nil constructors. The returned slice is not guaranteed to be
-// sorted.
+// Keys includes kinds registered with a zero or partially-nil [Codec]. The returned slice is not
+// guaranteed to be sorted.
 func (m *Map) Keys() []string {
-	keys := make(map[string]struct{}, len(m.encoders)+len(m.decoders))
-	for k := range m.encoders {
-		keys[k] = struct{}{}
-	}
-
-	for k := range m.decoders {
-		keys[k] = struct{}{}
-	}
-
-	return slices.Collect(maps.Keys(keys))
+	return slices.Collect(maps.Keys(m.codecs))
 }

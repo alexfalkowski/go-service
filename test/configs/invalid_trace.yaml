@@ -4,7 +4,7 @@ debug:
   timeout: 10s
 cache:
   kind: redis
-  encoder: proto
+  encoder: protobuf
   compressor: snappy
   max_entries: 1024
   options:
