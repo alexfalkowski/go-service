@@ -62,6 +62,54 @@ type NoFlushResponseWriter struct {
 	Code int
 }
 
+// DeadlineResponseWriter is an [http.ResponseWriter] test double that implements
+// [http.ResponseController.SetReadDeadline] and [http.ResponseController.SetWriteDeadline] through
+// caller-supplied functions, letting a test control exactly when each deadline extension succeeds or
+// fails (including across repeated calls within one request, via a closure with its own counter). A
+// nil func always succeeds.
+type DeadlineResponseWriter struct {
+	SetReadDeadlineFunc  func() error
+	SetWriteDeadlineFunc func() error
+	Body                 bytes.Buffer
+	Code                 int
+}
+
+// Header is always empty.
+func (w *DeadlineResponseWriter) Header() http.Header {
+	return http.Header{}
+}
+
+// Write appends p to Body.
+func (w *DeadlineResponseWriter) Write(p []byte) (int, error) {
+	return w.Body.Write(p)
+}
+
+// WriteHeader stores code in the Code field.
+func (w *DeadlineResponseWriter) WriteHeader(code int) {
+	w.Code = code
+}
+
+// Flush is a no-op, satisfying [http.Flusher].
+func (w *DeadlineResponseWriter) Flush() {}
+
+// SetReadDeadline calls SetReadDeadlineFunc, or succeeds if it is nil.
+func (w *DeadlineResponseWriter) SetReadDeadline(time.Time) error {
+	if w.SetReadDeadlineFunc == nil {
+		return nil
+	}
+
+	return w.SetReadDeadlineFunc()
+}
+
+// SetWriteDeadline calls SetWriteDeadlineFunc, or succeeds if it is nil.
+func (w *DeadlineResponseWriter) SetWriteDeadline(time.Time) error {
+	if w.SetWriteDeadlineFunc == nil {
+		return nil
+	}
+
+	return w.SetWriteDeadlineFunc()
+}
+
 // Header is always empty.
 func (w *NoFlushResponseWriter) Header() http.Header {
 	return http.Header{}

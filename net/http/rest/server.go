@@ -151,10 +151,10 @@ func StreamPatch[Req any, Res any](pattern string, handler content.RequestStream
 // function will panic.
 //
 // Inbound size limiting:
-// maxReceiveSize (set via [Register]) bounds each value decoded by the resulting stream's
+// opts.MaxReceiveSize (set via [Register]) bounds each value decoded by the resulting stream's
 // Recv, not the request body as a whole — see [content.NewRequestStreamHandler].
 func StreamRouteRequest[Req any, Res any](pattern string, handler content.RequestStreamHandler[Req, Res]) {
-	router.HandleStreaming(pattern, content.NewRequestStreamHandler(cont, timeout, maxReceiveSize, handler))
+	router.HandleStreaming(pattern, content.NewRequestStreamHandler(cont, opts, handler))
 }
 
 // StreamRoute registers a handler under pattern for a send-only streaming response: the response
@@ -176,5 +176,5 @@ func StreamRouteRequest[Req any, Res any](pattern string, handler content.Reques
 // Register must be called before StreamRoute; otherwise router/cont will be nil and this function will
 // panic.
 func StreamRoute[Res any](pattern string, handler content.StreamHandler[Res]) {
-	router.HandleStreaming(pattern, content.NewStreamHandler(cont, timeout, handler))
+	router.HandleStreaming(pattern, content.NewStreamHandler(cont, opts, handler))
 }

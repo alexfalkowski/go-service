@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/stretchr/testify/require"
@@ -20,7 +21,7 @@ func TestPostRequiresRequest(t *testing.T) {
 }
 
 func TestPostUsesConfiguredTimeout(t *testing.T) {
-	rpc.Register(nil, test.Content, test.Pool, 0, 0)
+	rpc.Register(nil, test.Content, test.Pool, content.StreamOptions{})
 
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", media.JSON)
@@ -67,7 +68,7 @@ func TestPostRequiresNonNilTypedResponse(t *testing.T) {
 func TestPostUsesAccept(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rpc.Register(router, test.Content, test.Pool, 0, 0)
+	rpc.Register(router, test.Content, test.Pool, content.StreamOptions{})
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	server := httptest.NewServer(mux)

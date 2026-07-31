@@ -19,7 +19,7 @@ import (
 func TestStreamRouteRejectsHTTP1(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rpc.Register(router, test.Content, test.Pool, 0, 0)
+	rpc.Register(router, test.Content, test.Pool, content.StreamOptions{})
 
 	rpc.StreamRoute("/hello", func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
 		return nil
@@ -40,7 +40,7 @@ func TestStreamRouteRecvAndSendOverHTTP2(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rpc.Register(router, test.Content, test.Pool, 0, 0)
+	rpc.Register(router, test.Content, test.Pool, content.StreamOptions{})
 
 	rpc.StreamRoute("/hello", func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		for {

@@ -87,7 +87,7 @@ func RestRequestError(_ context.Context, _ *Request) (*Response, error) {
 }
 
 func registerRest(router *http.Router) {
-	rest.Register(router, Content, Pool, 0, 0)
+	rest.Register(router, Content, Pool, content.StreamOptions{})
 }
 
 func restClient(client *http.Client, os *worldOpts) *rest.Client {

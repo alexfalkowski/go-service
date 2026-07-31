@@ -17,7 +17,7 @@ import (
 func ExampleClient_RequestStream() {
 	pool := sync.NewBufferPool()
 	cont := content.NewContent(encoding.NewMap(), stream.NewMap(), pool)
-	handler := content.NewRequestStreamHandler(cont, 0, 0, func(_ context.Context, stream *content.RequestStream[exampleRequest, exampleResponse]) error {
+	handler := content.NewRequestStreamHandler(cont, content.StreamOptions{}, func(_ context.Context, stream *content.RequestStream[exampleRequest, exampleResponse]) error {
 		req, err := stream.Recv()
 		if err != nil {
 			return err

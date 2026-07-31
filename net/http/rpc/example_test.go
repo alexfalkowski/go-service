@@ -21,7 +21,7 @@ func ExampleClient_Post() {
 		encoding.NewMap(),
 		stream.NewMap(),
 		pool,
-	), pool, 0, 0)
+	), pool, content.StreamOptions{})
 
 	rpc.Route("/hello", func(_ context.Context, req *exampleRequest) (*exampleResponse, error) {
 		return &exampleResponse{Message: "hello " + req.Name}, nil

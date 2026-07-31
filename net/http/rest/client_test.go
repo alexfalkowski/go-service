@@ -14,7 +14,7 @@ import (
 )
 
 func TestNewClientUsesTimeout(t *testing.T) {
-	rest.Register(nil, test.Content, test.Pool, 0, 0)
+	rest.Register(nil, test.Content, test.Pool, content.StreamOptions{})
 
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set(content.TypeKey, media.Text)

@@ -74,6 +74,32 @@ func (c *Config) GetTimeout() time.Duration {
 	return c.Timeout
 }
 
+// GetReadTimeout returns the configured read timeout, resolved from the "read_timeout" [Config.Options]
+// key and falling back to [Config.GetTimeout] — the same options-aware precedence
+// [github.com/alexfalkowski/go-service/v2/net/http.NewServer] uses for the server's own ReadTimeout.
+//
+// A nil receiver falls back to [time.DefaultTimeout] (through GetTimeout).
+func (c *Config) GetReadTimeout() time.Duration {
+	if c == nil {
+		return time.DefaultTimeout
+	}
+
+	return c.Options.NonNegativeDuration("read_timeout", c.GetTimeout())
+}
+
+// GetWriteTimeout returns the configured write timeout, resolved from the "write_timeout"
+// [Config.Options] key and falling back to [Config.GetTimeout] — the same options-aware precedence
+// [github.com/alexfalkowski/go-service/v2/net/http.NewServer] uses for the server's own WriteTimeout.
+//
+// A nil receiver falls back to [time.DefaultTimeout] (through GetTimeout).
+func (c *Config) GetWriteTimeout() time.Duration {
+	if c == nil {
+		return time.DefaultTimeout
+	}
+
+	return c.Options.NonNegativeDuration("write_timeout", c.GetTimeout())
+}
+
 // NewConfig constructs a server-side runtime TLS config from cfg.
 //
 // If cfg is nil or empty, NewConfig returns a TLS 1.3-or-newer config that does

@@ -1158,9 +1158,13 @@ back to JSON, unlike single-value negotiation.
 > - `max_receive_size` applies per decoded value on a streaming request body, not as a cumulative total
 >   across the whole stream; overall stream volume is controlled by the configured rate limiter instead,
 >   which charges one token per streamed message in addition to the token charged when the stream opens.
-> - A successful `Send` extends the HTTP server's configured write timeout, so a slow-but-active stream
->   is not severed by a whole-stream deadline; bound a client-side streaming call with the request
->   context instead of the client's overall request timeout.
+> - A successful `Send` extends the HTTP server's configured write timeout, and on a bidirectional
+>   stream a successful `Recv` extends both the read and write timeouts (and `Send` extends both too),
+>   so a slow-but-active stream is not severed by a whole-stream deadline in either direction; bound a
+>   client-side streaming call with the request context instead of the client's overall request timeout.
+> - The per-message read/write timeouts follow the same `options.read_timeout`/`options.write_timeout`
+>   precedence as the server's own timeouts (see [Transport configuration (servers)](#transport-configuration-servers)),
+>   falling back to `timeout` when the corresponding option is unset.
 > - Streaming requests are never retried by the client's retry middleware.
 
 ### HTTP route misses

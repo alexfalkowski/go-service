@@ -22,7 +22,7 @@ import (
 )
 
 func TestStreamRecvsValues(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
@@ -59,7 +59,7 @@ func TestStreamRecvsValues(t *testing.T) {
 func TestStreamGetIssuesGetRequest(t *testing.T) {
 	var method string
 
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "Hello Bob"})
 	})
 
@@ -103,7 +103,7 @@ func TestStreamPostPutPatchIssueBidiRequests(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var method string
 
-			handler := content.NewRequestStreamHandler(test.Content, 0, 0, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+			handler := content.NewRequestStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 				req, err := stream.Recv()
 				if err != nil {
 					return err
@@ -202,7 +202,7 @@ func TestStreamSurfacesErrorResponseBeforeCallingHandler(t *testing.T) {
 }
 
 func TestRequestStreamInterleavesOverHTTP2(t *testing.T) {
-	handler := content.NewRequestStreamHandler(test.Content, 0, 0, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	handler := content.NewRequestStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		for {
 			req, err := stream.Recv()
 			if err != nil {
@@ -306,7 +306,7 @@ func TestRequestStreamSurfacesErrorResponseViaRecv(t *testing.T) {
 }
 
 func TestRequestStreamSendIsSticky(t *testing.T) {
-	handler := content.NewRequestStreamHandler(test.Content, 0, 0, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	handler := content.NewRequestStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		for {
 			if _, err := stream.Recv(); err != nil {
 				if stream.IsFinished(err) {
@@ -341,7 +341,7 @@ func TestRequestStreamSendIsSticky(t *testing.T) {
 }
 
 func TestStreamRejectsValueOverCap(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "a greeting far longer than the configured cap"})
 	})
 
@@ -361,7 +361,7 @@ func TestStreamRejectsValueOverCap(t *testing.T) {
 }
 
 func TestStreamRejectsValueOverCapWhenDecodeSucceedsInOneRead(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "a greeting far longer than the configured cap"})
 	})
 
@@ -409,7 +409,7 @@ func TestStreamRecvRecoversCapReaderErrorDespiteDecoder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+			handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 				return stream.Send(&test.Response{Greeting: tt.greeting})
 			})
 
@@ -439,7 +439,7 @@ func TestStreamRecvRecoversCapReaderErrorDespiteDecoder(t *testing.T) {
 func TestStreamCapIsPerValueNotCumulative(t *testing.T) {
 	const values = 10
 
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		for range values {
 			if err := stream.Send(&test.Response{Greeting: "hi"}); err != nil {
 				return err
@@ -583,7 +583,7 @@ func TestRequestStreamClosesPipeOnHandlerPanic(t *testing.T) {
 }
 
 func TestStreamSurvivesSlowValuesWithConfiguredUnaryTimeout(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
