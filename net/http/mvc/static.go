@@ -5,6 +5,7 @@ import (
 	"path"
 	"strconv"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -23,8 +24,8 @@ func StaticFile(pattern, name string, opts ...StaticOption) bool {
 	}
 
 	options := options(opts...)
-	handler := func(res http.ResponseWriter, _ *http.Request) {
-		serveFile(res, name, options)
+	handler := func(res http.ResponseWriter, req *http.Request) {
+		serveFile(req.Context(), res, name, options)
 	}
 
 	router.Handle(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler))
@@ -46,21 +47,24 @@ func StaticPathValue(pattern, value, prefix string, opts ...StaticOption) bool {
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		cleaned := path.Clean(req.PathValue(value))
 		if cleaned == "." || cleaned != req.PathValue(value) || !fs.ValidPath(cleaned) || strings.Contains(cleaned, `\`) {
-			res.WriteHeader(staticStatusCode(status.BadRequestError(fs.ErrInvalid)))
+			err := status.BadRequestError(fs.ErrInvalid)
+			status.RecordError(req.Context(), err)
+			res.WriteHeader(staticStatusCode(err))
 			return
 		}
 
 		name := path.Join(prefix, cleaned)
-		serveFile(res, name, options)
+		serveFile(req.Context(), res, name, options)
 	}
 
 	router.Handle(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler))
 	return true
 }
 
-func serveFile(res http.ResponseWriter, name string, options *staticOptions) {
+func serveFile(ctx context.Context, res http.ResponseWriter, name string, options *staticOptions) {
 	f, err := fileSystem.Open(name)
 	if err != nil {
+		status.RecordError(ctx, err)
 		res.WriteHeader(staticStatusCode(err))
 		return
 	}
@@ -68,6 +72,7 @@ func serveFile(res http.ResponseWriter, name string, options *staticOptions) {
 
 	info, err := f.Stat()
 	if err != nil {
+		status.RecordError(ctx, err)
 		res.WriteHeader(staticStatusCode(err))
 		return
 	}
