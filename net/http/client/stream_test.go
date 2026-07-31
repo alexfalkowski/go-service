@@ -400,7 +400,7 @@ func TestStreamRecvRecoversCapReaderErrorDespiteDecoder(t *testing.T) {
 			decoder:  func(r io.Reader) stream.Decoder { return &test.OpaqueErrorDecoder{R: r} },
 		},
 		{
-			name:     "decoder calls Read again after capReader already latched an error",
+			name:     "decoder calls Read again after budget.Reader already latched an error",
 			greeting: "ab",
 			maxSize:  1,
 			decoder:  func(r io.Reader) stream.Decoder { return &test.TripleReadDecoder{R: r} },

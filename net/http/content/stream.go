@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/budget"
 	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
@@ -35,8 +36,8 @@ type RequestStreamHandler[Req any, Res any] func(ctx context.Context, stream *Re
 //
 // Content negotiation:
 // The response encoder is resolved from the request Accept header, falling back to Content-Type,
-// using [Content.NewStreamFromAccept]. Unlike single-value handlers, an unregistered or unparseable
-// media type is rejected with 415 rather than falling back to JSON.
+// using [Content.NewStreamFromAccept]. Unlike single-value handlers, an Accept that cannot be satisfied
+// is rejected with 406 rather than falling back to JSON.
 //
 // Error contract:
 // A handler error returned before the first successful Send is an ordinary HTTP error rendered
@@ -65,7 +66,7 @@ func NewStreamHandler[Res any](cont *Content, timeout time.Duration, handler Str
 		}
 
 		if err != nil {
-			_ = status.WriteError(ctx, res, status.SafeError(http.StatusUnsupportedMediaType, err))
+			_ = status.WriteError(ctx, res, status.SafeError(http.StatusNotAcceptable, err))
 			return
 		}
 
@@ -97,13 +98,16 @@ func NewStreamHandler[Res any](cont *Content, timeout time.Duration, handler Str
 // failing. Requests with req.ProtoMajor < 2 are rejected with 505 before the handler runs.
 //
 // Content negotiation:
-// The request decoder is resolved from Content-Type via [Content.NewStreamFromContentType]; the
-// response encoder is resolved from Accept (falling back to Content-Type) via
-// [Content.NewStreamFromAccept]. Both reject an unregistered or unparseable media type with 415.
+// The request decoder is resolved from Content-Type via [Content.NewStreamFromContentType], rejecting
+// an unregistered or unparseable media type with 415. The response encoder is resolved from Accept
+// (falling back to Content-Type) via [Content.NewStreamFromAccept], rejecting an Accept that cannot be
+// satisfied with 406 instead: Accept negotiates the response representation, not the request payload,
+// so a failure there is answered as RFC 9110 §15.5.7 rather than §15.5.16.
 //
 // Inbound size limiting:
 // maxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a whole
-// (see [capReader]): a request with many small values is never rejected for its cumulative size, only
+// (see [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]): a request with many small
+// values is never rejected for its cumulative size, only
 // for a single value that exceeds maxReceiveSize. A value at or under the limit is a normal terminal
 // [http.MaxBytesError] surfaced from Recv; the deviation is that no total byte ceiling exists for a
 // streaming route the way [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s buffered
@@ -138,7 +142,7 @@ func NewRequestStreamHandler[Req any, Res any](cont *Content, timeout time.Durat
 		}
 
 		if err != nil {
-			_ = status.WriteError(ctx, res, status.SafeError(http.StatusUnsupportedMediaType, err))
+			_ = status.WriteError(ctx, res, status.SafeError(http.StatusNotAcceptable, err))
 			return
 		}
 
@@ -150,7 +154,7 @@ func NewRequestStreamHandler[Req any, Res any](cont *Content, timeout time.Durat
 		defer cont.pool.Put(buffer)
 
 		writer := &commitWriter{res: res, buffer: buffer}
-		capped := &capReader{r: req.Body, max: maxReceiveSize.Bytes()}
+		capped := budget.NewReader(req.Body, maxReceiveSize.Bytes())
 		st := &RequestStream[Req, Res]{
 			Stream: Stream[Res]{
 				ctx:        ctx,
@@ -160,8 +164,9 @@ func NewRequestStreamHandler[Req any, Res any](cont *Content, timeout time.Durat
 				timeout:    timeout,
 				limiter:    limiter,
 			},
-			decoder: reqMedia.NewDecoder(capped),
-			capped:  capped,
+			decoder:        reqMedia.NewDecoder(capped),
+			capped:         capped,
+			maxReceiveSize: maxReceiveSize.Bytes(),
 		}
 		finalizeStream(ctx, res, st, handler(ctx, st))
 	}
@@ -279,8 +284,9 @@ func (s *Stream[Res]) close() error {
 // streaming convention, is one goroutine calling Recv and one goroutine calling Send.
 type RequestStream[Req any, Res any] struct {
 	decoder stream.Decoder
-	capped  *capReader
+	capped  *budget.Reader
 	Stream[Res]
+	maxReceiveSize int64
 }
 
 // Recv decodes the next request value.
@@ -289,8 +295,9 @@ type RequestStream[Req any, Res any] struct {
 // terminal behavior of the underlying stream decoders.
 //
 // Recv is bounded independently by the per-value cap configured on [NewRequestStreamHandler]: the cap
-// resets before every Recv rather than accumulating across the whole request stream (see [capReader]).
-// A value over the cap surfaces as a [http.MaxBytesError], the same error type
+// resets before every Recv rather than accumulating across the whole request stream (see
+// [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]). A value over the cap surfaces as a
+// [http.MaxBytesError], the same error type
 // [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s buffered path already produces,
 // so it maps to the same 413 through [github.com/alexfalkowski/go-service/v2/net/http/status.Code].
 //
@@ -307,19 +314,19 @@ type RequestStream[Req any, Res any] struct {
 // capped's own latched error directly once Decode fails, rather than trusting Decode's returned error
 // to still be classifiable as the size-limit error.
 func (s *RequestStream[Req, Res]) Recv() (*Req, error) {
-	s.capped.resetValue(bufferedLen(s.decoder))
+	s.capped.Reset(budget.BufferedLen(s.decoder))
 
 	req := ptr.Zero[Req]()
 	if err := s.decoder.Decode(req); err != nil {
-		if s.capped.err != nil {
-			return nil, s.capped.err
+		if s.capped.Err() != nil {
+			return nil, &http.MaxBytesError{Limit: s.maxReceiveSize}
 		}
 
 		return nil, err
 	}
 
-	if s.capped.exceededBy(bufferedLen(s.decoder)) {
-		return nil, s.capped.exceededError()
+	if s.capped.Exceeds(budget.BufferedLen(s.decoder)) {
+		return nil, &http.MaxBytesError{Limit: s.maxReceiveSize}
 	}
 
 	if err := s.takeLimiterToken(); err != nil {
@@ -355,126 +362,6 @@ func (s *RequestStream[Req, Res]) close() error {
 	}
 
 	return err
-}
-
-// capReader wraps an [io.Reader] with a byte counter that [RequestStream.Recv] resets before every
-// decoded value, so a stream decoder bound to it for the whole request body (see [stream.Decoder]) gets
-// a per-value cap rather than a cumulative one. This is the inbound mirror of
-// [github.com/alexfalkowski/go-service/v2/net/http/client.capReader] — same reset-before/check-after
-// sequencing around Decode — placed in this package rather than shared with the client because the
-// reset call has to happen at the exact point a decoded value boundary is known, and RequestStream is
-// that point on the server side just as [github.com/alexfalkowski/go-service/v2/net/http/client.ResponseStream]
-// is on the client side.
-//
-// capReader never truncates or discards a Read call's data, for the same reason documented on the
-// client-side type: every byte pulled from the underlying request body is always returned to the
-// decoder, so the decoder's own internal buffering can never be desynchronized by this guard. Read still
-// refuses to pull more data once the budget from a previous Read within the same value is already
-// spent, bounding a single pathological value across repeated Read calls; Recv's post-Decode exceeded
-// check additionally catches a value whose entire content arrived in one Read call that already
-// exceeded the budget.
-//
-// Read-ahead correction: a decoder such as [encoding/json.Decoder] fills its own internal buffer in
-// chunks, so one Decode call can pull bytes belonging to a later value out of the underlying reader
-// (confirmed by a direct repro: decoding the first of two small NDJSON lines read the whole remaining
-// buffer, attributing both lines' bytes to the first value and rejecting it as oversized even though
-// neither line alone was near the cap). [Recv] corrects for this via [bufferedLen], which subtracts
-// whatever the decoder still holds unconsumed in its own buffer (see [stream.Decoder]'s wrapped
-// [encoding/json.Decoder.Buffered]) from the raw bytes capReader counted for this call, so only bytes
-// actually consumed to produce the value just decoded count against its cap. This works for every kind
-// reachable from content negotiation today (only "json"/NDJSON is registered in [streamKinds]); a kind
-// whose decoder does not expose a compatible Buffered method gets no correction, and falls back to the
-// same "bound on reads attributed to one value" precision this type always documented.
-//
-// One deliberate difference from the client-side type: max <= 0 disables the cap outright (Read never
-// refuses to read and exceeded always reports false), rather than assuming a caller-enforced positive
-// default. The client's capReader may assume [github.com/alexfalkowski/go-service/v2/net/http/client.Client]
-// always resolves a positive maxResponseSize before construction; the inbound side is wired through DI
-// from [config/server.Config.GetMaxReceiveSize], which can be projected to zero when the HTTP transport
-// itself is disabled (see [github.com/alexfalkowski/go-service/v2/transport/http.maxReceiveSize]), and a
-// disabled transport has no request to cap.
-type capReader struct {
-	r    io.Reader
-	err  error
-	max  int64
-	read int64
-}
-
-// resetValue rearms the byte counter for the next decoded value, clearing any size-limit error latched
-// by the previous value's Read calls. bufferedAhead has already been read from the underlying stream by
-// the decoder while handling the previous value, so it starts this value's accounting rather than being
-// discarded when the counter resets.
-func (r *capReader) resetValue(bufferedAhead int64) {
-	r.read = bufferedAhead
-	r.err = nil
-}
-
-// exceededBy reports whether the bytes read since the last resetValue, minus bufferedAhead, exceed the
-// configured cap. bufferedAhead is the decoder's own read-ahead for a later value (see [bufferedLen]);
-// subtracting it corrects for a decoder that pulled more than one value's worth of bytes out of the
-// reader in a single underlying Read. The corrected count is clamped to zero, and this always reports
-// false when the cap is disabled (max <= 0). This is the post-Decode check; Read below applies its own
-// uncorrected, live check to bound a single pathological value across repeated Read calls.
-func (r *capReader) exceededBy(bufferedAhead int64) bool {
-	if r.max <= 0 {
-		return false
-	}
-
-	attributed := max(r.read-bufferedAhead, 0)
-
-	return attributed > r.max
-}
-
-// Read implements [io.Reader]. Once the bytes read since the last resetValue already reach the
-// configured cap, Read refuses to read more and returns exceededError, and every subsequent call
-// returns that same error until resetValue is called. Read never refuses to read when the cap is
-// disabled (max <= 0).
-func (r *capReader) Read(p []byte) (int, error) {
-	if r.err != nil {
-		return 0, r.err
-	}
-
-	if r.max > 0 && r.read >= r.max {
-		r.err = r.exceededError()
-		return 0, r.err
-	}
-
-	n, err := r.r.Read(p)
-	r.read += int64(n)
-
-	return n, err
-}
-
-// exceededError returns the error surfaced for a value that exceeds the configured cap: a raw
-// [http.MaxBytesError], matching what [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s
-// buffered path already produces for an oversized request body, so both paths resolve to the same 413
-// through [github.com/alexfalkowski/go-service/v2/net/http/status.Code].
-func (r *capReader) exceededError() error {
-	return &http.MaxBytesError{Limit: r.max}
-}
-
-// bufferedLen returns the number of bytes decoder has already pulled from its underlying reader for a
-// value it has not decoded yet, so a caller can subtract them from the raw bytes [capReader] counted
-// for the value it just decoded (see [capReader.exceededBy]).
-//
-// This only recognizes decoders whose Buffered method matches [encoding/json.Decoder.Buffered]'s shape
-// and returns a concrete [bytes.Reader] — true today for every [stream.Decoder] reachable from content
-// negotiation, since only the "json" kind (NDJSON) is registered in [streamKinds]. It returns 0 for any
-// decoder that does not match, which is always safe: the correction is skipped, not a wrong non-zero
-// answer, so the check falls back to the same "bound on reads attributed to one value" behavior
-// documented on [capReader] rather than any incorrect result.
-func bufferedLen(decoder stream.Decoder) int64 {
-	buffered, ok := decoder.(interface{ Buffered() io.Reader })
-	if !ok {
-		return 0
-	}
-
-	reader, ok := buffered.Buffered().(*bytes.Reader)
-	if !ok {
-		return 0
-	}
-
-	return int64(reader.Len())
 }
 
 // commitWriter buffers writes until commit is called, after which writes go straight to the live

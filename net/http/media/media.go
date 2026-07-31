@@ -119,6 +119,13 @@ func (t Type) Subtype() string {
 	return t.subtype
 }
 
+// Major returns the parsed media type's major type, e.g. "application" for "application/x-ndjson".
+func (t Type) Major() string {
+	major, _, _ := strings.Cut(t.value, "/")
+
+	return major
+}
+
 // WithUTF8 appends a UTF-8 charset parameter to text media types.
 func (t Type) WithUTF8() string {
 	if !strings.HasPrefix(t.value, "text/") {

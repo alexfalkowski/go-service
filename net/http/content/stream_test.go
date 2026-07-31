@@ -126,7 +126,44 @@ func TestNewStreamHandlerRejectsUnsupportedMedia(t *testing.T) {
 
 	handler.ServeHTTP(res, req)
 
-	require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
+	require.Equal(t, http.StatusNotAcceptable, res.Code)
+}
+
+func TestNewStreamHandlerResolvesWildcardOrBrowserStyleAccept(t *testing.T) {
+	tests := []struct {
+		name        string
+		accept      string
+		contentType string
+	}{
+		{name: "curl default", accept: "*/*"},
+		{name: "subtype wildcard", accept: "application/*"},
+		{name: "browser-style list", accept: "text/html,application/xhtml+xml,*/*;q=0.8"},
+		{name: "absent accept and content-type"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+				return stream.Send(&test.Response{Greeting: "Hello Bob"})
+			})
+
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+			if tt.accept != "" {
+				req.Header.Set(content.AcceptKey, tt.accept)
+			}
+
+			if tt.contentType != "" {
+				req.Header.Set(content.TypeKey, tt.contentType)
+			}
+
+			res := httptest.NewRecorder()
+
+			handler.ServeHTTP(res, req)
+
+			require.Equal(t, http.StatusOK, res.Code)
+			require.Equal(t, media.NDJSON, res.Header().Get(content.TypeKey))
+		})
+	}
 }
 
 func TestNewStreamHandlerSendChargesOneLimiterTokenPerMessage(t *testing.T) {
@@ -303,6 +340,45 @@ func TestNewRequestStreamHandlerRecvUnderCapSucceeds(t *testing.T) {
 			require.Equal(t, []string{"Bob", "Alice"}, names)
 		})
 	}
+}
+
+func TestNewRequestStreamHandlerRecvDeliversScalarValueAtExactCap(t *testing.T) {
+	pipeReader, pipeWriter := io.Pipe()
+
+	handler := content.NewRequestStreamHandler(test.Content, 0, bytes.Size(2), func(_ context.Context, stream *content.RequestStream[int, int]) error {
+		req, err := stream.Recv()
+		if err != nil {
+			return err
+		}
+
+		return stream.Send(req)
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
+	req.ProtoMajor = 2
+	req.ContentLength = -1
+	req.Header.Set(content.TypeKey, media.NDJSON)
+	req.Header.Set(content.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	done := make(chan struct{})
+	go func() {
+		handler.ServeHTTP(res, req)
+		close(done)
+	}()
+
+	_, err := pipeWriter.Write([]byte("42"))
+	require.NoError(t, err)
+	require.NoError(t, pipeWriter.Close())
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for handler to finish")
+	}
+
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, "42\n", res.Body.String())
 }
 
 func TestNewRequestStreamHandlerRecvRejectsValueOverCap(t *testing.T) {
@@ -689,16 +765,17 @@ func TestNewStreamHandlerRejectsNilEncoderForRegisteredKind(t *testing.T) {
 
 	handler.ServeHTTP(res, req)
 
-	require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
+	require.Equal(t, http.StatusNotAcceptable, res.Code)
 }
 
 func TestNewRequestStreamHandlerRejectsNilCodecFieldForRegisteredKind(t *testing.T) {
 	tests := []struct {
 		name   string
 		mutate func(*stream.Codec)
+		status int
 	}{
-		{name: "nil decoder", mutate: func(c *stream.Codec) { c.Decoder = nil }},
-		{name: "nil encoder", mutate: func(c *stream.Codec) { c.Encoder = nil }},
+		{name: "nil decoder", mutate: func(c *stream.Codec) { c.Decoder = nil }, status: http.StatusUnsupportedMediaType},
+		{name: "nil encoder", mutate: func(c *stream.Codec) { c.Encoder = nil }, status: http.StatusNotAcceptable},
 	}
 
 	for _, tt := range tests {
@@ -721,7 +798,7 @@ func TestNewRequestStreamHandlerRejectsNilCodecFieldForRegisteredKind(t *testing
 
 			handler.ServeHTTP(res, req)
 
-			require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
+			require.Equal(t, tt.status, res.Code)
 		})
 	}
 }

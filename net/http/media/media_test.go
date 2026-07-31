@@ -42,6 +42,30 @@ func TestParseStripsVendorSubtypePrefix(t *testing.T) {
 	require.Equal(t, "msgpack", mediaType.Subtype())
 }
 
+func TestTypeMajor(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name      string
+		mediaType string
+		expected  string
+	}{
+		{name: "application", mediaType: media.NDJSON, expected: "application"},
+		{name: "text", mediaType: media.HTML, expected: "text"},
+		{name: "wildcard type", mediaType: "*/*", expected: "*"},
+		{name: "wildcard subtype", mediaType: "application/*", expected: "application"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			mediaType, err := media.Parse(tc.mediaType)
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, mediaType.Major())
+		})
+	}
+}
+
 func TestTypeWithUTF8(t *testing.T) {
 	t.Parallel()
 
