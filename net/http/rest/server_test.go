@@ -20,7 +20,7 @@ func TestStreamGetSendsValuesAndMarksRouteStreaming(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rest.Register(router, test.Content, test.Pool, 0, 0)
+	rest.Register(router, test.Content, test.Pool, content.StreamOptions{})
 
 	rest.StreamGet("/hello", func(_ context.Context, stream *content.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
@@ -49,7 +49,7 @@ func TestStreamGetSendsValuesAndMarksRouteStreaming(t *testing.T) {
 func TestStreamPostRejectsHTTP1(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rest.Register(router, test.Content, test.Pool, 0, 0)
+	rest.Register(router, test.Content, test.Pool, content.StreamOptions{})
 
 	rest.StreamPost("/hello", func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
 		return nil
@@ -82,7 +82,7 @@ func TestStreamPostPutPatchRecvAndSendOverHTTP2(t *testing.T) {
 			mux := http.NewServeMux()
 			policy := http.NewRoutePolicy()
 			router := http.NewRouter(mux, policy)
-			rest.Register(router, test.Content, test.Pool, 0, 0)
+			rest.Register(router, test.Content, test.Pool, content.StreamOptions{})
 
 			tt.call("/hello", func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 				for {

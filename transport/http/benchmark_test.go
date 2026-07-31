@@ -265,7 +265,7 @@ func BenchmarkRestStream(b *testing.B) {
 	b.ResetTimer()
 
 	for b.Loop() {
-		err := world.Rest.RequestStream(b.Context(), http.MethodPost, url, rest.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, streamHelloClient("Bob", 1))
+		err := world.Rest.StreamPost(b.Context(), url, rest.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, streamHelloClient("Bob", 1))
 		if err != nil {
 			require.NoError(b, err)
 		}
@@ -311,7 +311,7 @@ func BenchmarkRPCStream(b *testing.B) {
 	b.ResetTimer()
 
 	for b.Loop() {
-		err := c.RequestStream(b.Context(), http.MethodPost, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, streamHelloClient("Bob", 1))
+		err := c.StreamPost(b.Context(), url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, streamHelloClient("Bob", 1))
 		if err != nil {
 			require.NoError(b, err)
 		}
@@ -452,7 +452,8 @@ func benchmarkHTTPStream(b *testing.B, log *logger.Logger, trace, tlsEnabled boo
 	b.ReportAllocs()
 
 	address, cleanup := startBenchmarkHTTPServer(b, log, trace, tlsEnabled, func(router *transporthttp.Router, cfg *transporthttp.Config) {
-		rest.Register(router, test.Content, test.Pool, cfg.GetTimeout(), cfg.GetMaxReceiveSize())
+		opts := content.StreamOptions{ReadTimeout: cfg.GetReadTimeout(), WriteTimeout: cfg.GetWriteTimeout(), MaxReceiveSize: cfg.GetMaxReceiveSize()}
+		rest.Register(router, test.Content, test.Pool, opts)
 		rest.StreamPost("/hello", streamHello)
 	})
 	httpClient, scheme, closeIdleConnections := newHTTPStreamClient(b, tlsEnabled)
@@ -462,7 +463,7 @@ func benchmarkHTTPStream(b *testing.B, log *logger.Logger, trace, tlsEnabled boo
 	b.ResetTimer()
 
 	for b.Loop() {
-		err := httpClient.RequestStream(b.Context(), http.MethodPost, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, requestStream)
+		err := httpClient.StreamPost(b.Context(), url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, requestStream)
 		if err != nil {
 			require.NoError(b, err)
 		}

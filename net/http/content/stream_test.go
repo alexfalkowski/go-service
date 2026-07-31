@@ -23,7 +23,7 @@ import (
 )
 
 func TestNewStreamHandlerSendsValuesAndOptsOutOfGzip(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
@@ -48,7 +48,7 @@ func TestNewStreamHandlerSendsValuesAndOptsOutOfGzip(t *testing.T) {
 }
 
 func TestNewStreamHandlerGzipHandlerPassesThroughUncompressed(t *testing.T) {
-	inner := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	inner := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "Hello Bob"})
 	})
 	handler := compress.GzipHandler(inner)
@@ -65,7 +65,7 @@ func TestNewStreamHandlerGzipHandlerPassesThroughUncompressed(t *testing.T) {
 }
 
 func TestNewStreamHandlerReturnsErrorBeforeFirstSendAsHTTPError(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, _ *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, _ *content.Stream[test.Response]) error {
 		return status.Error(http.StatusBadRequest, test.ErrFailed.Error())
 	})
 
@@ -80,7 +80,7 @@ func TestNewStreamHandlerReturnsErrorBeforeFirstSendAsHTTPError(t *testing.T) {
 }
 
 func TestNewStreamHandlerFirstSendEncodeFailureDoesNotCommit(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Unencodable]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Unencodable]) error {
 		return stream.Send(&test.Unencodable{})
 	})
 
@@ -95,7 +95,7 @@ func TestNewStreamHandlerFirstSendEncodeFailureDoesNotCommit(t *testing.T) {
 }
 
 func TestNewStreamHandlerAbortsAfterCommit(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
@@ -116,7 +116,7 @@ func TestNewStreamHandlerAbortsAfterCommit(t *testing.T) {
 }
 
 func TestNewStreamHandlerRejectsUnsupportedMedia(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, _ *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, _ *content.Stream[test.Response]) error {
 		return nil
 	})
 
@@ -143,7 +143,7 @@ func TestNewStreamHandlerResolvesWildcardOrBrowserStyleAccept(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+			handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 				return stream.Send(&test.Response{Greeting: "Hello Bob"})
 			})
 
@@ -169,7 +169,7 @@ func TestNewStreamHandlerResolvesWildcardOrBrowserStyleAccept(t *testing.T) {
 func TestNewStreamHandlerSendChargesOneLimiterTokenPerMessage(t *testing.T) {
 	limiter := &test.CountingLimiter{Remaining: 2}
 
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
@@ -191,7 +191,7 @@ func TestNewStreamHandlerSendChargesOneLimiterTokenPerMessage(t *testing.T) {
 func TestNewStreamHandlerSendAbortsAfterCommitWhenLimiterExhausted(t *testing.T) {
 	limiter := &test.CountingLimiter{Remaining: 1}
 
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
@@ -221,7 +221,7 @@ func TestNewStreamHandlerSendPreCommitDenialMapsTo429(t *testing.T) {
 	req = req.WithContext(meta.WithLimiter(req.Context(), limiter))
 	res := httptest.NewRecorder()
 
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "Hello Bob"})
 	})
 
@@ -232,7 +232,7 @@ func TestNewStreamHandlerSendPreCommitDenialMapsTo429(t *testing.T) {
 }
 
 func TestNewRequestStreamHandlerRejectsHTTP1(t *testing.T) {
-	handler := content.NewRequestStreamHandler(test.Content, 0, 0, func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
+	handler := content.NewRequestStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
 		return nil
 	})
 
@@ -248,7 +248,7 @@ func TestNewRequestStreamHandlerRejectsHTTP1(t *testing.T) {
 }
 
 func TestNewRequestStreamHandlerRecvAndSend(t *testing.T) {
-	handler := content.NewRequestStreamHandler(test.Content, 0, 0, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	handler := content.NewRequestStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		for {
 			req, err := stream.Recv()
 			if err != nil {
@@ -284,7 +284,7 @@ func TestNewRequestStreamHandlerRecvAndSend(t *testing.T) {
 }
 
 func TestNewRequestStreamHandlerRejectsUnsupportedRequestMedia(t *testing.T) {
-	handler := content.NewRequestStreamHandler(test.Content, 0, 0, func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
+	handler := content.NewRequestStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
 		return nil
 	})
 
@@ -312,7 +312,8 @@ func TestNewRequestStreamHandlerRecvUnderCapSucceeds(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var names []string
 
-			handler := content.NewRequestStreamHandler(test.Content, 0, tt.cap, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+			opts := content.StreamOptions{MaxReceiveSize: tt.cap}
+			handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 				for {
 					req, err := stream.Recv()
 					if err != nil {
@@ -345,7 +346,8 @@ func TestNewRequestStreamHandlerRecvUnderCapSucceeds(t *testing.T) {
 func TestNewRequestStreamHandlerRecvDeliversScalarValueAtExactCap(t *testing.T) {
 	pipeReader, pipeWriter := io.Pipe()
 
-	handler := content.NewRequestStreamHandler(test.Content, 0, bytes.Size(2), func(_ context.Context, stream *content.RequestStream[int, int]) error {
+	opts := content.StreamOptions{MaxReceiveSize: bytes.Size(2)}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[int, int]) error {
 		req, err := stream.Recv()
 		if err != nil {
 			return err
@@ -384,7 +386,8 @@ func TestNewRequestStreamHandlerRecvDeliversScalarValueAtExactCap(t *testing.T) 
 func TestNewRequestStreamHandlerRecvRejectsValueOverCap(t *testing.T) {
 	var recvErr error
 
-	handler := content.NewRequestStreamHandler(test.Content, 0, 16, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	opts := content.StreamOptions{MaxReceiveSize: 16}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		_, recvErr = stream.Recv()
 		return recvErr
 	})
@@ -409,7 +412,8 @@ func TestNewRequestStreamHandlerRecvRejectsValueOverCap(t *testing.T) {
 func TestNewRequestStreamHandlerRecvRejectsBufferedValueOverCap(t *testing.T) {
 	var secondErr error
 
-	handler := content.NewRequestStreamHandler(test.Content, 0, 16, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	opts := content.StreamOptions{MaxReceiveSize: 16}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		_, err := stream.Recv()
 		require.NoError(t, err)
 
@@ -464,7 +468,8 @@ func TestNewRequestStreamHandlerRecvRejectsValueOverCapRegardlessOfDecoderBehavi
 
 			var recvErr error
 
-			handler := content.NewRequestStreamHandler(cont, 0, tt.maxSize, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+			opts := content.StreamOptions{MaxReceiveSize: tt.maxSize}
+			handler := content.NewRequestStreamHandler(cont, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 				_, recvErr = stream.Recv()
 				return recvErr
 			})
@@ -494,7 +499,8 @@ func TestNewRequestStreamHandlerRecvCapIsPerValueNotCumulative(t *testing.T) {
 
 	pipeReader, pipeWriter := io.Pipe()
 
-	handler := content.NewRequestStreamHandler(test.Content, 0, 24, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	opts := content.StreamOptions{MaxReceiveSize: 24}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		for {
 			req, err := stream.Recv()
 			if err != nil {
@@ -541,7 +547,7 @@ func TestNewRequestStreamHandlerRecvCapIsPerValueNotCumulative(t *testing.T) {
 func TestNewRequestStreamHandlerRecvChargesOneLimiterTokenPerMessage(t *testing.T) {
 	limiter := &test.CountingLimiter{Remaining: 2}
 
-	handler := content.NewRequestStreamHandler(test.Content, 0, 0, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	handler := content.NewRequestStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		for {
 			_, err := stream.Recv()
 			if err != nil {
@@ -572,7 +578,8 @@ func TestNewRequestStreamHandlerRecvDoesNotChargeLimiterForOverCapValue(t *testi
 	limiter := &test.CountingLimiter{Remaining: 1}
 
 	var recvErr error
-	handler := content.NewRequestStreamHandler(test.Content, 0, 16, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	opts := content.StreamOptions{MaxReceiveSize: 16}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		_, recvErr = stream.Recv()
 		return recvErr
 	})
@@ -594,7 +601,7 @@ func TestNewRequestStreamHandlerRecvDoesNotChargeLimiterForOverCapValue(t *testi
 func TestNewStreamHandlerSendIsSticky(t *testing.T) {
 	var firstErr, secondErr error
 
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Unencodable]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Unencodable]) error {
 		firstErr = stream.Send(&test.Unencodable{})
 		secondErr = stream.Send(&test.Unencodable{})
 		return firstErr
@@ -612,7 +619,8 @@ func TestNewStreamHandlerSendIsSticky(t *testing.T) {
 }
 
 func TestNewStreamHandlerSendExtendDeadlineFailure(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, time.MustParseDuration("1s"), func(_ context.Context, stream *content.Stream[test.Response]) error {
+	opts := content.StreamOptions{WriteTimeout: time.MustParseDuration("1s")}
+	handler := content.NewStreamHandler(test.Content, opts, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "hi"})
 	})
 
@@ -625,8 +633,141 @@ func TestNewStreamHandlerSendExtendDeadlineFailure(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 }
 
+func TestNewRequestStreamHandlerSendExtendReadDeadlineFailure(t *testing.T) {
+	opts := content.StreamOptions{ReadTimeout: time.MustParseDuration("1s"), WriteTimeout: time.MustParseDuration("1s")}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+		return stream.Send(&test.Response{Greeting: "hi"})
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+	req.ProtoMajor = 2
+	req.Header.Set(content.TypeKey, media.NDJSON)
+	req.Header.Set(content.AcceptKey, media.NDJSON)
+	res := &test.DeadlineResponseWriter{SetReadDeadlineFunc: func() error { return test.ErrFailed }}
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusInternalServerError, res.Code)
+}
+
+func TestNewRequestStreamHandlerRecvFirstCallIsBoundedByReadTimeout(t *testing.T) {
+	done := make(chan struct{})
+	t.Cleanup(func() { <-done })
+
+	pipeReader, pipeWriter := io.Pipe()
+	t.Cleanup(func() { _ = pipeWriter.Close() })
+
+	recvErr := make(chan error, 1)
+
+	opts := content.StreamOptions{ReadTimeout: time.MustParseDuration("200ms")}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+		_, err := stream.Recv()
+		recvErr <- err
+
+		return err
+	})
+
+	server := httptest.NewUnstartedServer(handler)
+	server.EnableHTTP2 = true
+	server.StartTLS()
+	t.Cleanup(server.Close)
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, server.URL, pipeReader)
+	require.NoError(t, err)
+	req.ContentLength = -1
+	req.Header.Set(content.TypeKey, media.NDJSON)
+	req.Header.Set(content.AcceptKey, media.NDJSON)
+
+	go func() {
+		defer close(done)
+
+		resp, doErr := server.Client().Do(req)
+		if doErr == nil {
+			_ = resp.Body.Close()
+		}
+	}()
+
+	select {
+	case err := <-recvErr:
+		require.Error(t, err)
+	case <-time.After(2 * time.Second):
+		require.FailNow(t, "Recv did not return within the configured read timeout")
+	}
+}
+
+func TestNewRequestStreamHandlerRecvExtendReadDeadlineFailureBeforeDecode(t *testing.T) {
+	var recvErr error
+
+	opts := content.StreamOptions{ReadTimeout: time.MustParseDuration("1s")}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+		_, recvErr = stream.Recv()
+		return recvErr
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader("{\"Name\":\"Bob\"}\n"))
+	req.ProtoMajor = 2
+	req.Header.Set(content.TypeKey, media.NDJSON)
+	req.Header.Set(content.AcceptKey, media.NDJSON)
+	res := &test.DeadlineResponseWriter{SetReadDeadlineFunc: func() error { return test.ErrFailed }}
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusInternalServerError, res.Code)
+	require.ErrorIs(t, recvErr, test.ErrFailed)
+}
+
+func TestNewRequestStreamHandlerRecvExtendReadDeadlineFailureAfterDecode(t *testing.T) {
+	var recvErr error
+	calls := 0
+
+	opts := content.StreamOptions{ReadTimeout: time.MustParseDuration("1s")}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+		_, recvErr = stream.Recv()
+		return recvErr
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader("{\"Name\":\"Bob\"}\n"))
+	req.ProtoMajor = 2
+	req.Header.Set(content.TypeKey, media.NDJSON)
+	req.Header.Set(content.AcceptKey, media.NDJSON)
+	res := &test.DeadlineResponseWriter{SetReadDeadlineFunc: func() error {
+		calls++
+		if calls == 1 {
+			return nil
+		}
+
+		return test.ErrFailed
+	}}
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusInternalServerError, res.Code)
+	require.ErrorIs(t, recvErr, test.ErrFailed)
+}
+
+func TestNewRequestStreamHandlerRecvExtendWriteDeadlineFailure(t *testing.T) {
+	var recvErr error
+
+	opts := content.StreamOptions{ReadTimeout: time.MustParseDuration("1s"), WriteTimeout: time.MustParseDuration("1s")}
+	handler := content.NewRequestStreamHandler(test.Content, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+		_, recvErr = stream.Recv()
+		return recvErr
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader("{\"Name\":\"Bob\"}\n"))
+	req.ProtoMajor = 2
+	req.Header.Set(content.TypeKey, media.NDJSON)
+	req.Header.Set(content.AcceptKey, media.NDJSON)
+	res := &test.DeadlineResponseWriter{SetWriteDeadlineFunc: func() error { return test.ErrFailed }}
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusInternalServerError, res.Code)
+	require.ErrorIs(t, recvErr, test.ErrFailed)
+}
+
 func TestNewStreamHandlerSendCommitFailure(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "hi"})
 	})
 
@@ -640,7 +781,7 @@ func TestNewStreamHandlerSendCommitFailure(t *testing.T) {
 }
 
 func TestNewStreamHandlerSendFlushFailure(t *testing.T) {
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "hi"})
 	})
 
@@ -659,7 +800,7 @@ func TestNewStreamHandlerSendLimiterErrorMapsTo500(t *testing.T) {
 	req = req.WithContext(meta.WithLimiter(req.Context(), test.ErrorLimiter{}))
 	res := httptest.NewRecorder()
 
-	handler := content.NewStreamHandler(test.Content, 0, func(_ context.Context, stream *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "hi"})
 	})
 
@@ -671,7 +812,7 @@ func TestNewStreamHandlerSendLimiterErrorMapsTo500(t *testing.T) {
 func TestNewRequestStreamHandlerRecvLimiterErrorMapsTo500(t *testing.T) {
 	var recvErr error
 
-	handler := content.NewRequestStreamHandler(test.Content, 0, 0, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	handler := content.NewRequestStreamHandler(test.Content, content.StreamOptions{}, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		_, recvErr = stream.Recv()
 		return recvErr
 	})
@@ -707,7 +848,7 @@ func TestNewRequestStreamHandlerRecvBufferedLenFallback(t *testing.T) {
 			sm.Register("json", codec)
 			cont := content.NewContent(test.Encoder, sm, test.Pool)
 
-			handler := content.NewRequestStreamHandler(cont, 0, 0, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+			handler := content.NewRequestStreamHandler(cont, content.StreamOptions{}, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 				_, err := stream.Recv()
 				return err
 			})
@@ -732,7 +873,8 @@ func TestNewRequestStreamHandlerRecvRecoversStickyCapReaderError(t *testing.T) {
 	sm.Register("json", codec)
 	cont := content.NewContent(test.Encoder, sm, test.Pool)
 
-	handler := content.NewRequestStreamHandler(cont, 0, bytes.Size(1), func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	opts := content.StreamOptions{MaxReceiveSize: bytes.Size(1)}
+	handler := content.NewRequestStreamHandler(cont, opts, func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
 		_, err := stream.Recv()
 		return err
 	})
@@ -755,7 +897,7 @@ func TestNewStreamHandlerRejectsNilEncoderForRegisteredKind(t *testing.T) {
 	sm.Register("json", codec)
 	cont := content.NewContent(test.Encoder, sm, test.Pool)
 
-	handler := content.NewStreamHandler(cont, 0, func(_ context.Context, _ *content.Stream[test.Response]) error {
+	handler := content.NewStreamHandler(cont, content.StreamOptions{}, func(_ context.Context, _ *content.Stream[test.Response]) error {
 		return nil
 	})
 
@@ -786,7 +928,7 @@ func TestNewRequestStreamHandlerRejectsNilCodecFieldForRegisteredKind(t *testing
 			sm.Register("json", codec)
 			cont := content.NewContent(test.Encoder, sm, test.Pool)
 
-			handler := content.NewRequestStreamHandler(cont, 0, 0, func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
+			handler := content.NewRequestStreamHandler(cont, content.StreamOptions{}, func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
 				return nil
 			})
 

@@ -1,14 +1,12 @@
 package http
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
@@ -23,14 +21,15 @@ import (
 //   - content negotiation and encoding ([content.NewContent])
 //   - MVC view rendering helpers ([mvc.NewFunctionMap], [mvc.Register])
 //   - RPC and REST routing ([rpc.Register], [rest.Register] — called from [registerRoutes] rather than
-//     as their own separate Fx invoke targets, so their timeout/maxReceiveSize arguments are plain
-//     values this package computes from its own *[Config], not separate Fx-resolved dependencies),
+//     as their own separate Fx invoke targets, so their [content.StreamOptions] argument is a plain
+//     value this package computes from its own *[Config], not a separate Fx-resolved dependency),
 //     including the streaming route helpers (rest.StreamRoute/StreamGet/StreamRouteRequest/StreamPost/
-//     StreamPut/StreamPatch and rpc.StreamRoute): a successful Send extends the response write deadline,
-//     while a successful Recv on a bidirectional stream extends the request read deadline (see
-//     [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler]); bidirectional
-//     streaming routes also bound each decoded request value instead of the request body's cumulative size
-//     (see [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler])
+//     StreamPut/StreamPatch and rpc.StreamRoute): on a bidirectional stream, a successful Send or Recv
+//     extends both the response write deadline and the request read deadline (see
+//     [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler]); a send-only
+//     stream extends only the write deadline. Bidirectional streaming routes also bound each decoded
+//     request value instead of the request body's cumulative size (see
+//     [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler])
 //   - transport-level middleware wiring (limiter and token helpers)
 //   - server construction ([NewServer])
 //   - operational endpoints (Prometheus metrics and health)
@@ -56,25 +55,30 @@ var Module = di.Module(
 )
 
 // registerRoutes wires [rest.Register] and [rpc.Register] with the router, content, and buffer pool
-// dependencies Fx resolves normally, plus a timeout/maxReceiveSize pair computed here from cfg and
-// passed as plain arguments.
+// dependencies Fx resolves normally, plus a [content.StreamOptions] value computed here from cfg and
+// passed as a plain argument.
 //
 // Calling rest.Register/rpc.Register directly (rather than as their own separate Fx invoke targets)
-// means timeout ([time.Duration]) and maxReceiveSize ([bytes.Size]) never need to exist as their own DI
-// graph nodes: those are common, easily-collided types (nothing else in the DI graph keys on them, but
-// nothing stops something else from needing to someday), so resolving them by bare type would be
-// fragile in a way resolving *[Config] is not. net/http/rest and net/http/rpc must not import this
-// package (see AGENTS.md), so cfg's values are computed here and passed in, mirroring how NewServer
-// already derives its own ReadTimeout/WriteTimeout/max receive size from the same *Config.
+// means [content.StreamOptions] never needs to exist as its own DI graph node: it is a common,
+// easily-collided type (nothing else in the DI graph keys on it, but nothing stops something else from
+// needing to someday), so resolving it by bare type would be fragile in a way resolving *[Config] is
+// not. net/http/rest and net/http/rpc must not import this package (see AGENTS.md), so cfg's values are
+// computed here and passed in, mirroring how NewServer already derives its own
+// ReadTimeout/WriteTimeout/max receive size from the same *Config: the read/write timeouts resolve
+// through the same options-aware precedence (options key, falling back to cfg.GetTimeout()) NewServer
+// uses for its own ReadTimeout/WriteTimeout, so a service that diverges options.read_timeout/
+// write_timeout from timeout gets a matching streaming budget instead of a silently different one.
 func registerRoutes(cfg *Config, router *http.Router, cont *content.Content, pool *sync.BufferPool) {
-	var timeout time.Duration
-	var maxReceiveSize bytes.Size
+	var so content.StreamOptions
 
 	if cfg.IsEnabled() {
-		timeout = cfg.GetTimeout()
-		maxReceiveSize = cfg.GetMaxReceiveSize()
+		so = content.StreamOptions{
+			ReadTimeout:    cfg.GetReadTimeout(),
+			WriteTimeout:   cfg.GetWriteTimeout(),
+			MaxReceiveSize: cfg.GetMaxReceiveSize(),
+		}
 	}
 
-	rest.Register(router, cont, pool, timeout, maxReceiveSize)
-	rpc.Register(router, cont, pool, timeout, maxReceiveSize)
+	rest.Register(router, cont, pool, so)
+	rpc.Register(router, cont, pool, so)
 }

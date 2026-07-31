@@ -22,7 +22,7 @@ func ExampleGet() {
 		encoding.NewMap(),
 		stream.NewMap(),
 		pool,
-	), pool, 0, 0)
+	), pool, content.StreamOptions{})
 
 	rest.Get("/hello", func(context.Context) (*exampleResponse, error) {
 		return &exampleResponse{Message: "hello"}, nil
@@ -50,7 +50,7 @@ func ExampleStreamGet() {
 		encoding.NewMap(),
 		stream.NewMap(),
 		pool,
-	), pool, 0, 0)
+	), pool, content.StreamOptions{})
 
 	rest.StreamGet("/hello", func(_ context.Context, stream *content.Stream[exampleResponse]) error {
 		if err := stream.Send(&exampleResponse{Message: "hello"}); err != nil {

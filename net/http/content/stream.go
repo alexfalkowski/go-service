@@ -15,6 +15,26 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
+// StreamOptions configures the streaming route helpers built by [NewStreamHandler] and
+// [NewRequestStreamHandler].
+//
+// The zero value disables every knob: no deadline extension and no per-value receive cap, matching
+// today's behavior when no options are supplied.
+type StreamOptions struct {
+	// ReadTimeout is the per-message inactivity budget applied to [RequestStream.Recv]'s request read
+	// deadline. Zero disables read deadline extension. Unused by [NewStreamHandler]'s send-only stream.
+	ReadTimeout time.Duration
+
+	// WriteTimeout is the per-message inactivity budget applied to [Stream.Send]'s response write
+	// deadline. Zero disables write deadline extension.
+	WriteTimeout time.Duration
+
+	// MaxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a
+	// whole (see [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]). Zero disables the
+	// per-value cap. Unused by [NewStreamHandler]'s send-only stream.
+	MaxReceiveSize bytes.Size
+}
+
 // StreamHandler handles a send-only stream: the response streams, the request does not.
 //
 // The handler must propagate a [Stream.Send] error by returning it (directly, or wrapped) rather than
@@ -45,9 +65,9 @@ type RequestStreamHandler[Req any, Res any] func(ctx context.Context, stream *Re
 // response via panic([http.ErrAbortHandler]) instead, since the response is already committed — see
 // [Stream.Send] and [finalizeStream].
 //
-// timeout, when positive, is pushed forward as the response write deadline after every successful
-// Send (see [http.ResponseController.SetWriteDeadline]), turning a whole-stream write timeout into a
-// per-message inactivity budget. Pass zero to disable this.
+// opts.WriteTimeout, when positive, is pushed forward as the response write deadline after every
+// successful Send (see [http.ResponseController.SetWriteDeadline]), turning a whole-stream write
+// timeout into a per-message inactivity budget. Zero disables this.
 //
 // Load control:
 // If the request context carries a limiter (see [meta.WithLimiter], populated by
@@ -55,7 +75,7 @@ type RequestStreamHandler[Req any, Res any] func(ctx context.Context, stream *Re
 // allowed to open the stream), every Send charges one additional token against that same limiter — see
 // [Stream.Send]. A route reached without that middleware, or with no limiter configured, sees no
 // per-message charging.
-func NewStreamHandler[Res any](cont *Content, timeout time.Duration, handler StreamHandler[Res]) http.HandlerFunc {
+func NewStreamHandler[Res any](cont *Content, opts StreamOptions, handler StreamHandler[Res]) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		limiter := meta.Limiter(ctx)
@@ -79,12 +99,12 @@ func NewStreamHandler[Res any](cont *Content, timeout time.Duration, handler Str
 
 		writer := &commitWriter{res: res, buffer: buffer}
 		st := &Stream[Res]{
-			ctx:        ctx,
-			writer:     writer,
-			encoder:    resMedia.NewEncoder(writer),
-			controller: http.NewResponseController(res),
-			timeout:    timeout,
-			limiter:    limiter,
+			ctx:          ctx,
+			writer:       writer,
+			encoder:      resMedia.NewEncoder(writer),
+			controller:   http.NewResponseController(res),
+			writeTimeout: opts.WriteTimeout,
+			limiter:      limiter,
 		}
 		finalizeStream(ctx, res, st, handler(ctx, st))
 	}
@@ -105,22 +125,23 @@ func NewStreamHandler[Res any](cont *Content, timeout time.Duration, handler Str
 // so a failure there is answered as RFC 9110 §15.5.7 rather than §15.5.16.
 //
 // Inbound size limiting:
-// maxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a whole
-// (see [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]): a request with many small
+// opts.MaxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a
+// whole (see [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]): a request with many small
 // values is never rejected for its cumulative size, only
-// for a single value that exceeds maxReceiveSize. A value at or under the limit is a normal terminal
+// for a single value that exceeds opts.MaxReceiveSize. A value at or under the limit is a normal terminal
 // [http.MaxBytesError] surfaced from Recv; the deviation is that no total byte ceiling exists for a
 // streaming route the way [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s buffered
-// path enforces one. maxReceiveSize <= 0 disables the per-value cap entirely.
+// path enforces one. opts.MaxReceiveSize <= 0 disables the per-value cap entirely.
 //
 // Timeout:
-// When timeout is positive, every successful [RequestStream.Recv] extends the request read deadline
-// and every successful [Stream.Send] extends the response write deadline. This turns the server's
-// whole-request read and write timeouts into per-message inactivity budgets. Pass zero to disable this.
+// When opts.ReadTimeout is positive, every successful [RequestStream.Recv] extends the request read
+// deadline; when opts.WriteTimeout is positive, every successful [Stream.Send] extends the response
+// write deadline. This turns the server's whole-request read and write timeouts into per-message
+// inactivity budgets. Zero disables the corresponding extension.
 //
 // See [NewStreamHandler] for the error contract and load control: Recv charges one token per successfully
 // decoded, in-cap value, the same way Send does, against the same request-scoped limiter.
-func NewRequestStreamHandler[Req any, Res any](cont *Content, timeout time.Duration, maxReceiveSize bytes.Size, handler RequestStreamHandler[Req, Res]) http.HandlerFunc {
+func NewRequestStreamHandler[Req any, Res any](cont *Content, opts StreamOptions, handler RequestStreamHandler[Req, Res]) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		limiter := meta.Limiter(ctx)
@@ -154,19 +175,20 @@ func NewRequestStreamHandler[Req any, Res any](cont *Content, timeout time.Durat
 		defer cont.pool.Put(buffer)
 
 		writer := &commitWriter{res: res, buffer: buffer}
-		capped := budget.NewReader(req.Body, maxReceiveSize.Bytes())
+		capped := budget.NewReader(req.Body, opts.MaxReceiveSize.Bytes())
 		st := &RequestStream[Req, Res]{
 			Stream: Stream[Res]{
-				ctx:        ctx,
-				writer:     writer,
-				encoder:    resMedia.NewEncoder(writer),
-				controller: http.NewResponseController(res),
-				timeout:    timeout,
-				limiter:    limiter,
+				ctx:          ctx,
+				writer:       writer,
+				encoder:      resMedia.NewEncoder(writer),
+				controller:   http.NewResponseController(res),
+				readTimeout:  opts.ReadTimeout,
+				writeTimeout: opts.WriteTimeout,
+				limiter:      limiter,
 			},
 			decoder:        reqMedia.NewDecoder(capped),
 			capped:         capped,
-			maxReceiveSize: maxReceiveSize.Bytes(),
+			maxReceiveSize: opts.MaxReceiveSize.Bytes(),
 		}
 		finalizeStream(ctx, res, st, handler(ctx, st))
 	}
@@ -183,7 +205,10 @@ type Stream[Res any] struct {
 	writer     *commitWriter
 	controller *http.ResponseController
 	limiter    meta.RateLimiter
-	timeout    time.Duration
+	// readTimeout is zero for a send-only [Stream] built by [NewStreamHandler]; [NewRequestStreamHandler]
+	// sets it, letting Send extend both deadlines for a bidirectional stream (see [Stream.Send]).
+	readTimeout  time.Duration
+	writeTimeout time.Duration
 }
 
 // Send encodes res and flushes it to the client.
@@ -192,6 +217,13 @@ type Stream[Res any] struct {
 // buffer so a failed first encode never writes a partial success body. Send is sticky: once it returns
 // a non-nil error, every later call returns that same error immediately, so a handler that ignores the
 // error degrades to a no-op rather than an infinite producer.
+//
+// Deadlines:
+// Send always extends the write deadline (see [NewStreamHandler]/[NewRequestStreamHandler]'s timeout
+// semantics). On a bidirectional stream built by [NewRequestStreamHandler], Send also extends the
+// request read deadline, the same way [RequestStream.Recv] extends the write deadline: activity in
+// either direction proves the peer is alive, so both deadlines move forward together and only genuine
+// inactivity in both directions severs the stream. This is a no-op for a send-only [Stream].
 //
 // Load control:
 // If a limiter was captured at construction (see [NewStreamHandler]), Send charges one limiter token
@@ -211,7 +243,12 @@ func (s *Stream[Res]) Send(res *Res) error {
 		return err
 	}
 
-	if err := s.extendDeadline(); err != nil {
+	if err := s.extendWriteDeadline(); err != nil {
+		s.err = err
+		return err
+	}
+
+	if err := s.extendReadDeadline(); err != nil {
 		s.err = err
 		return err
 	}
@@ -262,12 +299,24 @@ func (s *Stream[Res]) takeLimiterToken() error {
 	return nil
 }
 
-func (s *Stream[Res]) extendDeadline() error {
-	if s.timeout <= 0 {
+func (s *Stream[Res]) extendWriteDeadline() error {
+	if s.writeTimeout <= 0 {
 		return nil
 	}
 
-	return s.controller.SetWriteDeadline(time.Now().Add(s.timeout.Duration()))
+	return s.controller.SetWriteDeadline(time.Now().Add(s.writeTimeout.Duration()))
+}
+
+// extendReadDeadline extends the request read deadline. It is a no-op for a send-only [Stream] built
+// by [NewStreamHandler] (readTimeout stays zero there); [RequestStream.Recv] uses it directly, and
+// [Stream.Send] uses it too so a bidirectional stream's write-side activity also keeps the read side
+// alive (see [RequestStream]).
+func (s *Stream[Res]) extendReadDeadline() error {
+	if s.readTimeout <= 0 {
+		return nil
+	}
+
+	return s.controller.SetReadDeadline(time.Now().Add(s.readTimeout.Duration()))
 }
 
 func (s *Stream[Res]) committed() bool {
@@ -301,6 +350,14 @@ type RequestStream[Req any, Res any] struct {
 // [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s buffered path already produces,
 // so it maps to the same 413 through [github.com/alexfalkowski/go-service/v2/net/http/status.Code].
 //
+// Deadlines:
+// Recv extends the read deadline before attempting Decode, so the wait for the next value — including
+// the first — is bounded by the configured timeout rather than only the calls after it. A successful
+// Recv extends the read deadline again (refreshing the wait for the value after this one) and also
+// extends the write deadline, the same way [Stream.Send] extends the read deadline: activity in either
+// direction proves the peer is alive, so both deadlines move forward together and only genuine
+// inactivity in both directions severs the stream.
+//
 // Load control:
 // If a limiter was captured at construction, Recv charges one limiter token after a value decodes
 // successfully and within the per-value cap, mirroring gRPC's per-RecvMsg charge (see
@@ -314,6 +371,10 @@ type RequestStream[Req any, Res any] struct {
 // capped's own latched error directly once Decode fails, rather than trusting Decode's returned error
 // to still be classifiable as the size-limit error.
 func (s *RequestStream[Req, Res]) Recv() (*Req, error) {
+	if err := s.extendReadDeadline(); err != nil {
+		return nil, err
+	}
+
 	s.capped.Reset(budget.BufferedLen(s.decoder))
 
 	req := ptr.Zero[Req]()
@@ -337,6 +398,10 @@ func (s *RequestStream[Req, Res]) Recv() (*Req, error) {
 		return nil, err
 	}
 
+	if err := s.extendWriteDeadline(); err != nil {
+		return nil, err
+	}
+
 	return req, nil
 }
 
@@ -344,14 +409,6 @@ func (s *RequestStream[Req, Res]) Recv() (*Req, error) {
 // request stream, letting a handler's Recv loop end cleanly without importing errors/io itself.
 func (s *RequestStream[Req, Res]) IsFinished(err error) bool {
 	return errors.Is(err, io.EOF)
-}
-
-func (s *RequestStream[Req, Res]) extendReadDeadline() error {
-	if s.timeout <= 0 {
-		return nil
-	}
-
-	return s.controller.SetReadDeadline(time.Now().Add(s.timeout.Duration()))
 }
 
 func (s *RequestStream[Req, Res]) close() error {

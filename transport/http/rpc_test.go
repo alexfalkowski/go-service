@@ -271,24 +271,10 @@ func TestRPCStreamRouteRefreshesReadDeadlineOverHTTP2(t *testing.T) {
 	config := test.NewSecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	rpc.Register(world.Router, test.Content, test.Pool, config.HTTP.GetTimeout(), config.HTTP.GetMaxReceiveSize())
-
-	rpc.StreamRoute("/hello", func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
-		for {
-			req, err := stream.Recv()
-			if err != nil {
-				if stream.IsFinished(err) {
-					return nil
-				}
-
-				return err
-			}
-
-			if err := stream.Send(&test.Response{Greeting: "Hello " + req.Name}); err != nil {
-				return err
-			}
-		}
+	rpc.Register(world.Router, test.Content, test.Pool, content.StreamOptions{
+		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
+	rpc.StreamRoute("/hello", echoStreamServer)
 	world.Start()
 
 	httpClient, err := world.NewHTTP()
@@ -302,28 +288,7 @@ func TestRPCStreamRouteRefreshesReadDeadlineOverHTTP2(t *testing.T) {
 	defer cancel()
 
 	var greetings []string
-	err = c.RequestStream(ctx, http.MethodPost, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON},
-		func(_ context.Context, stream *client.RequestResponseStream) error {
-			for index, name := range []string{"Bob", "Alice", "Carol", "Dan"} {
-				if index > 0 {
-					time.Sleep(40 * time.Millisecond)
-				}
-
-				if err := stream.Send(&test.Request{Name: name}); err != nil {
-					return err
-				}
-
-				var res test.Response
-				if err := stream.Recv(&res); err != nil {
-					return err
-				}
-
-				greetings = append(greetings, res.Greeting)
-			}
-
-			time.Sleep(120 * time.Millisecond)
-			return stream.Send(&test.Request{Name: "Eve"})
-		})
+	err = c.StreamPost(ctx, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, staleClientAfterFourEchoes(&greetings))
 	require.Error(t, err)
 	require.Equal(t, []string{"Hello Bob", "Hello Alice", "Hello Carol", "Hello Dan"}, greetings)
 }

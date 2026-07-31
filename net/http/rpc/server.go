@@ -66,11 +66,11 @@ func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 // will panic.
 //
 // Inbound size limiting:
-// maxReceiveSize (set via [Register]) bounds each value decoded by the resulting stream's
+// opts.MaxReceiveSize (set via [Register]) bounds each value decoded by the resulting stream's
 // Recv, not the request body as a whole — see [content.NewRequestStreamHandler].
 func StreamRoute[Req any, Res any](pattern string, handler content.RequestStreamHandler[Req, Res]) {
 	router.HandleStreaming(
 		strings.Join(strings.Space, http.MethodPost, pattern),
-		content.NewRequestStreamHandler(cont, timeout, maxReceiveSize, handler),
+		content.NewRequestStreamHandler(cont, opts, handler),
 	)
 }
