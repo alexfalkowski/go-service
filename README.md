@@ -62,14 +62,14 @@ import (
 func main() {
     app := cli.NewApplication(func(commander cli.Commander) {
         serve := commander.AddServer("serve", "Run the service", module.Server)
-        serve.AddConfig("file:./config.yml") // adds the `-config` / `-c` config flag with this default
+        serve.AddConfig("file:./config.yaml") // adds the `-config` / `-c` config flag with this default
     })
 
     os.Exit(app.RunCode(context.Background()))
 }
 ```
 
-The `file:./config.yml` default above expects a non-empty config file. A minimal
+The `file:./config.yaml` default above expects a non-empty config file. A minimal
 server config can start with the environment plus one enabled transport:
 
 ```yaml
@@ -134,7 +134,7 @@ The config decoder supports:
 Config input is routed by flags called `-config` and `-c`:
 
 - `file:<path>`
-  Read config from a file at `<path>`; parser is selected from the file extension (`.json`, `.hjson`, `.yaml`, `.yml`, `.toml`).
+  Read config from a file at `<path>`; parser is selected from the file extension (`.json`, `.hjson`, `.yaml`, `.toml`).
 
 - `env:<ENV_VAR>`
   Read config from env var `<ENV_VAR>`. The env var value must be formatted as:
@@ -147,13 +147,13 @@ Config input is routed by flags called `-config` and `-c`:
 
   ```sh
   # Linux (GNU base64)
-  export SERVICE_CONFIG="yaml:$(base64 -w 0 < ./config.yml)"
+  export SERVICE_CONFIG="yaml:$(base64 -w 0 < ./config.yaml)"
   ./your-service serve -config env:SERVICE_CONFIG
   ```
 
   ```sh
   # macOS/BSD base64
-  export SERVICE_CONFIG="yaml:$(base64 < ./config.yml | tr -d '\n')"
+  export SERVICE_CONFIG="yaml:$(base64 < ./config.yaml | tr -d '\n')"
   ./your-service serve -c env:SERVICE_CONFIG
   ```
 
@@ -165,9 +165,9 @@ Config input is routed by flags called `-config` and `-c`:
 
 - Unprefixed values, including an empty value, fall back to **default lookup**, searching for:
 
-  `<serviceName>.{yaml,yml,hjson,toml,json}`
+  `<serviceName>.{yaml,hjson,toml,json}`
 
-  Default lookup checks extensions first (`.yaml`, `.yml`, `.hjson`, `.toml`, `.json`), and for each extension checks:
+  Default lookup checks extensions first (`.yaml`, `.hjson`, `.toml`, `.json`), and for each extension checks:
   - executable directory
   - `$XDG_CONFIG_HOME/<serviceName>/` (via `os.UserConfigDir()`)
   - `/etc/<serviceName>/`
@@ -283,22 +283,25 @@ Compression kinds used by subsystems that support compression:
 
 ## 🧾 Encoders
 
-Encoding kinds used by subsystems that support encoding:
+Encoding kinds used by subsystems that support encoding. `encoding.Map` registers each encoder under
+exactly one canonical kind (no aliases):
 
 - `json`
 - `hjson`
 - `toml`
-- `yaml`, `yml`
+- `yaml`
 - `msgpack`
-- `proto`, `protobuf`, `pb`, `protobin`, `pbbin`
-- `protojson`, `pbjson`
-- `prototext`, `prototxt`, `pbtxt`
+- `protobuf`
+- `protojson`
+- `prototext`
 - `gob`
-- `plain`, `octet-stream`
+- `bytes`
 
 > [!NOTE]
-> - `plain` and `octet-stream` map to the bytes passthrough encoder.
-> - Protobuf binary/text/JSON kinds have multiple aliases; the list above reflects the built-in registry.
+> - `bytes` is the passthrough encoder for `io.ReaderFrom`/`io.WriterTo` payloads.
+> - HTTP media-type aliases such as `pb`, `proto`, `protobin`, `pbbin`, `pbtxt`, `prototxt`,
+>   `pbjson`, `octet-stream`, `plain`, and `yml` are resolved to the canonical kinds above by
+>   `net/http/content` before they ever reach this registry. See [HTTP content types](#http-content-types).
 > - `encoding/stream.Map` is a separate registry for streaming (multi-value) encoding — `json`, `msgpack`,
 >   `gob`, `yaml` — used by [HTTP streaming (NDJSON)](#http-streaming-ndjson), not by this single-value
 >   registry.
@@ -329,7 +332,7 @@ cache:
 > - Unknown or empty `compressor` values fall back to `none`.
 > - For normal values, unknown or empty `encoder` values fall back to `json`.
 > - Configured `compressor` and `encoder` values are part of the cache driver key namespace, so changing either setting creates cache misses for values written with the previous format.
-> - Cache operations use `plain` for `io.WriterTo`/`io.ReaderFrom` stream values and `proto` for protobuf messages, regardless of the configured `encoder`.
+> - Cache operations use `bytes` for `io.WriterTo`/`io.ReaderFrom` stream values and `protobuf` for protobuf messages, regardless of the configured `encoder`.
 > - `max_size` limits encoded cache values before compression, after compression, and after decompression. A zero value uses the default `4MB`.
 > - `max_entries` limits entries retained by bounded in-memory cache drivers. A zero value uses the default `1024`; negative values are invalid.
 > - `options` is backend-specific and decoded as `map[string]any`.

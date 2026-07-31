@@ -27,7 +27,7 @@ func ExampleNewConfig() {
 		}
 	}()
 
-	path := fs.Join(dir, "config.yml")
+	path := fs.Join(dir, "config.yaml")
 	if err := fs.WriteFile(path, []byte("name: payments"), 0o600); err != nil {
 		panic(err)
 	}

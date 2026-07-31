@@ -73,9 +73,9 @@ func NewCache(params CacheParams) *Cache {
 // final bytes, and stores the resulting string via the configured driver.
 //
 // Encoding selection is operation-dependent:
-//   - [Cache.Persist] uses "plain" only for [io.WriterTo] values
-//   - [Cache.Get] uses "plain" only for [io.ReaderFrom] destinations
-//   - [proto.Message] uses "proto"
+//   - [Cache.Persist] uses "bytes" only for [io.WriterTo] values
+//   - [Cache.Get] uses "bytes" only for [io.ReaderFrom] destinations
+//   - [proto.Message] uses "protobuf"
 //   - otherwise the configured encoder is used, falling back to "json"
 //
 // Compression is selected from configuration, falling back to "none" when unknown/unavailable.
@@ -285,9 +285,9 @@ func (c *Cache) compressorKind() string {
 func (c *Cache) readEncoder(value any) encoding.Encoder {
 	switch value.(type) {
 	case io.ReaderFrom:
-		return c.encoding.Get("plain")
+		return c.encoding.Get("bytes")
 	case proto.Message:
-		return c.encoding.Get("proto")
+		return c.encoding.Get("protobuf")
 	default:
 		return c.configuredEncoder()
 	}
@@ -296,9 +296,9 @@ func (c *Cache) readEncoder(value any) encoding.Encoder {
 func (c *Cache) writeEncoder(value any) encoding.Encoder {
 	switch value.(type) {
 	case io.WriterTo:
-		return c.encoding.Get("plain")
+		return c.encoding.Get("bytes")
 	case proto.Message:
-		return c.encoding.Get("proto")
+		return c.encoding.Get("protobuf")
 	default:
 		return c.configuredEncoder()
 	}

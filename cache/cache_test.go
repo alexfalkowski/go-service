@@ -775,7 +775,7 @@ func TestGetExpiredCacheLeavesDestinationUnchanged(t *testing.T) {
 
 func cacheRoundTripCases() []cacheRoundTripCase {
 	compressors := []string{"none", "snappy", "s2", "zstd"}
-	encoders := []string{"json", "hjson", "yaml", "yml", "toml", "gob", "msgpack"}
+	encoders := []string{"json", "hjson", "yaml", "toml", "gob", "msgpack"}
 	cases := []cacheRoundTripCase{
 		{
 			name:    "redis/default/request",

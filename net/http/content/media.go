@@ -25,6 +25,39 @@ var (
 	yamlType         = media.MustParse(media.YAML)
 )
 
+// unaryKinds maps a media subtype alias to the [encoding.Map] kind that actually encodes/decodes it,
+// mirroring how streamKinds in stream_media.go maps a subtype to a [stream.Map] kind. encoding.Map
+// registers each encoder under exactly one canonical kind (see [encoding.NewMap]), so every other
+// spelling HTTP clients may send has to be translated here.
+//
+// Unlike streamKinds, this is deliberately not an allowlist: a subtype absent from this map still
+// resolves by using the subtype as the kind directly (see unaryKind), because most media subtypes
+// already match their encoding.Map kind by name (see
+// TestNewFromRequestBodyDecodesFallthroughReachableMediaTypes). The entries below exist only for the
+// subtypes that do not.
+var unaryKinds = map[string]string{
+	"pb":           "protobuf",
+	"pbbin":        "protobuf",
+	"proto":        "protobuf",
+	"protobin":     "protobuf",
+	"pbtxt":        "prototext",
+	"prototxt":     "prototext",
+	"pbjson":       "protojson",
+	"octet-stream": "bytes",
+	"plain":        "bytes",
+	"yml":          "yaml",
+}
+
+// unaryKind resolves subtype to its registered encoding.Map kind, defaulting to subtype itself when no
+// explicit entry exists in unaryKinds.
+func unaryKind(subtype string) string {
+	if kind, ok := unaryKinds[subtype]; ok {
+		return kind
+	}
+
+	return subtype
+}
+
 // undecodableKinds are the codec registry kinds that must not decode an untrusted server request body,
 // because their decoders are neither ratio-bounded nor depth-bounded: a small body can drive an
 // unbounded allocation or an unbounded recursion depth. See the decoder-bounds rule in the package
@@ -105,17 +138,17 @@ func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {
 	// Parameterized values still use the parser so their normalized Type string stays unchanged.
 	switch mediaType {
 	case media.Error:
-		return newKnownMedia(errorType, errorSubtype, enc), true
+		return newMedia(errorType, enc), true
 	case media.HumanJSON:
-		return newKnownMedia(humanJSONType, "hjson", enc), true
+		return newMedia(humanJSONType, enc), true
 	case media.JSON:
 		return jsonMedia(enc), true
 	case media.MessagePack:
-		return newKnownMedia(messagePackType, messagePackSubtype, enc), true
+		return newMedia(messagePackType, enc), true
 	case media.TOML:
-		return newKnownMedia(tomlType, "toml", enc), true
+		return newMedia(tomlType, enc), true
 	case media.YAML:
-		return newKnownMedia(yamlType, "yaml", enc), true
+		return newMedia(yamlType, enc), true
 	default:
 		return knownProtoMedia(mediaType, enc)
 	}
@@ -124,11 +157,11 @@ func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {
 func knownProtoMedia(mediaType string, enc *encoding.Map) (Media, bool) {
 	switch mediaType {
 	case media.Protobuf:
-		return newKnownMedia(protobufType, "protobuf", enc), true
+		return newMedia(protobufType, enc), true
 	case media.ProtobufJSON:
-		return newKnownMedia(protobufJSONType, "pbjson", enc), true
+		return newMedia(protobufJSONType, enc), true
 	case media.ProtobufText:
-		return newKnownMedia(protobufTextType, "pbtxt", enc), true
+		return newMedia(protobufTextType, enc), true
 	default:
 		return Media{}, false
 	}
@@ -140,20 +173,7 @@ func newMedia(mediaType media.Type, enc *encoding.Map) Media {
 		return Media{Type: mediaType}
 	}
 
-	e := enc.Get(subtype)
-	if e == nil {
-		return jsonMedia(enc)
-	}
-
-	return Media{Type: mediaType, Encoder: e}
-}
-
-func newKnownMedia(mediaType media.Type, subtype string, enc *encoding.Map) Media {
-	if subtype == errorSubtype {
-		return Media{Type: mediaType}
-	}
-
-	e := enc.Get(subtype)
+	e := enc.Get(unaryKind(subtype))
 	if e == nil {
 		return jsonMedia(enc)
 	}

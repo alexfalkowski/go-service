@@ -19,15 +19,15 @@ func TestAddConfig(t *testing.T) {
 		want string
 		args []string
 	}{
-		{name: "default", want: "file:config.yml"},
-		{name: "long flag", args: []string{"-config", "file:override.yml"}, want: "file:override.yml"},
+		{name: "default", want: "file:config.yaml"},
+		{name: "long flag", args: []string{"-config", "file:override.yaml"}, want: "file:override.yaml"},
 		{name: "short flag", args: []string{"-c", "env:CONFIG"}, want: "env:CONFIG"},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			set := flag.NewFlagSet("test")
-			set.AddConfig("file:config.yml")
+			set.AddConfig("file:config.yaml")
 
 			require.NoError(t, set.Parse(tt.args))
 			require.Equal(t, tt.want, set.GetConfig())

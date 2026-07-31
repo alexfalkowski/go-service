@@ -369,7 +369,9 @@ func TestStreamRejectsValueOverCapWhenDecodeSucceedsInOneRead(t *testing.T) {
 	t.Cleanup(server.Close)
 
 	sm := stream.NewMap()
-	sm.RegisterDecoder("json", func(r io.Reader) stream.Decoder { return &test.SingleReadDecoder{R: r} })
+	codec := sm.Get("json")
+	codec.Decoder = func(r io.Reader) stream.Decoder { return &test.SingleReadDecoder{R: r} }
+	sm.Register("json", codec)
 	cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 	c := client.NewClient(cont, test.Pool, client.WithMaxResponseSize(8))
@@ -415,7 +417,9 @@ func TestStreamRecvRecoversCapReaderErrorDespiteDecoder(t *testing.T) {
 			t.Cleanup(server.Close)
 
 			sm := stream.NewMap()
-			sm.RegisterDecoder("json", tt.decoder)
+			codec := sm.Get("json")
+			codec.Decoder = tt.decoder
+			sm.Register("json", codec)
 			cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 			c := client.NewClient(cont, test.Pool, client.WithMaxResponseSize(tt.maxSize))
@@ -650,7 +654,9 @@ func TestStreamReturnsTransportError(t *testing.T) {
 
 func TestRequestStreamRejectsNilEncoderForRegisteredKind(t *testing.T) {
 	sm := stream.NewMap()
-	sm.RegisterEncoder("json", nil)
+	codec := sm.Get("json")
+	codec.Encoder = nil
+	sm.Register("json", codec)
 	cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 	c := client.NewClient(cont, test.Pool)
@@ -681,7 +687,9 @@ func TestRequestStreamFinishReturnsEncoderCloseError(t *testing.T) {
 	})
 
 	sm := stream.NewMap()
-	sm.RegisterEncoder("json", func(io.Writer) stream.Encoder { return test.CloseErrEncoder{} })
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) stream.Encoder { return test.CloseErrEncoder{} }
+	sm.Register("json", codec)
 	cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 	c := client.NewClient(cont, test.Pool, client.WithRoundTripper(rt))
@@ -696,7 +704,9 @@ func TestRequestStreamFinishReturnsEncoderCloseError(t *testing.T) {
 
 func TestNewResponseDecoderRejectsNilDecoderForRegisteredKind(t *testing.T) {
 	sm := stream.NewMap()
-	sm.RegisterDecoder("json", nil)
+	codec := sm.Get("json")
+	codec.Decoder = nil
+	sm.Register("json", codec)
 	cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
@@ -727,7 +737,9 @@ func TestStreamRecvBufferedLenFallback(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sm := stream.NewMap()
-			sm.RegisterDecoder("json", func(io.Reader) stream.Decoder { return tt.decoder })
+			codec := sm.Get("json")
+			codec.Decoder = func(io.Reader) stream.Decoder { return tt.decoder }
+			sm.Register("json", codec)
 			cont := content.NewContent(test.Encoder, sm, test.Pool)
 
 			server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {

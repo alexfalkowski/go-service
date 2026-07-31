@@ -19,7 +19,7 @@ func TestValidFileConfig(t *testing.T) {
 	files := []string{
 		test.FilePath("configs/config.hjson"),
 		test.FilePath("configs/config.toml"),
-		test.FilePath("configs/config.yml"),
+		test.FilePath("configs/config.yaml"),
 	}
 
 	for _, file := range files {
@@ -40,12 +40,12 @@ func TestValidHomeFileConfig(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 
-	data, err := test.FS.ReadFile(test.Path("configs/config.yml"))
+	data, err := test.FS.ReadFile(test.Path("configs/config.yaml"))
 	require.NoError(t, err)
-	require.NoError(t, test.FS.WriteFile(test.FS.Join(home, "config.yml"), data, 0o600))
+	require.NoError(t, test.FS.WriteFile(test.FS.Join(home, "config.yaml"), data, 0o600))
 
 	set := flag.NewFlagSet("test")
-	set.AddConfig("file:~/config.yml")
+	set.AddConfig("file:~/config.yaml")
 
 	decoder := test.NewDecoder(set)
 
@@ -56,12 +56,12 @@ func TestValidHomeFileConfig(t *testing.T) {
 
 func TestInvalidFileConfig(t *testing.T) {
 	files := []string{
-		test.FilePath("configs/invalid.yml"),
-		test.FilePath("configs/invalid_logger_kind.yml"),
-		test.FilePath("configs/invalid_metrics_kind.yml"),
-		test.FilePath("configs/invalid_telemetry.config.yml"),
-		test.FilePath("configs/invalid_trace.yml"),
-		test.FilePath("configs/invalid_tracer_kind.yml"),
+		test.FilePath("configs/invalid.yaml"),
+		test.FilePath("configs/invalid_logger_kind.yaml"),
+		test.FilePath("configs/invalid_metrics_kind.yaml"),
+		test.FilePath("configs/invalid_telemetry.config.yaml"),
+		test.FilePath("configs/invalid_trace.yaml"),
+		test.FilePath("configs/invalid_tracer_kind.yaml"),
 		test.FilePath("configs/missing.yml"),
 		test.FilePath("configs/script.sh"),
 		test.FilePath("config.go"),
@@ -84,7 +84,7 @@ func TestInvalidFileConfig(t *testing.T) {
 
 func TestInvalidTimeTimeoutConfig(t *testing.T) {
 	set := flag.NewFlagSet("test")
-	set.AddConfig(test.FilePath("configs/invalid_time.config.yml"))
+	set.AddConfig(test.FilePath("configs/invalid_time.config.yaml"))
 
 	decoder := test.NewDecoder(set)
 
@@ -98,7 +98,7 @@ func TestValidEnvConfig(t *testing.T) {
 		kind string
 		path string
 	}{
-		{name: "yaml", kind: "yaml", path: "configs/config.yml"},
+		{name: "yaml", kind: "yaml", path: "configs/config.yaml"},
 		{name: "hjson", kind: "hjson", path: "configs/config.hjson"},
 		{name: "toml", kind: "toml", path: "configs/config.toml"},
 	}
@@ -134,7 +134,7 @@ func TestInvalidEnvMissingConfig(t *testing.T) {
 }
 
 func TestInvalidEnvKindConfig(t *testing.T) {
-	d, err := test.FS.ReadFile(test.Path("configs/config.yml"))
+	d, err := test.FS.ReadFile(test.Path("configs/config.yaml"))
 	require.NoError(t, err)
 
 	t.Setenv("CONFIG", "what:"+base64.Encode(d))
@@ -180,7 +180,7 @@ func TestValidCommonConfig(t *testing.T) {
 		path string
 		ext  string
 	}{
-		{name: "yaml", path: "configs/config.yml", ext: ".yml"},
+		{name: "yaml", path: "configs/config.yaml", ext: ".yaml"},
 		{name: "hjson", path: "configs/config.hjson", ext: ".hjson"},
 		{name: "toml", path: "configs/config.toml", ext: ".toml"},
 	}
@@ -241,10 +241,10 @@ func TestInvalidKindConfig(t *testing.T) {
 
 	require.NoError(t, test.FS.MkdirAll(path, 0o777))
 
-	data, err := test.FS.ReadFile(test.Path("configs/config.yml"))
+	data, err := test.FS.ReadFile(test.Path("configs/config.yaml"))
 	require.NoError(t, err)
 
-	require.NoError(t, test.FS.WriteFile(test.FS.Join(path, test.Name.String()+".yml"), data, 0o600))
+	require.NoError(t, test.FS.WriteFile(test.FS.Join(path, test.Name.String()+".yaml"), data, 0o600))
 
 	set := flag.NewFlagSet("test")
 	set.AddConfig("test:test")
@@ -305,7 +305,7 @@ func verifyCacheConfig(t *testing.T, cfg *config.Config) {
 
 	require.Equal(t, "redis", cfg.Cache.Kind)
 	require.Equal(t, "snappy", cfg.Cache.Compressor)
-	require.Equal(t, "proto", cfg.Cache.Encoder)
+	require.Equal(t, "protobuf", cfg.Cache.Encoder)
 	require.Equal(t, 4*bytes.MB, cfg.Cache.MaxSize)
 	require.Equal(t, "file:../test/secrets/redis", cfg.Cache.Options["url"])
 }

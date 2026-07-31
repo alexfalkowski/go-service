@@ -40,7 +40,7 @@ type DecoderParams struct {
 //   - "env:<ENV_VAR>": uses the env decoder to read from the environment variable <ENV_VAR>.
 //     The variable value must be formatted as "<extension>:<base64-content>" (e.g. "yaml:..." or "hjson:...").
 //   - unprefixed values (including empty): use the default lookup decoder, which searches common
-//     locations for "<serviceName>.{yaml,yml,hjson,toml,json}".
+//     locations for "<serviceName>.{yaml,hjson,toml,json}".
 //   - unsupported explicit "kind:location" values fail with [ErrInvalidSource].
 //
 // The returned Decoder is safe for repeated calls to Decode; underlying behavior depends on the

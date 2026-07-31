@@ -12,7 +12,7 @@
 //     on the file extension.
 //   - "env:<ENV_VAR>": loads configuration from the environment variable named <ENV_VAR>. The variable
 //     value must be formatted as "<extension>:<base64-content>" (for example "yaml:...").
-//   - unprefixed values use the default lookup, searching for "<serviceName>.{yaml,yml,hjson,toml,json}" in common
+//   - unprefixed values use the default lookup, searching for "<serviceName>.{yaml,hjson,toml,json}" in common
 //     locations (executable directory, user config dir, and /etc).
 //   - unsupported explicit "kind:location" values fail with [ErrInvalidSource].
 //

@@ -17,7 +17,7 @@ import (
 )
 
 func TestApplicationServerRun(t *testing.T) {
-	config := test.FilePath("configs/config.yml")
+	config := test.FilePath("configs/config.yaml")
 	test.SetupCLI("server", "-config", config)
 
 	app := cli.NewApplication(
@@ -30,7 +30,7 @@ func TestApplicationServerRun(t *testing.T) {
 }
 
 func TestApplicationServerRunCodeWithError(t *testing.T) {
-	config := test.FilePath("configs/invalid_http.config.yml")
+	config := test.FilePath("configs/invalid_http.config.yaml")
 	test.SetupCLI("server", "-config", config)
 
 	app := cli.NewApplication(
@@ -73,7 +73,7 @@ func TestApplicationServerRunWithMissingEnvConfig(t *testing.T) {
 }
 
 func TestApplicationServerRunWithConfigFlag(t *testing.T) {
-	config := test.FilePath("configs/config.yml")
+	config := test.FilePath("configs/config.yaml")
 	test.SetupCLI("server", "-c", config)
 
 	app := cli.NewApplication(
@@ -87,9 +87,9 @@ func TestApplicationServerRunWithConfigFlag(t *testing.T) {
 
 func TestApplicationServerInvalidConfig(t *testing.T) {
 	configs := []string{
-		test.FilePath("configs/invalid_http.config.yml"),
-		test.FilePath("configs/invalid_grpc.config.yml"),
-		test.FilePath("configs/invalid_debug.config.yml"),
+		test.FilePath("configs/invalid_http.config.yaml"),
+		test.FilePath("configs/invalid_grpc.config.yaml"),
+		test.FilePath("configs/invalid_debug.config.yaml"),
 	}
 
 	for _, config := range configs {
@@ -111,7 +111,7 @@ func TestApplicationServerInvalidConfig(t *testing.T) {
 }
 
 func TestApplicationServerDisabled(t *testing.T) {
-	test.SetupCLI("server", "-config", test.FilePath("configs/disabled.config.yml"))
+	test.SetupCLI("server", "-config", test.FilePath("configs/disabled.config.yaml"))
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
