@@ -28,7 +28,7 @@ executors:
       - image: grafana/otel-lgtm:latest
   release:
     docker:
-      - image: alexfalkowski/release:8.27
+      - image: alexfalkowski/release:8.28
   alpine:
     docker:
       - image: alpine:latest
