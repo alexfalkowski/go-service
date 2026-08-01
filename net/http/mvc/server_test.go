@@ -299,7 +299,7 @@ func TestViewRenderReturnsWriteError(t *testing.T) {
 	})
 
 	view := mvc.NewFullView("views/hello.tmpl")
-	ctx := meta.WithContent(t.Context(), nil, &test.ErrResponseWriter{}, nil)
+	ctx := meta.WithRequestResponse(t.Context(), nil, &test.ErrResponseWriter{})
 
 	err := view.Render(ctx, &test.Model)
 
@@ -339,7 +339,7 @@ func TestNewViewUsesLayoutPathWhenBasenameCollides(t *testing.T) {
 			})
 
 			res := httptest.NewRecorder()
-			ctx := meta.WithContent(t.Context(), nil, res, nil)
+			ctx := meta.WithRequestResponse(t.Context(), nil, res)
 
 			err := tt.view().Render(ctx, &test.Model)
 

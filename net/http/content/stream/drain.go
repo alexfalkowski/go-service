@@ -4,7 +4,7 @@ import "github.com/alexfalkowski/go-service/v2/context"
 
 func withDrain(ctx context.Context, drain <-chan struct{}, onDrain func()) (context.Context, context.CancelCauseFunc) {
 	if drain == nil {
-		return ctx, nil
+		return ctx, func(error) {}
 	}
 
 	ctx, cancel := context.WithCancelCause(ctx)
@@ -12,9 +12,7 @@ func withDrain(ctx context.Context, drain <-chan struct{}, onDrain func()) (cont
 		select {
 		case <-drain:
 			cancel(ErrDraining)
-			if onDrain != nil {
-				onDrain()
-			}
+			onDrain()
 		case <-ctx.Done():
 		}
 	}()
