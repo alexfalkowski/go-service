@@ -46,7 +46,6 @@ func NewHandler[Res any](cont *content.Content, sm *stream.Map, opts Options, ha
 		ctx := req.Context()
 		if isDraining(opts.Drain) {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusServiceUnavailable, ErrDraining))
-
 			return
 		}
 
@@ -63,11 +62,20 @@ func NewHandler[Res any](cont *content.Content, sm *stream.Map, opts Options, ha
 		buffer := cont.BorrowBuffer()
 		defer cont.ReturnBuffer(buffer)
 
-		writer := &commitWriter{res: res, buffer: buffer}
-
-		ctx, cancel := withDrain(ctx, opts.Drain, func() {})
+		ctx, cancel := context.WithCancelCause(ctx)
 		defer cancel(nil)
 
+		if opts.Drain != nil {
+			go func() {
+				select {
+				case <-opts.Drain:
+					cancel(ErrDraining)
+				case <-ctx.Done():
+				}
+			}()
+		}
+
+		writer := &commitWriter{res: res, buffer: buffer}
 		stream := &Stream[Res]{
 			ctx:          ctx,
 			writer:       writer,
@@ -156,10 +164,21 @@ func NewRequestHandler[Req any, Res any](cont *content.Content, sm *stream.Map, 
 		buffer := cont.BorrowBuffer()
 		defer cont.ReturnBuffer(buffer)
 
-		writer := &commitWriter{res: res, buffer: buffer}
-		ctx, cancel := withDrain(ctx, opts.Drain, func() { _ = req.Body.Close() })
+		ctx, cancel := context.WithCancelCause(ctx)
 		defer cancel(nil)
 
+		if opts.Drain != nil {
+			go func() {
+				select {
+				case <-opts.Drain:
+					cancel(ErrDraining)
+					_ = req.Body.Close()
+				case <-ctx.Done():
+				}
+			}()
+		}
+
+		writer := &commitWriter{res: res, buffer: buffer}
 		capped := budget.NewReader(req.Body, opts.MaxReceiveSize.Bytes())
 		decoder := reqMedia.NewDecoder(capped)
 		stream := &RequestStream[Req, Res]{
@@ -241,4 +260,13 @@ func abortResponse(ctx context.Context, err error) {
 	span.RecordError(err)
 	span.SetStatus(tracer.StatusCodeError, err.Error())
 	panic(http.ErrAbortHandler)
+}
+
+func isDraining(drain <-chan struct{}) bool {
+	select {
+	case <-drain:
+		return true
+	default:
+		return false
+	}
 }
