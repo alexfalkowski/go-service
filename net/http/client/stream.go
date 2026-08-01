@@ -2,12 +2,13 @@ package client
 
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
+	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/budget"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -20,7 +21,7 @@ var errHandlerPanicked = errors.New("client: handler panicked")
 
 // StreamHandler handles a client-side receive-only stream: the response streams, the request does
 // not. It is the client-side counterpart of a call to a send-only streaming route (see
-// [github.com/alexfalkowski/go-service/v2/net/http/content.StreamHandler]).
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.Handler]).
 //
 // Like [Options.Response], a streamed value has no static Go type known to this package: handle it by
 // calling [ResponseStream.Recv] with a pointer to whatever type the caller expects, the same way
@@ -29,7 +30,7 @@ type StreamHandler func(ctx context.Context, stream *ResponseStream) error
 
 // RequestStreamHandler handles a client-side bidirectional stream: both the request and the response
 // stream. It is the client-side counterpart of a call to a bidirectional streaming route (see
-// [github.com/alexfalkowski/go-service/v2/net/http/content.RequestStreamHandler]).
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestHandler]).
 type RequestStreamHandler func(ctx context.Context, stream *RequestResponseStream) error
 
 // StreamGet issues a send-only streaming HTTP GET request to url using opts.
@@ -69,9 +70,9 @@ func (c *Client) StreamPatch(ctx context.Context, url string, opts Options, hand
 //
 // Content negotiation:
 // The response streaming decoder is resolved from the response Content-Type header, falling back to
-// opts.ContentType, via the same [content.Content] passed to [NewClient] (see
-// [content.Content.NewStreamFromMedia]). An unregistered or unparseable streaming media type, or a
-// Client whose Content has no streaming registry, is returned as an error and handler is never called —
+// opts.ContentType, via the streaming registry passed to [NewClient] (see
+// [contentstream.NewMedia]). An unregistered or unparseable streaming media type, or a
+// Client whose streaming registry has no matching codec, is returned as an error and handler is never called —
 // but only once the response exists: unlike a media type Stream could reject before dialing at all,
 // there is no way to know the response's actual Content-Type without making the request first, so a
 // misconfigured Client still pays for one round trip before failing.
@@ -159,14 +160,14 @@ func (c *Client) Stream(ctx context.Context, method, url string, opts Options, h
 //
 // HTTP/2 requirement:
 // This mirrors the server's bidirectional streaming requirement (see
-// [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler]): calling a bidi
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler]): calling a bidi
 // route over HTTP/1.1 hangs rather than failing, because the h1 transport buffers the request body
 // ahead of the handler. Callers must dial an HTTP/2 (including h2c) endpoint.
 //
 // Content negotiation:
 // The request streaming encoder is resolved from opts.ContentType; the response streaming decoder is
-// resolved the same way [Client.Stream] resolves it. Both require the [content.Content] passed to
-// [NewClient] to have a streaming registry; an unregistered or unparseable streaming media type is
+// resolved the same way [Client.Stream] resolves it. Both require the streaming registry passed to
+// [NewClient]; an unregistered or unparseable streaming media type is
 // returned as an error before any request is sent.
 //
 // Error contract:
@@ -190,9 +191,9 @@ func (c *Client) Stream(ctx context.Context, method, url string, opts Options, h
 // Timeouts:
 // See [Client.Stream]: the underlying [http.Client] never has a [http.Client.Timeout].
 func (c *Client) RequestStream(ctx context.Context, method, url string, opts Options, handler RequestStreamHandler) error {
-	reqMedia, err := c.content.NewStreamFromMedia(opts.ContentType)
+	reqMedia, err := contentstream.NewMedia(opts.ContentType, c.streamMap)
 	if err == nil && reqMedia.NewEncoder == nil {
-		err = content.ErrUnsupportedStreamMedia
+		err = contentstream.ErrUnsupportedMedia
 	}
 
 	if err != nil {
@@ -274,7 +275,7 @@ type responseResult struct {
 // response without writing a request body itself.
 //
 // ResponseStream is not safe for concurrent use: Recv is expected to be called from one goroutine at a
-// time, matching [github.com/alexfalkowski/go-service/v2/net/http/content.Stream]'s server-side
+// time, matching [github.com/alexfalkowski/go-service/v2/net/http/content/stream.Stream]'s server-side
 // concurrency contract.
 //
 // The response is resolved lazily, on the first call to Recv (or, if Recv is never called, when the
@@ -328,7 +329,7 @@ func (s *ResponseStream) ensure() error {
 // same convention [Client.Do] uses for opts.Response.
 //
 // Recv returns io.EOF once the response stream ends, matching
-// [github.com/alexfalkowski/go-service/v2/net/http/content.RequestStream.Recv]'s server-side terminal
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv]'s server-side terminal
 // behavior and the gRPC idiom. The first call to Recv resolves the underlying response if it has not
 // been resolved yet (see [ResponseStream.ensure]), including the text/error and status code checks
 // [Client.Do] applies to a non-streaming response; a response identified as an error surfaces here as
@@ -377,10 +378,10 @@ func (s *ResponseStream) close() error {
 //
 // RequestResponseStream is not safe for arbitrary concurrent use. The supported pattern, matching
 // gRPC's bidi streaming convention and
-// [github.com/alexfalkowski/go-service/v2/net/http/content.RequestStream]'s server-side contract, is
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream]'s server-side contract, is
 // one goroutine calling Send and one goroutine calling Recv.
 type RequestResponseStream struct {
-	encoder stream.Encoder
+	encoder encodingstream.Encoder
 	sendErr error
 	writer  *io.PipeWriter
 	ResponseStream
@@ -391,7 +392,7 @@ type RequestResponseStream struct {
 //
 // Send is sticky: once it returns a non-nil error, every later call returns that same error
 // immediately, matching
-// [github.com/alexfalkowski/go-service/v2/net/http/content.Stream.Send]'s server-side contract — a
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.Stream.Send]'s server-side contract — a
 // handler that ignores the error degrades to a no-op rather than writing into a broken pipe forever.
 func (s *RequestResponseStream) Send(v any) error {
 	if s.sendErr != nil {
@@ -431,14 +432,14 @@ func (s *RequestResponseStream) finish(handlerErr error) error {
 // [Client.RequestStream] once a response is available: a streaming decoder bound to a per-value
 // size-capped reader over the response body.
 type responseDecoder struct {
-	decoder stream.Decoder
+	decoder encodingstream.Decoder
 	capped  *budget.Reader
 }
 
 func newResponseDecoder(c *Client, response *http.Response, opts Options) (*responseDecoder, error) {
-	resMedia, err := c.content.NewStreamFromMedia(responseContentType(response.Header, opts))
+	resMedia, err := contentstream.NewMedia(responseContentType(response.Header, opts), c.streamMap)
 	if err == nil && resMedia.NewDecoder == nil {
-		err = content.ErrUnsupportedStreamMedia
+		err = contentstream.ErrUnsupportedMedia
 	}
 
 	if err != nil {

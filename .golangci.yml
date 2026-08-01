@@ -7,6 +7,8 @@ linters:
         - G118
     lll:
       line-length: 180
+    funlen:
+      lines: 80
   default: all
   disable:
     - bodyclose

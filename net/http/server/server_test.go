@@ -50,6 +50,53 @@ func TestShutdownClosesUnservedListener(t *testing.T) {
 	require.Nil(t, conn)
 }
 
+func TestShutdownClosesActiveConnectionsWhenContextCanceled(t *testing.T) {
+	started := make(chan struct{})
+	srv, err := server.NewServer(&http.Server{Handler: http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
+		close(started)
+		<-req.Context().Done()
+	})}, &config.Config{Address: ":0"})
+	require.NoError(t, err)
+
+	serveErr := make(chan error, 1)
+	go func() {
+		serveErr <- srv.Serve()
+	}()
+
+	requestCtx, cancelRequest := context.WithCancel(t.Context())
+	t.Cleanup(cancelRequest)
+	req, err := http.NewRequestWithContext(requestCtx, http.MethodGet, "http://"+srv.String(), nil)
+	require.NoError(t, err)
+	requestErr := make(chan error, 1)
+	go func() {
+		res, err := http.NewClient(http.DefaultTransport, time.Second*5).Do(req)
+		if res != nil {
+			_ = res.Body.Close()
+		}
+		requestErr <- err
+	}()
+
+	select {
+	case <-started:
+	case <-time.After(time.Second):
+		require.FailNow(t, "timed out waiting for request handler to start")
+	}
+
+	shutdownCtx, cancelShutdown := context.WithCancel(t.Context())
+	cancelShutdown()
+
+	require.ErrorIs(t, srv.Shutdown(shutdownCtx), context.Canceled)
+
+	select {
+	case err := <-requestErr:
+		require.Error(t, err)
+	case <-time.After(time.Second):
+		require.FailNow(t, "timed out waiting for shutdown to close the active request")
+	}
+
+	require.NoError(t, <-serveErr)
+}
+
 func TestNewServerWithInvalidNetwork(t *testing.T) {
 	srv, err := server.NewServer(&http.Server{Handler: http.NewServeMux()}, &config.Config{Address: "invalid://:0"})
 	require.Error(t, err)

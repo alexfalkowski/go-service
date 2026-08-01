@@ -2,11 +2,14 @@ package http
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
+	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
+	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
@@ -21,15 +24,17 @@ import (
 //   - content negotiation and encoding ([content.NewContent])
 //   - MVC view rendering helpers ([mvc.NewFunctionMap], [mvc.Register])
 //   - RPC and REST routing ([rpc.Register], [rest.Register] — called from [registerRoutes] rather than
-//     as their own separate Fx invoke targets, so their [content.StreamOptions] argument is a plain
+//     as their own separate Fx invoke targets, so their [stream.Options] argument is a plain
 //     value this package computes from its own *[Config], not a separate Fx-resolved dependency),
 //     including the streaming route helpers (rest.StreamRoute/StreamGet/StreamRouteRequest/StreamPost/
 //     StreamPut/StreamPatch and rpc.StreamRoute): on a bidirectional stream, a successful Send or Recv
 //     extends both the response write deadline and the request read deadline (see
-//     [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler]); a send-only
+//     [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler]); a send-only
 //     stream extends only the write deadline. Bidirectional streaming routes also bound each decoded
 //     request value instead of the request body's cumulative size (see
-//     [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler])
+//     [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler]). At shutdown,
+//     the shared server drain signal cancels stream handler contexts; handlers must return after
+//     observing that cancellation when waiting outside Send or Recv.
 //   - transport-level middleware wiring (limiter and token helpers)
 //   - server construction ([NewServer])
 //   - operational endpoints (Prometheus metrics and health)
@@ -55,11 +60,11 @@ var Module = di.Module(
 )
 
 // registerRoutes wires [rest.Register] and [rpc.Register] with the router, content, and buffer pool
-// dependencies Fx resolves normally, plus a [content.StreamOptions] value computed here from cfg and
+// dependencies Fx resolves normally, plus a [stream.Options] value computed here from cfg and
 // passed as a plain argument.
 //
 // Calling rest.Register/rpc.Register directly (rather than as their own separate Fx invoke targets)
-// means [content.StreamOptions] never needs to exist as its own DI graph node: it is a common,
+// means [stream.Options] never needs to exist as its own DI graph node: it is a common,
 // easily-collided type (nothing else in the DI graph keys on it, but nothing stops something else from
 // needing to someday), so resolving it by bare type would be fragile in a way resolving *[Config] is
 // not. net/http/rest and net/http/rpc must not import this package (see AGENTS.md), so cfg's values are
@@ -68,17 +73,18 @@ var Module = di.Module(
 // through the same options-aware precedence (options key, falling back to cfg.GetTimeout()) NewServer
 // uses for its own ReadTimeout/WriteTimeout, so a service that diverges options.read_timeout/
 // write_timeout from timeout gets a matching streaming budget instead of a silently different one.
-func registerRoutes(cfg *Config, router *http.Router, cont *content.Content, pool *sync.BufferPool) {
-	var so content.StreamOptions
+func registerRoutes(cfg *Config, router *http.Router, cont *content.Content, sm *encodingstream.Map, pool *sync.BufferPool, drain *server.Drain) {
+	var so stream.Options
 
 	if cfg.IsEnabled() {
-		so = content.StreamOptions{
+		so = stream.Options{
 			ReadTimeout:    cfg.GetReadTimeout(),
 			WriteTimeout:   cfg.GetWriteTimeout(),
 			MaxReceiveSize: cfg.GetMaxReceiveSize(),
+			Drain:          drain.Done(),
 		}
 	}
 
-	rest.Register(router, cont, pool, so)
-	rpc.Register(router, cont, pool, so)
+	rest.Register(router, cont, sm, pool, so)
+	rpc.Register(router, cont, sm, pool, so)
 }

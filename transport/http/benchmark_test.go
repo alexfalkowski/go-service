@@ -14,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
@@ -73,8 +74,6 @@ func BenchmarkMVC(b *testing.B) {
 }
 
 // BenchmarkRPC measures RPC client/server body encoding overhead across supported HTTP media types.
-//
-//nolint:funlen
 func BenchmarkRPC(b *testing.B) {
 	b.Run("text", func(b *testing.B) {
 		b.ReportAllocs()
@@ -305,7 +304,7 @@ func BenchmarkRPCStream(b *testing.B) {
 	httpClient, err := world.NewHTTP()
 	require.NoError(b, err)
 
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(httpClient.Transport))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(httpClient.Transport))
 	url := world.PathServerURL("https", "hello")
 
 	b.ResetTimer()
@@ -322,7 +321,7 @@ func BenchmarkRPCStream(b *testing.B) {
 	world.RequireStop()
 }
 
-func streamHello(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+func streamHello(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 	for {
 		req, err := stream.Recv()
 		if err != nil {
@@ -452,8 +451,8 @@ func benchmarkHTTPStream(b *testing.B, log *logger.Logger, trace, tlsEnabled boo
 	b.ReportAllocs()
 
 	address, cleanup := startBenchmarkHTTPServer(b, log, trace, tlsEnabled, func(router *transporthttp.Router, cfg *transporthttp.Config) {
-		opts := content.StreamOptions{ReadTimeout: cfg.GetReadTimeout(), WriteTimeout: cfg.GetWriteTimeout(), MaxReceiveSize: cfg.GetMaxReceiveSize()}
-		rest.Register(router, test.Content, test.Pool, opts)
+		opts := stream.Options{ReadTimeout: cfg.GetReadTimeout(), WriteTimeout: cfg.GetWriteTimeout(), MaxReceiveSize: cfg.GetMaxReceiveSize()}
+		rest.Register(router, test.Content, test.StreamEncoder, test.Pool, opts)
 		rest.StreamPost("/hello", streamHello)
 	})
 	httpClient, scheme, closeIdleConnections := newHTTPStreamClient(b, tlsEnabled)
@@ -551,7 +550,7 @@ func newHTTPStreamClient(b *testing.B, tlsEnabled bool) (*client.Client, string,
 		transport.Protocols.SetHTTP1(false)
 	}
 
-	return client.NewClient(test.Content, test.Pool, client.WithRoundTripper(transport)), scheme, transport.CloseIdleConnections
+	return client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(transport)), scheme, transport.CloseIdleConnections
 }
 
 func closeResponse(b *testing.B, resp *http.Response) {

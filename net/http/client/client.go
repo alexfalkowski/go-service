@@ -3,6 +3,7 @@ package client
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -108,11 +109,11 @@ func WithRedirect(redirect Redirect) ClientOption {
 // The underlying *[http.Client] is constructed via [http.NewClient] with no timeout. [WithTimeout]
 // applies the configured deadline only to [Client.Do], preserving long-lived streaming calls.
 //
-// [Stream] and [RequestStream] resolve streaming media types through content (see
-// [github.com/alexfalkowski/go-service/v2/net/http/content.Content.NewStreamFromMedia]).
+// [Stream] and [RequestStream] resolve streaming media types through streamMap (see
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewMedia]).
 //
 // Callers should treat the returned Client as safe for concurrent use.
-func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOption) *Client {
+func NewClient(content *content.Content, streamMap *stream.Map, pool *sync.BufferPool, opts ...ClientOption) *Client {
 	clientOptions := options(opts...)
 
 	client := http.NewClient(clientOptions.roundTripper, 0)
@@ -127,6 +128,7 @@ func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOp
 	return &Client{
 		client:          client,
 		content:         content,
+		streamMap:       streamMap,
 		pool:            pool,
 		timeout:         clientOptions.timeout,
 		maxResponseSize: clientOptions.maxResponseSize.Bytes(),
@@ -176,6 +178,7 @@ func (o Options) HasResponse() bool {
 type Client struct {
 	client          *http.Client
 	content         *content.Content
+	streamMap       *stream.Map
 	pool            *sync.BufferPool
 	timeout         time.Duration
 	maxResponseSize int64

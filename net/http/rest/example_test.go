@@ -6,9 +6,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
+	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-sync"
@@ -18,11 +19,8 @@ func ExampleGet() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
 	pool := sync.NewBufferPool()
-	rest.Register(router, content.NewContent(
-		encoding.NewMap(),
-		stream.NewMap(),
-		pool,
-	), pool, content.StreamOptions{})
+	streamMap := encodingstream.NewMap()
+	rest.Register(router, content.NewContent(encoding.NewMap(), pool), streamMap, pool, contentstream.Options{})
 
 	rest.Get("/hello", func(context.Context) (*exampleResponse, error) {
 		return &exampleResponse{Message: "hello"}, nil
@@ -46,13 +44,10 @@ func ExampleStreamGet() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
 	pool := sync.NewBufferPool()
-	rest.Register(router, content.NewContent(
-		encoding.NewMap(),
-		stream.NewMap(),
-		pool,
-	), pool, content.StreamOptions{})
+	streamMap := encodingstream.NewMap()
+	rest.Register(router, content.NewContent(encoding.NewMap(), pool), streamMap, pool, contentstream.Options{})
 
-	rest.StreamGet("/hello", func(_ context.Context, stream *content.Stream[exampleResponse]) error {
+	rest.StreamGet("/hello", func(_ context.Context, stream *contentstream.Stream[exampleResponse]) error {
 		if err := stream.Send(&exampleResponse{Message: "hello"}); err != nil {
 			return err
 		}

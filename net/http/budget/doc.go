@@ -1,6 +1,6 @@
 // Package budget provides a per-value byte budget for a stream decoder, shared by the HTTP server's
 // bidirectional streaming request path
-// ([github.com/alexfalkowski/go-service/v2/net/http/content.RequestStream.Recv]) and the HTTP client's
+// ([github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv]) and the HTTP client's
 // streaming response path ([github.com/alexfalkowski/go-service/v2/net/http/client.ResponseStream.Recv]).
 //
 // [Reader] wraps an underlying reader with a byte counter the caller resets before every decoded value

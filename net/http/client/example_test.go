@@ -6,32 +6,37 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
+	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-sync"
 )
 
 func ExampleClient_RequestStream() {
 	pool := sync.NewBufferPool()
-	cont := content.NewContent(encoding.NewMap(), stream.NewMap(), pool)
-	handler := content.NewRequestStreamHandler(cont, content.StreamOptions{}, func(_ context.Context, stream *content.RequestStream[exampleRequest, exampleResponse]) error {
-		req, err := stream.Recv()
-		if err != nil {
-			return err
-		}
+	streamMap := encodingstream.NewMap()
+	cont := content.NewContent(encoding.NewMap(), pool)
+	handler := contentstream.NewRequestHandler(
+		cont,
+		streamMap,
+		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[exampleRequest, exampleResponse]) error {
+			req, err := stream.Recv()
+			if err != nil {
+				return err
+			}
 
-		return stream.Send(&exampleResponse{Greeting: "hello " + req.Name})
-	})
+			return stream.Send(&exampleResponse{Greeting: "hello " + req.Name})
+		})
 
 	server := httptest.NewUnstartedServer(handler)
 	server.EnableHTTP2 = true
 	server.StartTLS()
 	defer server.Close()
 
-	c := client.NewClient(cont, pool, client.WithRoundTripper(server.Client().Transport))
+	c := client.NewClient(cont, streamMap, pool, client.WithRoundTripper(server.Client().Transport))
 	var response exampleResponse
 	err := c.RequestStream(context.Background(), http.MethodPost, server.URL, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON},
 		func(_ context.Context, stream *client.RequestResponseStream) error {

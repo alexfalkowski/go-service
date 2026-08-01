@@ -1140,10 +1140,24 @@ over HTTP/2, requests) that arrive as a sequence of values instead of one buffer
 | `rest.Post`/`rest.Put`/`rest.Patch`/`rest.RouteRequest` | `rest.StreamPost`/`rest.StreamPut`/`rest.StreamPatch`/`rest.StreamRouteRequest` | bidirectional | yes |
 | `rpc.Route` | `rpc.StreamRoute` | bidirectional | yes |
 
-A send-only streaming handler gets a `*content.Stream[Res]` with `Send`; a bidirectional streaming
-handler gets a `*content.RequestStream[Req, Res]` with both `Send` and `Recv`. Client calls use the
+A send-only streaming handler gets a `*stream.Stream[Res]` with `Send`; a bidirectional streaming
+handler gets a `*stream.RequestStream[Req, Res]` with both `Send` and `Recv`. Client calls use the
 matching `client.Stream`/`client.RequestStream` functions, which take the same kind of callback.
 See `net/http/client`'s `ExampleClient_RequestStream` for a complete HTTP/2 bidirectional client call.
+
+> [!IMPORTANT]
+> Streaming helpers now live in `github.com/alexfalkowski/go-service/v2/net/http/content/stream` rather than
+> `net/http/content`. Update imports and replace `content.StreamOptions`, `content.StreamHandler`,
+> `content.RequestStreamHandler`, `content.Stream`, `content.RequestStream`, `content.StreamMedia`,
+> `content.NewStreamHandler`, `content.NewRequestStreamHandler`, and `content.NewStreamMedia` with their
+> `stream` equivalents. Replace `cont.NewStreamFromMedia`, `cont.NewStreamFromAccept`, and
+> `cont.NewStreamFromContentType` with `stream.NewMedia`, `stream.NewMediaFromAccept`, and
+> `stream.NewMediaFromContentType`, respectively, passing an explicit `*encoding/stream.Map` as the registry
+> argument. `content.Content` now owns only single-value codecs; pass that streaming registry separately
+> to `stream.NewHandler`, `stream.NewRequestHandler`, and `client.NewClient`.
+> Replace `content.ErrUnsupportedStreamMedia` and `content.ErrBidiRequiresHTTP2` with
+> `stream.ErrUnsupportedMedia` and `stream.ErrBidiRequiresHTTP2`.
+> `rest.Register` and `rpc.Register` take both that streaming registry and `stream.Options`.
 
 The initial wire format is NDJSON (`application/x-ndjson`), newline-delimited JSON values, resolved
 through a separate streaming encoder/decoder registry (`encoding/stream.Map`) from the single-value one
@@ -1166,6 +1180,15 @@ back to JSON, unlike single-value negotiation.
 >   precedence as the server's own timeouts (see [Transport configuration (servers)](#transport-configuration-servers)),
 >   falling back to `timeout` when the corresponding option is unset.
 > - Streaming requests are never retried by the client's retry middleware.
+> - A stream failure after the response has committed is recorded as a trace error and in the access log, then
+>   aborts the response so clients do not receive a clean but truncated stream. The upstream HTTP server RED
+>   metrics do not record aborted streams; use the access log to investigate that failure class.
+> - During standard server shutdown, stream handler contexts are canceled. Handlers must return after
+>   `ctx.Done()` when waiting on an upstream source; an active `Recv` ends with the drain signal. A blocked
+>   `Send` remains subject to the configured write timeout. If the lifecycle shutdown deadline expires, the
+>   server force-closes remaining HTTP connections, so clients observe a transport error. A bidirectional
+>   HTTP/2 client may observe the forced request-body close as a stream reset and should reconnect to a
+>   non-draining server.
 
 ### HTTP route misses
 

@@ -90,7 +90,7 @@ func WithClientTimeout(timeout string) ClientOption {
 // (redirect responses are returned instead of being followed).
 func NewClient(url string, opts ...ClientOption) *Client {
 	os := options(opts...)
-	client := client.NewClient(cont, pool,
+	client := client.NewClient(cont, sm, pool,
 		client.WithRoundTripper(os.roundTripper),
 		client.WithTimeout(os.timeout),
 		client.WithRedirect(client.RedirectIgnore),

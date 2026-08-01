@@ -41,7 +41,7 @@ type Handler struct {
 // whose declared Content-Length exceeds the limit before next runs, but otherwise delegates to next
 // without enforcing any cumulative limit as next reads the body. A streaming route's per-value cap, if
 // any, is applied by next itself (see
-// [github.com/alexfalkowski/go-service/v2/net/http/content.RequestStream.Recv]), not by ServeHTTP.
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv]), not by ServeHTTP.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if h.routePolicy != nil && h.routePolicy.IsStreaming(req) {
 		body.NewLazyHandler(next, h.limit).ServeHTTP(res, req)

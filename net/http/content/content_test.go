@@ -201,7 +201,7 @@ func TestNewFromRequestBodyRejectsNilRegisteredCodec(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			enc := encoding.NewMap()
 			enc.Register(tt.register, nil)
-			cont := content.NewContent(enc, test.StreamEncoder, test.Pool)
+			cont := content.NewContent(enc, test.Pool)
 
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 			if tt.contentType != "" {

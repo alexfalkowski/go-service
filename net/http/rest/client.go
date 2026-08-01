@@ -61,7 +61,7 @@ func WithClientTimeout(timeout string) ClientOption {
 //   - It disables automatic redirect following (returns redirect responses instead of following them).
 func NewClient(opts ...ClientOption) *Client {
 	os := options(opts...)
-	client := client.NewClient(cont, pool,
+	client := client.NewClient(cont, sm, pool,
 		client.WithRoundTripper(os.roundTripper),
 		client.WithTimeout(os.timeout),
 		client.WithRedirect(client.RedirectIgnore),

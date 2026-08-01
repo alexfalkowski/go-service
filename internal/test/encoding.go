@@ -15,8 +15,8 @@ var Encoder = encoding.NewMap()
 // StreamEncoder contains the real streaming encoders/decoders exercised by content and transport tests.
 var StreamEncoder = stream.NewMap()
 
-// Content is the shared HTTP content registry backed by Encoder and StreamEncoder.
-var Content = content.NewContent(Encoder, StreamEncoder, Pool)
+// Content is the shared unary HTTP content registry backed by Encoder.
+var Content = content.NewContent(Encoder, Pool)
 
 // NewEncoder returns an encoder test double whose Encode and Decode methods fail with the supplied error.
 func NewEncoder(err error) encoding.Encoder {

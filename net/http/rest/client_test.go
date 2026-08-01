@@ -8,13 +8,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewClientUsesTimeout(t *testing.T) {
-	rest.Register(nil, test.Content, test.Pool, content.StreamOptions{})
+	rest.Register(nil, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
 
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set(content.TypeKey, media.Text)

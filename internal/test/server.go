@@ -72,8 +72,6 @@ type Server struct {
 // HTTP, gRPC, and debug servers are created only when their corresponding
 // Register* flag is set. The method also wires the shared tracer registration
 // and attaches common middleware, token handling, and test service handlers.
-//
-//nolint:funlen
 func (s *Server) Register() error {
 	RegisterTracer(s.Lifecycle, s.Tracer)
 

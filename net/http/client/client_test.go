@@ -26,7 +26,7 @@ func TestDoAllowsResponseAtMaxResponseSize(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.Pool, client.WithMaxResponseSize(5))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithMaxResponseSize(5))
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.NoError(t, err)
@@ -41,7 +41,7 @@ func TestDoUsesConfiguredTimeout(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.Pool, client.WithTimeout(10*time.Millisecond))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithTimeout(10*time.Millisecond))
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 
@@ -55,7 +55,7 @@ func TestDoRejectsResponseOverMaxResponseSize(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.Pool, client.WithMaxResponseSize(5))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithMaxResponseSize(5))
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.Error(t, err)
@@ -71,7 +71,7 @@ func TestDoRejectsErrorResponseOverMaxResponseSize(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.Pool, client.WithMaxResponseSize(5))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithMaxResponseSize(5))
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.Error(t, err)
@@ -87,7 +87,7 @@ func TestDoPreservesErrorMediaStatusCode(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.Pool)
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.Error(t, err)
@@ -102,7 +102,7 @@ func TestDoUsesDefaultMessageForNonstandardErrorStatus(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.Pool)
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.Error(t, err)
@@ -128,7 +128,7 @@ func TestDoNormalizesErrorMediaSuccessStatusCode(t *testing.T) {
 			}))
 			t.Cleanup(server.Close)
 
-			c := client.NewClient(test.Content, test.Pool)
+			c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
 
 			err := c.Get(t.Context(), server.URL, client.Options{Response: &struct{}{}})
 			require.Error(t, err)
@@ -145,7 +145,7 @@ func TestDoUsesDefaultMaxResponseSize(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.Pool, client.WithMaxResponseSize(0))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithMaxResponseSize(0))
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.NoError(t, err)
@@ -163,7 +163,7 @@ func TestDoUsesMsgPack(t *testing.T) {
 	t.Cleanup(server.Close)
 
 	var response test.Response
-	c := client.NewClient(test.Content, test.Pool)
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
 
 	err := c.Post(t.Context(), server.URL, client.Options{
 		ContentType: media.MessagePack,
@@ -175,7 +175,7 @@ func TestDoUsesMsgPack(t *testing.T) {
 }
 
 func TestDoSendsAccept(t *testing.T) {
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		var request test.Request
 		require.Equal(t, media.JSON, req.Header.Get(content.TypeKey))
 		require.Equal(t, media.YAML, req.Header.Get(content.AcceptKey))
@@ -203,7 +203,7 @@ func TestDoSendsAccept(t *testing.T) {
 
 func TestDoDetachesRequestBodyFromResponseBuffer(t *testing.T) {
 	var body io.ReadCloser
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		body = req.Body
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -235,7 +235,7 @@ func TestDoDefaultRedirectRejectsCrossOriginCredentialRoundTrip(t *testing.T) {
 			Request:    req,
 		}, nil
 	})
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(authRoundTripper{RoundTripper: rt}))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(authRoundTripper{RoundTripper: rt}))
 
 	err := c.Get(t.Context(), "https://example.com/start", client.Options{})
 
@@ -247,8 +247,7 @@ func TestDoRedirectFollowAllowsExplicitCrossOriginCredentialRoundTrip(t *testing
 	var urls []string
 	rt := redirectingAuthRoundTripper(t, &urls, "https://other.example.com/target")
 	c := client.NewClient(
-		test.Content,
-		test.Pool,
+		test.Content, test.StreamEncoder, test.Pool,
 		client.WithRoundTripper(authRoundTripper{RoundTripper: rt}),
 		client.WithRedirect(client.RedirectFollow),
 	)
@@ -271,8 +270,7 @@ func TestDoRedirectSameOriginRejectsCrossOriginCredentialRoundTrip(t *testing.T)
 		}, nil
 	})
 	c := client.NewClient(
-		test.Content,
-		test.Pool,
+		test.Content, test.StreamEncoder, test.Pool,
 		client.WithRoundTripper(authRoundTripper{RoundTripper: rt}),
 		client.WithRedirect(client.RedirectSameOrigin),
 	)
@@ -287,8 +285,7 @@ func TestDoRedirectSameOriginAllowsSameOriginCredentialRoundTrip(t *testing.T) {
 	var urls []string
 	rt := redirectingAuthRoundTripper(t, &urls, "https://example.com/target")
 	c := client.NewClient(
-		test.Content,
-		test.Pool,
+		test.Content, test.StreamEncoder, test.Pool,
 		client.WithRoundTripper(authRoundTripper{RoundTripper: rt}),
 		client.WithRedirect(client.RedirectSameOrigin),
 	)
@@ -311,8 +308,7 @@ func TestDoRedirectIgnoreRejectsRedirectRoundTrip(t *testing.T) {
 		}, nil
 	})
 	c := client.NewClient(
-		test.Content,
-		test.Pool,
+		test.Content, test.StreamEncoder, test.Pool,
 		client.WithRoundTripper(rt),
 		client.WithRedirect(client.RedirectIgnore),
 	)
@@ -326,9 +322,9 @@ func TestDoRedirectIgnoreRejectsRedirectRoundTrip(t *testing.T) {
 func TestDoReturnsEncodeErrorFromNewRequest(t *testing.T) {
 	enc := encoding.NewMap()
 	enc.Register("json", test.NewEncoder(test.ErrFailed))
-	cont := content.NewContent(enc, test.StreamEncoder, test.Pool)
+	cont := content.NewContent(enc, test.Pool)
 
-	c := client.NewClient(cont, test.Pool)
+	c := client.NewClient(cont, test.StreamEncoder, test.Pool)
 
 	err := c.Post(t.Context(), "http://example.com", client.Options{ContentType: media.JSON, Request: &test.Request{Name: "Bob"}})
 
@@ -337,7 +333,7 @@ func TestDoReturnsEncodeErrorFromNewRequest(t *testing.T) {
 }
 
 func TestDoReturnsNewRequestError(t *testing.T) {
-	c := client.NewClient(test.Content, test.Pool)
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
 
 	err := c.Do(t.Context(), "BAD METHOD", "http://example.com", client.Options{})
 
@@ -349,7 +345,7 @@ func TestDoReturnsTransportError(t *testing.T) {
 		return nil, test.ErrFailed
 	})
 
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(rt))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(rt))
 
 	err := c.Get(t.Context(), "http://example.com", client.Options{})
 
@@ -362,7 +358,7 @@ func TestDoReturnsCopyErrorFromReadResponse(t *testing.T) {
 		return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: &test.ErrReaderCloser{}, Request: req}, nil
 	})
 
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(rt))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(rt))
 
 	err := c.Get(t.Context(), "http://example.com", client.Options{})
 
@@ -373,7 +369,7 @@ func TestDoReturnsCopyErrorFromReadResponse(t *testing.T) {
 func TestDoReturnsDecodeError(t *testing.T) {
 	enc := encoding.NewMap()
 	enc.Register("json", test.NewEncoder(test.ErrFailed))
-	cont := content.NewContent(enc, test.StreamEncoder, test.Pool)
+	cont := content.NewContent(enc, test.Pool)
 
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 		res.Header().Set(content.TypeKey, media.JSON)
@@ -381,7 +377,7 @@ func TestDoReturnsDecodeError(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(cont, test.Pool)
+	c := client.NewClient(cont, test.StreamEncoder, test.Pool)
 
 	var res test.Response
 	err := c.Get(t.Context(), server.URL, client.Options{Response: &res})
@@ -400,7 +396,7 @@ func TestStreamReturnsCopyErrorFromCheckResponseStatus(t *testing.T) {
 		}, nil
 	})
 
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(rt))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(rt))
 
 	err := c.Stream(t.Context(), http.MethodGet, "http://example.com", client.Options{},
 		func(_ context.Context, _ *client.ResponseStream) error {

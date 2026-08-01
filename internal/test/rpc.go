@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	g "github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	h "github.com/alexfalkowski/go-service/v2/net/http/status"
@@ -71,5 +71,5 @@ func ErrorsInternalProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*
 }
 
 func (w *World) registerRPC() {
-	rpc.Register(w.Router, Content, Pool, content.StreamOptions{})
+	rpc.Register(w.Router, Content, StreamEncoder, Pool, stream.Options{})
 }

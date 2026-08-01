@@ -9,6 +9,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/module"
+	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/client"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
+	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -83,6 +89,38 @@ func TestApplicationServerRunWithConfigFlag(t *testing.T) {
 		},
 	)
 	require.NoError(t, app.Run(t.Context()))
+}
+
+func TestApplicationServerDrainsStreamingRoute(t *testing.T) {
+	cancel, code := startDrainingApplication(t)
+
+	restClient := rest.NewClient(rest.WithClientRoundTripper(http.DefaultTransport))
+	received := make(chan string, 1)
+	streamErr := make(chan error, 1)
+	go func() {
+		streamErr <- restClient.StreamGet(t.Context(), "http://127.0.0.1:11000/drain", rest.Options{Accept: media.NDJSON}, func(_ context.Context, stream *client.ResponseStream) error {
+			var response test.Response
+			if err := stream.Recv(&response); err != nil {
+				return err
+			}
+
+			received <- response.Greeting
+
+			var next test.Response
+			if err := stream.Recv(&next); err != nil && !stream.IsFinished(err) {
+				return err
+			}
+
+			return nil
+		})
+	}()
+
+	requireStreamGreeting(t, received, streamErr)
+
+	cancel()
+
+	requireDrainedStream(t, streamErr)
+	requireServerExit(t, code)
 }
 
 func TestApplicationServerInvalidConfig(t *testing.T) {
@@ -266,4 +304,102 @@ func TestApplicationServerServeFailureReturnsServeFailureExitCode(t *testing.T) 
 	)
 
 	require.Equal(t, os.ExitCodeServeFailure, app.RunCode(t.Context()))
+}
+
+func startDrainingApplication(t *testing.T) (context.CancelFunc, <-chan int) {
+	t.Helper()
+
+	test.SetupCLI("server", "-config", test.FilePath("configs/config.yaml"))
+
+	started := make(chan struct{})
+	opts := []di.Option{
+		module.Server,
+		di.Register(func(policy *http.RoutePolicy) {
+			policy.AllowUnauthenticated("GET /drain")
+			rest.StreamGet("/drain", func(ctx context.Context, stream *stream.Stream[test.Response]) error {
+				if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
+					return err
+				}
+
+				<-ctx.Done()
+
+				return ctx.Err()
+			})
+		}),
+		di.Register(func(lc di.Lifecycle) {
+			lc.Append(di.Hook{
+				OnStart: func(context.Context) error {
+					go func() {
+						time.Sleep(10 * time.Millisecond)
+						close(started)
+					}()
+
+					return nil
+				},
+			})
+		}),
+	}
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddServer("server", "Start the server.", opts...)
+			cmd.AddConfig(strings.Empty)
+		},
+	)
+
+	ctx, cancel := context.WithCancel(t.Context())
+	code := make(chan int, 1)
+	go func() {
+		code <- app.RunCode(ctx)
+	}()
+
+	requireServerStarted(t, started, code)
+
+	return cancel, code
+}
+
+func requireServerStarted(t *testing.T, started <-chan struct{}, code <-chan int) {
+	t.Helper()
+
+	select {
+	case <-started:
+	case got := <-code:
+		require.FailNowf(t, "server exited before startup completed", "exit code: %d", got)
+	case <-time.After(5 * time.Second):
+		require.FailNow(t, "timed out waiting for server startup")
+	}
+}
+
+func requireStreamGreeting(t *testing.T, received <-chan string, streamErr <-chan error) {
+	t.Helper()
+
+	select {
+	case greeting := <-received:
+		require.Equal(t, "Hello Bob", greeting)
+	case err := <-streamErr:
+		require.FailNow(t, "stream ended before drain", err)
+	case <-time.After(time.Second):
+		require.FailNow(t, "timed out waiting for stream response")
+	}
+}
+
+func requireDrainedStream(t *testing.T, streamErr <-chan error) {
+	t.Helper()
+
+	select {
+	case err := <-streamErr:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		require.FailNow(t, "timed out waiting for drained stream to finish")
+	}
+}
+
+func requireServerExit(t *testing.T, code <-chan int) {
+	t.Helper()
+
+	select {
+	case got := <-code:
+		require.Equal(t, os.ExitCodeSuccess, got)
+	case <-time.After(time.Second):
+		require.FailNow(t, "timed out waiting for server shutdown")
+	}
 }

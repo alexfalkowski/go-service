@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -87,7 +88,7 @@ func Route[Res any](pattern string, handler content.Handler[Res]) {
 //
 // The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This helper delegates to StreamRoute.
-func StreamGet[Res any](pattern string, handler content.StreamHandler[Res]) {
+func StreamGet[Res any](pattern string, handler stream.Handler[Res]) {
 	StreamRoute(strings.Join(strings.Space, http.MethodGet, pattern), handler)
 }
 
@@ -99,7 +100,7 @@ func StreamGet[Res any](pattern string, handler content.StreamHandler[Res]) {
 //
 // HTTP/2 requirement: see StreamRouteRequest. StreamGet and StreamRoute have no such requirement and
 // stay fully supported on HTTP/1.1.
-func StreamPost[Req any, Res any](pattern string, handler content.RequestStreamHandler[Req, Res]) {
+func StreamPost[Req any, Res any](pattern string, handler stream.RequestHandler[Req, Res]) {
 	StreamRouteRequest(strings.Join(strings.Space, http.MethodPost, pattern), handler)
 }
 
@@ -110,7 +111,7 @@ func StreamPost[Req any, Res any](pattern string, handler content.RequestStreamH
 // This helper delegates to StreamRouteRequest.
 //
 // HTTP/2 requirement: see StreamRouteRequest.
-func StreamPut[Req any, Res any](pattern string, handler content.RequestStreamHandler[Req, Res]) {
+func StreamPut[Req any, Res any](pattern string, handler stream.RequestHandler[Req, Res]) {
 	StreamRouteRequest(strings.Join(strings.Space, http.MethodPut, pattern), handler)
 }
 
@@ -121,7 +122,7 @@ func StreamPut[Req any, Res any](pattern string, handler content.RequestStreamHa
 // This helper delegates to StreamRouteRequest.
 //
 // HTTP/2 requirement: see StreamRouteRequest.
-func StreamPatch[Req any, Res any](pattern string, handler content.RequestStreamHandler[Req, Res]) {
+func StreamPatch[Req any, Res any](pattern string, handler stream.RequestHandler[Req, Res]) {
 	StreamRouteRequest(strings.Join(strings.Space, http.MethodPatch, pattern), handler)
 }
 
@@ -129,7 +130,7 @@ func StreamPatch[Req any, Res any](pattern string, handler content.RequestStream
 // and response bodies stream incrementally rather than being buffered whole.
 //
 // The handler is built using
-// [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler], which:
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler], which:
 //   - resolves the request decoder from Content-Type, rejecting an unregistered or unparseable
 //     streaming media type with 415, and
 //   - resolves the response encoder from Accept (falling back to Content-Type), rejecting an Accept
@@ -138,7 +139,7 @@ func StreamPatch[Req any, Res any](pattern string, handler content.RequestStream
 // HTTP/2 requirement:
 // Bidirectional streaming requires HTTP/2 (including h2c): an HTTP/1.x request body is buffered ahead
 // of the handler by intermediaries and the Go transport, so interleaving Recv/Send hangs rather than
-// failing. [content.NewRequestStreamHandler] rejects requests with req.ProtoMajor < 2 with
+// failing. [stream.NewRequestHandler] rejects requests with req.ProtoMajor < 2 with
 // 505 HTTP Version Not Supported before the handler runs. Deploying a route registered through this
 // helper therefore requires the server, and any intermediary in front of it, to support HTTP/2 or h2c.
 //
@@ -152,15 +153,15 @@ func StreamPatch[Req any, Res any](pattern string, handler content.RequestStream
 //
 // Inbound size limiting:
 // opts.MaxReceiveSize (set via [Register]) bounds each value decoded by the resulting stream's
-// Recv, not the request body as a whole — see [content.NewRequestStreamHandler].
-func StreamRouteRequest[Req any, Res any](pattern string, handler content.RequestStreamHandler[Req, Res]) {
-	router.HandleStreaming(pattern, content.NewRequestStreamHandler(cont, opts, handler))
+// Recv, not the request body as a whole — see [stream.NewRequestHandler].
+func StreamRouteRequest[Req any, Res any](pattern string, handler stream.RequestHandler[Req, Res]) {
+	router.HandleStreaming(pattern, stream.NewRequestHandler(cont, sm, opts, handler))
 }
 
 // StreamRoute registers a handler under pattern for a send-only streaming response: the response
 // streams incrementally rather than being buffered whole; the request body is not streamed.
 //
-// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content.NewStreamHandler], which:
+// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewHandler], which:
 //   - selects a streaming encoder based on Accept, falling back to Content-Type when Accept is absent,
 //     via the streaming media registry, and
 //   - rejects an Accept that cannot be satisfied with 406.
@@ -175,6 +176,6 @@ func StreamRouteRequest[Req any, Res any](pattern string, handler content.Reques
 // limiting is applied lazily instead of buffering the whole body.
 // Register must be called before StreamRoute; otherwise router/cont will be nil and this function will
 // panic.
-func StreamRoute[Res any](pattern string, handler content.StreamHandler[Res]) {
-	router.HandleStreaming(pattern, content.NewStreamHandler(cont, opts, handler))
+func StreamRoute[Res any](pattern string, handler stream.Handler[Res]) {
+	router.HandleStreaming(pattern, stream.NewHandler(cont, sm, opts, handler))
 }
