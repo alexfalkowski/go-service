@@ -3,6 +3,7 @@ package rpc
 import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -44,7 +45,7 @@ func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 // how [Route] is already POST-only.
 //
 // The handler is built using
-// [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestStreamHandler], which:
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler], which:
 //   - resolves the request decoder from Content-Type, rejecting an unregistered or unparseable
 //     streaming media type with 415, and
 //   - resolves the response encoder from Accept (falling back to Content-Type), rejecting an Accept
@@ -53,7 +54,7 @@ func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 // HTTP/2 requirement:
 // Bidirectional streaming requires HTTP/2 (including h2c): an HTTP/1.x request body is buffered ahead
 // of the handler by intermediaries and the Go transport, so interleaving Recv/Send hangs rather than
-// failing. [content.NewRequestStreamHandler] rejects requests with req.ProtoMajor < 2 with
+// failing. [stream.NewRequestHandler] rejects requests with req.ProtoMajor < 2 with
 // 505 HTTP Version Not Supported before the handler runs. Deploying a route registered through this
 // helper therefore requires the server, and any intermediary in front of it, to support HTTP/2 or h2c.
 //
@@ -67,10 +68,10 @@ func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 //
 // Inbound size limiting:
 // opts.MaxReceiveSize (set via [Register]) bounds each value decoded by the resulting stream's
-// Recv, not the request body as a whole — see [content.NewRequestStreamHandler].
-func StreamRoute[Req any, Res any](pattern string, handler content.RequestStreamHandler[Req, Res]) {
+// Recv, not the request body as a whole — see [stream.NewRequestHandler].
+func StreamRoute[Req any, Res any](pattern string, handler stream.RequestHandler[Req, Res]) {
 	router.HandleStreaming(
 		strings.Join(strings.Space, http.MethodPost, pattern),
-		content.NewRequestStreamHandler(cont, opts, handler),
+		stream.NewRequestHandler(cont, sm, opts, handler),
 	)
 }

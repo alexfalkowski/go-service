@@ -67,8 +67,8 @@ type Handler struct {
 //
 // The stream-open decision above charges one token per request, matching every other route. Streaming
 // routes charge additional tokens per message by retrieving the same limiter from the context via
-// [meta.Limiter] and calling Take again from [net/http/content.Stream.Send] and
-// [net/http/content.RequestStream.Recv]; the RateLimit/RateLimit-Policy headers above still describe only
+// [meta.Limiter] and calling Take again from [net/http/content/stream.Stream.Send] and
+// [net/http/content/stream.RequestStream.Recv]; the RateLimit/RateLimit-Policy headers above still describe only
 // this stream-open decision, since HTTP headers cannot be re-sent once a streaming response is committed.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if h.routePolicy.IsOperation(req) {

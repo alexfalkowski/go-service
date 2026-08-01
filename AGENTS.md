@@ -442,7 +442,7 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   accidental double-counting; report only concrete bugs such as missing message
   limiting, ignored explicit limiter config, or incorrect status/header
   behavior.
-- HTTP streaming routes (`net/http/content.Stream`/`RequestStream`) mirror the
+- HTTP streaming routes (`net/http/content/stream.Stream`/`RequestStream`) mirror the
   gRPC stream limiter behavior above: `transport/http/limiter.Handler` still
   charges one token when the request/stream opens (its existing single
   `TakeDecision` call, unchanged for every route), and on top of that it stores
@@ -465,8 +465,8 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   issues such as a streaming route never being charged, a charge applied
   without a captured limiter, or a mid-stream denial incorrectly writing a
   status after commit.
-- HTTP streaming responses (`net/http/content.NewStreamHandler`,
-  `NewRequestStreamHandler`) intentionally opt out of gzip by setting
+- HTTP streaming responses (`net/http/content/stream.NewHandler`,
+  `NewRequestHandler`) intentionally opt out of gzip by setting
   `gzhttp.HeaderNoCompression` before the first byte is written. This is a
   deliberate cost/interop decision, not an oversight: per-value flush emits a
   separate gzip flush block per message (poor value for small NDJSON records),
@@ -477,17 +477,17 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   the abort). Do not flag the missing compression for streaming responses as a
   performance regression; report only concrete bugs such as the header not
   being set before commit, or a streaming route that is compressed despite it.
-- Bidirectional HTTP streaming routes (`net/http/content.NewRequestStreamHandler`,
+- Bidirectional HTTP streaming routes (`net/http/content/stream.NewRequestHandler`,
   and the route helpers that use it: `net/http/rest`'s `StreamRouteRequest`,
   `StreamPost`, `StreamPut`, `StreamPatch`, and `net/http/rpc.StreamRoute`)
-  require HTTP/2 (including h2c). `NewRequestStreamHandler` rejects a request
+  require HTTP/2 (including h2c). `NewRequestHandler` rejects a request
   with `req.ProtoMajor < 2` with `505 HTTP Version Not Supported` before the
   handler runs. This is intentional and measured, not a missing feature: an
   HTTP/1.x request body is buffered ahead of the handler by intermediaries and
   the Go transport, so a bidi handler that both reads the request stream and
   writes the response stream hangs rather than failing outright over h1 — the
   pre-handler rejection is what turns that hang into an immediate, diagnosable
-  error. Send-only streaming routes (`net/http/content.NewStreamHandler`, and
+  error. Send-only streaming routes (`net/http/content/stream.NewHandler`, and
   `net/http/rest`'s `StreamRoute`/`StreamGet`, `net/http/rpc` has no send-only
   helper) have no such requirement and stay fully supported on HTTP/1.1
   chunked responses, since only the bidi handle interleaves reads and writes.

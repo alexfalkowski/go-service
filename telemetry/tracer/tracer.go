@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-sync"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -39,6 +40,12 @@ type SpanContext = trace.SpanContext
 // SpanContextConfig is an alias for [trace.SpanContextConfig].
 type SpanContextConfig = trace.SpanContextConfig
 
+// Span is an alias for [go.opentelemetry.io/otel/trace.Span].
+type Span = trace.Span
+
+// StatusCode is an alias for [go.opentelemetry.io/otel/codes.Code].
+type StatusCode = codes.Code
+
 // SpanID is an alias for [trace.SpanID].
 type SpanID = trace.SpanID
 
@@ -56,6 +63,9 @@ type ProviderOption = sdk.TracerProviderOption
 
 // FlagsSampled is an alias for [trace.FlagsSampled].
 const FlagsSampled = trace.FlagsSampled
+
+// StatusCodeError is the OpenTelemetry span status for an error.
+const StatusCodeError = codes.Error
 
 // ContextWithRemoteSpanContext returns a copy of parent with sc set as the
 // current remote span context.
@@ -75,6 +85,11 @@ func NewSpanContext(config SpanContextConfig) SpanContext {
 // carries no span, so callers can treat an untraced context as "no correlation".
 func SpanContextFromContext(ctx context.Context) SpanContext {
 	return trace.SpanContextFromContext(ctx)
+}
+
+// SpanFromContext returns the span currently active in ctx.
+func SpanFromContext(ctx context.Context) Span {
+	return trace.SpanFromContext(ctx)
 }
 
 // NewProvider constructs an OpenTelemetry SDK tracer provider.

@@ -85,13 +85,27 @@ func (s *Server) Serve() error {
 	return errors.ServerError(s.serve())
 }
 
-// Shutdown gracefully stops the underlying server.
+// Shutdown gracefully stops the underlying server, then force-closes active connections if ctx ends first.
 //
-// The provided context controls shutdown deadlines/cancellation.
+// It first stops accepting new connections and waits for active requests to finish. If ctx is canceled or
+// reaches its deadline first, Shutdown calls [http.Server.Close] to unblock the remaining requests and
+// returns ctx.Err().
 func (s *Server) Shutdown(ctx context.Context) error {
 	defer s.listener.Close()
 
-	return s.server.Shutdown(ctx)
+	done := make(chan error, 1)
+	go func() {
+		done <- s.server.Shutdown(context.Background())
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-ctx.Done():
+		_ = s.server.Close()
+
+		return ctx.Err()
+	}
 }
 
 // String returns the listener address as a string (used for logging/attribution).

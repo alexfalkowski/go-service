@@ -1,9 +1,11 @@
-package content
+package stream
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/accept"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/policy"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -18,39 +20,39 @@ var ndjsonType = media.MustParse(media.NDJSON)
 // has subtype "x-ndjson", but it is framed newline-delimited JSON, so it reuses the "json" streaming
 // kind rather than needing its own codec.
 var streamKinds = map[string]string{
-	"x-ndjson": jsonKind,
+	"x-ndjson": "json",
 }
 
-// NewStreamMedia builds a StreamMedia from a media type string and streaming registry.
+// NewMedia builds a Media from a media type string and streaming registry.
 //
-// Unlike [NewMedia], NewStreamMedia never falls back to JSON: an unparsable media type, a subtype with
+// NewMedia never falls back to JSON: an unparsable media type, a subtype with
 // no entry in the streaming media mapping, or a kind unregistered in sm all return
-// [ErrUnsupportedStreamMedia]. Streaming callers must fail explicitly rather than silently degrading to
+// [ErrUnsupportedMedia]. Streaming callers must fail explicitly rather than silently degrading to
 // a different wire format.
-func NewStreamMedia(mediaType string, sm *stream.Map) (StreamMedia, error) {
+func NewMedia(mediaType string, sm *stream.Map) (Media, error) {
 	value, err := media.Parse(mediaType)
 	if err != nil {
-		return StreamMedia{}, ErrUnsupportedStreamMedia
+		return Media{}, ErrUnsupportedMedia
 	}
 
 	kind, ok := streamKinds[value.Subtype()]
 	if !ok {
-		return StreamMedia{}, ErrUnsupportedStreamMedia
+		return Media{}, ErrUnsupportedMedia
 	}
 
 	codec := sm.Get(kind)
 	if codec.Encoder == nil && codec.Decoder == nil {
-		return StreamMedia{}, ErrUnsupportedStreamMedia
+		return Media{}, ErrUnsupportedMedia
 	}
 
-	return StreamMedia{NewEncoder: codec.Encoder, NewDecoder: codec.Decoder, Type: value}, nil
+	return Media{NewEncoder: codec.Encoder, NewDecoder: codec.Decoder, Type: value}, nil
 }
 
-// StreamMedia describes a resolved streaming media type and its encoder/decoder constructors.
+// Media describes a resolved streaming media type and its encoder/decoder constructors.
 //
 // NewEncoder or NewDecoder may be nil when the registered kind supports only one direction; callers
 // must check the one they intend to use.
-type StreamMedia struct {
+type Media struct {
 	// NewEncoder constructs a [stream.Encoder] bound to a response writer, or nil if the kind has no
 	// registered encoder constructor.
 	NewEncoder stream.EncoderFunc
@@ -63,7 +65,7 @@ type StreamMedia struct {
 	media.Type
 }
 
-// NewStreamFromAccept resolves the request Accept header to a streaming encoder, falling back to
+// NewMediaFromAccept resolves the request Accept header to a streaming encoder, falling back to
 // Content-Type when Accept is absent, and to [media.NDJSON] when neither is set.
 //
 // An Accept list is satisfiable for the server's producible streaming media type if it contains an
@@ -77,27 +79,27 @@ type StreamMedia struct {
 // by a less specific, non-excluded reference. A satisfiable list resolves to its exact match if the
 // controlling reference was one, otherwise to media.NDJSON.
 //
-// Unlike [Content.NewFromAccept], a non-empty Accept list that is not satisfiable this way returns
-// [ErrUnsupportedStreamMedia] instead of falling back to JSON or to Content-Type: a client that named
+// Unlike [content.Content.NewMediaFromAccept], a non-empty Accept list that is not satisfiable this way returns
+// [ErrUnsupportedMedia] instead of falling back to JSON or to Content-Type: a client that named
 // only concrete, unproducible media types must get an explicit rejection, not a silently different wire
 // format.
-func (c *Content) NewStreamFromAccept(req *http.Request) (StreamMedia, error) {
-	header := req.Header.Get(AcceptKey)
+func NewMediaFromAccept(req *http.Request, sm *stream.Map) (Media, error) {
+	header := req.Header.Get(content.AcceptKey)
 	if strings.IsEmpty(header) {
-		mediaType := req.Header.Get(TypeKey)
+		mediaType := req.Header.Get(content.TypeKey)
 		if strings.IsEmpty(mediaType) {
 			mediaType = media.NDJSON
 		}
 
-		return NewStreamMedia(mediaType, c.sm)
+		return NewMedia(mediaType, sm)
 	}
 
 	mediaType, ok := matchStreamAccept(header)
 	if !ok {
-		return StreamMedia{}, ErrUnsupportedStreamMedia
+		return Media{}, ErrUnsupportedMedia
 	}
 
-	return NewStreamMedia(mediaType, c.sm)
+	return NewMedia(mediaType, sm)
 }
 
 // matchStreamAccept reports whether header, an Accept header value, is satisfiable for a registered
@@ -112,7 +114,7 @@ func (c *Content) NewStreamFromAccept(req *http.Request) (StreamMedia, error) {
 // regardless of list order. When satisfiable, it returns the exact match's media type if the
 // controlling reference was one, otherwise [media.NDJSON]. An unparsable item is skipped rather than
 // rejecting the whole list, the same way an unparsable single Accept value already falls through to
-// [NewStreamMedia]'s own rejection when nothing else in the list matches.
+// [NewMedia]'s own rejection when nothing else in the list matches.
 func matchStreamAccept(header string) (string, bool) {
 	var exact, major, bare streamAcceptMatch
 
@@ -170,34 +172,34 @@ func (m *streamAcceptMatch) consider(zero bool, value string) {
 	}
 }
 
-// NewStreamFromContentType parses the request Content-Type header and resolves a streaming decoder.
+// NewMediaFromContentType parses the request Content-Type header and resolves a streaming decoder.
 //
-// Unlike [Content.NewFromContentType], an unregistered or unparsable media type returns
-// [ErrUnsupportedStreamMedia] instead of falling back to JSON.
+// Unlike [Content.NewMediaFromContentType], an unregistered or unparsable media type returns
+// [ErrUnsupportedMedia] instead of falling back to JSON.
 //
-// This is the streaming counterpart of [Content.NewFromRequestBody]: after NewStreamMedia resolves the
+// This is the streaming counterpart of [content.Content.NewFromRequestBody]: after NewMedia resolves the
 // media type, it re-checks the resolved kind against the same request-decode policy that guards
 // unary request bodies (see the decoder-bounds rule in the package documentation), so a streaming media
-// type that maps to a banned kind is rejected here even though NewStreamMedia itself has no opinion on
-// that policy. NewStreamFromAccept and [Content.NewStreamFromMedia] are not policed this way: only this
-// constructor decodes an untrusted request body (see [StreamMedia.NewDecoder]'s other caller, the
+// type that maps to a banned kind is rejected here even though NewMedia itself has no opinion on
+// that policy. NewFromAccept and [NewMedia] are not policed this way: only this
+// constructor decodes an untrusted request body (see [Media.NewDecoder]'s other caller, the
 // client's response-stream path, which must keep decoding every registered kind).
-func (c *Content) NewStreamFromContentType(req *http.Request) (StreamMedia, error) {
-	m, err := NewStreamMedia(req.Header.Get(TypeKey), c.sm)
+func NewMediaFromContentType(req *http.Request, sm *stream.Map) (Media, error) {
+	m, err := NewMedia(req.Header.Get(content.TypeKey), sm)
 	if err != nil {
-		return StreamMedia{}, err
+		return Media{}, err
 	}
 
-	// Re-resolve the kind rather than carrying it on StreamMedia, keeping the struct free of a field
+	// Re-resolve the kind rather than carrying it on Media, keeping the struct free of a field
 	// that exists only for this one caller. A missing entry, a nil decoder constructor, or a banned kind
 	// are all treated as unsupported so this fails closed: neither the missing-entry nor the banned-kind
 	// arm can currently fire, because streamKinds' only mapping ("x-ndjson" to "json") already passed the
-	// lookup inside NewStreamMedia and "json" is not a banned kind. Both stay as guards for a future
-	// streamKinds entry that maps to a banned kind, or a NewStreamMedia change that admits an unknown
+	// lookup inside NewMedia and "json" is not a banned kind. Both stay as guards for a future
+	// streamKinds entry that maps to a banned kind, or a NewMedia change that admits an unknown
 	// subtype.
 	kind, ok := streamKinds[m.Subtype()]
-	if !ok || m.NewDecoder == nil || !canDecodeRequest(kind) {
-		return StreamMedia{}, ErrUnsupportedStreamMedia
+	if !ok || m.NewDecoder == nil || !policy.CanDecode(kind) {
+		return Media{}, ErrUnsupportedMedia
 	}
 
 	return m, nil

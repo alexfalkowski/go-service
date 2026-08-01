@@ -105,7 +105,7 @@ type ServerParams struct {
 //   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v2/transport/http/body]); routes
 //     registered as streaming (see `params.RoutePolicy`) are never buffered by this middleware, and
 //     bidirectional streaming routes cap each decoded request value independently at the content layer
-//     instead (see [github.com/alexfalkowski/go-service/v2/net/http/content.RequestStream.Recv])
+//     instead (see [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv])
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - gzip compression wrapping the final mux handler, including not-found fallbacks
 //     ([github.com/alexfalkowski/go-service/v2/net/http/compress.GzipHandler] with [http.NewNotFoundHandler])

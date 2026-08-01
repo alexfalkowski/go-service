@@ -28,7 +28,8 @@
 // media type parsing fails or the subtype is unknown, this package falls back to JSON.
 //
 // Inbound request-body decoding ([Content.NewFromRequestBody] and its streaming counterpart
-// [Content.NewStreamFromContentType]) narrows this: an absent Content-Type still defaults to JSON,
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewFromContentType]) narrows this:
+// an absent Content-Type still defaults to JSON,
 // since the caller asserted nothing, but an unparseable or unregistered Content-Type is rejected
 // instead of silently decoded as a different format the caller did not send.
 //
@@ -42,7 +43,8 @@
 // only, so they do not mitigate amplification and are not a substitute for these bounds.
 //
 // json, yaml and protobuf satisfy this rule. msgpack and gob do not, so [Media.CanDecodeRequest] and
-// [Content.NewStreamFromContentType] reject them for request decoding even though both remain valid
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewFromContentType] rejects them for
+// request decoding even though both remain valid
 // media types and valid response codecs (see [Content.NewFromMedia] and the go-service HTTP client,
 // which decodes responses through the same registries without this restriction).
 //

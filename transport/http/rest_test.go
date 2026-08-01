@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -193,7 +194,7 @@ func TestRestInvalidStatusCode(t *testing.T) {
 func TestRestStreamPostRecvAndSendOverRealServer(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
-	rest.StreamPost("/hello", func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	rest.StreamPost("/hello", func(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 		for {
 			req, err := stream.Recv()
 			if err != nil {
@@ -241,7 +242,7 @@ func TestRestStreamPostRefreshesReadDeadlineOverH2C(t *testing.T) {
 	config := test.NewInsecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.Register(world.Router, test.Content, test.Pool, content.StreamOptions{
+	rest.Register(world.Router, test.Content, test.StreamEncoder, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
 	rest.StreamPost("/hello", echoStreamServer)
@@ -250,7 +251,7 @@ func TestRestStreamPostRefreshesReadDeadlineOverH2C(t *testing.T) {
 	transport := http.Transport(nil)
 	transport.Protocols.SetHTTP1(false)
 
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(transport))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(transport))
 
 	url := world.PathServerURL("http", "hello")
 
@@ -263,7 +264,59 @@ func TestRestStreamPostRefreshesReadDeadlineOverH2C(t *testing.T) {
 	require.Equal(t, []string{"Hello Bob", "Hello Alice", "Hello Carol", "Hello Dan"}, greetings)
 }
 
-func echoStreamServer(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+func TestRestStreamPostSurvivesReceiveOnlyActivePhase(t *testing.T) {
+	config := test.NewInsecureTransportConfig()
+	config.HTTP.Timeout = 100 * time.Millisecond
+	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
+	rest.Register(world.Router, test.Content, test.StreamEncoder, test.Pool, stream.Options{
+		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
+	})
+	rest.StreamPost("/hello", receiveOnlyActivePhaseServer)
+	world.Start()
+
+	transport := http.Transport(nil)
+	transport.Protocols.SetHTTP1(false)
+
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(transport))
+
+	url := world.PathServerURL("http", "hello")
+
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+
+	var greeting string
+	err := c.StreamPost(ctx, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, receiveOnlyActivePhaseClient(&greeting))
+	require.NoError(t, err)
+	require.Equal(t, "Hello Bob, Alice, Carol, Dan, Erin, Frank", greeting)
+}
+
+func TestRestStreamPostSurvivesSendOnlyActivePhase(t *testing.T) {
+	config := test.NewInsecureTransportConfig()
+	config.HTTP.Timeout = 100 * time.Millisecond
+	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
+	rest.Register(world.Router, test.Content, test.StreamEncoder, test.Pool, stream.Options{
+		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
+	})
+	rest.StreamPost("/hello", sendOnlyActivePhaseServer)
+	world.Start()
+
+	transport := http.Transport(nil)
+	transport.Protocols.SetHTTP1(false)
+
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(transport))
+
+	url := world.PathServerURL("http", "hello")
+
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+
+	var greetings []string
+	err := c.StreamPost(ctx, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, sendOnlyActivePhaseClient(&greetings))
+	require.NoError(t, err)
+	require.Equal(t, []string{"one", "two", "three", "four", "five", "six", "Hello Eve"}, greetings)
+}
+
+func echoStreamServer(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 	for {
 		req, err := stream.Recv()
 		if err != nil {
@@ -304,33 +357,7 @@ func staleClientAfterFourEchoes(greetings *[]string) client.RequestStreamHandler
 	}
 }
 
-func TestRestStreamPostSurvivesReceiveOnlyActivePhase(t *testing.T) {
-	config := test.NewInsecureTransportConfig()
-	config.HTTP.Timeout = 100 * time.Millisecond
-	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.Register(world.Router, test.Content, test.Pool, content.StreamOptions{
-		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
-	})
-	rest.StreamPost("/hello", receiveOnlyActivePhaseServer)
-	world.Start()
-
-	transport := http.Transport(nil)
-	transport.Protocols.SetHTTP1(false)
-
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(transport))
-
-	url := world.PathServerURL("http", "hello")
-
-	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
-	defer cancel()
-
-	var greeting string
-	err := c.StreamPost(ctx, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, receiveOnlyActivePhaseClient(&greeting))
-	require.NoError(t, err)
-	require.Equal(t, "Hello Bob, Alice, Carol, Dan, Erin, Frank", greeting)
-}
-
-func receiveOnlyActivePhaseServer(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+func receiveOnlyActivePhaseServer(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 	var names []string
 
 	for range 6 {
@@ -367,33 +394,7 @@ func receiveOnlyActivePhaseClient(greeting *string) client.RequestStreamHandler 
 	}
 }
 
-func TestRestStreamPostSurvivesSendOnlyActivePhase(t *testing.T) {
-	config := test.NewInsecureTransportConfig()
-	config.HTTP.Timeout = 100 * time.Millisecond
-	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.Register(world.Router, test.Content, test.Pool, content.StreamOptions{
-		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
-	})
-	rest.StreamPost("/hello", sendOnlyActivePhaseServer)
-	world.Start()
-
-	transport := http.Transport(nil)
-	transport.Protocols.SetHTTP1(false)
-
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(transport))
-
-	url := world.PathServerURL("http", "hello")
-
-	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
-	defer cancel()
-
-	var greetings []string
-	err := c.StreamPost(ctx, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, sendOnlyActivePhaseClient(&greetings))
-	require.NoError(t, err)
-	require.Equal(t, []string{"one", "two", "three", "four", "five", "six", "Hello Eve"}, greetings)
-}
-
-func sendOnlyActivePhaseServer(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+func sendOnlyActivePhaseServer(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 	for i, name := range []string{"one", "two", "three", "four", "five", "six"} {
 		if i > 0 {
 			time.Sleep(30 * time.Millisecond)

@@ -10,5 +10,5 @@
 // This package only answers those two questions; it does not rank items by quality value or wildcard
 // precedence. A caller that needs to decide whether an Accept list is satisfiable for the media type(s)
 // it can produce combines these helpers itself — see
-// [github.com/alexfalkowski/go-service/v2/net/http/content.Content.NewStreamFromAccept] for an example.
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewFromAccept] for an example.
 package accept

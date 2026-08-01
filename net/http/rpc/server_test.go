@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -19,9 +20,9 @@ import (
 func TestStreamRouteRejectsHTTP1(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rpc.Register(router, test.Content, test.Pool, content.StreamOptions{})
+	rpc.Register(router, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
 
-	rpc.StreamRoute("/hello", func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
+	rpc.StreamRoute("/hello", func(_ context.Context, _ *stream.RequestStream[test.Request, test.Response]) error {
 		return nil
 	})
 
@@ -40,9 +41,9 @@ func TestStreamRouteRecvAndSendOverHTTP2(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rpc.Register(router, test.Content, test.Pool, content.StreamOptions{})
+	rpc.Register(router, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
 
-	rpc.StreamRoute("/hello", func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+	rpc.StreamRoute("/hello", func(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 		for {
 			req, err := stream.Recv()
 			if err != nil {

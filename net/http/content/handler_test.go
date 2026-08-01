@@ -116,7 +116,7 @@ func TestNewHandlerReplacesExistingContentType(t *testing.T) {
 func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 	enc := encoding.NewMap()
 	enc.Register("json", test.PartialEncoder{})
-	cont := content.NewContent(enc, test.StreamEncoder, test.Pool)
+	cont := content.NewContent(enc, test.Pool)
 
 	handler := content.NewHandler(cont, func(_ context.Context) (*test.Response, error) {
 		return &test.Response{Greeting: "Hello Bob"}, nil

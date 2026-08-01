@@ -7,6 +7,7 @@ import (
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 )
@@ -87,7 +88,7 @@ func RestRequestError(_ context.Context, _ *Request) (*Response, error) {
 }
 
 func registerRest(router *http.Router) {
-	rest.Register(router, Content, Pool, content.StreamOptions{})
+	rest.Register(router, Content, StreamEncoder, Pool, stream.Options{})
 }
 
 func restClient(client *http.Client, os *worldOpts) *rest.Client {

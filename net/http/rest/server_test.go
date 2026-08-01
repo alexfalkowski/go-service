@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -20,9 +21,9 @@ func TestStreamGetSendsValuesAndMarksRouteStreaming(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rest.Register(router, test.Content, test.Pool, content.StreamOptions{})
+	rest.Register(router, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
 
-	rest.StreamGet("/hello", func(_ context.Context, stream *content.Stream[test.Response]) error {
+	rest.StreamGet("/hello", func(_ context.Context, stream *stream.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
@@ -49,9 +50,9 @@ func TestStreamGetSendsValuesAndMarksRouteStreaming(t *testing.T) {
 func TestStreamPostRejectsHTTP1(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rest.Register(router, test.Content, test.Pool, content.StreamOptions{})
+	rest.Register(router, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
 
-	rest.StreamPost("/hello", func(_ context.Context, _ *content.RequestStream[test.Request, test.Response]) error {
+	rest.StreamPost("/hello", func(_ context.Context, _ *stream.RequestStream[test.Request, test.Response]) error {
 		return nil
 	})
 
@@ -70,7 +71,7 @@ func TestStreamPostPutPatchRecvAndSendOverHTTP2(t *testing.T) {
 	tests := []struct {
 		name   string
 		method string
-		call   func(string, content.RequestStreamHandler[test.Request, test.Response])
+		call   func(string, stream.RequestHandler[test.Request, test.Response])
 	}{
 		{name: "post", method: http.MethodPost, call: rest.StreamPost[test.Request, test.Response]},
 		{name: "put", method: http.MethodPut, call: rest.StreamPut[test.Request, test.Response]},
@@ -82,9 +83,9 @@ func TestStreamPostPutPatchRecvAndSendOverHTTP2(t *testing.T) {
 			mux := http.NewServeMux()
 			policy := http.NewRoutePolicy()
 			router := http.NewRouter(mux, policy)
-			rest.Register(router, test.Content, test.Pool, content.StreamOptions{})
+			rest.Register(router, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
 
-			tt.call("/hello", func(_ context.Context, stream *content.RequestStream[test.Request, test.Response]) error {
+			tt.call("/hello", func(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 				for {
 					req, err := stream.Recv()
 					if err != nil {

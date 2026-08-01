@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
@@ -46,27 +47,6 @@ func TestRPCWithContent(t *testing.T) {
 			requireSuccessfulRPCPost(t, mt.ContentType)
 		})
 	}
-}
-
-func requireSuccessfulRPCPost(t *testing.T, contentType string) {
-	t.Helper()
-
-	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-
-	rpc.Route("/hello", test.SuccessSayHello)
-	httpClient, err := world.NewHTTP()
-	require.NoError(t, err)
-
-	client := rpc.NewClient(world.ServerURL("http"),
-		rpc.WithClientContentType(contentType),
-		rpc.WithClientRoundTripper(httpClient.Transport),
-	)
-	req := &test.Request{Name: "Bob"}
-	res := &test.Response{}
-
-	err = client.Post(t.Context(), "/hello", req, res)
-	require.NoError(t, err)
-	require.Equal(t, "Hello Bob", res.Greeting)
 }
 
 func TestSuccessProtobufRPC(t *testing.T) {
@@ -271,7 +251,7 @@ func TestRPCStreamRouteRefreshesReadDeadlineOverHTTP2(t *testing.T) {
 	config := test.NewSecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	rpc.Register(world.Router, test.Content, test.Pool, content.StreamOptions{
+	rpc.Register(world.Router, test.Content, test.StreamEncoder, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
 	rpc.StreamRoute("/hello", echoStreamServer)
@@ -280,7 +260,7 @@ func TestRPCStreamRouteRefreshesReadDeadlineOverHTTP2(t *testing.T) {
 	httpClient, err := world.NewHTTP()
 	require.NoError(t, err)
 
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(httpClient.Transport))
+	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(httpClient.Transport))
 
 	url := world.PathServerURL("https", "hello")
 
@@ -291,4 +271,25 @@ func TestRPCStreamRouteRefreshesReadDeadlineOverHTTP2(t *testing.T) {
 	err = c.StreamPost(ctx, url, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON}, staleClientAfterFourEchoes(&greetings))
 	require.Error(t, err)
 	require.Equal(t, []string{"Hello Bob", "Hello Alice", "Hello Carol", "Hello Dan"}, greetings)
+}
+
+func requireSuccessfulRPCPost(t *testing.T, contentType string) {
+	t.Helper()
+
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+
+	rpc.Route("/hello", test.SuccessSayHello)
+	httpClient, err := world.NewHTTP()
+	require.NoError(t, err)
+
+	client := rpc.NewClient(world.ServerURL("http"),
+		rpc.WithClientContentType(contentType),
+		rpc.WithClientRoundTripper(httpClient.Transport),
+	)
+	req := &test.Request{Name: "Bob"}
+	res := &test.Response{}
+
+	err = client.Post(t.Context(), "/hello", req, res)
+	require.NoError(t, err)
+	require.Equal(t, "Hello Bob", res.Greeting)
 }
