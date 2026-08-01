@@ -3,6 +3,7 @@ package stream
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/budget"
 	"github.com/alexfalkowski/go-service/v2/net/http/compress"
@@ -23,7 +24,7 @@ import (
 // A handler error returned before the first successful Send is an ordinary HTTP error rendered
 // through [status.WriteError]. A handler error returned after the first successful Send aborts the
 // response via panic([http.ErrAbortHandler]) instead, since the response is already committed — see
-// [Stream.Send] and [finalizeStream].
+// [Stream.Send] and [finishResponse].
 //
 // Drain:
 // When opts.Drain starts before the handler is invoked, this handler returns 503. Otherwise it cancels
@@ -52,10 +53,6 @@ func NewHandler[Res any](cont *content.Content, sm *stream.Map, opts Options, ha
 		limiter := meta.Limiter(ctx)
 
 		resMedia, err := NewMediaFromAccept(req, sm)
-		if err == nil && resMedia.NewEncoder == nil {
-			err = ErrUnsupportedMedia
-		}
-
 		if err != nil {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusNotAcceptable, err))
 			return
@@ -83,7 +80,7 @@ func NewHandler[Res any](cont *content.Content, sm *stream.Map, opts Options, ha
 			writeTimeout: opts.WriteTimeout,
 			limiter:      limiter,
 		}
-		finalizeStream(ctx, res, st, handler(ctx, st))
+		finishResponse(ctx, res, st, handler(ctx, st))
 	}
 }
 
@@ -91,7 +88,7 @@ func NewHandler[Res any](cont *content.Content, sm *stream.Map, opts Options, ha
 //
 // The handler must propagate a [Stream.Send] error by returning it (directly, or wrapped) rather than
 // ignoring it and continuing. Send is sticky — once it fails, every later call returns the same error
-// immediately — but only the handler returning that error triggers [finalizeStream]'s abort/HTTP-error
+// immediately — but only the handler returning that error triggers [finishResponse]'s abort/HTTP-error
 // handling; a handler that swallows a Send error and returns nil degrades to a no-op loop over a dead
 // connection instead of ending the request. When configured [Options.Drain] starts, ctx is
 // canceled with [ErrDraining]; handlers that wait on an upstream source must select on ctx.Done and
@@ -154,10 +151,6 @@ func NewRequestHandler[Req any, Res any](cont *content.Content, sm *stream.Map, 
 		}
 
 		resMedia, err := NewMediaFromAccept(req, sm)
-		if err == nil && resMedia.NewEncoder == nil {
-			err = ErrUnsupportedMedia
-		}
-
 		if err != nil {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusNotAcceptable, err))
 			return
@@ -180,21 +173,22 @@ func NewRequestHandler[Req any, Res any](cont *content.Content, sm *stream.Map, 
 		}
 
 		capped := budget.NewReader(req.Body, opts.MaxReceiveSize.Bytes())
+		decoder := reqMedia.NewDecoder(capped)
 		st := &RequestStream[Req, Res]{
 			Stream: Stream[Res]{
 				ctx:          ctx,
 				writer:       writer,
-				encoder:      resMedia.NewEncoder(writer),
+				encoder:      &requestEncoder{Encoder: resMedia.NewEncoder(writer), decoder: decoder},
 				controller:   controller,
 				readTimeout:  opts.ReadTimeout,
 				writeTimeout: opts.WriteTimeout,
 				limiter:      limiter,
 			},
-			decoder:        reqMedia.NewDecoder(capped),
+			decoder:        decoder,
 			capped:         capped,
 			maxReceiveSize: opts.MaxReceiveSize.Bytes(),
 		}
-		finalizeStream(ctx, res, st, handler(ctx, st))
+		finishResponse(ctx, res, &st.Stream, handler(ctx, st))
 	}
 }
 
@@ -207,15 +201,7 @@ func NewRequestHandler[Req any, Res any](cont *content.Content, sm *stream.Map, 
 // an active Recv returns [ErrDraining].
 type RequestHandler[Req any, Res any] func(ctx context.Context, stream *RequestStream[Req, Res]) error
 
-// closer is satisfied by both [*Stream] and [*RequestStream] (which overrides close to also close its
-// decoder), letting [finalizeStream] handle both handler shapes with one implementation.
-type closer interface {
-	committed() bool
-	draining() bool
-	close() error
-}
-
-// finalizeStream applies the streaming error contract after a stream handler returns.
+// finishResponse applies the streaming error contract after a stream handler returns.
 //
 // If the response was never committed, a handler error is rendered as an ordinary HTTP error via
 // [status.WriteError] (a nil error leaves an empty, implicitly-200 response). If the response was
@@ -223,37 +209,48 @@ type closer interface {
 // recorded for operator diagnostics and the response is aborted via panic([http.ErrAbortHandler]),
 // which [transport/http.recoveryHandler] and the access logger already special-case for a committed
 // response.
-func finalizeStream(ctx context.Context, res http.ResponseWriter, s closer, err error) {
+func finishResponse[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
 	if s.draining() {
-		if !s.committed() {
-			_ = status.WriteError(ctx, res, status.SafeError(http.StatusServiceUnavailable, ErrDraining))
-
-			return
-		}
-
-		err = s.close()
-		if err == nil {
-			return
-		}
+		finishResponseDuringDrain(ctx, res, s, err)
+		return
 	}
 
 	if !s.committed() {
 		if err != nil {
 			_ = status.WriteError(ctx, res, err)
 		}
-
 		return
 	}
 
-	if err == nil {
-		err = s.close()
+	if err != nil {
+		abortResponse(ctx, err)
 	}
 
-	if err != nil {
-		status.RecordError(ctx, err)
-		span := tracer.SpanFromContext(ctx)
-		span.RecordError(err)
-		span.SetStatus(tracer.StatusCodeError, err.Error())
-		panic(http.ErrAbortHandler)
+	if closeErr := s.close(); closeErr != nil {
+		abortResponse(ctx, closeErr)
 	}
+}
+
+func finishResponseDuringDrain[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
+	if !s.committed() {
+		_ = status.WriteError(ctx, res, status.SafeError(http.StatusServiceUnavailable, ErrDraining))
+		return
+	}
+
+	closeErr := s.close()
+	if err != nil && !errors.Is(err, ErrDraining) && !errors.Is(err, ctx.Err()) {
+		abortResponse(ctx, err)
+	}
+
+	if closeErr != nil {
+		abortResponse(ctx, closeErr)
+	}
+}
+
+func abortResponse(ctx context.Context, err error) {
+	status.RecordError(ctx, err)
+	span := tracer.SpanFromContext(ctx)
+	span.RecordError(err)
+	span.SetStatus(tracer.StatusCodeError, err.Error())
+	panic(http.ErrAbortHandler)
 }

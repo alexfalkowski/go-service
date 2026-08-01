@@ -14,18 +14,18 @@ import (
 // produces. matchStreamAccept uses its major type to decide whether an Accept wildcard is satisfiable.
 var ndjsonType = media.MustParse(media.NDJSON)
 
-// streamKinds maps a media subtype to the [stream.Map] kind that encodes/decodes it.
+// streamKinds maps a normalized media type to the [stream.Map] kind that encodes/decodes it.
 //
-// This mapping is explicit rather than reusing the subtype as the kind directly: "application/x-ndjson"
-// has subtype "x-ndjson", but it is framed newline-delimited JSON, so it reuses the "json" streaming
-// kind rather than needing its own codec.
+// This mapping is explicit rather than reusing the media type as the kind directly:
+// "application/x-ndjson" is framed newline-delimited JSON, so it reuses the "json" streaming kind rather
+// than needing its own codec.
 var streamKinds = map[string]string{
-	"x-ndjson": "json",
+	media.NDJSON: "json",
 }
 
 // NewMedia builds a Media from a media type string and streaming registry.
 //
-// NewMedia never falls back to JSON: an unparsable media type, a subtype with
+// NewMedia never falls back to JSON: an unparsable media type, a media type with
 // no entry in the streaming media mapping, or a kind unregistered in sm all return
 // [ErrUnsupportedMedia]. Streaming callers must fail explicitly rather than silently degrading to
 // a different wire format.
@@ -35,7 +35,7 @@ func NewMedia(mediaType string, sm *stream.Map) (Media, error) {
 		return Media{}, ErrUnsupportedMedia
 	}
 
-	kind, ok := streamKinds[value.Subtype()]
+	kind, ok := streamKinds[value.String()]
 	if !ok {
 		return Media{}, ErrUnsupportedMedia
 	}
@@ -66,7 +66,8 @@ type Media struct {
 }
 
 // NewMediaFromAccept resolves the request Accept header to a streaming encoder, falling back to
-// Content-Type when Accept is absent, and to [media.NDJSON] when neither is set.
+// Content-Type when Accept is absent, and to [media.NDJSON] when neither is set. A registered
+// codec without an encoder is unsupported.
 //
 // An Accept list is satisfiable for the server's producible streaming media type if it contains an
 // exact match, or a matching wildcard ("*/*", or "type/*" where type matches the producible type's own
@@ -84,22 +85,31 @@ type Media struct {
 // only concrete, unproducible media types must get an explicit rejection, not a silently different wire
 // format.
 func NewMediaFromAccept(req *http.Request, sm *stream.Map) (Media, error) {
+	var mediaType string
+
 	header := req.Header.Get(content.AcceptKey)
 	if strings.IsEmpty(header) {
-		mediaType := req.Header.Get(content.TypeKey)
-		if strings.IsEmpty(mediaType) {
-			mediaType = media.NDJSON
+		m := req.Header.Get(content.TypeKey)
+		if strings.IsEmpty(m) {
+			m = media.NDJSON
 		}
 
-		return NewMedia(mediaType, sm)
+		mediaType = m
+	} else {
+		m, ok := matchStreamAccept(header)
+		if !ok {
+			return Media{}, ErrUnsupportedMedia
+		}
+
+		mediaType = m
 	}
 
-	mediaType, ok := matchStreamAccept(header)
-	if !ok {
+	resolved, err := NewMedia(mediaType, sm)
+	if err != nil || resolved.NewEncoder == nil {
 		return Media{}, ErrUnsupportedMedia
 	}
 
-	return NewMedia(mediaType, sm)
+	return resolved, nil
 }
 
 // matchStreamAccept reports whether header, an Accept header value, is satisfiable for a registered
@@ -126,7 +136,7 @@ func matchStreamAccept(header string) (string, bool) {
 
 		zero := accept.IsZeroQuality(item)
 
-		if _, ok := streamKinds[value.Subtype()]; ok {
+		if _, ok := streamKinds[value.String()]; ok {
 			exact.consider(zero, value.String())
 			continue
 		}
@@ -193,11 +203,11 @@ func NewMediaFromContentType(req *http.Request, sm *stream.Map) (Media, error) {
 	// Re-resolve the kind rather than carrying it on Media, keeping the struct free of a field
 	// that exists only for this one caller. A missing entry, a nil decoder constructor, or a banned kind
 	// are all treated as unsupported so this fails closed: neither the missing-entry nor the banned-kind
-	// arm can currently fire, because streamKinds' only mapping ("x-ndjson" to "json") already passed the
+	// arm can currently fire, because streamKinds' only mapping ("application/x-ndjson" to "json") already passed the
 	// lookup inside NewMedia and "json" is not a banned kind. Both stay as guards for a future
-	// streamKinds entry that maps to a banned kind, or a NewMedia change that admits an unknown
-	// subtype.
-	kind, ok := streamKinds[m.Subtype()]
+	// streamKinds entry that maps to a banned kind, or a NewMedia change that admits an unknown media
+	// type.
+	kind, ok := streamKinds[m.String()]
 	if !ok || m.NewDecoder == nil || !policy.CanDecode(kind) {
 		return Media{}, ErrUnsupportedMedia
 	}
