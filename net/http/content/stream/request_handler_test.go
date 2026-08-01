@@ -7,105 +7,47 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewHandlerSendsValuesAndOptsOutOfGzip(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
-			return err
-		}
+func TestNewRequestHandlerClosesCodecsBeforeAbortAfterCommitOnDrain(t *testing.T) {
+	encoder := &closeTracker{}
+	decoder := &closeTracker{}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	sm.Register("json", codec)
+	drain := make(chan struct{})
+	handler := contentstream.NewRequestHandler(
+		test.Content, sm,
+		contentstream.Options{Drain: drain}, func(ctx context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
+				return err
+			}
 
-		return stream.Send(&test.Response{Greeting: "Hello Alice"})
-	})
+			close(drain)
+			<-ctx.Done()
 
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
+			return test.ErrFailed
+		},
+	)
 
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, media.NDJSON, res.Header().Get(content.TypeKey))
-	require.NotEmpty(t, res.Header().Get(compress.HeaderNoCompression))
-
-	scanner := bufio.NewScanner(res.Body)
-	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
-	require.Equal(t, "Hello Alice", decodeNDJSONGreeting(t, scanner))
-	require.False(t, scanner.Scan())
-}
-
-func TestNewHandlerGzipHandlerPassesThroughUncompressed(t *testing.T) {
-	inner := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		return stream.Send(&test.Response{Greeting: "Hello Bob"})
-	})
-	handler := compress.GzipHandler(inner)
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	req.Header.Set("Accept-Encoding", "gzip")
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Empty(t, res.Header().Get("Content-Encoding"))
-	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, bufio.NewScanner(res.Body)))
-}
-
-func TestNewHandlerReturnsErrorBeforeFirstSendAsHTTPError(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, _ *contentstream.Stream[test.Response]) error {
-		return status.Error(http.StatusBadRequest, test.ErrFailed.Error())
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, media.Error+"; charset=utf-8", res.Header().Get(content.TypeKey))
-}
-
-func TestNewHandlerFirstSendEncodeFailureDoesNotCommit(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Unencodable]) error {
-		return stream.Send(&test.Unencodable{})
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusInternalServerError, res.Code)
-	require.Equal(t, media.Error+"; charset=utf-8", res.Header().Get(content.TypeKey))
-}
-
-func TestNewHandlerAbortsAfterCommit(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
-			return err
-		}
-
-		return test.ErrFailed
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+	req.ProtoMajor = 2
+	req.Header.Set(content.TypeKey, media.NDJSON)
 	req.Header.Set(content.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
@@ -113,88 +55,39 @@ func TestNewHandlerAbortsAfterCommit(t *testing.T) {
 		handler.ServeHTTP(res, req)
 	})
 
-	scanner := bufio.NewScanner(res.Body)
-	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
+	require.Equal(t, 1, encoder.closes)
+	require.Equal(t, 1, decoder.closes)
 }
 
-func TestNewHandlerEndsCleanlyAfterCommitOnDrain(t *testing.T) {
-	drain := make(chan struct{})
-	handler := contentstream.NewHandler(
-		test.Content,
-		test.StreamEncoder,
-		contentstream.Options{Drain: drain}, func(ctx context.Context, stream *contentstream.Stream[test.Response]) error {
-			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
-				return err
-			}
+func TestNewRequestHandlerClosesDecoderWhenEncoderCloseFails(t *testing.T) {
+	exporter := test.EnableIsolatedSpanExporter(t)
+	decoder := &closeTracker{err: errors.New("decoder close")}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return test.CloseErrEncoder{} }
+	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	sm.Register("json", codec)
+	handler := http.NewTelemetryHandler(contentstream.NewRequestHandler(
+		test.Content, sm,
+		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			return stream.Send(&test.Response{Greeting: "Hello Bob"})
+		},
+	), "http.server")
 
-			close(drain)
-			<-ctx.Done()
-
-			return ctx.Err()
-		})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+	req.ProtoMajor = 2
+	req.Header.Set(content.TypeKey, media.NDJSON)
 	req.Header.Set(content.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
-	handler.ServeHTTP(res, req)
+	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
+		handler.ServeHTTP(res, req)
+	})
 
-	require.Equal(t, http.StatusOK, res.Code)
-	scanner := bufio.NewScanner(res.Body)
-	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
-	require.False(t, scanner.Scan())
-}
-
-func TestNewHandlerDoesNotSendAfterDrain(t *testing.T) {
-	drain := make(chan struct{})
-	handler := contentstream.NewHandler(
-		test.Content,
-		test.StreamEncoder,
-		contentstream.Options{Drain: drain}, func(ctx context.Context, stream *contentstream.Stream[test.Response]) error {
-			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
-				return err
-			}
-
-			close(drain)
-			<-ctx.Done()
-
-			return stream.Send(&test.Response{Greeting: "Hello Alice"})
-		})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusOK, res.Code)
-	scanner := bufio.NewScanner(res.Body)
-	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
-	require.False(t, scanner.Scan())
-}
-
-func TestNewHandlerReturnsServiceUnavailableOnDrainBeforeCommit(t *testing.T) {
-	drain := make(chan struct{})
-	close(drain)
-	called := false
-	handler := contentstream.NewHandler(
-		test.Content,
-		test.StreamEncoder,
-		contentstream.Options{Drain: drain}, func(ctx context.Context, _ *contentstream.Stream[test.Response]) error {
-			called = true
-			<-ctx.Done()
-
-			return ctx.Err()
-		})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusServiceUnavailable, res.Code)
-	require.False(t, called)
+	require.Equal(t, 1, decoder.closes)
+	spans := exporter.Spans()
+	require.Len(t, spans, 1)
+	require.Equal(t, test.ErrFailed.Error(), spans[0].Status().Description)
 }
 
 func TestNewRequestHandlerReturnsServiceUnavailableOnDrainBeforeHandler(t *testing.T) {
@@ -339,150 +232,6 @@ func TestNewRequestHandlerEndsCleanlyAfterCommitOnDrain(t *testing.T) {
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
 	require.False(t, scanner.Scan())
-}
-
-func TestNewHandlerAbortsAfterCommitRecordsTraceError(t *testing.T) {
-	exporter := test.EnableIsolatedSpanExporter(t)
-	handler := http.NewTelemetryHandler(contentstream.NewHandler(
-		test.Content,
-		test.StreamEncoder,
-		contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
-				return err
-			}
-
-			return test.ErrFailed
-		}), "http.server")
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
-		handler.ServeHTTP(res, req)
-	})
-
-	spans := exporter.Spans()
-	require.Len(t, spans, 1)
-	require.Equal(t, tracer.StatusCodeError, spans[0].Status().Code)
-	require.Equal(t, test.ErrFailed.Error(), spans[0].Status().Description)
-	require.NotEmpty(t, spans[0].Events())
-}
-
-func TestNewHandlerRejectsUnsupportedMedia(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, _ *contentstream.Stream[test.Response]) error {
-		return nil
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.JSON)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusNotAcceptable, res.Code)
-}
-
-func TestNewHandlerResolvesWildcardOrBrowserStyleAccept(t *testing.T) {
-	tests := []struct {
-		name        string
-		accept      string
-		contentType string
-	}{
-		{name: "curl default", accept: "*/*"},
-		{name: "subtype wildcard", accept: "application/*"},
-		{name: "browser-style list", accept: "text/html,application/xhtml+xml,*/*;q=0.8"},
-		{name: "absent accept and content-type"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-				return stream.Send(&test.Response{Greeting: "Hello Bob"})
-			})
-
-			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-			if tt.accept != "" {
-				req.Header.Set(content.AcceptKey, tt.accept)
-			}
-
-			if tt.contentType != "" {
-				req.Header.Set(content.TypeKey, tt.contentType)
-			}
-
-			res := httptest.NewRecorder()
-
-			handler.ServeHTTP(res, req)
-
-			require.Equal(t, http.StatusOK, res.Code)
-			require.Equal(t, media.NDJSON, res.Header().Get(content.TypeKey))
-		})
-	}
-}
-
-func TestNewHandlerSendChargesOneLimiterTokenPerMessage(t *testing.T) {
-	limiter := &test.CountingLimiter{Remaining: 2}
-
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
-			return err
-		}
-
-		return stream.Send(&test.Response{Greeting: "Hello Alice"})
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	req = req.WithContext(meta.WithLimiter(req.Context(), limiter))
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, 0, limiter.Remaining)
-}
-
-func TestNewHandlerSendAbortsAfterCommitWhenLimiterExhausted(t *testing.T) {
-	limiter := &test.CountingLimiter{Remaining: 1}
-
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
-			return err
-		}
-
-		return stream.Send(&test.Response{Greeting: "Hello Alice"})
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	req = req.WithContext(meta.WithLimiter(req.Context(), limiter))
-	res := httptest.NewRecorder()
-
-	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
-		handler.ServeHTTP(res, req)
-	})
-
-	scanner := bufio.NewScanner(res.Body)
-	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
-	require.False(t, scanner.Scan())
-}
-
-func TestNewHandlerSendPreCommitDenialMapsTo429(t *testing.T) {
-	limiter := &test.CountingLimiter{Remaining: 0}
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	req = req.WithContext(meta.WithLimiter(req.Context(), limiter))
-	res := httptest.NewRecorder()
-
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		return stream.Send(&test.Response{Greeting: "Hello Bob"})
-	})
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusTooManyRequests, res.Code)
-	require.Equal(t, media.Error+"; charset=utf-8", res.Header().Get(content.TypeKey))
 }
 
 func TestNewRequestHandlerRejectsHTTP1(t *testing.T) {
@@ -879,41 +628,6 @@ func TestNewRequestHandlerRecvDoesNotChargeLimiterForOverCapValue(t *testing.T) 
 	require.Equal(t, 1, limiter.Remaining)
 }
 
-func TestNewHandlerSendIsSticky(t *testing.T) {
-	var firstErr, secondErr error
-
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Unencodable]) error {
-		firstErr = stream.Send(&test.Unencodable{})
-		secondErr = stream.Send(&test.Unencodable{})
-		return firstErr
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Error(t, firstErr)
-	require.Equal(t, firstErr, secondErr)
-	require.Equal(t, http.StatusInternalServerError, res.Code)
-}
-
-func TestNewHandlerSendExtendDeadlineFailure(t *testing.T) {
-	opts := contentstream.Options{WriteTimeout: time.MustParseDuration("1s")}
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, opts, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		return stream.Send(&test.Response{Greeting: "hi"})
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusInternalServerError, res.Code)
-}
-
 func TestNewRequestHandlerSendExtendReadDeadlineFailure(t *testing.T) {
 	opts := contentstream.Options{ReadTimeout: time.MustParseDuration("1s"), WriteTimeout: time.MustParseDuration("1s")}
 	handler := contentstream.NewRequestHandler(
@@ -1062,49 +776,6 @@ func TestNewRequestHandlerRecvExtendWriteDeadlineFailure(t *testing.T) {
 	require.ErrorIs(t, recvErr, test.ErrFailed)
 }
 
-func TestNewHandlerSendCommitFailure(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		return stream.Send(&test.Response{Greeting: "hi"})
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := &test.ErrResponseWriter{}
-
-	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
-		handler.ServeHTTP(res, req)
-	})
-}
-
-func TestNewHandlerSendFlushFailure(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		return stream.Send(&test.Response{Greeting: "hi"})
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := &test.NoFlushResponseWriter{}
-
-	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
-		handler.ServeHTTP(res, req)
-	})
-}
-
-func TestNewHandlerSendLimiterErrorMapsTo500(t *testing.T) {
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	req = req.WithContext(meta.WithLimiter(req.Context(), test.ErrorLimiter{}))
-	res := httptest.NewRecorder()
-
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
-		return stream.Send(&test.Response{Greeting: "hi"})
-	})
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusInternalServerError, res.Code)
-}
-
 func TestNewRequestHandlerRecvLimiterErrorMapsTo500(t *testing.T) {
 	var recvErr error
 
@@ -1189,26 +860,6 @@ func TestNewRequestHandlerRecvRecoversStickyCapReaderError(t *testing.T) {
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.Code)
 }
 
-func TestNewHandlerRejectsNilEncoderForRegisteredKind(t *testing.T) {
-	sm := encodingstream.NewMap()
-	codec := sm.Get("json")
-	codec.Encoder = nil
-	sm.Register("json", codec)
-	cont := content.NewContent(test.Encoder, test.Pool)
-
-	handler := contentstream.NewHandler(cont, sm, contentstream.Options{}, func(_ context.Context, _ *contentstream.Stream[test.Response]) error {
-		return nil
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusNotAcceptable, res.Code)
-}
-
 func TestNewRequestHandlerRejectsNilCodecFieldForRegisteredKind(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -1244,18 +895,6 @@ func TestNewRequestHandlerRejectsNilCodecFieldForRegisteredKind(t *testing.T) {
 	}
 }
 
-func decodeNDJSONGreeting(t *testing.T, scanner *bufio.Scanner) string {
-	t.Helper()
-
-	require.True(t, scanner.Scan())
-
-	var res map[string]any
-	require.NoError(t, json.Unmarshal(scanner.Bytes(), &res))
-
-	greeting, _ := res["Greeting"].(string)
-	return greeting
-}
-
 type drainAfterDecode struct {
 	drain  chan struct{}
 	closed <-chan struct{}
@@ -1284,4 +923,37 @@ func (b *drainBody) Close() error {
 	close(b.closed)
 
 	return nil
+}
+
+type closeTracker struct {
+	closes int
+	err    error
+}
+
+type trackedEncoder struct {
+	tracker *closeTracker
+}
+
+func (*trackedEncoder) Encode(any) error {
+	return nil
+}
+
+func (e *trackedEncoder) Close() error {
+	e.tracker.closes++
+
+	return nil
+}
+
+type trackedDecoder struct {
+	tracker *closeTracker
+}
+
+func (*trackedDecoder) Decode(any) error {
+	return nil
+}
+
+func (d *trackedDecoder) Close() error {
+	d.tracker.closes++
+
+	return d.tracker.err
 }

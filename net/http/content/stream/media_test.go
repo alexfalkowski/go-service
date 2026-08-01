@@ -25,6 +25,19 @@ func TestNewFromContentTypeRejectsEncoderOnlyKind(t *testing.T) {
 	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 }
 
+func TestNewFromAcceptRejectsDecoderOnlyKind(t *testing.T) {
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = nil
+	sm.Register("json", codec)
+	req := httptest.NewRequestWithContext(t.Context(), "GET", "/hello", nil)
+	req.Header.Set(content.AcceptKey, media.NDJSON)
+
+	_, err := contentstream.NewMediaFromAccept(req, sm)
+
+	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
+}
+
 func TestNewFromContentTypeResolvesNDJSON(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 	req.Header.Set(content.TypeKey, media.NDJSON)
@@ -34,6 +47,15 @@ func TestNewFromContentTypeResolvesNDJSON(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, m.NewDecoder)
 	require.Equal(t, media.NDJSON, m.String())
+}
+
+func TestNewFromContentTypeRejectsWrongMajorNDJSON(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.TypeKey, "text/x-ndjson")
+
+	_, err := contentstream.NewMediaFromContentType(req, test.StreamEncoder)
+
+	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 }
 
 func TestNewMediaResolvesUsableDecoderForEveryStreamKind(t *testing.T) {
@@ -62,6 +84,12 @@ func TestNewMediaRejectsUnmappedSubtype(t *testing.T) {
 	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 }
 
+func TestNewMediaRejectsWrongMajorNDJSON(t *testing.T) {
+	_, err := contentstream.NewMedia("text/x-ndjson", encodingstream.NewMap())
+
+	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
+}
+
 func TestNewMediaRejectsUnparsableType(t *testing.T) {
 	_, err := contentstream.NewMedia("not-a-media-type", encodingstream.NewMap())
 
@@ -85,6 +113,7 @@ func TestNewFromAcceptResolvesWildcardOrExactMatchAnywhereInList(t *testing.T) {
 		{name: "absent accept, absent content-type"},
 		{name: "exact match overrides a co-present zero quality bare wildcard", accept: "*/*;q=0, " + media.NDJSON},
 		{name: "subtype wildcard overrides a co-present zero quality bare wildcard", accept: "*/*;q=0, application/*"},
+		{name: "subtype wildcard overrides wrong-major zero quality type", accept: "text/x-ndjson;q=0, application/*"},
 	}
 
 	for _, tt := range tests {
@@ -113,6 +142,7 @@ func TestNewFromAcceptRejectsConcreteOnlyUnsatisfiableAccept(t *testing.T) {
 		accept string
 	}{
 		{name: "concrete unproducible type", accept: media.JSON},
+		{name: "concrete type with wrong major", accept: "text/x-ndjson"},
 		{name: "concrete list with no match and no wildcard", accept: media.JSON + ", " + media.YAML},
 		{name: "unparsable", accept: "not-a-media-type"},
 		{name: "subtype wildcard with mismatched major type", accept: "text/*"},
