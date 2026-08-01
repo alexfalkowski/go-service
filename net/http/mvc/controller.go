@@ -5,7 +5,7 @@ import "github.com/alexfalkowski/go-service/v2/context"
 // Controller executes an MVC action and returns a View, a model, and an error.
 //
 // Controllers are invoked by the routing helpers in this package (see Route/Get/Post/etc.). Those helpers
-// populate the request context with HTTP content metadata before calling the Controller.
+// populate the request context with the HTTP request and response writer before calling the Controller.
 //
 // Return values:
 //   - view: the view that should be rendered. It is typically prebuilt during startup or route registration

@@ -77,7 +77,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 		res.Header().Set(content.TypeKey, htmlContentType)
 
 		ctx := req.Context()
-		ctx = meta.WithContent(ctx, req, res, nil)
+		ctx = meta.WithRequestResponse(ctx, req, res)
 
 		view, model, err := controller(ctx)
 		if err != nil {
@@ -103,7 +103,7 @@ func writeNotFound(req *http.Request, res http.ResponseWriter) {
 	err := status.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	res.Header().Set(content.TypeKey, htmlContentType)
 	ctx := req.Context()
-	ctx = meta.WithContent(ctx, req, res, nil)
+	ctx = meta.WithRequestResponse(ctx, req, res)
 	ctx = meta.WithAttributes(ctx, meta.NewPair("mvcModelError", meta.Error(err)))
 
 	view, model := notFoundController(ctx)

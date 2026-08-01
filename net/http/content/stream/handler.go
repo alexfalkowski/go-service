@@ -24,7 +24,7 @@ import (
 // A handler error returned before the first successful Send is an ordinary HTTP error rendered
 // through [status.WriteError]. A handler error returned after the first successful Send aborts the
 // response via panic([http.ErrAbortHandler]) instead, since the response is already committed — see
-// [Stream.Send] and [finishResponse].
+// [Stream.Send] and [handleResponse].
 //
 // Drain:
 // When opts.Drain starts before the handler is invoked, this handler returns 503. Otherwise it cancels
@@ -50,15 +50,13 @@ func NewHandler[Res any](cont *content.Content, sm *stream.Map, opts Options, ha
 			return
 		}
 
-		limiter := meta.Limiter(ctx)
-
 		resMedia, err := NewMediaFromAccept(req, sm)
 		if err != nil {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusNotAcceptable, err))
 			return
 		}
 
-		ctx = meta.WithContent(ctx, req, res, nil)
+		ctx = meta.WithRequestResponse(ctx, req, res)
 		res.Header().Set(content.TypeKey, resMedia.WithUTF8())
 		res.Header().Set(compress.HeaderNoCompression, "1")
 
@@ -66,21 +64,19 @@ func NewHandler[Res any](cont *content.Content, sm *stream.Map, opts Options, ha
 		defer cont.ReturnBuffer(buffer)
 
 		writer := &commitWriter{res: res, buffer: buffer}
-		controller := http.NewResponseController(res)
-		ctx, cancel := withDrain(ctx, opts.Drain, nil)
-		if cancel != nil {
-			defer cancel(nil)
-		}
 
-		st := &Stream[Res]{
+		ctx, cancel := withDrain(ctx, opts.Drain, func() {})
+		defer cancel(nil)
+
+		stream := &Stream[Res]{
 			ctx:          ctx,
 			writer:       writer,
 			encoder:      resMedia.NewEncoder(writer),
-			controller:   controller,
+			controller:   http.NewResponseController(res),
 			writeTimeout: opts.WriteTimeout,
-			limiter:      limiter,
+			limiter:      meta.Limiter(ctx),
 		}
-		finishResponse(ctx, res, st, handler(ctx, st))
+		handleResponse(ctx, res, stream, handler(ctx, stream))
 	}
 }
 
@@ -88,7 +84,7 @@ func NewHandler[Res any](cont *content.Content, sm *stream.Map, opts Options, ha
 //
 // The handler must propagate a [Stream.Send] error by returning it (directly, or wrapped) rather than
 // ignoring it and continuing. Send is sticky — once it fails, every later call returns the same error
-// immediately — but only the handler returning that error triggers [finishResponse]'s abort/HTTP-error
+// immediately — but only the handler returning that error triggers [handleResponse]'s abort/HTTP-error
 // handling; a handler that swallows a Send error and returns nil degrades to a no-op loop over a dead
 // connection instead of ending the request. When configured [Options.Drain] starts, ctx is
 // canceled with [ErrDraining]; handlers that wait on an upstream source must select on ctx.Done and
@@ -133,11 +129,8 @@ func NewRequestHandler[Req any, Res any](cont *content.Content, sm *stream.Map, 
 		ctx := req.Context()
 		if isDraining(opts.Drain) {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusServiceUnavailable, ErrDraining))
-
 			return
 		}
-
-		limiter := meta.Limiter(ctx)
 
 		if req.ProtoMajor < 2 {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusHTTPVersionNotSupported, ErrBidiRequiresHTTP2))
@@ -156,7 +149,7 @@ func NewRequestHandler[Req any, Res any](cont *content.Content, sm *stream.Map, 
 			return
 		}
 
-		ctx = meta.WithContent(ctx, req, res, nil)
+		ctx = meta.WithRequestResponse(ctx, req, res)
 		res.Header().Set(content.TypeKey, resMedia.WithUTF8())
 		res.Header().Set(compress.HeaderNoCompression, "1")
 
@@ -164,31 +157,26 @@ func NewRequestHandler[Req any, Res any](cont *content.Content, sm *stream.Map, 
 		defer cont.ReturnBuffer(buffer)
 
 		writer := &commitWriter{res: res, buffer: buffer}
-		controller := http.NewResponseController(res)
-		ctx, cancel := withDrain(ctx, opts.Drain, func() {
-			_ = req.Body.Close()
-		})
-		if cancel != nil {
-			defer cancel(nil)
-		}
+		ctx, cancel := withDrain(ctx, opts.Drain, func() { _ = req.Body.Close() })
+		defer cancel(nil)
 
 		capped := budget.NewReader(req.Body, opts.MaxReceiveSize.Bytes())
 		decoder := reqMedia.NewDecoder(capped)
-		st := &RequestStream[Req, Res]{
+		stream := &RequestStream[Req, Res]{
 			Stream: Stream[Res]{
 				ctx:          ctx,
 				writer:       writer,
 				encoder:      &requestEncoder{Encoder: resMedia.NewEncoder(writer), decoder: decoder},
-				controller:   controller,
+				controller:   http.NewResponseController(res),
 				readTimeout:  opts.ReadTimeout,
 				writeTimeout: opts.WriteTimeout,
-				limiter:      limiter,
+				limiter:      meta.Limiter(ctx),
 			},
 			decoder:        decoder,
 			capped:         capped,
 			maxReceiveSize: opts.MaxReceiveSize.Bytes(),
 		}
-		finishResponse(ctx, res, &st.Stream, handler(ctx, st))
+		handleResponse(ctx, res, &stream.Stream, handler(ctx, stream))
 	}
 }
 
@@ -201,7 +189,7 @@ func NewRequestHandler[Req any, Res any](cont *content.Content, sm *stream.Map, 
 // an active Recv returns [ErrDraining].
 type RequestHandler[Req any, Res any] func(ctx context.Context, stream *RequestStream[Req, Res]) error
 
-// finishResponse applies the streaming error contract after a stream handler returns.
+// handleResponse applies the streaming error contract after a stream handler returns.
 //
 // If the response was never committed, a handler error is rendered as an ordinary HTTP error via
 // [status.WriteError] (a nil error leaves an empty, implicitly-200 response). If the response was
@@ -209,9 +197,9 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, stream *RequestS
 // recorded for operator diagnostics and the response is aborted via panic([http.ErrAbortHandler]),
 // which [transport/http.recoveryHandler] and the access logger already special-case for a committed
 // response.
-func finishResponse[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
+func handleResponse[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
 	if s.draining() {
-		finishResponseDuringDrain(ctx, res, s, err)
+		drainResponse(ctx, res, s, err)
 		return
 	}
 
@@ -231,7 +219,7 @@ func finishResponse[Res any](ctx context.Context, res http.ResponseWriter, s *St
 	}
 }
 
-func finishResponseDuringDrain[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
+func drainResponse[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
 	if !s.committed() {
 		_ = status.WriteError(ctx, res, status.SafeError(http.StatusServiceUnavailable, ErrDraining))
 		return

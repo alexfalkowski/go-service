@@ -13,13 +13,10 @@
 //
 //   - the active `http.ResponseWriter`
 //
-//   - the negotiated `encoding.Encoder` (typically selected from the request Content-Type)
-//
 // # Safety and expectations
 //
-// Request, Response, and Encoder are intentionally strict helpers: they expect the corresponding values
-// to have been stored in the context via WithContent. Calling them without content metadata present will
-// panic due to type assertions.
+// Request and Response return nil when request-response metadata is absent. Handler pipelines that need
+// those values should install them with WithRequestResponse before invoking downstream logic.
 //
 // These helpers are typically used in tightly controlled handler pipelines (for example those created by
 // [github.com/alexfalkowski/go-service/v2/net/http/content.NewHandler] /

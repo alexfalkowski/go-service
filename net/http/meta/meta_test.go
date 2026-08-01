@@ -13,25 +13,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWithContent(t *testing.T) {
+func TestWithRequestResponse(t *testing.T) {
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
 	res := httptest.NewRecorder()
-	enc := test.NewEncoder(nil)
 
-	ctx := httpmeta.WithContent(t.Context(), req, res, enc)
+	ctx := httpmeta.WithRequestResponse(t.Context(), req, res)
 
 	require.Same(t, req, httpmeta.Request(ctx))
 	require.Same(t, res, httpmeta.Response(ctx))
-	require.Same(t, enc, httpmeta.Encoder(ctx))
 }
 
-func TestWithContentAllowsPartialContent(t *testing.T) {
-	res := httptest.NewRecorder()
-
-	ctx := httpmeta.WithContent(t.Context(), nil, res, nil)
-
-	require.Same(t, res, httpmeta.Response(ctx))
+func TestRequestResponseReturnsNilWithoutMetadata(t *testing.T) {
+	require.Nil(t, httpmeta.Request(t.Context()))
+	require.Nil(t, httpmeta.Response(t.Context()))
 }
 
 func TestLimiterReturnsNilWithoutWithLimiter(t *testing.T) {

@@ -16,8 +16,7 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // Context population:
 // The handler attaches request-scoped values to the context via net/http/meta:
 //   - the original *[http.Request],
-//   - the [http.ResponseWriter], and
-//   - the selected encoder.
+//   - the [http.ResponseWriter].
 //
 // Content negotiation:
 // Request-body decoding uses the request Content-Type, falling back to JSON when Content-Type is absent.
@@ -25,7 +24,7 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // the package documentation) is rejected with [ErrUnsupportedRequestMedia] rather than falling back to
 // JSON; see [Content.NewFromRequestBody]. Response encoding uses the request Accept header, falling back
 // to Content-Type when Accept is absent. The response Content-Type header is set to the negotiated
-// response media type.
+// response media type. The selected response encoder remains internal to the handler.
 //
 // Errors:
 // If request decoding fails, NewRequestHandler converts the decode error into a 400 Bad Request using
@@ -86,7 +85,7 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 		ctx := req.Context()
 
 		mediaType := cont.NewFromAccept(req)
-		ctx = meta.WithContent(ctx, req, res, mediaType.Encoder)
+		ctx = meta.WithRequestResponse(ctx, req, res)
 		res.Header().Set(TypeKey, mediaType.WithUTF8())
 
 		data, err := handler(ctx)
