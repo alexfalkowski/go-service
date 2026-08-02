@@ -12,6 +12,13 @@ func TestMustPanicsWithError(t *testing.T) {
 	require.Panics(t, func() { runtime.Must(test.ErrFailed) })
 }
 
+func TestCallerPreservesSkipSemantics(t *testing.T) {
+	_, file, _, ok := runtime.Caller(0)
+
+	require.True(t, ok)
+	require.Contains(t, file, "runtime_test.go")
+}
+
 func TestRecover(t *testing.T) {
 	tests := []struct {
 		value   any

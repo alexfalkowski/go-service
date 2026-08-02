@@ -82,6 +82,7 @@ func NewHandler[Res any](cont *Content, opts Options, handler Handler[Res]) http
 			controller:   http.NewResponseController(res),
 			writeTimeout: opts.WriteTimeout,
 			limiter:      meta.Limiter(ctx),
+			drain:        opts.Drain,
 		}
 		handleResponse(ctx, res, stream, handler(ctx, stream))
 	}
@@ -190,6 +191,7 @@ func NewRequestHandler[Req any, Res any](cont *Content, opts Options, handler Re
 				readTimeout:  opts.ReadTimeout,
 				writeTimeout: opts.WriteTimeout,
 				limiter:      meta.Limiter(ctx),
+				drain:        opts.Drain,
 			},
 			decoder:        decoder,
 			capped:         capped,
@@ -210,7 +212,7 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, stream *RequestS
 
 // handleResponse applies the streaming error contract after a stream handler returns.
 //
-// If the response was never committed, a handler error is rendered as an ordinary HTTP error via
+// If the response was never committed, a handler or finalization error is rendered as an ordinary HTTP error via
 // [status.WriteError] (a nil error leaves an empty, implicitly-200 response). If the response was
 // committed, any handler error — or a failure finalizing the encoder on the success path — is
 // recorded for operator diagnostics and the response is aborted via panic([http.ErrAbortHandler]),
@@ -223,9 +225,14 @@ func handleResponse[Res any](ctx context.Context, res http.ResponseWriter, s *St
 	}
 
 	if !s.committed() {
+		closeErr := s.close()
 		if err != nil {
+			err = errors.Join(err, closeErr)
 			_ = status.WriteError(ctx, res, err)
+		} else if closeErr != nil {
+			_ = status.WriteError(ctx, res, closeErr)
 		}
+
 		return
 	}
 
@@ -240,7 +247,9 @@ func handleResponse[Res any](ctx context.Context, res http.ResponseWriter, s *St
 
 func drainResponse[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
 	if !s.committed() {
+		status.RecordError(ctx, s.close())
 		_ = status.WriteError(ctx, res, status.SafeError(http.StatusServiceUnavailable, ErrDraining))
+
 		return
 	}
 

@@ -2,9 +2,26 @@ package runtime
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/alexfalkowski/go-service/v2/errors"
 )
+
+// MaxProcs sets the maximum number of CPUs that can execute Go code simultaneously and returns the previous setting.
+//
+// MaxProcs wraps the standard library's runtime.GOMAXPROCS so callers can stay on the project-owned runtime surface.
+func MaxProcs(n int) int {
+	return runtime.GOMAXPROCS(n)
+}
+
+// Caller reports file and line information for a stack frame.
+//
+// Caller wraps the standard library's runtime.Caller so callers can stay on the project-owned runtime surface while
+// preserving its skip semantics.
+func Caller(skip int) (pc uintptr, file string, line int, ok bool) {
+	// Account for this wrapper's frame so skip still addresses the caller's stack.
+	return runtime.Caller(skip + 1)
+}
 
 // ErrRecovered is a sentinel error used to mark errors produced by ConvertRecover.
 //
