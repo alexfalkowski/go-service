@@ -24,6 +24,7 @@ type Stream[Res any] struct {
 	writer     *commitWriter
 	controller *http.ResponseController
 	limiter    meta.RateLimiter
+	drain      <-chan struct{}
 	// readTimeout is zero for a send-only [Stream] built by [NewHandler]; [NewRequestHandler]
 	// sets it, letting Send extend both deadlines for a bidirectional stream (see [Stream.Send]).
 	readTimeout  time.Duration
@@ -151,7 +152,7 @@ func (s *Stream[Res]) committed() bool {
 }
 
 func (s *Stream[Res]) draining() bool {
-	return errors.Is(context.Cause(s.ctx), ErrDraining)
+	return isDraining(s.drain) || errors.Is(context.Cause(s.ctx), ErrDraining)
 }
 
 func (s *Stream[Res]) close() error {

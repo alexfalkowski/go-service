@@ -16,6 +16,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/net/server"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -54,6 +56,39 @@ func TestNewRequestHandlerClosesCodecsBeforeAbortAfterCommitOnDrain(t *testing.T
 		handler.ServeHTTP(res, req)
 	})
 
+	require.Equal(t, 1, encoder.closes)
+	require.Equal(t, 1, decoder.closes)
+}
+
+func TestNewRequestHandlerClosesCodecsAfterReceiveOnlyHandler(t *testing.T) {
+	encoder := &closeTracker{}
+	decoder := &closeTracker{decodeErr: io.EOF}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	sm.Register("json", codec)
+	handler := contentstream.NewRequestHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			_, err := stream.Recv()
+			if stream.IsFinished(err) {
+				return nil
+			}
+
+			return err
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+	req.ProtoMajor = 2
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, 1, encoder.closes)
 	require.Equal(t, 1, decoder.closes)
 }
@@ -193,6 +228,37 @@ func TestNewRequestHandlerRecvRejectsValueWhenDrainStartsAfterDecode(t *testing.
 
 	handler.ServeHTTP(res, req)
 
+	require.ErrorIs(t, recvErr, contentstream.ErrDraining)
+	require.Equal(t, http.StatusServiceUnavailable, res.Code)
+}
+
+func TestNewRequestHandlerRejectsBufferedValueWhenDrainStarts(t *testing.T) {
+	previous := runtime.MaxProcs(1)
+	t.Cleanup(func() { runtime.MaxProcs(previous) })
+	drain := server.NewDrain()
+	var (
+		received *test.Request
+		recvErr  error
+	)
+	handler := contentstream.NewRequestHandler(
+		test.StreamContent,
+		contentstream.Options{Drain: drain.Done()}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			drain.Start()
+			received, recvErr = stream.Recv()
+
+			return recvErr
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader("{\"Name\":\"received after drain\"}\n"))
+	req.ProtoMajor = 2
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Nil(t, received)
 	require.ErrorIs(t, recvErr, contentstream.ErrDraining)
 	require.Equal(t, http.StatusServiceUnavailable, res.Code)
 }
@@ -907,8 +973,9 @@ func (b *drainBody) Close() error {
 }
 
 type closeTracker struct {
-	closes int
-	err    error
+	closes    int
+	decodeErr error
+	err       error
 }
 
 type trackedEncoder struct {
@@ -922,15 +989,15 @@ func (*trackedEncoder) Encode(any) error {
 func (e *trackedEncoder) Close() error {
 	e.tracker.closes++
 
-	return nil
+	return e.tracker.err
 }
 
 type trackedDecoder struct {
 	tracker *closeTracker
 }
 
-func (*trackedDecoder) Decode(any) error {
-	return nil
+func (d *trackedDecoder) Decode(any) error {
+	return d.tracker.decodeErr
 }
 
 func (d *trackedDecoder) Close() error {

@@ -10,12 +10,15 @@ import (
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/net/server"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -76,6 +79,105 @@ func TestNewHandlerReturnsErrorBeforeFirstSendAsHTTPError(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
 	require.Equal(t, media.Error+"; charset=utf-8", res.Header().Get(http.ContentTypeKey))
+}
+
+func TestNewHandlerClosesEncoderBeforeFirstSend(t *testing.T) {
+	encoder := &closeTracker{}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	sm.Register("json", codec)
+	handler := contentstream.NewHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{}, func(_ context.Context, _ *contentstream.Stream[test.Response]) error {
+			return status.Error(http.StatusBadRequest, test.ErrFailed.Error())
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusBadRequest, res.Code)
+	require.Equal(t, 1, encoder.closes)
+}
+
+func TestNewHandlerReturnsCloseErrorBeforeFirstSendAsHTTPError(t *testing.T) {
+	encoder := &closeTracker{err: test.ErrFailed}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	sm.Register("json", codec)
+	handler := contentstream.NewHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{}, func(_ context.Context, _ *contentstream.Stream[test.Response]) error {
+			return nil
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusInternalServerError, res.Code)
+	require.Equal(t, 1, encoder.closes)
+}
+
+func TestNewHandlerPreservesHandlerErrorWhenEncoderCloseFails(t *testing.T) {
+	closeErr := errors.New("encoder close")
+	encoder := &closeTracker{err: closeErr}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	sm.Register("json", codec)
+	handler := contentstream.NewHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{}, func(_ context.Context, _ *contentstream.Stream[test.Response]) error {
+			return status.SafeError(http.StatusBadRequest, test.ErrFailed)
+		},
+	)
+
+	req := httptest.NewRequestWithContext(status.WithRequestError(t.Context()), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusBadRequest, res.Code)
+	require.Equal(t, 1, encoder.closes)
+	require.ErrorIs(t, status.RequestError(req.Context()), test.ErrFailed)
+	require.ErrorIs(t, status.RequestError(req.Context()), closeErr)
+}
+
+func TestNewHandlerClosesEncoderBeforeFirstSendOnDrain(t *testing.T) {
+	encoder := &closeTracker{}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	sm.Register("json", codec)
+	drain := make(chan struct{})
+	handler := contentstream.NewHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{Drain: drain}, func(ctx context.Context, _ *contentstream.Stream[test.Response]) error {
+			close(drain)
+			<-ctx.Done()
+
+			return ctx.Err()
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusServiceUnavailable, res.Code)
+	require.Equal(t, 1, encoder.closes)
 }
 
 func TestNewHandlerFirstSendEncodeFailureDoesNotCommit(t *testing.T) {
@@ -228,6 +330,31 @@ func TestNewHandlerDoesNotSendAfterDrain(t *testing.T) {
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
 	require.False(t, scanner.Scan())
+}
+
+func TestNewHandlerRejectsSendWhenDrainStarts(t *testing.T) {
+	previous := runtime.MaxProcs(1)
+	t.Cleanup(func() { runtime.MaxProcs(previous) })
+	drain := server.NewDrain()
+	var sendErr error
+	handler := contentstream.NewHandler(
+		test.StreamContent,
+		contentstream.Options{Drain: drain.Done()}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+			drain.Start()
+			sendErr = stream.Send(&test.Response{Greeting: "sent after drain"})
+
+			return sendErr
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.ErrorIs(t, sendErr, contentstream.ErrDraining)
+	require.Equal(t, http.StatusServiceUnavailable, res.Code)
 }
 
 func TestNewHandlerReturnsServiceUnavailableOnDrainBeforeCommit(t *testing.T) {
