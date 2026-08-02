@@ -104,7 +104,7 @@ func TestNewHandlerClosesEncoderBeforeFirstSend(t *testing.T) {
 	require.Equal(t, 1, encoder.closes)
 }
 
-func TestNewHandlerReturnsCloseErrorBeforeFirstSendAsHTTPError(t *testing.T) {
+func TestNewHandlerIgnoresEncoderCloseErrorBeforeFirstSend(t *testing.T) {
 	encoder := &closeTracker{err: test.ErrFailed}
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
@@ -123,7 +123,7 @@ func TestNewHandlerReturnsCloseErrorBeforeFirstSendAsHTTPError(t *testing.T) {
 
 	handler.ServeHTTP(res, req)
 
-	require.Equal(t, http.StatusInternalServerError, res.Code)
+	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, 1, encoder.closes)
 }
 
@@ -150,7 +150,7 @@ func TestNewHandlerPreservesHandlerErrorWhenEncoderCloseFails(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, res.Code)
 	require.Equal(t, 1, encoder.closes)
 	require.ErrorIs(t, status.RequestError(req.Context()), test.ErrFailed)
-	require.ErrorIs(t, status.RequestError(req.Context()), closeErr)
+	require.NotErrorIs(t, status.RequestError(req.Context()), closeErr)
 }
 
 func TestNewHandlerClosesEncoderBeforeFirstSendOnDrain(t *testing.T) {
@@ -214,6 +214,97 @@ func TestNewHandlerAbortsAfterCommit(t *testing.T) {
 
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
+}
+
+func TestNewHandlerClosesEncoderBeforeAbortAfterCommit(t *testing.T) {
+	encoder := &closeTracker{}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	sm.Register("json", codec)
+	handler := contentstream.NewHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
+				return err
+			}
+
+			return test.ErrFailed
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
+		handler.ServeHTTP(res, req)
+	})
+
+	require.Equal(t, 1, encoder.closes)
+}
+
+func TestNewHandlerClosesEncoderAfterCommitPanic(t *testing.T) {
+	encoder := &closeTracker{}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	sm.Register("json", codec)
+	handler := contentstream.NewHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
+				return err
+			}
+
+			panic(test.ErrFailed)
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	require.PanicsWithValue(t, test.ErrFailed, func() {
+		handler.ServeHTTP(res, req)
+	})
+
+	require.Equal(t, 1, encoder.closes)
+}
+
+func TestNewHandlerPreservesPanicDiagnosticWhenEncoderCloseFails(t *testing.T) {
+	closeErr := errors.New("encoder close")
+	encoder := &closeTracker{err: closeErr}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	sm.Register("json", codec)
+	handler := contentstream.NewHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{}, func(_ context.Context, _ *contentstream.Stream[test.Response]) error {
+			panic(test.ErrFailed)
+		},
+	)
+
+	req := httptest.NewRequestWithContext(status.WithRequestError(t.Context()), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	func() {
+		defer func() {
+			if value := recover(); value != nil {
+				_ = status.WriteError(req.Context(), res, status.SafeError(http.StatusInternalServerError, runtime.ConvertRecover(value)))
+			}
+		}()
+
+		handler.ServeHTTP(res, req)
+	}()
+
+	require.Equal(t, http.StatusInternalServerError, res.Code)
+	require.Equal(t, 1, encoder.closes)
+	require.ErrorIs(t, status.RequestError(req.Context()), runtime.ErrRecovered)
+	require.ErrorIs(t, status.RequestError(req.Context()), test.ErrFailed)
+	require.NotErrorIs(t, status.RequestError(req.Context()), closeErr)
 }
 
 func TestNewHandlerEndsCleanlyAfterCommitOnDrain(t *testing.T) {
