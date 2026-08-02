@@ -1101,7 +1101,7 @@ Built-in text/object payload media types include:
 
 - `application/json`
 - `application/hjson`
-- `application/yaml`, `application/yml`
+- `application/yaml`
 - `application/toml`
 - `application/octet-stream`, `text/plain`
 
@@ -1123,11 +1123,11 @@ Built-in protobuf-oriented media type aliases include:
 >   is rejected with HTTP 415 rather than decoded as a different format than the caller declared.
 > - `text/error` is reserved for error responses and should not be sent by clients as a request content type.
 >
-> `application/vnd.msgpack` and `application/gob` can be resolved as media types and remain valid
+> `application/toml`, `application/vnd.msgpack`, and `application/gob` can be resolved as media types and remain valid
 > response codecs, but REST/RPC request-body decoding — for both single-value and streaming
 > (NDJSON) requests — rejects them with HTTP 415. This follows the decoder-bounds rule documented in
 > `net/http/content/unary`'s package documentation: a codec is admissible for decoding untrusted input only
-> when it is both ratio-bounded and depth-bounded, which msgpack and gob are not.
+> when it is both ratio-bounded and depth-bounded, which TOML, msgpack, and gob are not.
 
 ### HTTP streaming (NDJSON)
 

@@ -159,8 +159,8 @@ func TestNewFromContentTypeFallsBackFromInternalErrorMedia(t *testing.T) {
 	require.Same(t, test.Encoder.Get("bytes"), media.Encoder)
 }
 
-func TestNewFromRequestBodyRejectsUnsafeBinaryMedia(t *testing.T) {
-	for _, mediaType := range []string{"application/gob", media.MessagePack, media.MessagePack + "; profile=test"} {
+func TestNewFromRequestBodyRejectsUnsafeMedia(t *testing.T) {
+	for _, mediaType := range []string{"application/gob", media.MessagePack, media.MessagePack + "; profile=test", media.TOML, media.TOML + "; profile=test"} {
 		t.Run(mediaType, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 			req.Header.Set(http.ContentTypeKey, mediaType)
@@ -175,7 +175,7 @@ func TestNewFromRequestBodyRejectsUnsafeBinaryMedia(t *testing.T) {
 }
 
 func TestNewFromRequestBodyRejectsUnknownContentType(t *testing.T) {
-	for _, mediaType := range []string{"application/cbor", "/"} {
+	for _, mediaType := range []string{"application/cbor", "application/yml", "/"} {
 		t.Run(mediaType, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 			req.Header.Set(http.ContentTypeKey, mediaType)
@@ -296,9 +296,9 @@ func TestNewFromAcceptResolvesJSONForWildcardOrUnknown(t *testing.T) {
 
 func TestEveryEncoderKindIsClassified(t *testing.T) {
 	// Every kind in the default registry must be explicitly classified, so a new codec cannot become
-	// request-decodable without a decision. See undecodableKinds in media.go.
+	// request-decodable without a decision. See policy.CanDecode.
 	classified := map[string]bool{
-		"json": true, "hjson": true, "yaml": true, "toml": true, "bytes": true,
+		"json": true, "hjson": true, "yaml": true, "toml": false, "bytes": true,
 		"protobuf": true, "prototext": true, "protojson": true,
 		"msgpack": false, "gob": false,
 	}
@@ -362,7 +362,6 @@ func mediaTests() []mediaTest {
 		{name: "json", mediaType: media.JSON, subtype: "json", kind: "json"},
 		{name: "hjson", mediaType: media.HumanJSON, subtype: "hjson", kind: "hjson"},
 		{name: "yaml", mediaType: media.YAML, subtype: "yaml", kind: "yaml"},
-		{name: "yml", mediaType: "application/yml", subtype: "yml", kind: "yaml"},
 		{name: "toml", mediaType: media.TOML, subtype: "toml", kind: "toml"},
 		{name: "msgpack", mediaType: media.MessagePack, subtype: "msgpack", kind: "msgpack"},
 		{name: "protobuf", mediaType: media.Protobuf, subtype: "protobuf", kind: "protobuf"},

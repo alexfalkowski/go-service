@@ -29,8 +29,6 @@ func MessageMediaTypes() []MessageMediaType {
 		{Name: "json", ContentType: media.JSON, Kind: "json"},
 		{Name: "hjson", ContentType: media.HumanJSON, Kind: "hjson"},
 		{Name: "yaml", ContentType: media.YAML, Kind: "yaml"},
-		{Name: "yml", ContentType: "application/yml", Kind: "yaml"},
-		{Name: "toml", ContentType: media.TOML, Kind: "toml"},
 	}
 }
 

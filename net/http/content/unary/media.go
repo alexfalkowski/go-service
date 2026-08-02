@@ -44,7 +44,6 @@ var unaryKinds = map[string]string{
 	"pbjson":       "protojson",
 	"octet-stream": "bytes",
 	"plain":        "bytes",
-	"yml":          "yaml",
 }
 
 // unaryKind resolves subtype to its registered encoding.Map kind, defaulting to subtype itself when no
@@ -76,7 +75,7 @@ func (t Media) IsError() bool {
 // CanDecodeRequest reports whether the media type is allowed for decoding HTTP request bodies.
 //
 // A nil Encoder means the media type resolved to no codec at all, which is never decodable. Otherwise
-// the codec must satisfy the decoder-bounds rule; see undecodableKinds.
+// the codec must satisfy the decoder-bounds rule; see [policy.CanDecode].
 //
 // This answers for the media type this Media actually holds. A Media produced by the outbound JSON
 // fallback therefore reports JSON's answer, because JSON is genuinely what it holds; only
