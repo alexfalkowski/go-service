@@ -6,7 +6,7 @@ import (
 
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/stretchr/testify/require"
@@ -18,9 +18,9 @@ func TestNewFromContentTypeRejectsEncoderOnlyKind(t *testing.T) {
 	codec.Decoder = nil
 	sm.Register("json", codec)
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.TypeKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
 
-	_, err := contentstream.NewMediaFromContentType(req, sm)
+	_, err := contentstream.NewContent(sm, test.Pool).NewFromContentType(req)
 
 	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 }
@@ -31,18 +31,35 @@ func TestNewFromAcceptRejectsDecoderOnlyKind(t *testing.T) {
 	codec.Encoder = nil
 	sm.Register("json", codec)
 	req := httptest.NewRequestWithContext(t.Context(), "GET", "/hello", nil)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 
-	_, err := contentstream.NewMediaFromAccept(req, sm)
+	_, err := contentstream.NewContent(sm, test.Pool).NewFromAccept(req)
+
+	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
+}
+
+func TestNewFromMediaRejectsNilContent(t *testing.T) {
+	var content *contentstream.Content
+
+	_, err := content.NewFromMedia(media.NDJSON)
+
+	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
+}
+
+func TestNewFromAcceptRejectsNilContent(t *testing.T) {
+	var content *contentstream.Content
+	req := httptest.NewRequestWithContext(t.Context(), "GET", "/hello", nil)
+
+	_, err := content.NewFromAccept(req)
 
 	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 }
 
 func TestNewFromContentTypeResolvesNDJSON(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.TypeKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
 
-	m, err := contentstream.NewMediaFromContentType(req, test.StreamEncoder)
+	m, err := test.StreamContent.NewFromContentType(req)
 
 	require.NoError(t, err)
 	require.NotNil(t, m.NewDecoder)
@@ -51,26 +68,26 @@ func TestNewFromContentTypeResolvesNDJSON(t *testing.T) {
 
 func TestNewFromContentTypeRejectsWrongMajorNDJSON(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.TypeKey, "text/x-ndjson")
+	req.Header.Set(http.ContentTypeKey, "text/x-ndjson")
 
-	_, err := contentstream.NewMediaFromContentType(req, test.StreamEncoder)
+	_, err := test.StreamContent.NewFromContentType(req)
 
 	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 }
 
-func TestNewMediaResolvesUsableDecoderForEveryStreamKind(t *testing.T) {
-	// The client's response-stream path (see net/http/client/stream.go) relies on NewMedia staying
+func TestNewFromMediaResolvesUsableDecoderForEveryStreamKind(t *testing.T) {
+	// The client's response-stream path (see net/http/client/stream.go) relies on NewFromMedia staying
 	// unpoliced: it must keep resolving a usable decoder for every registered streaming kind,
 	// including the ones NewFromContentType rejects for untrusted request bodies.
-	m, err := contentstream.NewMedia(media.NDJSON, test.StreamEncoder)
+	m, err := test.StreamContent.NewFromMedia(media.NDJSON)
 
 	require.NoError(t, err)
 	require.NotNil(t, m.NewDecoder)
 	require.Equal(t, media.NDJSON, m.String())
 }
 
-func TestNewMediaResolvesNDJSON(t *testing.T) {
-	m, err := contentstream.NewMedia(media.NDJSON, encodingstream.NewMap())
+func TestNewFromMediaResolvesNDJSON(t *testing.T) {
+	m, err := contentstream.NewContent(encodingstream.NewMap(), test.Pool).NewFromMedia(media.NDJSON)
 
 	require.NoError(t, err)
 	require.NotNil(t, m.NewEncoder)
@@ -78,20 +95,41 @@ func TestNewMediaResolvesNDJSON(t *testing.T) {
 	require.Equal(t, media.NDJSON, m.String())
 }
 
-func TestNewMediaRejectsUnmappedSubtype(t *testing.T) {
-	_, err := contentstream.NewMedia(media.JSON, encodingstream.NewMap())
+func TestNewFromMediaResolvesParameterizedNDJSON(t *testing.T) {
+	m, err := contentstream.NewContent(encodingstream.NewMap(), test.Pool).NewFromMedia(media.NDJSON + "; profile=test")
+
+	require.NoError(t, err)
+	require.NotNil(t, m.NewEncoder)
+	require.NotNil(t, m.NewDecoder)
+	require.Equal(t, media.NDJSON, m.String())
+}
+
+func TestNewFromMediaRejectsKindWithoutCodec(t *testing.T) {
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = nil
+	codec.Decoder = nil
+	sm.Register("json", codec)
+
+	_, err := contentstream.NewContent(sm, test.Pool).NewFromMedia(media.NDJSON)
 
 	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 }
 
-func TestNewMediaRejectsWrongMajorNDJSON(t *testing.T) {
-	_, err := contentstream.NewMedia("text/x-ndjson", encodingstream.NewMap())
+func TestNewFromMediaRejectsUnmappedSubtype(t *testing.T) {
+	_, err := contentstream.NewContent(encodingstream.NewMap(), test.Pool).NewFromMedia(media.JSON)
 
 	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 }
 
-func TestNewMediaRejectsUnparsableType(t *testing.T) {
-	_, err := contentstream.NewMedia("not-a-media-type", encodingstream.NewMap())
+func TestNewFromMediaRejectsWrongMajorNDJSON(t *testing.T) {
+	_, err := contentstream.NewContent(encodingstream.NewMap(), test.Pool).NewFromMedia("text/x-ndjson")
+
+	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
+}
+
+func TestNewFromMediaRejectsUnparsableType(t *testing.T) {
+	_, err := contentstream.NewContent(encodingstream.NewMap(), test.Pool).NewFromMedia("not-a-media-type")
 
 	require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 }
@@ -120,14 +158,14 @@ func TestNewFromAcceptResolvesWildcardOrExactMatchAnywhereInList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "GET", "/hello", nil)
 			if tt.accept != "" {
-				req.Header.Set(content.AcceptKey, tt.accept)
+				req.Header.Set(http.AcceptKey, tt.accept)
 			}
 
 			if tt.contentType != "" {
-				req.Header.Set(content.TypeKey, tt.contentType)
+				req.Header.Set(http.ContentTypeKey, tt.contentType)
 			}
 
-			m, err := contentstream.NewMediaFromAccept(req, test.StreamEncoder)
+			m, err := test.StreamContent.NewFromAccept(req)
 
 			require.NoError(t, err)
 			require.NotNil(t, m.NewEncoder)
@@ -158,9 +196,9 @@ func TestNewFromAcceptRejectsConcreteOnlyUnsatisfiableAccept(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "GET", "/hello", nil)
-			req.Header.Set(content.AcceptKey, tt.accept)
+			req.Header.Set(http.AcceptKey, tt.accept)
 
-			_, err := contentstream.NewMediaFromAccept(req, test.StreamEncoder)
+			_, err := test.StreamContent.NewFromAccept(req)
 
 			require.ErrorIs(t, err, contentstream.ErrUnsupportedMedia)
 		})

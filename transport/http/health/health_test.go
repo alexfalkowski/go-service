@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	netserver "github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -62,7 +61,7 @@ func TestReadinessNoop(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, "SERVING", body)
-	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get(http.ContentTypeKey))
 }
 
 func TestReadinessCache(t *testing.T) {
@@ -126,7 +125,7 @@ func TestInvalidHealth(t *testing.T) {
 
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 	require.Equal(t, "http: service unavailable", body)
-	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(http.ContentTypeKey))
 }
 
 func TestMissingHealth(t *testing.T) {
@@ -145,7 +144,7 @@ func TestMissingHealth(t *testing.T) {
 			)
 
 			header := http.Header{}
-			header.Set(content.TypeKey, media.JSON)
+			header.Set(http.ContentTypeKey, media.JSON)
 
 			url := world.NamedServerURL("http", check)
 

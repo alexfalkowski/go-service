@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -29,7 +28,7 @@ func TestTokenAuthUnary(t *testing.T) {
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			header := http.Header{}
-			header.Set(content.TypeKey, media.JSON)
+			header.Set(http.ContentTypeKey, media.JSON)
 			header.Set("Request-Id", "test")
 			header.Set("X-Forwarded-For", "127.0.0.1")
 			header.Set("Geolocation", "geo:47,11")
@@ -53,7 +52,7 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 	header.Set("Request-Id", "test")
 
 	url := world.PathServerURL("http", "hello")
@@ -70,7 +69,7 @@ func TestValidAuthUnary(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 	header.Set("Request-Id", "test")
 	header.Set("X-Forwarded-For", "127.0.0.1")
 
@@ -99,7 +98,7 @@ func TestAccessDeniedUnary(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 
 	url := world.PathServerURL("http", "hello")
 
@@ -129,7 +128,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 	header.Set("Request-Id", "test")
 
 	url := world.PathServerURL("http", "hello")
@@ -146,7 +145,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 	header.Set("Request-Id", "test")
 	header.Set("Authorization", "What Invalid")
 
@@ -164,7 +163,7 @@ func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 	header.Set("Request-Id", "test")
 	header.Set("Authorization", "bearer test")
 
@@ -182,7 +181,7 @@ func TestMissingAuthUnary(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 	header.Set("Request-Id", "test")
 
 	url := world.PathServerURL("http", "hello")
@@ -199,7 +198,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 	header.Set("Request-Id", "test")
 
 	url := world.PathServerURL("http", "hello")
@@ -215,7 +214,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 	header.Set("Request-Id", "test")
 
 	url := world.PathServerURL("http", "hello")
@@ -235,7 +234,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 	header.Set("Request-Id", "test")
 
 	url := world.PathServerURL("http", "hello")
@@ -258,7 +257,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 	for i := range 10 {
 		t.Run("attempt-"+strconv.Itoa(i+1), func(t *testing.T) {
 			header := http.Header{}
-			header.Set(content.TypeKey, media.JSON)
+			header.Set(http.ContentTypeKey, media.JSON)
 			header.Set("Request-Id", "test")
 
 			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))

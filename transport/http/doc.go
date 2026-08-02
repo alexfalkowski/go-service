@@ -3,7 +3,7 @@
 // It provides constructors and Fx module wiring for HTTP servers and HTTP clients with standardized
 // concerns such as:
 //
-//   - content negotiation and request/response encoding ([github.com/alexfalkowski/go-service/v2/net/http/content])
+//   - content negotiation and request/response encoding ([github.com/alexfalkowski/go-service/v2/net/http/content/unary])
 //   - MVC view rendering support ([github.com/alexfalkowski/go-service/v2/net/http/mvc])
 //   - RPC and REST routing helpers ([github.com/alexfalkowski/go-service/v2/net/http/rpc], [github.com/alexfalkowski/go-service/v2/net/http/rest])
 //   - request metadata extraction and propagation ([github.com/alexfalkowski/go-service/v2/net/http/meta])

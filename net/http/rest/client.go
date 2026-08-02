@@ -51,9 +51,8 @@ func WithClientTimeout(timeout string) ClientOption {
 
 // NewClient constructs a REST client backed by net/http/client.
 //
-// NewClient depends on package-level registration (see [Register]) for the content codecs (cont)
-// and buffer pool (pool). [Register] must be called before NewClient; otherwise it will panic due to
-// nil dependencies.
+// NewClient depends on package-level registration (see [Register]) for unary and stream content plus
+// the buffer pool. [Register] must be called before NewClient; otherwise it will panic due to nil dependencies.
 //
 // Behavior:
 //   - It constructs a content-aware [client.Client] configured with the selected RoundTripper and unary
@@ -61,7 +60,7 @@ func WithClientTimeout(timeout string) ClientOption {
 //   - It disables automatic redirect following (returns redirect responses instead of following them).
 func NewClient(opts ...ClientOption) *Client {
 	os := options(opts...)
-	client := client.NewClient(cont, sm, pool,
+	client := client.NewClient(unaryContent, streamContent, pool,
 		client.WithRoundTripper(os.roundTripper),
 		client.WithTimeout(os.timeout),
 		client.WithRedirect(client.RedirectIgnore),

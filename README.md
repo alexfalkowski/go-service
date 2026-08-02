@@ -301,7 +301,7 @@ exactly one canonical kind (no aliases):
 > - `bytes` is the passthrough encoder for `io.ReaderFrom`/`io.WriterTo` payloads.
 > - HTTP media-type aliases such as `pb`, `proto`, `protobin`, `pbbin`, `pbtxt`, `prototxt`,
 >   `pbjson`, `octet-stream`, `plain`, and `yml` are resolved to the canonical kinds above by
->   `net/http/content` before they ever reach this registry. See [HTTP content types](#http-content-types).
+>   `net/http/content/unary` before they ever reach this registry. See [HTTP content types](#http-content-types).
 > - `encoding/stream.Map` is a separate registry for streaming (multi-value) encoding — `json`, `msgpack`,
 >   `gob`, `yaml` — used by [HTTP streaming (NDJSON)](#http-streaming-ndjson), not by this single-value
 >   registry.
@@ -1126,7 +1126,7 @@ Built-in protobuf-oriented media type aliases include:
 > `application/vnd.msgpack` and `application/gob` can be resolved as media types and remain valid
 > response codecs, but REST/RPC request-body decoding — for both single-value and streaming
 > (NDJSON) requests — rejects them with HTTP 415. This follows the decoder-bounds rule documented in
-> `net/http/content`'s package documentation: a codec is admissible for decoding untrusted input only
+> `net/http/content/unary`'s package documentation: a codec is admissible for decoding untrusted input only
 > when it is both ratio-bounded and depth-bounded, which msgpack and gob are not.
 
 ### HTTP streaming (NDJSON)
@@ -1146,18 +1146,14 @@ matching `client.Stream`/`client.RequestStream` functions, which take the same k
 See `net/http/client`'s `ExampleClient_RequestStream` for a complete HTTP/2 bidirectional client call.
 
 > [!IMPORTANT]
-> Streaming helpers now live in `github.com/alexfalkowski/go-service/v2/net/http/content/stream` rather than
-> `net/http/content`. Update imports and replace `content.StreamOptions`, `content.StreamHandler`,
-> `content.RequestStreamHandler`, `content.Stream`, `content.RequestStream`, `content.StreamMedia`,
-> `content.NewStreamHandler`, `content.NewRequestStreamHandler`, and `content.NewStreamMedia` with their
-> `stream` equivalents. Replace `cont.NewStreamFromMedia`, `cont.NewStreamFromAccept`, and
-> `cont.NewStreamFromContentType` with `stream.NewMedia`, `stream.NewMediaFromAccept`, and
-> `stream.NewMediaFromContentType`, respectively, passing an explicit `*encoding/stream.Map` as the registry
-> argument. `content.Content` now owns only single-value codecs; pass that streaming registry separately
-> to `stream.NewHandler`, `stream.NewRequestHandler`, and `client.NewClient`.
-> Replace `content.ErrUnsupportedStreamMedia` and `content.ErrBidiRequiresHTTP2` with
-> `stream.ErrUnsupportedMedia` and `stream.ErrBidiRequiresHTTP2`.
-> `rest.Register` and `rpc.Register` take both that streaming registry and `stream.Options`.
+> Single-value helpers live in `github.com/alexfalkowski/go-service/v2/net/http/content/unary`; streaming helpers
+> live in `github.com/alexfalkowski/go-service/v2/net/http/content/stream`. Import `unary` for `Content`, `Media`,
+> `NewContent`, `NewHandler`, and `NewRequestHandler`; import `stream` for incremental request/response helpers.
+> `stream.NewHandler` and `stream.NewRequestHandler` take `*stream.Content`, while unary handlers take
+> `*unary.Content`. `rest.Register`, `rpc.Register`, and `client.NewClient` take the unary and streaming content
+> owners separately.
+> Migrate root `content` imports and identifiers to `content/unary` and `unary`, respectively; use
+> `net/http.ContentTypeKey` and `net/http.AcceptKey` for the shared header names.
 
 The initial wire format is NDJSON (`application/x-ndjson`), newline-delimited JSON values, resolved
 through a separate streaming encoder/decoder registry (`encoding/stream.Map`) from the single-value one
@@ -1194,7 +1190,7 @@ back to JSON, unlike single-value negotiation.
 
 The HTTP transport wraps the mux with `net/http.NewNotFoundHandler` so generated 404 responses can be rendered consistently while preserving other mux responses such as 405 Method Not Allowed.
 
-- REST/RPC-style missing routes use `net/http/content.NotFoundHandler`, which writes the standard `status.WriteError` response.
+- REST/RPC-style missing routes use `net/http/status.NotFoundHandler`, which writes the standard `status.WriteError` response.
 - MVC missing routes can use `net/http/mvc.NotFoundHandler` to render the registered MVC not-found view when the request accepts HTML (`Accept: text/html`) or is an HTMX request (`Hx-Request: true`).
 - Routes that match and write their own status are not replaced by this mux-level not-found handler.
 

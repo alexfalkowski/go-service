@@ -21,7 +21,7 @@ func TestPostRequiresRequest(t *testing.T) {
 }
 
 func TestPostUsesConfiguredTimeout(t *testing.T) {
-	rpc.Register(nil, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
+	rpc.Register(nil, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
 
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", media.JSON)
@@ -68,7 +68,7 @@ func TestPostRequiresNonNilTypedResponse(t *testing.T) {
 func TestPostUsesAccept(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rpc.Register(router, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
+	rpc.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	server := httptest.NewServer(mux)

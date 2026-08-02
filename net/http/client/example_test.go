@@ -9,19 +9,18 @@ import (
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-sync"
 )
 
 func ExampleClient_RequestStream() {
 	pool := sync.NewBufferPool()
-	streamMap := encodingstream.NewMap()
-	cont := content.NewContent(encoding.NewMap(), pool)
+	unaryContent := unary.NewContent(encoding.NewMap(), pool)
+	streamContent := contentstream.NewContent(encodingstream.NewMap(), pool)
 	handler := contentstream.NewRequestHandler(
-		cont,
-		streamMap,
+		streamContent,
 		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[exampleRequest, exampleResponse]) error {
 			req, err := stream.Recv()
 			if err != nil {
@@ -36,7 +35,7 @@ func ExampleClient_RequestStream() {
 	server.StartTLS()
 	defer server.Close()
 
-	c := client.NewClient(cont, streamMap, pool, client.WithRoundTripper(server.Client().Transport))
+	c := client.NewClient(unaryContent, streamContent, pool, client.WithRoundTripper(server.Client().Transport))
 	var response exampleResponse
 	err := c.RequestStream(context.Background(), http.MethodPost, server.URL, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON},
 		func(_ context.Context, stream *client.RequestResponseStream) error {

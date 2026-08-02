@@ -2,8 +2,8 @@ package rest
 
 import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -18,7 +18,7 @@ import (
 //	Delete("/health", handler) // registers "DELETE /health"
 //
 // This helper delegates to Route.
-func Delete[Res any](pattern string, handler content.Handler[Res]) {
+func Delete[Res any](pattern string, handler unary.Handler[Res]) {
 	Route(strings.Join(strings.Space, http.MethodDelete, pattern), handler)
 }
 
@@ -26,7 +26,7 @@ func Delete[Res any](pattern string, handler content.Handler[Res]) {
 //
 // The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This helper delegates to Route.
-func Get[Res any](pattern string, handler content.Handler[Res]) {
+func Get[Res any](pattern string, handler unary.Handler[Res]) {
 	Route(strings.Join(strings.Space, http.MethodGet, pattern), handler)
 }
 
@@ -34,7 +34,7 @@ func Get[Res any](pattern string, handler content.Handler[Res]) {
 //
 // The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This helper delegates to RouteRequest.
-func Post[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
+func Post[Req any, Res any](pattern string, handler unary.RequestHandler[Req, Res]) {
 	RouteRequest(strings.Join(strings.Space, http.MethodPost, pattern), handler)
 }
 
@@ -42,7 +42,7 @@ func Post[Req any, Res any](pattern string, handler content.RequestHandler[Req, 
 //
 // The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This helper delegates to RouteRequest.
-func Put[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
+func Put[Req any, Res any](pattern string, handler unary.RequestHandler[Req, Res]) {
 	RouteRequest(strings.Join(strings.Space, http.MethodPut, pattern), handler)
 }
 
@@ -50,13 +50,13 @@ func Put[Req any, Res any](pattern string, handler content.RequestHandler[Req, R
 //
 // The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This helper delegates to RouteRequest.
-func Patch[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
+func Patch[Req any, Res any](pattern string, handler unary.RequestHandler[Req, Res]) {
 	RouteRequest(strings.Join(strings.Space, http.MethodPatch, pattern), handler)
 }
 
 // RouteRequest registers a handler under pattern that decodes a request and encodes a response.
 //
-// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler], which:
+// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewRequestHandler], which:
 //   - decodes the request body using Content-Type, falling back to JSON when Content-Type is absent and
 //     rejecting it with 415 when it is unparseable, unregistered, or intentionally undecodable,
 //   - decodes the request body into a newly allocated request model, and
@@ -64,23 +64,23 @@ func Patch[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 //
 // Registration:
 // The resulting handler is registered on the package-level router configured via [Register].
-// [Register] must be called before RouteRequest; otherwise router/cont will be nil and this function will panic.
-func RouteRequest[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
-	router.Handle(pattern, content.NewRequestHandler(cont, handler))
+// [Register] must be called before RouteRequest; otherwise router/unaryContent will be nil and this function will panic.
+func RouteRequest[Req any, Res any](pattern string, handler unary.RequestHandler[Req, Res]) {
+	router.Handle(pattern, unary.NewRequestHandler(unaryContent, handler))
 }
 
 // Route registers a handler under pattern that encodes a response.
 //
-// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content.NewHandler], which:
+// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewHandler], which:
 //   - selects an encoder based on the first Accept media type, falling back to Content-Type when
 //     Accept is absent, and
 //   - encodes the returned response model using the negotiated media type.
 //
 // Registration:
 // The resulting handler is registered on the package-level router configured via Register.
-// Register must be called before Route; otherwise router/cont will be nil and this function will panic.
-func Route[Res any](pattern string, handler content.Handler[Res]) {
-	router.Handle(pattern, content.NewHandler(cont, handler))
+// Register must be called before Route; otherwise router/unaryContent will be nil and this function will panic.
+func Route[Res any](pattern string, handler unary.Handler[Res]) {
+	router.Handle(pattern, unary.NewHandler(unaryContent, handler))
 }
 
 // StreamGet registers an HTTP GET handler under pattern for a send-only streaming response: the
@@ -148,14 +148,14 @@ func StreamPatch[Req any, Res any](pattern string, handler stream.RequestHandler
 // route is marked streaming on the router's route policy (see
 // [github.com/alexfalkowski/go-service/v2/net/http.RoutePolicy.Streaming]) so inbound request body
 // limiting is applied lazily instead of buffering the whole body.
-// [Register] must be called before StreamRouteRequest; otherwise router/cont will be nil and this
+// [Register] must be called before StreamRouteRequest; otherwise router/streamContent will be nil and this
 // function will panic.
 //
 // Inbound size limiting:
 // opts.MaxReceiveSize (set via [Register]) bounds each value decoded by the resulting stream's
 // Recv, not the request body as a whole — see [stream.NewRequestHandler].
 func StreamRouteRequest[Req any, Res any](pattern string, handler stream.RequestHandler[Req, Res]) {
-	router.HandleStreaming(pattern, stream.NewRequestHandler(cont, sm, opts, handler))
+	router.HandleStreaming(pattern, stream.NewRequestHandler(streamContent, opts, handler))
 }
 
 // StreamRoute registers a handler under pattern for a send-only streaming response: the response
@@ -174,8 +174,8 @@ func StreamRouteRequest[Req any, Res any](pattern string, handler stream.Request
 // route is marked streaming on the router's route policy (see
 // [github.com/alexfalkowski/go-service/v2/net/http.RoutePolicy.Streaming]) so inbound request body
 // limiting is applied lazily instead of buffering the whole body.
-// Register must be called before StreamRoute; otherwise router/cont will be nil and this function will
+// Register must be called before StreamRoute; otherwise router/streamContent will be nil and this function will
 // panic.
 func StreamRoute[Res any](pattern string, handler stream.Handler[Res]) {
-	router.HandleStreaming(pattern, stream.NewHandler(cont, sm, opts, handler))
+	router.HandleStreaming(pattern, stream.NewHandler(streamContent, opts, handler))
 }

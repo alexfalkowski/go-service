@@ -12,10 +12,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/http/body"
@@ -162,7 +162,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(hd)
 	}
 
-	handler := http.NewNotFoundHandler(params.Mux, params.Pool, mvc.NotFoundHandler(), content.NotFoundHandler())
+	handler := http.NewNotFoundHandler(params.Mux, params.Pool, mvc.NotFoundHandler(), status.NotFoundHandler())
 	neg.UseHandler(compress.GzipHandler(handler))
 
 	handler = http.NewTelemetryHandler(neg, "http.server")

@@ -81,16 +81,15 @@ func WithClientTimeout(timeout string) ClientOption {
 
 // NewClient constructs an RPC client backed by net/http/client.
 //
-// NewClient depends on package-level registration (see [Register]) for the content codecs (cont)
-// and buffer pool (pool). [Register] must be called before NewClient; otherwise it will panic due to
-// nil dependencies.
+// NewClient depends on package-level registration (see [Register]) for unary and stream content plus
+// the buffer pool. [Register] must be called before NewClient; otherwise it will panic due to nil dependencies.
 //
 // The returned client issues RPC-style POST requests to the provided base url using the configured
 // Content-Type, transport, and unary timeout options. Redirect following is disabled by default
 // (redirect responses are returned instead of being followed).
 func NewClient(url string, opts ...ClientOption) *Client {
 	os := options(opts...)
-	client := client.NewClient(cont, sm, pool,
+	client := client.NewClient(unaryContent, streamContent, pool,
 		client.WithRoundTripper(os.roundTripper),
 		client.WithTimeout(os.timeout),
 		client.WithRedirect(client.RedirectIgnore),

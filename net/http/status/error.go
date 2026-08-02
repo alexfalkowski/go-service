@@ -56,3 +56,12 @@ func WriteText(res http.ResponseWriter, text string) error {
 	_, err := fmt.Fprintln(res, text)
 	return err
 }
+
+// NotFoundHandler returns a not-found handler that writes the standard safe error response.
+func NotFoundHandler() http.NotFoundHandler {
+	return func(res http.ResponseWriter, req *http.Request) bool {
+		_ = WriteError(req.Context(), res, SafeError(http.StatusNotFound, nil))
+
+		return true
+	}
+}

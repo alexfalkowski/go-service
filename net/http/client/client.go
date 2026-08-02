@@ -3,11 +3,11 @@ package client
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -102,18 +102,17 @@ func WithRedirect(redirect Redirect) ClientOption {
 	})
 }
 
-// NewClient constructs a Client that encodes requests and decodes responses using content.
+// NewClient constructs a Client that encodes requests and decodes responses using unary and stream content.
 //
 // It reuses buffers from pool and applies the configured transport, unary timeout, and redirect policy.
 //
 // The underlying *[http.Client] is constructed via [http.NewClient] with no timeout. [WithTimeout]
 // applies the configured deadline only to [Client.Do], preserving long-lived streaming calls.
 //
-// [Stream] and [RequestStream] resolve streaming media types through streamMap (see
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewMedia]).
+// [Stream] and [RequestStream] resolve streaming media types through streamContent.
 //
 // Callers should treat the returned Client as safe for concurrent use.
-func NewClient(content *content.Content, streamMap *stream.Map, pool *sync.BufferPool, opts ...ClientOption) *Client {
+func NewClient(uc *unary.Content, sc *stream.Content, pool *sync.BufferPool, opts ...ClientOption) *Client {
 	clientOptions := options(opts...)
 
 	client := http.NewClient(clientOptions.roundTripper, 0)
@@ -127,8 +126,8 @@ func NewClient(content *content.Content, streamMap *stream.Map, pool *sync.Buffe
 
 	return &Client{
 		client:          client,
-		content:         content,
-		streamMap:       streamMap,
+		unaryContent:    uc,
+		streamContent:   sc,
 		pool:            pool,
 		timeout:         clientOptions.timeout,
 		maxResponseSize: clientOptions.maxResponseSize.Bytes(),
@@ -137,7 +136,7 @@ func NewClient(content *content.Content, streamMap *stream.Map, pool *sync.Buffe
 
 // Options describes the request/response payloads and media types for a single call.
 //
-// ContentType is used to select the request encoder via net/http/content. Accept is used to request
+// ContentType is used to select the request encoder via net/http/content/unary. Accept is used to request
 // a distinct response media type.
 // Typical values are media types like "application/json" or go-service specific protobuf media types.
 //
@@ -177,8 +176,8 @@ func (o Options) HasResponse() bool {
 // The Client uses a shared buffer pool to reduce allocations when encoding/decoding bodies.
 type Client struct {
 	client          *http.Client
-	content         *content.Content
-	streamMap       *stream.Map
+	unaryContent    *unary.Content
+	streamContent   *stream.Content
 	pool            *sync.BufferPool
 	timeout         time.Duration
 	maxResponseSize int64
@@ -219,7 +218,7 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 	return c.Do(ctx, http.MethodPatch, url, opts)
 }
 
-// Do issues a request with method and url, encoding and decoding bodies via content.
+// Do issues a request with method and url, encoding and decoding bodies via unary.
 //
 // Encoding:
 //   - If opts.Request is non-nil, it is encoded into the request body using the encoder selected by
@@ -265,7 +264,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	}
 
 	// The server handlers return text/error to indicate an error.
-	responseMedia := c.content.NewFromMedia(responseContentType(response.Header, opts))
+	responseMedia := c.unaryContent.NewFromMedia(responseContentType(response.Header, opts))
 	if err := mediaStatusError(response, responseMedia, responseBody.String()); err != nil {
 		return err
 	}
@@ -278,7 +277,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 		// caller supplying a customized registry can still reach a nil dereference here. Response
 		// decoding is intentionally not subject to the request-decode policy that guards
 		// Content.NewFromRequestBody (a configured response endpoint is a different trust context from
-		// an inbound request body); see the decoder-bounds rule in net/http/content's documentation.
+		// an inbound request body); see the decoder-bounds rule in net/http/content/unary's documentation.
 		if err := responseMedia.Encoder.Decode(responseBody, opts.Response); err != nil {
 			return errors.Prefix("http: decode", err)
 		}
@@ -294,7 +293,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 // This is shared by Do and Stream; RequestStream builds its own pipe-backed request instead, since a
 // bidirectional streaming request has no single-value body to encode upfront.
 func (c *Client) newRequest(ctx context.Context, method, url string, opts Options) (*http.Request, error) {
-	requestMedia := c.content.NewFromMedia(opts.ContentType)
+	requestMedia := c.unaryContent.NewFromMedia(opts.ContentType)
 
 	body := io.Reader(http.NoBody)
 	if opts.HasRequest() {
@@ -313,9 +312,9 @@ func (c *Client) newRequest(ctx context.Context, method, url string, opts Option
 		return nil, errors.Prefix("http: new request", err)
 	}
 
-	request.Header.Set(content.TypeKey, requestMedia.String())
+	request.Header.Set(http.ContentTypeKey, requestMedia.String())
 	if !strings.IsEmpty(opts.Accept) {
-		request.Header.Set(content.AcceptKey, opts.Accept)
+		request.Header.Set(http.AcceptKey, opts.Accept)
 	}
 
 	return request, nil
@@ -341,7 +340,7 @@ func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {
 // error signal actually requires a message, so a non-error streaming response is left untouched for
 // the caller's decoder.
 func (c *Client) checkResponseStatus(response *http.Response, opts Options) error {
-	responseMedia := c.content.NewFromMedia(responseContentType(response.Header, opts))
+	responseMedia := c.unaryContent.NewFromMedia(responseContentType(response.Header, opts))
 
 	message := strings.Empty
 	if responseMedia.IsError() {
@@ -367,7 +366,7 @@ func (c *Client) checkResponseStatus(response *http.Response, opts Options) erro
 // initial response of a [Stream] or [RequestStream] call, before either streams values from/to the
 // caller-supplied handler. Factoring it out keeps both paths honoring the same text/error and status
 // code contract instead of the streaming path silently dropping it (see [Client.checkResponseStatus]).
-func mediaStatusError(response *http.Response, responseMedia content.Media, message string) error {
+func mediaStatusError(response *http.Response, responseMedia unary.Media, message string) error {
 	if responseMedia.IsError() {
 		code := response.StatusCode
 		if !isErrorStatus(code) {
@@ -397,7 +396,7 @@ func defaultErrorMessage(code int) string {
 }
 
 func responseContentType(header http.Header, opts Options) string {
-	if contentType := header.Get(content.TypeKey); !strings.IsEmpty(contentType) {
+	if contentType := header.Get(http.ContentTypeKey); !strings.IsEmpty(contentType) {
 		return contentType
 	}
 

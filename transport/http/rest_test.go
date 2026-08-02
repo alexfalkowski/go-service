@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
@@ -67,12 +66,12 @@ func TestRestNotFound(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 
 	res, body, err := world.GetBody(t.Context(), world.NamedServerURL("http", "missing"), header)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
-	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(http.ContentTypeKey))
 	require.Equal(t, "http: not found", body)
 }
 
@@ -145,8 +144,8 @@ func TestRestRequestUsesAcceptForResponse(t *testing.T) {
 	defer test.Pool.Put(body)
 	require.NoError(t, test.Encoder.Get("json").Encode(body, &test.Request{Name: "Bob"}))
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
-	header.Set(content.AcceptKey, media.YAML)
+	header.Set(http.ContentTypeKey, media.JSON)
+	header.Set(http.AcceptKey, media.YAML)
 
 	res, responseBody, err := world.ResponseWithBody(
 		t.Context(),
@@ -157,7 +156,7 @@ func TestRestRequestUsesAcceptForResponse(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, media.YAML, res.Header.Get(content.TypeKey))
+	require.Equal(t, media.YAML, res.Header.Get(http.ContentTypeKey))
 	var response test.Response
 	require.NoError(t, test.Encoder.Get("yaml").Decode(strings.NewReader(responseBody), &response))
 	require.Equal(t, "Hello Bob", response.Greeting)
@@ -242,7 +241,7 @@ func TestRestStreamPostRefreshesReadDeadlineOverH2C(t *testing.T) {
 	config := test.NewInsecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.Register(world.Router, test.Content, test.StreamEncoder, test.Pool, stream.Options{
+	rest.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
 	rest.StreamPost("/hello", echoStreamServer)
@@ -251,7 +250,7 @@ func TestRestStreamPostRefreshesReadDeadlineOverH2C(t *testing.T) {
 	transport := http.Transport(nil)
 	transport.Protocols.SetHTTP1(false)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(transport))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(transport))
 
 	url := world.PathServerURL("http", "hello")
 
@@ -268,7 +267,7 @@ func TestRestStreamPostSurvivesReceiveOnlyActivePhase(t *testing.T) {
 	config := test.NewInsecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.Register(world.Router, test.Content, test.StreamEncoder, test.Pool, stream.Options{
+	rest.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
 	rest.StreamPost("/hello", receiveOnlyActivePhaseServer)
@@ -277,7 +276,7 @@ func TestRestStreamPostSurvivesReceiveOnlyActivePhase(t *testing.T) {
 	transport := http.Transport(nil)
 	transport.Protocols.SetHTTP1(false)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(transport))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(transport))
 
 	url := world.PathServerURL("http", "hello")
 
@@ -294,7 +293,7 @@ func TestRestStreamPostSurvivesSendOnlyActivePhase(t *testing.T) {
 	config := test.NewInsecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.Register(world.Router, test.Content, test.StreamEncoder, test.Pool, stream.Options{
+	rest.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
 	rest.StreamPost("/hello", sendOnlyActivePhaseServer)
@@ -303,7 +302,7 @@ func TestRestStreamPostSurvivesSendOnlyActivePhase(t *testing.T) {
 	transport := http.Transport(nil)
 	transport.Protocols.SetHTTP1(false)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(transport))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(transport))
 
 	url := world.PathServerURL("http", "hello")
 

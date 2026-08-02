@@ -1,4 +1,4 @@
-package content
+package unary
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
@@ -55,25 +55,6 @@ func unaryKind(subtype string) string {
 	}
 
 	return subtype
-}
-
-// NewMedia builds a Media from a media type string and encoder map.
-//
-// Encoder selection:
-//   - If the subtype is "error", it returns a Media without an encoder.
-//   - If no encoder is registered for the subtype, it falls back to JSON.
-//   - Otherwise it returns the encoder registered for the subtype.
-func NewMedia(mediaType string, enc *encoding.Map) Media {
-	if media, ok := knownMedia(mediaType, enc); ok {
-		return media
-	}
-
-	value, err := media.Parse(mediaType)
-	if err != nil {
-		return jsonMedia(enc)
-	}
-
-	return newMedia(value, enc)
 }
 
 // Media describes an HTTP media type and its associated encoder.
