@@ -1,6 +1,8 @@
 package stream
 
 import (
+	"mime"
+
 	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/accept"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
@@ -69,22 +71,22 @@ func encoderMedia(resolved Media, err error) (Media, error) {
 // matchStreamAccept reports whether header, an Accept header value, is satisfiable for a registered
 // streamKinds entry, and if so, which media type to resolve.
 //
-// It finds the most specific reference to the producible type present anywhere in the list — an exact
-// subtype match, else a "type/*" wildcard [accept.IsWildcard] reports as satisfied by [ndjsonType]
-// ("text/*" does not satisfy an "application/x-ndjson" route the way "*/*" or "application/*" does),
-// else the bare "*/*" wildcard — and returns satisfiable only if that one reference is not
-// [accept.IsZeroQuality]; a less specific reference's own quality, zero or not, is irrelevant once a
-// more specific reference is found. This matches RFC 9110 §12.5.1's "most specific reference" rule
-// regardless of list order. When satisfiable, it returns the exact match's media type if the
-// controlling reference was one, otherwise [media.NDJSON]. An unparsable item is skipped rather than
-// rejecting the whole list, the same way an unparsable single Accept value already falls through to
-// [Content.NewFromMedia]'s own rejection when nothing else in the list matches.
+// It finds the most specific reference to the parameterless producible type present anywhere in the list —
+// an exact subtype match without non-quality parameters, else a "type/*" wildcard [accept.IsWildcard]
+// reports as satisfied by [ndjsonType] without non-quality parameters ("text/*" does not satisfy an
+// "application/x-ndjson" route the way "*/*" or "application/*" does), else the bare "*/*" wildcard —
+// and returns satisfiable only if that one reference is not [accept.IsZeroQuality]; a less specific
+// reference's own quality, zero or not, is irrelevant once a more specific reference is found. This matches
+// RFC 9110 §12.5.1's "most specific reference" rule regardless of list order. When satisfiable, it returns
+// the exact match's media type if the controlling reference was one, otherwise [media.NDJSON]. An
+// unparsable item is skipped rather than rejecting the whole list, the same way an unparsable single Accept
+// value already falls through to [Content.NewFromMedia]'s own rejection when nothing else in the list matches.
 func matchStreamAccept(header string) (string, bool) {
 	var exact, major, bare mediaRangeMatch
 
 	for _, item := range accept.Items(header) {
-		value, err := media.Parse(item)
-		if err != nil {
+		value, ok := parseParameterlessAcceptRange(item)
+		if !ok {
 			continue
 		}
 
@@ -116,6 +118,28 @@ func matchStreamAccept(header string) (string, bool) {
 	default:
 		return "", false
 	}
+}
+
+func parseParameterlessAcceptRange(item string) (media.Type, bool) {
+	value, err := media.Parse(item)
+	if err != nil || hasNonQualityParameters(item) {
+		return media.Type{}, false
+	}
+
+	return value, true
+}
+
+// hasNonQualityParameters reports whether item requires media parameters the canonical parameterless
+// representation does not provide.
+func hasNonQualityParameters(item string) bool {
+	_, parameters, err := mime.ParseMediaType(item)
+	if err != nil {
+		return false
+	}
+
+	delete(parameters, "q")
+
+	return len(parameters) != 0
 }
 
 // mediaRangeMatch is the controlling media range found so far for one specificity tier (exact subtype,
