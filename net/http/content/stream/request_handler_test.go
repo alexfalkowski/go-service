@@ -700,6 +700,39 @@ func TestNewRequestHandlerSendExtendReadDeadlineFailure(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 }
 
+func TestNewRequestHandlerSendRefreshesDeadlines(t *testing.T) {
+	readCalls := 0
+	writeCalls := 0
+	opts := contentstream.Options{ReadTimeout: time.MustParseDuration("1s"), WriteTimeout: time.MustParseDuration("1s")}
+	handler := contentstream.NewRequestHandler(
+		test.StreamContent,
+		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			return stream.Send(&test.Response{Greeting: "hi"})
+		})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+	req.ProtoMajor = 2
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := &test.DeadlineResponseWriter{
+		SetReadDeadlineFunc: func() error {
+			readCalls++
+
+			return nil
+		},
+		SetWriteDeadlineFunc: func() error {
+			writeCalls++
+
+			return nil
+		},
+	}
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, 2, readCalls)
+	require.Equal(t, 2, writeCalls)
+}
+
 func TestNewRequestHandlerRecvFirstCallIsBoundedByReadTimeout(t *testing.T) {
 	done := make(chan struct{})
 	t.Cleanup(func() { <-done })

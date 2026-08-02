@@ -558,6 +558,26 @@ func TestNewHandlerSendExtendDeadlineFailure(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 }
 
+func TestNewHandlerSendRefreshesWriteDeadline(t *testing.T) {
+	calls := 0
+	opts := contentstream.Options{WriteTimeout: time.MustParseDuration("1s")}
+	handler := contentstream.NewHandler(test.StreamContent, opts, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+		return stream.Send(&test.Response{Greeting: "hi"})
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := &test.DeadlineResponseWriter{SetWriteDeadlineFunc: func() error {
+		calls++
+
+		return nil
+	}}
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, 2, calls)
+}
+
 func TestNewHandlerSendCommitFailure(t *testing.T) {
 	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "hi"})

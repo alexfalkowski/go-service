@@ -62,7 +62,6 @@ func (s *Stream[Res]) Send(res *Res) error {
 
 	if s.draining() {
 		s.err = ErrDraining
-
 		return s.err
 	}
 
@@ -71,12 +70,7 @@ func (s *Stream[Res]) Send(res *Res) error {
 		return err
 	}
 
-	if err := s.extendWriteDeadline(); err != nil {
-		s.err = err
-		return err
-	}
-
-	if err := s.extendReadDeadline(); err != nil {
+	if err := s.extendDeadlines(); err != nil {
 		s.err = err
 		return err
 	}
@@ -92,6 +86,11 @@ func (s *Stream[Res]) Send(res *Res) error {
 	}
 
 	if err := s.controller.Flush(); err != nil {
+		s.err = err
+		return err
+	}
+
+	if err := s.extendDeadlines(); err != nil {
 		s.err = err
 		return err
 	}
@@ -133,6 +132,14 @@ func (s *Stream[Res]) extendWriteDeadline() error {
 	}
 
 	return s.controller.SetWriteDeadline(time.Now().Add(s.writeTimeout.Duration()))
+}
+
+func (s *Stream[Res]) extendDeadlines() error {
+	if err := s.extendWriteDeadline(); err != nil {
+		return err
+	}
+
+	return s.extendReadDeadline()
 }
 
 // extendReadDeadline extends the request read deadline. It is a no-op for a send-only [Stream] built
