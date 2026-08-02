@@ -7,3 +7,5 @@ import "github.com/alexfalkowski/go-service/v2/errors"
 // decoder-bounds rule in the package documentation), the media type does not parse, or the media type
 // parses but resolves to no registered codec. See [Content.NewFromRequestBody].
 var ErrUnsupportedRequestMedia = errors.New("unary: unsupported request media")
+
+var errUnavailableResponseCodec = errors.New("unary: unavailable response codec")

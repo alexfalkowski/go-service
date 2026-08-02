@@ -78,6 +78,12 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 		ctx = meta.WithRequestResponse(ctx, req, res)
 		res.Header().Set(http.ContentTypeKey, mediaType.WithUTF8())
 
+		if mediaType.Encoder == nil {
+			_ = status.WriteError(ctx, res, errUnavailableResponseCodec)
+
+			return
+		}
+
 		data, err := handler(ctx)
 		if err != nil {
 			_ = status.WriteError(ctx, res, err)
