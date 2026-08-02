@@ -158,22 +158,6 @@ func (s *Stream[Res]) close() error {
 	return s.encoder.Close()
 }
 
-// requestEncoder keeps bidirectional stream finalization on the response stream while closing both codecs.
-type requestEncoder struct {
-	stream.Encoder
-	decoder stream.Decoder
-}
-
-func (e *requestEncoder) Close() error {
-	if err := e.Encoder.Close(); err != nil {
-		_ = e.decoder.Close()
-
-		return err
-	}
-
-	return e.decoder.Close()
-}
-
 // RequestStream is a bidirectional streaming handle: both the request and the response stream.
 //
 // RequestStream is not safe for arbitrary concurrent use. The supported pattern, matching gRPC's bidi

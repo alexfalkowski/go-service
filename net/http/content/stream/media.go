@@ -126,7 +126,7 @@ func NewMediaFromAccept(req *http.Request, sm *stream.Map) (Media, error) {
 // rejecting the whole list, the same way an unparsable single Accept value already falls through to
 // [NewMedia]'s own rejection when nothing else in the list matches.
 func matchStreamAccept(header string) (string, bool) {
-	var exact, major, bare streamAcceptMatch
+	var exact, major, bare mediaRangeMatch
 
 	for _, item := range accept.Items(header) {
 		value, err := media.Parse(item)
@@ -164,24 +164,6 @@ func matchStreamAccept(header string) (string, bool) {
 	}
 }
 
-// streamAcceptMatch is the controlling Accept item found so far for one specificity tier (exact
-// subtype, "type/*" wildcard, or bare "*/*" wildcard) in [matchStreamAccept]'s scan.
-type streamAcceptMatch struct {
-	value string
-	found bool
-	zero  bool
-}
-
-// consider records item as this tier's controlling reference if none has been recorded yet. Only the
-// first occurrence within a tier is kept: RFC 9110 §12.5.1 lets the most specific tier present control
-// regardless of order, and within one tier this package has no further precedence rule to break a tie
-// between duplicate references, so the first one found is as good as any.
-func (m *streamAcceptMatch) consider(zero bool, value string) {
-	if !m.found {
-		m.found, m.zero, m.value = true, zero, value
-	}
-}
-
 // NewMediaFromContentType parses the request Content-Type header and resolves a streaming decoder.
 //
 // Unlike [Content.NewMediaFromContentType], an unregistered or unparsable media type returns
@@ -213,4 +195,22 @@ func NewMediaFromContentType(req *http.Request, sm *stream.Map) (Media, error) {
 	}
 
 	return m, nil
+}
+
+// mediaRangeMatch is the controlling media range found so far for one specificity tier (exact subtype,
+// "type/*" wildcard, or bare "*/*" wildcard) in [matchStreamAccept]'s scan.
+type mediaRangeMatch struct {
+	value string
+	found bool
+	zero  bool
+}
+
+// consider records item as this tier's controlling reference if none has been recorded yet. Only the
+// first occurrence within a tier is kept: RFC 9110 §12.5.1 lets the most specific tier present control
+// regardless of order, and within one tier this package has no further precedence rule to break a tie
+// between duplicate references, so the first one found is as good as any.
+func (m *mediaRangeMatch) consider(zero bool, value string) {
+	if !m.found {
+		m.found, m.zero, m.value = true, zero, value
+	}
 }
