@@ -1,6 +1,6 @@
 // Package rest provides REST-style HTTP handler registration and client helpers for go-service.
 //
-// This package is built on top of [github.com/alexfalkowski/go-service/v2/net/http/content]. It relies on package-level registration (see [Register])
+// This package is built on top of [github.com/alexfalkowski/go-service/v2/net/http/content/unary]. It relies on package-level registration (see [Register])
 // to supply the HTTP router, content codec helpers, and buffer pool that are used when wiring handlers and clients.
 //
 // # Server-side routing
@@ -12,8 +12,8 @@
 //
 // For example, calling Get("/health", handler) registers the route pattern "GET /health".
 //
-// The handlers are constructed using [github.com/alexfalkowski/go-service/v2/net/http/content.NewHandler]
-// and [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler], which:
+// The handlers are constructed using [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewHandler]
+// and [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewRequestHandler], which:
 //   - decode request bodies (where applicable) from Content-Type, falling back to JSON when
 //     Content-Type is absent, and rejecting it with 415 when it is unparseable, unregistered, or
 //     intentionally undecodable, and

@@ -9,8 +9,8 @@ import (
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
@@ -69,7 +69,7 @@ func TestSuccessProtobufRPC(t *testing.T) {
 
 func TestErroneousProtobufRPC(t *testing.T) {
 	handlers := []struct {
-		handler content.RequestHandler[v1.SayHelloRequest, v1.SayHelloResponse]
+		handler unary.RequestHandler[v1.SayHelloRequest, v1.SayHelloResponse]
 		name    string
 	}{
 		{name: "mapped", handler: test.ErrorsProtobufSayHello},
@@ -109,7 +109,7 @@ func TestErroneousUnmarshalRPC(t *testing.T) {
 			url := world.PathServerURL("http", "hello")
 
 			header := http.Header{}
-			header.Set(content.TypeKey, mt.ContentType)
+			header.Set(http.ContentTypeKey, mt.ContentType)
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString("an erroneous payload"))
 			require.NoError(t, err)
@@ -121,7 +121,7 @@ func TestErroneousUnmarshalRPC(t *testing.T) {
 
 func TestErrorRPC(t *testing.T) {
 	handlers := []struct {
-		handler content.RequestHandler[test.Request, test.Response]
+		handler unary.RequestHandler[test.Request, test.Response]
 		name    string
 	}{
 		{name: "mapped", handler: test.ErrorSayHello},
@@ -137,7 +137,7 @@ func TestErrorRPC(t *testing.T) {
 					rpc.Route("/hello", handler.handler)
 
 					header := http.Header{}
-					header.Set(content.TypeKey, mt.ContentType)
+					header.Set(http.ContentTypeKey, mt.ContentType)
 
 					enc := test.Encoder.Get(mt.Kind)
 
@@ -167,12 +167,12 @@ func TestRPCNotFound(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 
 	res, body, err := world.ResponseWithBody(t.Context(), world.PathServerURL("http", "missing"), http.MethodPost, header, http.NoBody)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
-	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(content.TypeKey))
+	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(http.ContentTypeKey))
 	require.Equal(t, "http: not found", body)
 }
 
@@ -251,7 +251,7 @@ func TestRPCStreamRouteRefreshesReadDeadlineOverHTTP2(t *testing.T) {
 	config := test.NewSecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	rpc.Register(world.Router, test.Content, test.StreamEncoder, test.Pool, stream.Options{
+	rpc.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
 	rpc.StreamRoute("/hello", echoStreamServer)
@@ -260,7 +260,7 @@ func TestRPCStreamRouteRefreshesReadDeadlineOverHTTP2(t *testing.T) {
 	httpClient, err := world.NewHTTP()
 	require.NoError(t, err)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(httpClient.Transport))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(httpClient.Transport))
 
 	url := world.PathServerURL("https", "hello")
 

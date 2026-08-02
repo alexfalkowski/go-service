@@ -2,8 +2,8 @@ package rpc
 
 import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -17,7 +17,7 @@ import (
 //
 //	Route("/greet.v1.Greeter/SayHello", handler) // registers "POST /greet.v1.Greeter/SayHello"
 //
-// The handler is constructed using [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler], which:
+// The handler is constructed using [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewRequestHandler], which:
 //   - decodes the request body using Content-Type, falling back to JSON when Content-Type is absent and
 //     rejecting it with 415 when it is unparseable, unregistered, or intentionally undecodable,
 //   - decodes the request body into a newly allocated request model, and
@@ -25,11 +25,11 @@ import (
 //
 // Registration:
 // The resulting handler is registered on the package-level router configured via [Register].
-// [Register] must be called before Route; otherwise router/cont will be nil and this function will panic.
-func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
+// [Register] must be called before Route; otherwise router/unaryContent will be nil and this function will panic.
+func Route[Req any, Res any](pattern string, handler unary.RequestHandler[Req, Res]) {
 	router.Handle(
 		strings.Join(strings.Space, http.MethodPost, pattern),
-		content.NewRequestHandler(cont, handler),
+		unary.NewRequestHandler(unaryContent, handler),
 	)
 }
 
@@ -63,7 +63,7 @@ func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 // route is marked streaming on the router's route policy (see
 // [github.com/alexfalkowski/go-service/v2/net/http.RoutePolicy.Streaming]) so inbound request body
 // limiting is applied lazily instead of buffering the whole body.
-// [Register] must be called before StreamRoute; otherwise router/cont will be nil and this function
+// [Register] must be called before StreamRoute; otherwise router/streamContent will be nil and this function
 // will panic.
 //
 // Inbound size limiting:
@@ -72,6 +72,6 @@ func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req,
 func StreamRoute[Req any, Res any](pattern string, handler stream.RequestHandler[Req, Res]) {
 	router.HandleStreaming(
 		strings.Join(strings.Space, http.MethodPost, pattern),
-		stream.NewRequestHandler(cont, sm, opts, handler),
+		stream.NewRequestHandler(streamContent, opts, handler),
 	)
 }

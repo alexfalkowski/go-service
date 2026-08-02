@@ -13,8 +13,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -23,7 +23,7 @@ import (
 )
 
 func TestStreamRecvsValues(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
@@ -34,7 +34,7 @@ func TestStreamRecvsValues(t *testing.T) {
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
 
 	var greetings []string
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
@@ -60,7 +60,7 @@ func TestStreamRecvsValues(t *testing.T) {
 func TestStreamGetIssuesGetRequest(t *testing.T) {
 	var method string
 
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "Hello Bob"})
 	})
 
@@ -70,7 +70,7 @@ func TestStreamGetIssuesGetRequest(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
 
 	var greeting string
 	err := c.StreamGet(t.Context(), server.URL, client.Options{Accept: media.NDJSON},
@@ -105,7 +105,7 @@ func TestStreamPostPutPatchIssueBidiRequests(t *testing.T) {
 			var method string
 
 			handler := contentstream.NewRequestHandler(
-				test.Content, test.StreamEncoder,
+				test.StreamContent,
 				contentstream.Options{},
 				func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 					req, err := stream.Recv()
@@ -125,7 +125,7 @@ func TestStreamPostPutPatchIssueBidiRequests(t *testing.T) {
 			server.StartTLS()
 			t.Cleanup(server.Close)
 
-			c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(server.Client().Transport))
+			c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(server.Client().Transport))
 
 			var greeting string
 			err := tt.call(c, t.Context(), server.URL, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON},
@@ -152,12 +152,12 @@ func TestStreamPostPutPatchIssueBidiRequests(t *testing.T) {
 
 func TestStreamRequiresStreamRegistry(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		res.Header().Set(content.TypeKey, media.NDJSON)
+		res.Header().Set(http.ContentTypeKey, media.NDJSON)
 		_, _ = io.WriteString(res, "{}\n")
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, nil, test.Pool)
+	c := client.NewClient(test.UnaryContent, nil, test.Pool)
 
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON}, func(_ context.Context, stream *client.ResponseStream) error {
 		var res test.Response
@@ -169,12 +169,12 @@ func TestStreamRequiresStreamRegistry(t *testing.T) {
 
 func TestStreamRejectsUnsupportedResponseMedia(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		res.Header().Set(content.TypeKey, media.JSON)
+		res.Header().Set(http.ContentTypeKey, media.JSON)
 		_, _ = io.WriteString(res, "{}")
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
 
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{}, func(_ context.Context, _ *client.ResponseStream) error {
 		return nil
@@ -185,13 +185,13 @@ func TestStreamRejectsUnsupportedResponseMedia(t *testing.T) {
 
 func TestStreamSurfacesErrorResponseBeforeCallingHandler(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		res.Header().Set(content.TypeKey, media.Error)
+		res.Header().Set(http.ContentTypeKey, media.Error)
 		res.WriteHeader(http.StatusBadRequest)
 		_, _ = io.WriteString(res, "bad request")
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
 
 	called := false
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{}, func(_ context.Context, _ *client.ResponseStream) error {
@@ -207,8 +207,7 @@ func TestStreamSurfacesErrorResponseBeforeCallingHandler(t *testing.T) {
 
 func TestRequestStreamInterleavesOverHTTP2(t *testing.T) {
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			for {
 				req, err := stream.Recv()
@@ -234,7 +233,7 @@ func TestRequestStreamInterleavesOverHTTP2(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
 	t.Cleanup(cancel)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(server.Client().Transport))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(server.Client().Transport))
 
 	var greetings []string
 	err := c.RequestStream(ctx, http.MethodPost, server.URL, client.Options{ContentType: media.NDJSON, Accept: media.NDJSON},
@@ -260,7 +259,7 @@ func TestRequestStreamInterleavesOverHTTP2(t *testing.T) {
 }
 
 func TestRequestStreamRejectsUnsupportedRequestMedia(t *testing.T) {
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
 
 	err := c.RequestStream(t.Context(), http.MethodPost, "http://example.invalid", client.Options{ContentType: media.JSON},
 		func(_ context.Context, _ *client.RequestResponseStream) error {
@@ -271,7 +270,7 @@ func TestRequestStreamRejectsUnsupportedRequestMedia(t *testing.T) {
 }
 
 func TestRequestStreamRequiresStreamRegistry(t *testing.T) {
-	c := client.NewClient(test.Content, nil, test.Pool)
+	c := client.NewClient(test.UnaryContent, nil, test.Pool)
 
 	err := c.RequestStream(t.Context(), http.MethodPost, "http://example.invalid", client.Options{},
 		func(_ context.Context, _ *client.RequestResponseStream) error {
@@ -283,7 +282,7 @@ func TestRequestStreamRequiresStreamRegistry(t *testing.T) {
 
 func TestRequestStreamSurfacesErrorResponseViaRecv(t *testing.T) {
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		res.Header().Set(content.TypeKey, media.Error)
+		res.Header().Set(http.ContentTypeKey, media.Error)
 		res.WriteHeader(http.StatusBadRequest)
 		_, _ = io.WriteString(res, "bad request")
 	}))
@@ -294,7 +293,7 @@ func TestRequestStreamSurfacesErrorResponseViaRecv(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
 	t.Cleanup(cancel)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(server.Client().Transport))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(server.Client().Transport))
 
 	sendErr := errors.New("unset")
 	err := c.RequestStream(ctx, http.MethodPost, server.URL, client.Options{ContentType: media.NDJSON},
@@ -313,8 +312,7 @@ func TestRequestStreamSurfacesErrorResponseViaRecv(t *testing.T) {
 
 func TestRequestStreamSendIsSticky(t *testing.T) {
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			for {
 				if _, err := stream.Recv(); err != nil {
@@ -334,7 +332,7 @@ func TestRequestStreamSendIsSticky(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
 	t.Cleanup(cancel)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(server.Client().Transport))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(server.Client().Transport))
 
 	var firstErr, secondErr error
 	err := c.RequestStream(ctx, http.MethodPost, server.URL, client.Options{ContentType: media.NDJSON},
@@ -350,14 +348,14 @@ func TestRequestStreamSendIsSticky(t *testing.T) {
 }
 
 func TestStreamRejectsValueOverCap(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "a greeting far longer than the configured cap"})
 	})
 
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithMaxResponseSize(8))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithMaxResponseSize(8))
 
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
 		func(_ context.Context, stream *client.ResponseStream) error {
@@ -370,7 +368,7 @@ func TestStreamRejectsValueOverCap(t *testing.T) {
 }
 
 func TestStreamRejectsValueOverCapWhenDecodeSucceedsInOneRead(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "a greeting far longer than the configured cap"})
 	})
 
@@ -381,9 +379,9 @@ func TestStreamRejectsValueOverCapWhenDecodeSucceedsInOneRead(t *testing.T) {
 	codec := sm.Get("json")
 	codec.Decoder = func(r io.Reader) encodingstream.Decoder { return &test.SingleReadDecoder{R: r} }
 	sm.Register("json", codec)
-	cont := content.NewContent(test.Encoder, test.Pool)
+	unaryContent := unary.NewContent(test.Encoder, test.Pool)
 
-	c := client.NewClient(cont, sm, test.Pool, client.WithMaxResponseSize(8))
+	c := client.NewClient(unaryContent, contentstream.NewContent(sm, test.Pool), test.Pool, client.WithMaxResponseSize(8))
 
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
 		func(_ context.Context, stream *client.ResponseStream) error {
@@ -418,7 +416,7 @@ func TestStreamRecvRecoversCapReaderErrorDespiteDecoder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+			handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
 				return stream.Send(&test.Response{Greeting: tt.greeting})
 			})
 
@@ -429,9 +427,9 @@ func TestStreamRecvRecoversCapReaderErrorDespiteDecoder(t *testing.T) {
 			codec := sm.Get("json")
 			codec.Decoder = tt.decoder
 			sm.Register("json", codec)
-			cont := content.NewContent(test.Encoder, test.Pool)
+			unaryContent := unary.NewContent(test.Encoder, test.Pool)
 
-			c := client.NewClient(cont, sm, test.Pool, client.WithMaxResponseSize(tt.maxSize))
+			c := client.NewClient(unaryContent, contentstream.NewContent(sm, test.Pool), test.Pool, client.WithMaxResponseSize(tt.maxSize))
 
 			err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
 				func(_ context.Context, stream *client.ResponseStream) error {
@@ -448,7 +446,7 @@ func TestStreamRecvRecoversCapReaderErrorDespiteDecoder(t *testing.T) {
 func TestStreamCapIsPerValueNotCumulative(t *testing.T) {
 	const values = 10
 
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
 		for range values {
 			if err := stream.Send(&test.Response{Greeting: "hi"}); err != nil {
 				return err
@@ -463,7 +461,7 @@ func TestStreamCapIsPerValueNotCumulative(t *testing.T) {
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithMaxResponseSize(200))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithMaxResponseSize(200))
 
 	count := 0
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
@@ -488,14 +486,14 @@ func TestStreamCapIsPerValueNotCumulative(t *testing.T) {
 
 func TestStreamRecvDoesNotFalsePositiveOnCoalescedReads(t *testing.T) {
 	handler := http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		res.Header().Set(content.TypeKey, media.NDJSON)
+		res.Header().Set(http.ContentTypeKey, media.NDJSON)
 		_, _ = res.Write([]byte("{\"Greeting\":\"Hello Bob\"}\n{\"Greeting\":\"Hello Alice\"}\n"))
 	})
 
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithMaxResponseSize(32))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithMaxResponseSize(32))
 
 	var greetings []string
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
@@ -520,12 +518,12 @@ func TestStreamRecvDoesNotFalsePositiveOnCoalescedReads(t *testing.T) {
 
 func TestStreamRecvRejectsBufferedValueOverCap(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		res.Header().Set(content.TypeKey, media.NDJSON)
+		res.Header().Set(http.ContentTypeKey, media.NDJSON)
 		_, _ = res.Write([]byte("{\"Greeting\":\"A\"}\n{\"Greeting\":\"a greeting far longer than the configured cap\"}\n"))
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithMaxResponseSize(20))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithMaxResponseSize(20))
 
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
 		func(_ context.Context, stream *client.ResponseStream) error {
@@ -545,13 +543,13 @@ func TestStreamClosesResponseBodyOnHandlerPanic(t *testing.T) {
 	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
-			Header:     http.Header{content.TypeKey: []string{media.NDJSON}},
+			Header:     http.Header{http.ContentTypeKey: []string{media.NDJSON}},
 			Body:       body,
 			Request:    req,
 		}, nil
 	})
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(rt))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(rt))
 
 	require.PanicsWithValue(t, "boom", func() {
 		_ = c.Stream(t.Context(), http.MethodGet, "http://example.com", client.Options{Accept: media.NDJSON},
@@ -575,7 +573,7 @@ func TestRequestStreamClosesPipeOnHandlerPanic(t *testing.T) {
 		return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody, Request: req}, nil
 	})
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(rt))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(rt))
 
 	require.PanicsWithValue(t, "boom", func() {
 		_ = c.RequestStream(t.Context(), http.MethodPost, "http://example.com", client.Options{ContentType: media.NDJSON},
@@ -592,7 +590,7 @@ func TestRequestStreamClosesPipeOnHandlerPanic(t *testing.T) {
 }
 
 func TestStreamSurvivesSlowValuesWithConfiguredUnaryTimeout(t *testing.T) {
-	handler := contentstream.NewHandler(test.Content, test.StreamEncoder, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
@@ -605,7 +603,7 @@ func TestStreamSurvivesSlowValuesWithConfiguredUnaryTimeout(t *testing.T) {
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithTimeout(10*time.Millisecond))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithTimeout(10*time.Millisecond))
 
 	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
 	t.Cleanup(cancel)
@@ -633,9 +631,9 @@ func TestStreamSurvivesSlowValuesWithConfiguredUnaryTimeout(t *testing.T) {
 func TestStreamReturnsEncodeErrorFromNewRequest(t *testing.T) {
 	enc := encoding.NewMap()
 	enc.Register("json", test.NewEncoder(test.ErrFailed))
-	cont := content.NewContent(enc, test.Pool)
+	unaryContent := unary.NewContent(enc, test.Pool)
 
-	c := client.NewClient(cont, test.StreamEncoder, test.Pool)
+	c := client.NewClient(unaryContent, test.StreamContent, test.Pool)
 
 	err := c.Stream(t.Context(), http.MethodGet, "http://example.com", client.Options{ContentType: media.JSON, Request: &test.Request{Name: "Bob"}},
 		func(_ context.Context, _ *client.ResponseStream) error {
@@ -651,7 +649,7 @@ func TestStreamReturnsTransportError(t *testing.T) {
 		return nil, test.ErrFailed
 	})
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(rt))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(rt))
 
 	err := c.Stream(t.Context(), http.MethodGet, "http://example.com", client.Options{}, func(_ context.Context, _ *client.ResponseStream) error {
 		return nil
@@ -666,9 +664,9 @@ func TestRequestStreamRejectsNilEncoderForRegisteredKind(t *testing.T) {
 	codec := sm.Get("json")
 	codec.Encoder = nil
 	sm.Register("json", codec)
-	cont := content.NewContent(test.Encoder, test.Pool)
+	unaryContent := unary.NewContent(test.Encoder, test.Pool)
 
-	c := client.NewClient(cont, sm, test.Pool)
+	c := client.NewClient(unaryContent, contentstream.NewContent(sm, test.Pool), test.Pool)
 
 	err := c.RequestStream(t.Context(), http.MethodPost, "http://example.invalid", client.Options{ContentType: media.NDJSON},
 		func(_ context.Context, _ *client.RequestResponseStream) error {
@@ -679,7 +677,7 @@ func TestRequestStreamRejectsNilEncoderForRegisteredKind(t *testing.T) {
 }
 
 func TestRequestStreamReturnsNewRequestError(t *testing.T) {
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool)
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
 
 	err := c.RequestStream(t.Context(), "BAD METHOD", "http://example.com", client.Options{ContentType: media.NDJSON},
 		func(_ context.Context, _ *client.RequestResponseStream) error {
@@ -699,9 +697,9 @@ func TestRequestStreamFinishReturnsEncoderCloseError(t *testing.T) {
 	codec := sm.Get("json")
 	codec.Encoder = func(io.Writer) encodingstream.Encoder { return test.CloseErrEncoder{} }
 	sm.Register("json", codec)
-	cont := content.NewContent(test.Encoder, test.Pool)
+	unaryContent := unary.NewContent(test.Encoder, test.Pool)
 
-	c := client.NewClient(cont, sm, test.Pool, client.WithRoundTripper(rt))
+	c := client.NewClient(unaryContent, contentstream.NewContent(sm, test.Pool), test.Pool, client.WithRoundTripper(rt))
 
 	err := c.RequestStream(t.Context(), http.MethodPost, "http://example.com", client.Options{ContentType: media.NDJSON},
 		func(_ context.Context, _ *client.RequestResponseStream) error {
@@ -716,15 +714,15 @@ func TestNewResponseDecoderRejectsNilDecoderForRegisteredKind(t *testing.T) {
 	codec := sm.Get("json")
 	codec.Decoder = nil
 	sm.Register("json", codec)
-	cont := content.NewContent(test.Encoder, test.Pool)
+	unaryContent := unary.NewContent(test.Encoder, test.Pool)
 
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		res.Header().Set(content.TypeKey, media.NDJSON)
+		res.Header().Set(http.ContentTypeKey, media.NDJSON)
 		_, _ = io.WriteString(res, "{}\n")
 	}))
 	t.Cleanup(server.Close)
 
-	c := client.NewClient(cont, sm, test.Pool)
+	c := client.NewClient(unaryContent, contentstream.NewContent(sm, test.Pool), test.Pool)
 
 	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON}, func(_ context.Context, stream *client.ResponseStream) error {
 		var res test.Response
@@ -749,15 +747,15 @@ func TestStreamRecvBufferedLenFallback(t *testing.T) {
 			codec := sm.Get("json")
 			codec.Decoder = func(io.Reader) encodingstream.Decoder { return tt.decoder }
 			sm.Register("json", codec)
-			cont := content.NewContent(test.Encoder, test.Pool)
+			unaryContent := unary.NewContent(test.Encoder, test.Pool)
 
 			server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-				res.Header().Set(content.TypeKey, media.NDJSON)
+				res.Header().Set(http.ContentTypeKey, media.NDJSON)
 				_, _ = io.WriteString(res, "{}\n")
 			}))
 			t.Cleanup(server.Close)
 
-			c := client.NewClient(cont, sm, test.Pool)
+			c := client.NewClient(unaryContent, contentstream.NewContent(sm, test.Pool), test.Pool)
 
 			err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
 				func(_ context.Context, stream *client.ResponseStream) error {

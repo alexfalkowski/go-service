@@ -1,4 +1,4 @@
-package content_test
+package unary_test
 
 import (
 	"net/http/httptest"
@@ -6,7 +6,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +15,7 @@ import (
 func TestNewFromMedia(t *testing.T) {
 	for _, tc := range mediaTests() {
 		t.Run(tc.name, func(t *testing.T) {
-			media := test.Content.NewFromMedia(tc.mediaType)
+			media := test.UnaryContent.NewFromMedia(tc.mediaType)
 
 			require.Equal(t, tc.subtype, media.Subtype())
 			require.Same(t, test.Encoder.Get(tc.kind), media.Encoder)
@@ -26,9 +27,9 @@ func TestNewFromRequest(t *testing.T) {
 	for _, tc := range mediaTests() {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-			req.Header.Set(content.TypeKey, tc.mediaType)
+			req.Header.Set(http.ContentTypeKey, tc.mediaType)
 
-			media := test.Content.NewFromRequest(req)
+			media := test.UnaryContent.NewFromRequest(req)
 
 			require.Equal(t, tc.subtype, media.Subtype())
 			require.Same(t, test.Encoder.Get(tc.kind), media.Encoder)
@@ -38,10 +39,10 @@ func TestNewFromRequest(t *testing.T) {
 
 func TestNewFromRequestPrefersContentType(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.TypeKey, media.TOML)
-	req.Header.Set(content.AcceptKey, media.YAML)
+	req.Header.Set(http.ContentTypeKey, media.TOML)
+	req.Header.Set(http.AcceptKey, media.YAML)
 
-	media := test.Content.NewFromRequest(req)
+	media := test.UnaryContent.NewFromRequest(req)
 
 	require.Equal(t, "toml", media.Subtype())
 	require.Same(t, test.Encoder.Get("toml"), media.Encoder)
@@ -49,10 +50,10 @@ func TestNewFromRequestPrefersContentType(t *testing.T) {
 
 func TestNewFromAcceptPrefersAccept(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.TypeKey, media.TOML)
-	req.Header.Set(content.AcceptKey, media.YAML)
+	req.Header.Set(http.ContentTypeKey, media.TOML)
+	req.Header.Set(http.AcceptKey, media.YAML)
 
-	media := test.Content.NewFromAccept(req)
+	media := test.UnaryContent.NewFromAccept(req)
 
 	require.Equal(t, "yaml", media.Subtype())
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
@@ -74,9 +75,9 @@ func TestNewFromAcceptUsesFirstCompleteMediaRange(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-			req.Header.Set(content.AcceptKey, tt.accept)
+			req.Header.Set(http.AcceptKey, tt.accept)
 
-			media := test.Content.NewFromAccept(req)
+			media := test.UnaryContent.NewFromAccept(req)
 
 			require.Equal(t, tt.subtype, media.Subtype())
 			require.Same(t, test.Encoder.Get(tt.kind), media.Encoder)
@@ -86,9 +87,9 @@ func TestNewFromAcceptUsesFirstCompleteMediaRange(t *testing.T) {
 
 func TestNewFromAcceptFallsBackToContentType(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.TypeKey, media.TOML)
+	req.Header.Set(http.ContentTypeKey, media.TOML)
 
-	media := test.Content.NewFromAccept(req)
+	media := test.UnaryContent.NewFromAccept(req)
 
 	require.Equal(t, "toml", media.Subtype())
 	require.Same(t, test.Encoder.Get("toml"), media.Encoder)
@@ -96,9 +97,9 @@ func TestNewFromAcceptFallsBackToContentType(t *testing.T) {
 
 func TestNewFromRequestFallsBackToAccept(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.AcceptKey, `application/yaml; profile="a,b", application/toml`)
+	req.Header.Set(http.AcceptKey, `application/yaml; profile="a,b", application/toml`)
 
-	media := test.Content.NewFromRequest(req)
+	media := test.UnaryContent.NewFromRequest(req)
 
 	require.Equal(t, "yaml", media.Subtype())
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
@@ -106,9 +107,9 @@ func TestNewFromRequestFallsBackToAccept(t *testing.T) {
 
 func TestNewFromRequestNormalizesMediaTypeCase(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.TypeKey, "Application/YAML")
+	req.Header.Set(http.ContentTypeKey, "Application/YAML")
 
-	media := test.Content.NewFromRequest(req)
+	media := test.UnaryContent.NewFromRequest(req)
 
 	require.Equal(t, "yaml", media.Subtype())
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
@@ -116,9 +117,9 @@ func TestNewFromRequestNormalizesMediaTypeCase(t *testing.T) {
 
 func TestNewFromRequestNormalizesAcceptMediaTypeCase(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.AcceptKey, "Application/YAML, Application/TOML")
+	req.Header.Set(http.AcceptKey, "Application/YAML, Application/TOML")
 
-	media := test.Content.NewFromRequest(req)
+	media := test.UnaryContent.NewFromRequest(req)
 
 	require.Equal(t, "yaml", media.Subtype())
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
@@ -126,9 +127,9 @@ func TestNewFromRequestNormalizesAcceptMediaTypeCase(t *testing.T) {
 
 func TestNewFromRequestFallsBackFromInternalErrorMedia(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.AcceptKey, media.Error)
+	req.Header.Set(http.AcceptKey, media.Error)
 
-	media := test.Content.NewFromRequest(req)
+	media := test.UnaryContent.NewFromRequest(req)
 
 	require.Equal(t, "plain", media.Subtype())
 	require.Same(t, test.Encoder.Get("bytes"), media.Encoder)
@@ -138,9 +139,9 @@ func TestNewFromContentType(t *testing.T) {
 	for _, tc := range mediaTests() {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-			req.Header.Set(content.TypeKey, tc.mediaType)
+			req.Header.Set(http.ContentTypeKey, tc.mediaType)
 
-			media := test.Content.NewFromContentType(req)
+			media := test.UnaryContent.NewFromContentType(req)
 
 			require.Equal(t, tc.subtype, media.Subtype())
 			require.Same(t, test.Encoder.Get(tc.kind), media.Encoder)
@@ -150,9 +151,9 @@ func TestNewFromContentType(t *testing.T) {
 
 func TestNewFromContentTypeFallsBackFromInternalErrorMedia(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.TypeKey, media.Error)
+	req.Header.Set(http.ContentTypeKey, media.Error)
 
-	media := test.Content.NewFromContentType(req)
+	media := test.UnaryContent.NewFromContentType(req)
 
 	require.Equal(t, "plain", media.Subtype())
 	require.Same(t, test.Encoder.Get("bytes"), media.Encoder)
@@ -162,11 +163,12 @@ func TestNewFromRequestBodyRejectsUnsafeBinaryMedia(t *testing.T) {
 	for _, mediaType := range []string{"application/gob", media.MessagePack, media.MessagePack + "; profile=test"} {
 		t.Run(mediaType, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-			req.Header.Set(content.TypeKey, mediaType)
+			req.Header.Set(http.ContentTypeKey, mediaType)
 
-			media, err := test.Content.NewFromRequestBody(req)
+			media, err := test.UnaryContent.NewFromRequestBody(req)
 
-			require.ErrorIs(t, err, content.ErrUnsupportedRequestMedia)
+			require.ErrorIs(t, err, unary.ErrUnsupportedRequestMedia)
+			require.EqualError(t, err, "unary: unsupported request media")
 			require.False(t, media.CanDecodeRequest())
 		})
 	}
@@ -176,11 +178,11 @@ func TestNewFromRequestBodyRejectsUnknownContentType(t *testing.T) {
 	for _, mediaType := range []string{"application/cbor", "/"} {
 		t.Run(mediaType, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-			req.Header.Set(content.TypeKey, mediaType)
+			req.Header.Set(http.ContentTypeKey, mediaType)
 
-			media, err := test.Content.NewFromRequestBody(req)
+			media, err := test.UnaryContent.NewFromRequestBody(req)
 
-			require.ErrorIs(t, err, content.ErrUnsupportedRequestMedia)
+			require.ErrorIs(t, err, unary.ErrUnsupportedRequestMedia)
 			require.False(t, media.CanDecodeRequest())
 		})
 	}
@@ -201,16 +203,16 @@ func TestNewFromRequestBodyRejectsNilRegisteredCodec(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			enc := encoding.NewMap()
 			enc.Register(tt.register, nil)
-			cont := content.NewContent(enc, test.Pool)
+			cont := unary.NewContent(enc, test.Pool)
 
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 			if tt.contentType != "" {
-				req.Header.Set(content.TypeKey, tt.contentType)
+				req.Header.Set(http.ContentTypeKey, tt.contentType)
 			}
 
 			media, err := cont.NewFromRequestBody(req)
 
-			require.ErrorIs(t, err, content.ErrUnsupportedRequestMedia)
+			require.ErrorIs(t, err, unary.ErrUnsupportedRequestMedia)
 			require.False(t, media.CanDecodeRequest())
 		})
 	}
@@ -219,7 +221,7 @@ func TestNewFromRequestBodyRejectsNilRegisteredCodec(t *testing.T) {
 func TestNewFromRequestBodyDefaultsToJSONWhenContentTypeAbsent(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 
-	media, err := test.Content.NewFromRequestBody(req)
+	media, err := test.UnaryContent.NewFromRequestBody(req)
 
 	require.NoError(t, err)
 	require.Equal(t, "json", media.Subtype())
@@ -229,9 +231,9 @@ func TestNewFromRequestBodyDefaultsToJSONWhenContentTypeAbsent(t *testing.T) {
 
 func TestNewFromRequestBodyTreatsParameterizedInternalErrorContentTypeAsText(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-	req.Header.Set(content.TypeKey, media.Error+"; charset=utf-8")
+	req.Header.Set(http.ContentTypeKey, media.Error+"; charset=utf-8")
 
-	m, err := test.Content.NewFromRequestBody(req)
+	m, err := test.UnaryContent.NewFromRequestBody(req)
 
 	require.NoError(t, err)
 	require.Equal(t, "plain", m.Subtype())
@@ -255,9 +257,9 @@ func TestNewFromRequestBodyDecodesFallthroughReachableMediaTypes(t *testing.T) {
 	} {
 		t.Run(tc.mediaType, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
-			req.Header.Set(content.TypeKey, tc.mediaType)
+			req.Header.Set(http.ContentTypeKey, tc.mediaType)
 
-			media, err := test.Content.NewFromRequestBody(req)
+			media, err := test.UnaryContent.NewFromRequestBody(req)
 
 			require.NoError(t, err)
 			require.Equal(t, tc.subtype, media.Subtype())
@@ -281,10 +283,10 @@ func TestNewFromAcceptResolvesJSONForWildcardOrUnknown(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
 			if tc.accept != "" {
-				req.Header.Set(content.AcceptKey, tc.accept)
+				req.Header.Set(http.AcceptKey, tc.accept)
 			}
 
-			m := test.Content.NewFromAccept(req)
+			m := test.UnaryContent.NewFromAccept(req)
 
 			require.Equal(t, "json", m.Subtype())
 			require.Same(t, test.Encoder.Get("json"), m.Encoder)
@@ -304,7 +306,8 @@ func TestEveryEncoderKindIsClassified(t *testing.T) {
 	for _, kind := range encoding.NewMap().Keys() {
 		expected, ok := classified[kind]
 		require.True(t, ok, "kind %q needs an explicit request-decode classification", kind)
-		require.Equal(t, expected, content.NewMedia("application/"+kind, encoding.NewMap()).CanDecodeRequest(), "kind %q", kind)
+		content := unary.NewContent(encoding.NewMap(), test.Pool)
+		require.Equal(t, expected, content.NewFromMedia("application/"+kind).CanDecodeRequest(), "kind %q", kind)
 	}
 }
 
@@ -322,7 +325,7 @@ func TestNewFromMediaWithParameters(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			media := test.Content.NewFromMedia(tt.mediaType)
+			media := test.UnaryContent.NewFromMedia(tt.mediaType)
 
 			require.Equal(t, tt.expected, media.String())
 			require.Equal(t, tt.subtype, media.Subtype())
@@ -332,15 +335,15 @@ func TestNewFromMediaWithParameters(t *testing.T) {
 }
 
 func TestNewFromMediaPreservesInternalErrorMedia(t *testing.T) {
-	media := test.Content.NewFromMedia(media.Error)
+	media := test.UnaryContent.NewFromMedia(media.Error)
 
 	require.Equal(t, "error", media.Subtype())
 	require.Nil(t, media.Encoder)
 }
 
-func TestNewMediaFallsBackToJSONWhenKnownEncoderIsMissing(t *testing.T) {
+func TestNewFromMediaFallsBackToJSONWhenKnownEncoderIsMissing(t *testing.T) {
 	enc := &encoding.Map{}
-	media := content.NewMedia(media.HumanJSON, enc)
+	media := unary.NewContent(enc, test.Pool).NewFromMedia(media.HumanJSON)
 
 	require.Equal(t, "json", media.Subtype())
 	require.Equal(t, "application/json", media.String())

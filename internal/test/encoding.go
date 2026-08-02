@@ -2,10 +2,11 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
+	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -13,10 +14,13 @@ import (
 var Encoder = encoding.NewMap()
 
 // StreamEncoder contains the real streaming encoders/decoders exercised by content and transport tests.
-var StreamEncoder = stream.NewMap()
+var StreamEncoder = encodingstream.NewMap()
 
-// Content is the shared unary HTTP content registry backed by Encoder.
-var Content = content.NewContent(Encoder, Pool)
+// UnaryContent is the shared unary HTTP content registry backed by Encoder.
+var UnaryContent = unary.NewContent(Encoder, Pool)
+
+// StreamContent is the shared streaming HTTP content registry backed by StreamEncoder.
+var StreamContent = contentstream.NewContent(StreamEncoder, Pool)
 
 // NewEncoder returns an encoder test double whose Encode and Decode methods fail with the supplied error.
 func NewEncoder(err error) encoding.Encoder {

@@ -1,4 +1,4 @@
-// Package content provides HTTP content negotiation helpers used by go-service.
+// Package unary provides HTTP content negotiation and single-value handlers used by go-service.
 //
 // This package helps select an encoder/decoder based on HTTP media types (Content-Type and Accept) and
 // provides small building blocks for content-aware request/response handling.
@@ -19,7 +19,7 @@
 // # Error payloads
 //
 // go-service uses a dedicated error media subtype ("error") to signal error payloads (typically
-// rendered as plain text). When the subtype is "error", [NewMedia] returns a Media without an
+// rendered as plain text). When the subtype is "error", [Content.NewFromMedia] returns a Media without an
 // encoder and callers should treat the response body as an error message.
 //
 // # Defaults and fallbacks
@@ -49,4 +49,4 @@
 // which decodes responses through the same registries without this restriction).
 //
 // Start with [NewContent], [Content.NewFromRequest], and [Content.NewFromMedia].
-package content
+package unary

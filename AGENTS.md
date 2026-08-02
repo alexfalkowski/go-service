@@ -645,8 +645,8 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   `proto.UnmarshalOptions.RecursionLimit`.
 - `msgpack` and `gob` fail the decoder-bounds rule above, so they are
   intentionally rejected for request-body decoding by
-  `net/http/content.Media.CanDecodeRequest` with HTTP 415 and intentionally
-  absent from `net/http/content`'s `streamKinds`. Both remain fully supported
+  `net/http/content/unary.Media.CanDecodeRequest` with HTTP 415 and intentionally
+  absent from `net/http/content/stream`'s `streamKinds`. Both remain fully supported
   for response encoding, which is why they still resolve as media types.
   `encoding/gob`'s own `Decoder` documents that it does only basic sanity
   checking on decoded input sizes and that its limits are not configurable, so

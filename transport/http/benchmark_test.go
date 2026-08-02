@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
@@ -55,7 +54,7 @@ func BenchmarkMVC(b *testing.B) {
 		req, err := transporthttp.NewRequestWithContext(b.Context(), transporthttp.MethodGet, url, transporthttp.NoBody)
 		require.NoError(b, err)
 
-		req.Header.Set(content.TypeKey, media.HTML)
+		req.Header.Set(http.ContentTypeKey, media.HTML)
 
 		b.ResetTimer()
 
@@ -304,7 +303,7 @@ func BenchmarkRPCStream(b *testing.B) {
 	httpClient, err := world.NewHTTP()
 	require.NoError(b, err)
 
-	c := client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(httpClient.Transport))
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(httpClient.Transport))
 	url := world.PathServerURL("https", "hello")
 
 	b.ResetTimer()
@@ -452,7 +451,7 @@ func benchmarkHTTPStream(b *testing.B, log *logger.Logger, trace, tlsEnabled boo
 
 	address, cleanup := startBenchmarkHTTPServer(b, log, trace, tlsEnabled, func(router *transporthttp.Router, cfg *transporthttp.Config) {
 		opts := stream.Options{ReadTimeout: cfg.GetReadTimeout(), WriteTimeout: cfg.GetWriteTimeout(), MaxReceiveSize: cfg.GetMaxReceiveSize()}
-		rest.Register(router, test.Content, test.StreamEncoder, test.Pool, opts)
+		rest.Register(router, test.UnaryContent, test.StreamContent, test.Pool, opts)
 		rest.StreamPost("/hello", streamHello)
 	})
 	httpClient, scheme, closeIdleConnections := newHTTPStreamClient(b, tlsEnabled)
@@ -550,7 +549,7 @@ func newHTTPStreamClient(b *testing.B, tlsEnabled bool) (*client.Client, string,
 		transport.Protocols.SetHTTP1(false)
 	}
 
-	return client.NewClient(test.Content, test.StreamEncoder, test.Pool, client.WithRoundTripper(transport)), scheme, transport.CloseIdleConnections
+	return client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(transport)), scheme, transport.CloseIdleConnections
 }
 
 func closeResponse(b *testing.B, resp *http.Response) {

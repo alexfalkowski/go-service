@@ -1,7 +1,6 @@
-package content
+package unary
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/accept"
@@ -9,12 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-sync"
 )
-
-// TypeKey is the HTTP header key used for Content-Type.
-const TypeKey = "Content-Type"
-
-// AcceptKey is the HTTP header key used for Accept.
-const AcceptKey = "Accept"
 
 // NewContent constructs a Content that resolves single-value encoders from enc and buffers responses using pool.
 func NewContent(enc *encoding.Map, pool *sync.BufferPool) *Content {
@@ -36,7 +29,7 @@ func NewContent(enc *encoding.Map, pool *sync.BufferPool) *Content {
 //     send.
 //
 // Error subtype behavior:
-//   - If the parsed subtype is "error", NewMedia returns a Media without an encoder.
+//   - If the parsed subtype is "error", NewFromMedia returns a Media without an encoder.
 //     Callers typically treat the body as a plain-text error message.
 //
 // Response buffering:
@@ -54,9 +47,9 @@ type Content struct {
 // If parsing fails, it falls back to JSON.
 // If the internal error media type is selected, it falls back to plain text.
 func (c *Content) NewFromRequest(req *http.Request) Media {
-	mediaType := req.Header.Get(TypeKey)
+	mediaType := req.Header.Get(http.ContentTypeKey)
 	if strings.IsEmpty(mediaType) {
-		mediaType = accept.First(req.Header.Get(AcceptKey))
+		mediaType = accept.First(req.Header.Get(http.AcceptKey))
 	}
 
 	return c.newRequestMedia(mediaType)
@@ -69,9 +62,9 @@ func (c *Content) NewFromRequest(req *http.Request) Media {
 // If parsing fails, it falls back to JSON.
 // If the internal error media type is selected, it falls back to plain text.
 func (c *Content) NewFromAccept(req *http.Request) Media {
-	mediaType := accept.First(req.Header.Get(AcceptKey))
+	mediaType := accept.First(req.Header.Get(http.AcceptKey))
 	if strings.IsEmpty(mediaType) {
-		mediaType = req.Header.Get(TypeKey)
+		mediaType = req.Header.Get(http.ContentTypeKey)
 	}
 
 	return c.newRequestMedia(mediaType)
@@ -82,7 +75,7 @@ func (c *Content) NewFromAccept(req *http.Request) Media {
 // If parsing fails, it falls back to JSON.
 // If the internal error media type is selected, it falls back to plain text.
 func (c *Content) NewFromContentType(req *http.Request) Media {
-	return c.newRequestMedia(req.Header.Get(TypeKey))
+	return c.newRequestMedia(req.Header.Get(http.ContentTypeKey))
 }
 
 // NewFromRequestBody parses the request Content-Type header and returns a matching Media for body decoding.
@@ -95,7 +88,7 @@ func (c *Content) NewFromContentType(req *http.Request) Media {
 // It also rejects media types that are available for internal use but intentionally unsupported for
 // public request-body decoding; see the decoder-bounds rule in the package documentation.
 func (c *Content) NewFromRequestBody(req *http.Request) (Media, error) {
-	m, err := c.requestMedia(req.Header.Get(TypeKey))
+	m, err := c.requestMedia(req.Header.Get(http.ContentTypeKey))
 	if err != nil {
 		return Media{}, err
 	}
@@ -115,7 +108,7 @@ func (c *Content) NewFromRequestBody(req *http.Request) (Media, error) {
 	return m, nil
 }
 
-// requestMedia resolves a request Content-Type strictly: unlike NewMedia there is no JSON fallback for
+// requestMedia resolves a request Content-Type strictly: unlike NewFromMedia there is no JSON fallback for
 // an unparseable or unregistered media type, because answering a declared Content-Type with a different
 // codec silently decodes the body as a format the caller did not send.
 //
@@ -159,21 +152,20 @@ func (c *Content) requestMedia(mediaType string) (Media, error) {
 //
 // If parsing fails, it falls back to JSON.
 func (c *Content) NewFromMedia(mediaType string) Media {
-	return NewMedia(mediaType, c.enc)
-}
+	if media, ok := knownMedia(mediaType, c.enc); ok {
+		return media
+	}
 
-// BorrowBuffer obtains a response buffer for a content extension and must be paired with [Content.ReturnBuffer].
-func (c *Content) BorrowBuffer() *bytes.Buffer {
-	return c.pool.Get()
-}
+	value, err := media.Parse(mediaType)
+	if err != nil {
+		return jsonMedia(c.enc)
+	}
 
-// ReturnBuffer returns a buffer obtained through [Content.BorrowBuffer].
-func (c *Content) ReturnBuffer(buffer *bytes.Buffer) {
-	c.pool.Put(buffer)
+	return newMedia(value, c.enc)
 }
 
 func (c *Content) newRequestMedia(mediaType string) Media {
-	m := NewMedia(mediaType, c.enc)
+	m := c.NewFromMedia(mediaType)
 	if m.IsError() {
 		return newMedia(textType, c.enc)
 	}

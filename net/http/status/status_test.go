@@ -65,6 +65,16 @@ func TestWriteErrorUsesSafeMessage(t *testing.T) {
 	test.RequireTrimmedResponseBody(t, res, "http: unauthorized")
 }
 
+func TestNotFoundHandlerWritesStatusError(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", http.NoBody)
+	res := httptest.NewRecorder()
+
+	require.True(t, httpstatus.NotFoundHandler()(res, req))
+	require.Equal(t, http.StatusNotFound, res.Code)
+	require.Equal(t, "text/error; charset=utf-8", res.Header().Get(http.ContentTypeKey))
+	test.RequireTrimmedResponseBody(t, res, "http: not found")
+}
+
 func TestDefaultMessage(t *testing.T) {
 	require.Equal(t, "http: bad request", httpstatus.DefaultMessage(http.StatusBadRequest))
 	require.Equal(t, "http: client closed request", httpstatus.DefaultMessage(http.StatusClientClosedRequest))

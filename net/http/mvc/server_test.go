@@ -11,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
@@ -61,7 +60,7 @@ func TestStaticPathValueSetsContentType(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, "image/svg+xml", res.Header().Get(content.TypeKey))
+	require.Equal(t, "image/svg+xml", res.Header().Get(http.ContentTypeKey))
 }
 
 func TestStaticPathValueRejectsDirectory(t *testing.T) {
@@ -104,7 +103,7 @@ func TestStaticFileSetsContentType(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, "image/svg+xml", res.Header().Get(content.TypeKey))
+	require.Equal(t, "image/svg+xml", res.Header().Get(http.ContentTypeKey))
 }
 
 func TestStaticFileRejectsDirectory(t *testing.T) {
@@ -375,7 +374,7 @@ func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, media.HTML)
+	req.Header.Set(http.ContentTypeKey, media.HTML)
 	ctx := status.WithRequestError(req.Context())
 	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
@@ -406,7 +405,7 @@ func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, media.HTML)
+	req.Header.Set(http.ContentTypeKey, media.HTML)
 	ctx := status.WithRequestError(req.Context())
 	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
@@ -441,14 +440,14 @@ func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, media.HTML)
+	req.Header.Set(http.ContentTypeKey, media.HTML)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	test.RequireEmptyResponseBody(t, res)
-	require.Equal(t, "text/html; charset=utf-8", res.Header().Get(content.TypeKey))
+	require.Equal(t, "text/html; charset=utf-8", res.Header().Get(http.ContentTypeKey))
 }
 
 func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
@@ -470,7 +469,7 @@ func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, media.HTML)
+	req.Header.Set(http.ContentTypeKey, media.HTML)
 	ctx := status.WithRequestError(req.Context())
 	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
@@ -509,7 +508,7 @@ func TestNotFoundHandlesNotFound(t *testing.T) {
 	mvc.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusNotFound, res.Code)
-	require.Equal(t, "text/html; charset=utf-8", res.Header().Get(content.TypeKey))
+	require.Equal(t, "text/html; charset=utf-8", res.Header().Get(http.ContentTypeKey))
 	test.RequireResponseBodyContains(t, res, "404 Not Found")
 }
 
@@ -608,7 +607,7 @@ func TestFallback(t *testing.T) {
 			}
 
 			require.Equal(t, http.StatusNotFound, res.Code)
-			require.Equal(t, "text/html; charset=utf-8", res.Header().Get(content.TypeKey))
+			require.Equal(t, "text/html; charset=utf-8", res.Header().Get(http.ContentTypeKey))
 			test.RequireResponseBodyContains(t, res, "404 Not Found")
 		})
 	}

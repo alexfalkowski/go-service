@@ -12,7 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
@@ -32,7 +31,7 @@ func TestNewRequestHandlerClosesCodecsBeforeAbortAfterCommitOnDrain(t *testing.T
 	sm.Register("json", codec)
 	drain := make(chan struct{})
 	handler := contentstream.NewRequestHandler(
-		test.Content, sm,
+		contentstream.NewContent(sm, test.Pool),
 		contentstream.Options{Drain: drain}, func(ctx context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 				return err
@@ -47,8 +46,8 @@ func TestNewRequestHandlerClosesCodecsBeforeAbortAfterCommitOnDrain(t *testing.T
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
@@ -68,7 +67,7 @@ func TestNewRequestHandlerClosesDecoderWhenEncoderCloseFails(t *testing.T) {
 	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
 	sm.Register("json", codec)
 	handler := http.NewTelemetryHandler(contentstream.NewRequestHandler(
-		test.Content, sm,
+		contentstream.NewContent(sm, test.Pool),
 		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			return stream.Send(&test.Response{Greeting: "Hello Bob"})
 		},
@@ -76,8 +75,8 @@ func TestNewRequestHandlerClosesDecoderWhenEncoderCloseFails(t *testing.T) {
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
@@ -95,7 +94,7 @@ func TestNewRequestHandlerReturnsServiceUnavailableOnDrainBeforeHandler(t *testi
 	close(drain)
 	called := false
 	handler := contentstream.NewRequestHandler(
-		test.Content, test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{Drain: drain},
 		func(_ context.Context, _ *contentstream.RequestStream[test.Request, test.Response]) error {
 			called = true
@@ -106,8 +105,8 @@ func TestNewRequestHandlerReturnsServiceUnavailableOnDrainBeforeHandler(t *testi
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
@@ -123,7 +122,7 @@ func TestNewRequestHandlerUnblocksRecvOnDrain(t *testing.T) {
 	started := make(chan struct{})
 	recvErr := make(chan error, 1)
 	handler := contentstream.NewRequestHandler(
-		test.Content, test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{Drain: drain},
 		func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			close(started)
@@ -138,8 +137,8 @@ func TestNewRequestHandlerUnblocksRecvOnDrain(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
 	req.ProtoMajor = 2
 	req.ContentLength = -1
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 	done := make(chan struct{})
 
@@ -175,11 +174,9 @@ func TestNewRequestHandlerRecvRejectsValueWhenDrainStartsAfterDecode(t *testing.
 		return &drainAfterDecode{drain: drain, closed: body.closed}
 	}
 	sm.Register("json", codec)
-	cont := content.NewContent(test.Encoder, test.Pool)
-
 	var recvErr error
 	handler := contentstream.NewRequestHandler(
-		cont, sm,
+		contentstream.NewContent(sm, test.Pool),
 		contentstream.Options{Drain: drain},
 		func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, recvErr = stream.Recv()
@@ -190,8 +187,8 @@ func TestNewRequestHandlerRecvRejectsValueWhenDrainStartsAfterDecode(t *testing.
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", body)
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
@@ -204,7 +201,7 @@ func TestNewRequestHandlerEndsCleanlyAfterCommitOnDrain(t *testing.T) {
 	var recvErr error
 	drain := make(chan struct{})
 	handler := contentstream.NewRequestHandler(
-		test.Content, test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{Drain: drain},
 		func(ctx context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
@@ -221,8 +218,8 @@ func TestNewRequestHandlerEndsCleanlyAfterCommitOnDrain(t *testing.T) {
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
@@ -236,16 +233,15 @@ func TestNewRequestHandlerEndsCleanlyAfterCommitOnDrain(t *testing.T) {
 
 func TestNewRequestHandlerRejectsHTTP1(t *testing.T) {
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{}, func(_ context.Context, _ *contentstream.RequestStream[test.Request, test.Response]) error {
 			return nil
 		})
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	req.ProtoMajor = 1
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
@@ -255,8 +251,7 @@ func TestNewRequestHandlerRejectsHTTP1(t *testing.T) {
 
 func TestNewRequestHandlerRecvAndSend(t *testing.T) {
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			for {
 				req, err := stream.Recv()
@@ -277,14 +272,14 @@ func TestNewRequestHandlerRecvAndSend(t *testing.T) {
 	body := "{\"Name\":\"Bob\"}\n{\"Name\":\"Alice\"}\n"
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, media.NDJSON, res.Header().Get(content.TypeKey))
+	require.Equal(t, media.NDJSON, res.Header().Get(http.ContentTypeKey))
 
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
@@ -294,16 +289,15 @@ func TestNewRequestHandlerRecvAndSend(t *testing.T) {
 
 func TestNewRequestHandlerRejectsUnsupportedRequestMedia(t *testing.T) {
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{}, func(_ context.Context, _ *contentstream.RequestStream[test.Request, test.Response]) error {
 			return nil
 		})
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.JSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.JSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
@@ -326,8 +320,7 @@ func TestNewRequestHandlerRecvUnderCapSucceeds(t *testing.T) {
 
 			opts := contentstream.Options{MaxReceiveSize: tt.cap}
 			handler := contentstream.NewRequestHandler(
-				test.Content,
-				test.StreamEncoder,
+				test.StreamContent,
 				opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 					for {
 						req, err := stream.Recv()
@@ -346,8 +339,8 @@ func TestNewRequestHandlerRecvUnderCapSucceeds(t *testing.T) {
 			body := "{\"Name\":\"Bob\"}\n{\"Name\":\"Alice\"}\n"
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
 			req.ProtoMajor = 2
-			req.Header.Set(content.TypeKey, media.NDJSON)
-			req.Header.Set(content.AcceptKey, media.NDJSON)
+			req.Header.Set(http.ContentTypeKey, media.NDJSON)
+			req.Header.Set(http.AcceptKey, media.NDJSON)
 			res := httptest.NewRecorder()
 
 			handler.ServeHTTP(res, req)
@@ -362,7 +355,7 @@ func TestNewRequestHandlerRecvDeliversScalarValueAtExactCap(t *testing.T) {
 	pipeReader, pipeWriter := io.Pipe()
 
 	opts := contentstream.Options{MaxReceiveSize: bytes.Size(2)}
-	handler := contentstream.NewRequestHandler(test.Content, test.StreamEncoder, opts, func(_ context.Context, stream *contentstream.RequestStream[int, int]) error {
+	handler := contentstream.NewRequestHandler(test.StreamContent, opts, func(_ context.Context, stream *contentstream.RequestStream[int, int]) error {
 		req, err := stream.Recv()
 		if err != nil {
 			return err
@@ -374,8 +367,8 @@ func TestNewRequestHandlerRecvDeliversScalarValueAtExactCap(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
 	req.ProtoMajor = 2
 	req.ContentLength = -1
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	done := make(chan struct{})
@@ -403,8 +396,7 @@ func TestNewRequestHandlerRecvRejectsValueOverCap(t *testing.T) {
 
 	opts := contentstream.Options{MaxReceiveSize: 16}
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, recvErr = stream.Recv()
 			return recvErr
@@ -413,8 +405,8 @@ func TestNewRequestHandlerRecvRejectsValueOverCap(t *testing.T) {
 	body := "{\"Name\":\"a value with a name far longer than the configured cap\"}\n"
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
@@ -432,8 +424,7 @@ func TestNewRequestHandlerRecvRejectsBufferedValueOverCap(t *testing.T) {
 
 	opts := contentstream.Options{MaxReceiveSize: 16}
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, err := stream.Recv()
 			require.NoError(t, err)
@@ -445,8 +436,8 @@ func TestNewRequestHandlerRecvRejectsBufferedValueOverCap(t *testing.T) {
 	body := "{\"Name\":\"A\"}\n{\"Name\":\"a value with a name far longer than the configured cap\"}\n"
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
@@ -485,20 +476,19 @@ func TestNewRequestHandlerRecvRejectsValueOverCapRegardlessOfDecoderBehavior(t *
 			codec := sm.Get("json")
 			codec.Decoder = tt.decoder
 			sm.Register("json", codec)
-			cont := content.NewContent(test.Encoder, test.Pool)
-
 			var recvErr error
 
 			opts := contentstream.Options{MaxReceiveSize: tt.maxSize}
-			handler := contentstream.NewRequestHandler(cont, sm, opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			content := contentstream.NewContent(sm, test.Pool)
+			handler := contentstream.NewRequestHandler(content, opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 				_, recvErr = stream.Recv()
 				return recvErr
 			})
 
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(tt.body))
 			req.ProtoMajor = 2
-			req.Header.Set(content.TypeKey, media.NDJSON)
-			req.Header.Set(content.AcceptKey, media.NDJSON)
+			req.Header.Set(http.ContentTypeKey, media.NDJSON)
+			req.Header.Set(http.AcceptKey, media.NDJSON)
 			res := httptest.NewRecorder()
 
 			handler.ServeHTTP(res, req)
@@ -522,8 +512,7 @@ func TestNewRequestHandlerRecvCapIsPerValueNotCumulative(t *testing.T) {
 
 	opts := contentstream.Options{MaxReceiveSize: 24}
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			for {
 				req, err := stream.Recv()
@@ -542,8 +531,8 @@ func TestNewRequestHandlerRecvCapIsPerValueNotCumulative(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
 	req.ProtoMajor = 2
 	req.ContentLength = -1
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	done := make(chan struct{})
@@ -572,8 +561,7 @@ func TestNewRequestHandlerRecvChargesOneLimiterTokenPerMessage(t *testing.T) {
 	limiter := &test.CountingLimiter{Remaining: 2}
 
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			for {
 				_, err := stream.Recv()
@@ -590,8 +578,8 @@ func TestNewRequestHandlerRecvChargesOneLimiterTokenPerMessage(t *testing.T) {
 	body := "{\"Name\":\"Bob\"}\n{\"Name\":\"Alice\"}\n"
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	req = req.WithContext(meta.WithLimiter(req.Context(), limiter))
 	res := httptest.NewRecorder()
 
@@ -607,8 +595,7 @@ func TestNewRequestHandlerRecvDoesNotChargeLimiterForOverCapValue(t *testing.T) 
 	var recvErr error
 	opts := contentstream.Options{MaxReceiveSize: 16}
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, recvErr = stream.Recv()
 			return recvErr
@@ -617,8 +604,8 @@ func TestNewRequestHandlerRecvDoesNotChargeLimiterForOverCapValue(t *testing.T) 
 	body := "{\"Name\":\"a value with a name far longer than the configured cap\"}\n"
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	req = req.WithContext(meta.WithLimiter(req.Context(), limiter))
 	res := httptest.NewRecorder()
 
@@ -631,16 +618,15 @@ func TestNewRequestHandlerRecvDoesNotChargeLimiterForOverCapValue(t *testing.T) 
 func TestNewRequestHandlerSendExtendReadDeadlineFailure(t *testing.T) {
 	opts := contentstream.Options{ReadTimeout: time.MustParseDuration("1s"), WriteTimeout: time.MustParseDuration("1s")}
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			return stream.Send(&test.Response{Greeting: "hi"})
 		})
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := &test.DeadlineResponseWriter{SetReadDeadlineFunc: func() error { return test.ErrFailed }}
 
 	handler.ServeHTTP(res, req)
@@ -659,8 +645,7 @@ func TestNewRequestHandlerRecvFirstCallIsBoundedByReadTimeout(t *testing.T) {
 
 	opts := contentstream.Options{ReadTimeout: time.MustParseDuration("200ms")}
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, err := stream.Recv()
 			recvErr <- err
@@ -676,8 +661,8 @@ func TestNewRequestHandlerRecvFirstCallIsBoundedByReadTimeout(t *testing.T) {
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, server.URL, pipeReader)
 	require.NoError(t, err)
 	req.ContentLength = -1
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 
 	go func() {
 		defer close(done)
@@ -701,8 +686,7 @@ func TestNewRequestHandlerRecvExtendReadDeadlineFailureBeforeDecode(t *testing.T
 
 	opts := contentstream.Options{ReadTimeout: time.MustParseDuration("1s")}
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, recvErr = stream.Recv()
 			return recvErr
@@ -710,8 +694,8 @@ func TestNewRequestHandlerRecvExtendReadDeadlineFailureBeforeDecode(t *testing.T
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader("{\"Name\":\"Bob\"}\n"))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := &test.DeadlineResponseWriter{SetReadDeadlineFunc: func() error { return test.ErrFailed }}
 
 	handler.ServeHTTP(res, req)
@@ -726,8 +710,7 @@ func TestNewRequestHandlerRecvExtendReadDeadlineFailureAfterDecode(t *testing.T)
 
 	opts := contentstream.Options{ReadTimeout: time.MustParseDuration("1s")}
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, recvErr = stream.Recv()
 			return recvErr
@@ -735,8 +718,8 @@ func TestNewRequestHandlerRecvExtendReadDeadlineFailureAfterDecode(t *testing.T)
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader("{\"Name\":\"Bob\"}\n"))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := &test.DeadlineResponseWriter{SetReadDeadlineFunc: func() error {
 		calls++
 		if calls == 1 {
@@ -757,8 +740,7 @@ func TestNewRequestHandlerRecvExtendWriteDeadlineFailure(t *testing.T) {
 
 	opts := contentstream.Options{ReadTimeout: time.MustParseDuration("1s"), WriteTimeout: time.MustParseDuration("1s")}
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, recvErr = stream.Recv()
 			return recvErr
@@ -766,8 +748,8 @@ func TestNewRequestHandlerRecvExtendWriteDeadlineFailure(t *testing.T) {
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader("{\"Name\":\"Bob\"}\n"))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := &test.DeadlineResponseWriter{SetWriteDeadlineFunc: func() error { return test.ErrFailed }}
 
 	handler.ServeHTTP(res, req)
@@ -780,8 +762,7 @@ func TestNewRequestHandlerRecvLimiterErrorMapsTo500(t *testing.T) {
 	var recvErr error
 
 	handler := contentstream.NewRequestHandler(
-		test.Content,
-		test.StreamEncoder,
+		test.StreamContent,
 		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, recvErr = stream.Recv()
 			return recvErr
@@ -790,8 +771,8 @@ func TestNewRequestHandlerRecvLimiterErrorMapsTo500(t *testing.T) {
 	body := "{\"Name\":\"Bob\"}\n"
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	req = req.WithContext(meta.WithLimiter(req.Context(), test.ErrorLimiter{}))
 	res := httptest.NewRecorder()
 
@@ -816,17 +797,19 @@ func TestNewRequestHandlerRecvBufferedLenFallback(t *testing.T) {
 			codec := sm.Get("json")
 			codec.Decoder = func(io.Reader) encodingstream.Decoder { return tt.decoder }
 			sm.Register("json", codec)
-			cont := content.NewContent(test.Encoder, test.Pool)
-
-			handler := contentstream.NewRequestHandler(cont, sm, contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
-				_, err := stream.Recv()
-				return err
-			})
+			handler := contentstream.NewRequestHandler(
+				contentstream.NewContent(sm, test.Pool),
+				contentstream.Options{},
+				func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+					_, err := stream.Recv()
+					return err
+				},
+			)
 
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader("{}"))
 			req.ProtoMajor = 2
-			req.Header.Set(content.TypeKey, media.NDJSON)
-			req.Header.Set(content.AcceptKey, media.NDJSON)
+			req.Header.Set(http.ContentTypeKey, media.NDJSON)
+			req.Header.Set(http.AcceptKey, media.NDJSON)
 			res := httptest.NewRecorder()
 
 			handler.ServeHTTP(res, req)
@@ -841,18 +824,17 @@ func TestNewRequestHandlerRecvRecoversStickyCapReaderError(t *testing.T) {
 	codec := sm.Get("json")
 	codec.Decoder = func(r io.Reader) encodingstream.Decoder { return &test.TripleReadDecoder{R: r} }
 	sm.Register("json", codec)
-	cont := content.NewContent(test.Encoder, test.Pool)
-
 	opts := contentstream.Options{MaxReceiveSize: bytes.Size(1)}
-	handler := contentstream.NewRequestHandler(cont, sm, opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+	content := contentstream.NewContent(sm, test.Pool)
+	handler := contentstream.NewRequestHandler(content, opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 		_, err := stream.Recv()
 		return err
 	})
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader("ab"))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
@@ -876,16 +858,15 @@ func TestNewRequestHandlerRejectsNilCodecFieldForRegisteredKind(t *testing.T) {
 			codec := sm.Get("json")
 			tt.mutate(&codec)
 			sm.Register("json", codec)
-			cont := content.NewContent(test.Encoder, test.Pool)
-
-			handler := contentstream.NewRequestHandler(cont, sm, contentstream.Options{}, func(_ context.Context, _ *contentstream.RequestStream[test.Request, test.Response]) error {
+			content := contentstream.NewContent(sm, test.Pool)
+			handler := contentstream.NewRequestHandler(content, contentstream.Options{}, func(_ context.Context, _ *contentstream.RequestStream[test.Request, test.Response]) error {
 				return nil
 			})
 
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 			req.ProtoMajor = 2
-			req.Header.Set(content.TypeKey, media.NDJSON)
-			req.Header.Set(content.AcceptKey, media.NDJSON)
+			req.Header.Set(http.ContentTypeKey, media.NDJSON)
+			req.Header.Set(http.AcceptKey, media.NDJSON)
 			res := httptest.NewRecorder()
 
 			handler.ServeHTTP(res, req)

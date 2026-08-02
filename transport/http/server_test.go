@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -62,13 +62,13 @@ func TestServerMaxReceiveSize(t *testing.T) {
 	cfg.HTTP.MaxReceiveSize = 64
 
 	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
-	world.Handle("POST /hello", content.NewRequestHandler(test.Content, func(_ context.Context, _ *test.Request) (*test.Response, error) {
+	world.Handle("POST /hello", unary.NewRequestHandler(test.UnaryContent, func(_ context.Context, _ *test.Request) (*test.Response, error) {
 		return &test.Response{Greeting: "hello"}, nil
 	}))
 	world.Start()
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 
 	res, body, err := world.PostBody(
 		t.Context(),
@@ -86,13 +86,13 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 	cfg.HTTP.MaxReceiveSize = 64
 
 	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
-	world.Handle("POST /hello", content.NewRequestHandler(test.Content, func(_ context.Context, _ *test.Request) (*test.Response, error) {
+	world.Handle("POST /hello", unary.NewRequestHandler(test.UnaryContent, func(_ context.Context, _ *test.Request) (*test.Response, error) {
 		return &test.Response{Greeting: "hello"}, nil
 	}))
 	world.Start()
 
 	header := http.Header{}
-	header.Set(content.TypeKey, media.JSON)
+	header.Set(http.ContentTypeKey, media.JSON)
 
 	res, body, err := world.PostBody(
 		t.Context(),

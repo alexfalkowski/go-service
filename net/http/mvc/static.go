@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -105,7 +104,7 @@ func staticStatusCode(err error) int {
 func setStaticContentType(res http.ResponseWriter, name string) {
 	mediaType := media.TypeByExtension(path.Ext(name))
 	if !strings.IsEmpty(mediaType) {
-		res.Header().Set(content.TypeKey, media.MustParse(mediaType).WithUTF8())
+		res.Header().Set(http.ContentTypeKey, media.MustParse(mediaType).WithUTF8())
 	}
 }
 

@@ -8,8 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-sync"
@@ -20,7 +20,8 @@ func ExampleGet() {
 	router := http.NewRouter(mux, http.NewRoutePolicy())
 	pool := sync.NewBufferPool()
 	streamMap := encodingstream.NewMap()
-	rest.Register(router, content.NewContent(encoding.NewMap(), pool), streamMap, pool, contentstream.Options{})
+	streamContent := contentstream.NewContent(streamMap, pool)
+	rest.Register(router, unary.NewContent(encoding.NewMap(), pool), streamContent, pool, contentstream.Options{})
 
 	rest.Get("/hello", func(context.Context) (*exampleResponse, error) {
 		return &exampleResponse{Message: "hello"}, nil
@@ -45,7 +46,8 @@ func ExampleStreamGet() {
 	router := http.NewRouter(mux, http.NewRoutePolicy())
 	pool := sync.NewBufferPool()
 	streamMap := encodingstream.NewMap()
-	rest.Register(router, content.NewContent(encoding.NewMap(), pool), streamMap, pool, contentstream.Options{})
+	streamContent := contentstream.NewContent(streamMap, pool)
+	rest.Register(router, unary.NewContent(encoding.NewMap(), pool), streamContent, pool, contentstream.Options{})
 
 	rest.StreamGet("/hello", func(_ context.Context, stream *contentstream.Stream[exampleResponse]) error {
 		if err := stream.Send(&exampleResponse{Message: "hello"}); err != nil {
@@ -56,7 +58,7 @@ func ExampleStreamGet() {
 	})
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)

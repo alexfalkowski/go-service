@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
@@ -20,7 +19,7 @@ import (
 func TestStreamRouteRejectsHTTP1(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rpc.Register(router, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
+	rpc.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
 
 	rpc.StreamRoute("/hello", func(_ context.Context, _ *stream.RequestStream[test.Request, test.Response]) error {
 		return nil
@@ -28,8 +27,8 @@ func TestStreamRouteRejectsHTTP1(t *testing.T) {
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	req.ProtoMajor = 1
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
@@ -41,7 +40,7 @@ func TestStreamRouteRecvAndSendOverHTTP2(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rpc.Register(router, test.Content, test.StreamEncoder, test.Pool, stream.Options{})
+	rpc.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
 
 	rpc.StreamRoute("/hello", func(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 		for {
@@ -63,8 +62,8 @@ func TestStreamRouteRecvAndSendOverHTTP2(t *testing.T) {
 	body := "{\"Name\":\"Bob\"}\n{\"Name\":\"Alice\"}\n"
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
 	req.ProtoMajor = 2
-	req.Header.Set(content.TypeKey, media.NDJSON)
-	req.Header.Set(content.AcceptKey, media.NDJSON)
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)

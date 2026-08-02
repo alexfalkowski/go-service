@@ -6,20 +6,20 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 )
 
 // RegisterHandlers registers DELETE and GET REST handlers for the service-prefixed path.
-func RegisterHandlers[Res any](path string, h content.Handler[Res]) {
+func RegisterHandlers[Res any](path string, h unary.Handler[Res]) {
 	rest.Delete(http.Pattern(Name, path), h)
 	rest.Get(http.Pattern(Name, path), h)
 }
 
 // RegisterRequestHandlers registers POST, PUT, and PATCH REST handlers for the service-prefixed path.
-func RegisterRequestHandlers[Req any, Res any](path string, h content.RequestHandler[Req, Res]) {
+func RegisterRequestHandlers[Req any, Res any](path string, h unary.RequestHandler[Req, Res]) {
 	rest.Post(http.Pattern(Name, path), h)
 	rest.Put(http.Pattern(Name, path), h)
 	rest.Patch(http.Pattern(Name, path), h)
@@ -88,7 +88,7 @@ func RestRequestError(_ context.Context, _ *Request) (*Response, error) {
 }
 
 func registerRest(router *http.Router) {
-	rest.Register(router, Content, StreamEncoder, Pool, stream.Options{})
+	rest.Register(router, UnaryContent, StreamContent, Pool, stream.Options{})
 }
 
 func restClient(client *http.Client, os *worldOpts) *rest.Client {

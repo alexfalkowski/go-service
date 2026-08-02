@@ -22,7 +22,7 @@ import (
 //
 // Callers that need to accept alternate spellings of these kinds (for example HTTP media subtypes such
 // as "pb" or "octet-stream") are expected to translate them to the canonical kind above before calling
-// [Map.Get]; see [github.com/alexfalkowski/go-service/v2/net/http/content]'s unaryKind.
+// [Map.Get]; see [github.com/alexfalkowski/go-service/v2/net/http/content/unary]'s unaryKind.
 //
 // Callers can add additional kinds or override existing kinds via [Map.Register].
 func NewMap() *Map {

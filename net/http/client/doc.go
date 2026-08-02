@@ -1,7 +1,7 @@
 // Package client provides a content-aware HTTP client wrapper used by go-service.
 //
 // This package wraps [github.com/alexfalkowski/go-service/v2/net/http.Client] to provide a higher-level API for making HTTP requests with:
-//   - request/response body encoding/decoding via [github.com/alexfalkowski/go-service/v2/net/http/content.Content], and
+//   - request/response body encoding/decoding via [github.com/alexfalkowski/go-service/v2/net/http/content/unary.Content], and
 //   - consistent error handling via [github.com/alexfalkowski/go-service/v2/net/http/status].
 //
 // The wrapper is intended for service-to-service HTTP calls where request payload format is selected

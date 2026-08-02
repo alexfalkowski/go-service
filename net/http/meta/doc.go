@@ -19,8 +19,8 @@
 // those values should install them with WithRequestResponse before invoking downstream logic.
 //
 // These helpers are typically used in tightly controlled handler pipelines (for example those created by
-// [github.com/alexfalkowski/go-service/v2/net/http/content.NewHandler] /
-// [github.com/alexfalkowski/go-service/v2/net/http/content.NewRequestHandler]), which populate the context before invoking
+// [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewHandler] /
+// [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewRequestHandler]), which populate the context before invoking
 // downstream logic.
 //
 // # Forwarded IP trust boundary

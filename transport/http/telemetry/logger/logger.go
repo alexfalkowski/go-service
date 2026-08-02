@@ -69,7 +69,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	defer func() {
 		if value := recover(); value != nil {
 			// A streaming handler that already committed its response aborts via
-			// http.ErrAbortHandler (see net/http/content's streaming error contract) so net/http can
+			// http.ErrAbortHandler (see net/http/content/stream's error contract) so net/http can
 			// sever the in-flight connection. That is an intentional, expected outcome of a truncated
 			// stream, not a bug, so it must not be logged as a recovered panic — but the request still
 			// gets its ordinary outcome log line, carrying the diagnostic error finalizeStream recorded.

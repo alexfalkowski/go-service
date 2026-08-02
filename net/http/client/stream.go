@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/budget"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -71,7 +70,7 @@ func (c *Client) StreamPatch(ctx context.Context, url string, opts Options, hand
 // Content negotiation:
 // The response streaming decoder is resolved from the response Content-Type header, falling back to
 // opts.ContentType, via the streaming registry passed to [NewClient] (see
-// [contentstream.NewMedia]). An unregistered or unparseable streaming media type, or a
+// [contentstream.Content.NewFromMedia]). An unregistered or unparseable streaming media type, or a
 // Client whose streaming registry has no matching codec, is returned as an error and handler is never called —
 // but only once the response exists: unlike a media type Stream could reject before dialing at all,
 // there is no way to know the response's actual Content-Type without making the request first, so a
@@ -191,7 +190,7 @@ func (c *Client) Stream(ctx context.Context, method, url string, opts Options, h
 // Timeouts:
 // See [Client.Stream]: the underlying [http.Client] never has a [http.Client.Timeout].
 func (c *Client) RequestStream(ctx context.Context, method, url string, opts Options, handler RequestStreamHandler) error {
-	reqMedia, err := contentstream.NewMedia(opts.ContentType, c.streamMap)
+	reqMedia, err := c.streamContent.NewFromMedia(opts.ContentType)
 	if err == nil && reqMedia.NewEncoder == nil {
 		err = contentstream.ErrUnsupportedMedia
 	}
@@ -211,10 +210,10 @@ func (c *Client) RequestStream(ctx context.Context, method, url string, opts Opt
 	// ContentLength = -1 forces chunked transfer encoding: the pipe has no known total length, and a
 	// declared Content-Length would make the transport try to read exactly that many bytes upfront.
 	request.ContentLength = -1
-	request.Header.Set(content.TypeKey, reqMedia.String())
+	request.Header.Set(http.ContentTypeKey, reqMedia.String())
 
 	if !strings.IsEmpty(opts.Accept) {
-		request.Header.Set(content.AcceptKey, opts.Accept)
+		request.Header.Set(http.AcceptKey, opts.Accept)
 	}
 
 	ready := make(chan responseResult, 1)
@@ -437,7 +436,7 @@ type responseDecoder struct {
 }
 
 func newResponseDecoder(c *Client, response *http.Response, opts Options) (*responseDecoder, error) {
-	resMedia, err := contentstream.NewMedia(responseContentType(response.Header, opts), c.streamMap)
+	resMedia, err := c.streamContent.NewFromMedia(responseContentType(response.Header, opts))
 	if err == nil && resMedia.NewDecoder == nil {
 		err = contentstream.ErrUnsupportedMedia
 	}

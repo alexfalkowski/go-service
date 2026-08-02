@@ -2,10 +2,9 @@ package http
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
-	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
@@ -21,7 +20,7 @@ import (
 // It composes constructors and registrations required to run an HTTP server and to support common
 // handler styles used by go-service:
 //   - mux, route policy, and router construction ([http.NewServeMux], [http.NewRoutePolicy], [http.NewRouter])
-//   - content negotiation and encoding ([content.NewContent])
+//   - content negotiation and encoding ([unary.NewContent], [contentstream.NewContent])
 //   - MVC view rendering helpers ([mvc.NewFunctionMap], [mvc.Register])
 //   - RPC and REST routing ([rpc.Register], [rest.Register] — called from [registerRoutes] rather than
 //     as their own separate Fx invoke targets, so their [stream.Options] argument is a plain
@@ -46,7 +45,8 @@ var Module = di.Module(
 	di.Constructor(http.NewServeMux),
 	di.Constructor(http.NewRoutePolicy),
 	di.Constructor(http.NewRouter),
-	di.Constructor(content.NewContent),
+	di.Constructor(unary.NewContent),
+	di.Constructor(stream.NewContent),
 	di.Constructor(mvc.NewFunctionMap),
 	di.Register(mvc.Register),
 	di.Register(registerRoutes),
@@ -73,7 +73,7 @@ var Module = di.Module(
 // through the same options-aware precedence (options key, falling back to cfg.GetTimeout()) NewServer
 // uses for its own ReadTimeout/WriteTimeout, so a service that diverges options.read_timeout/
 // write_timeout from timeout gets a matching streaming budget instead of a silently different one.
-func registerRoutes(cfg *Config, router *http.Router, cont *content.Content, sm *encodingstream.Map, pool *sync.BufferPool, drain *server.Drain) {
+func registerRoutes(cfg *Config, router *http.Router, uc *unary.Content, sc *stream.Content, pool *sync.BufferPool, drain *server.Drain) {
 	var so stream.Options
 
 	if cfg.IsEnabled() {
@@ -85,6 +85,6 @@ func registerRoutes(cfg *Config, router *http.Router, cont *content.Content, sm 
 		}
 	}
 
-	rest.Register(router, cont, sm, pool, so)
-	rpc.Register(router, cont, sm, pool, so)
+	rest.Register(router, uc, sc, pool, so)
+	rpc.Register(router, uc, sc, pool, so)
 }
