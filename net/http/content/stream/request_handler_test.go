@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -60,6 +59,72 @@ func TestNewRequestHandlerClosesCodecsBeforeAbortAfterCommitOnDrain(t *testing.T
 	require.Equal(t, 1, decoder.closes)
 }
 
+func TestNewRequestHandlerClosesCodecsBeforeAbortAfterCommit(t *testing.T) {
+	encoder := &closeTracker{}
+	decoder := &closeTracker{}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	sm.Register("json", codec)
+	handler := contentstream.NewRequestHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
+				return err
+			}
+
+			return test.ErrFailed
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+	req.ProtoMajor = 2
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
+		handler.ServeHTTP(res, req)
+	})
+
+	require.Equal(t, 1, encoder.closes)
+	require.Equal(t, 1, decoder.closes)
+}
+
+func TestNewRequestHandlerClosesCodecsAfterCommitPanic(t *testing.T) {
+	encoder := &closeTracker{}
+	decoder := &closeTracker{}
+	sm := encodingstream.NewMap()
+	codec := sm.Get("json")
+	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
+	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	sm.Register("json", codec)
+	handler := contentstream.NewRequestHandler(
+		contentstream.NewContent(sm, test.Pool),
+		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
+				return err
+			}
+
+			panic(test.ErrFailed)
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+	req.ProtoMajor = 2
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	require.PanicsWithValue(t, test.ErrFailed, func() {
+		handler.ServeHTTP(res, req)
+	})
+
+	require.Equal(t, 1, encoder.closes)
+	require.Equal(t, 1, decoder.closes)
+}
+
 func TestNewRequestHandlerClosesCodecsAfterReceiveOnlyHandler(t *testing.T) {
 	encoder := &closeTracker{}
 	decoder := &closeTracker{decodeErr: io.EOF}
@@ -93,20 +158,19 @@ func TestNewRequestHandlerClosesCodecsAfterReceiveOnlyHandler(t *testing.T) {
 	require.Equal(t, 1, decoder.closes)
 }
 
-func TestNewRequestHandlerClosesDecoderWhenEncoderCloseFails(t *testing.T) {
-	exporter := test.EnableIsolatedSpanExporter(t)
-	decoder := &closeTracker{err: errors.New("decoder close")}
+func TestNewRequestHandlerIgnoresCodecCloseErrors(t *testing.T) {
+	decoder := &closeTracker{err: test.ErrFailed}
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
 	codec.Encoder = func(io.Writer) encodingstream.Encoder { return test.CloseErrEncoder{} }
 	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
 	sm.Register("json", codec)
-	handler := http.NewTelemetryHandler(contentstream.NewRequestHandler(
+	handler := contentstream.NewRequestHandler(
 		contentstream.NewContent(sm, test.Pool),
 		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			return stream.Send(&test.Response{Greeting: "Hello Bob"})
 		},
-	), "http.server")
+	)
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	req.ProtoMajor = 2
@@ -114,14 +178,10 @@ func TestNewRequestHandlerClosesDecoderWhenEncoderCloseFails(t *testing.T) {
 	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
-	require.PanicsWithValue(t, http.ErrAbortHandler, func() {
-		handler.ServeHTTP(res, req)
-	})
+	handler.ServeHTTP(res, req)
 
+	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, 1, decoder.closes)
-	spans := exporter.Spans()
-	require.Len(t, spans, 1)
-	require.Equal(t, test.ErrFailed.Error(), spans[0].Status().Description)
 }
 
 func TestNewRequestHandlerReturnsServiceUnavailableOnDrainBeforeHandler(t *testing.T) {

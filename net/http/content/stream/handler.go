@@ -24,6 +24,7 @@ import (
 // through [status.WriteError]. A handler error returned after the first successful Send aborts the
 // response via panic([http.ErrAbortHandler]) instead, since the response is already committed — see
 // [Stream.Send] and [handleResponse].
+// Codec finalization runs when the handler returns or panics; its error does not change the response outcome.
 //
 // Drain:
 // When opts.Drain starts before the handler is invoked, this handler returns 503. Otherwise it cancels
@@ -84,6 +85,8 @@ func NewHandler[Res any](cont *Content, opts Options, handler Handler[Res]) http
 			limiter:      meta.Limiter(ctx),
 			drain:        opts.Drain,
 		}
+		defer stream.close()
+
 		handleResponse(ctx, res, stream, handler(ctx, stream))
 	}
 }
@@ -197,6 +200,8 @@ func NewRequestHandler[Req any, Res any](cont *Content, opts Options, handler Re
 			capped:         capped,
 			maxReceiveSize: opts.MaxReceiveSize.Bytes(),
 		}
+		defer stream.close()
+
 		handleResponse(ctx, res, &stream.Stream, handler(ctx, stream))
 	}
 }
@@ -212,12 +217,12 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, stream *RequestS
 
 // handleResponse applies the streaming error contract after a stream handler returns.
 //
-// If the response was never committed, a handler or finalization error is rendered as an ordinary HTTP error via
+// If the response was never committed, a handler error is rendered as an ordinary HTTP error via
 // [status.WriteError] (a nil error leaves an empty, implicitly-200 response). If the response was
-// committed, any handler error — or a failure finalizing the encoder on the success path — is
-// recorded for operator diagnostics and the response is aborted via panic([http.ErrAbortHandler]),
-// which [transport/http.recoveryHandler] and the access logger already special-case for a committed
-// response.
+// committed, a handler error is recorded for operator diagnostics and the response is aborted via
+// panic([http.ErrAbortHandler]), which [transport/http.recoveryHandler] and the access logger already
+// special-case for a committed response. Codec finalization is deferred by the constructors and does not
+// change the response outcome.
 func handleResponse[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
 	if s.draining() {
 		drainResponse(ctx, res, s, err)
@@ -225,41 +230,25 @@ func handleResponse[Res any](ctx context.Context, res http.ResponseWriter, s *St
 	}
 
 	if !s.committed() {
-		closeErr := s.close()
 		if err != nil {
-			err = errors.Join(err, closeErr)
 			_ = status.WriteError(ctx, res, err)
-		} else if closeErr != nil {
-			_ = status.WriteError(ctx, res, closeErr)
 		}
-
 		return
 	}
 
 	if err != nil {
 		abortResponse(ctx, err)
 	}
-
-	if closeErr := s.close(); closeErr != nil {
-		abortResponse(ctx, closeErr)
-	}
 }
 
 func drainResponse[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
 	if !s.committed() {
-		status.RecordError(ctx, s.close())
 		_ = status.WriteError(ctx, res, status.SafeError(http.StatusServiceUnavailable, ErrDraining))
-
 		return
 	}
 
-	closeErr := s.close()
 	if err != nil && !errors.Is(err, ErrDraining) && !errors.Is(err, ctx.Err()) {
 		abortResponse(ctx, err)
-	}
-
-	if closeErr != nil {
-		abortResponse(ctx, closeErr)
 	}
 }
 
