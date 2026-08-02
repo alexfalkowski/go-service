@@ -145,3 +145,27 @@ func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 	test.RequireTrimmedResponseBody(t, res, "http: internal server error")
 	test.RequireResponseBodyNotContains(t, res, "partial")
 }
+
+func TestNewHandlerRejectsUnavailableResponseCodec(t *testing.T) {
+	enc := encoding.NewMap()
+	enc.Register("json", nil)
+	cont := unary.NewContent(enc, test.Pool)
+
+	called := false
+	handler := unary.NewHandler(cont, func(_ context.Context) (*test.Response, error) {
+		called = true
+
+		return &test.Response{Greeting: "Hello Bob"}, nil
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.JSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.False(t, called)
+	require.Equal(t, http.StatusInternalServerError, res.Code)
+	require.Equal(t, "text/error; charset=utf-8", res.Header().Get(http.ContentTypeKey))
+	test.RequireTrimmedResponseBody(t, res, "http: internal server error")
+}
