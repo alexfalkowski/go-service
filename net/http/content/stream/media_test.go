@@ -152,6 +152,7 @@ func TestNewFromAcceptResolvesWildcardOrExactMatchAnywhereInList(t *testing.T) {
 		{name: "exact match overrides a co-present zero quality bare wildcard", accept: "*/*;q=0, " + media.NDJSON},
 		{name: "subtype wildcard overrides a co-present zero quality bare wildcard", accept: "*/*;q=0, application/*"},
 		{name: "subtype wildcard overrides wrong-major zero quality type", accept: "text/x-ndjson;q=0, application/*"},
+		{name: "parameterized exact exclusion does not override parameterless exact match", accept: media.NDJSON + "; profile=v2;q=0, " + media.NDJSON},
 	}
 
 	for _, tt := range tests {
@@ -174,6 +175,31 @@ func TestNewFromAcceptResolvesWildcardOrExactMatchAnywhereInList(t *testing.T) {
 	}
 }
 
+func TestNewFromAcceptResolvesMatchOnLaterAcceptFieldLine(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "GET", "/hello", nil)
+	req.Header.Add(http.AcceptKey, media.JSON)
+	req.Header.Add(http.AcceptKey, media.NDJSON)
+
+	m, err := test.StreamContent.NewFromAccept(req)
+
+	require.NoError(t, err)
+	require.NotNil(t, m.NewEncoder)
+	require.Equal(t, media.NDJSON, m.String())
+}
+
+func TestNewFromAcceptUsesContentTypeFallbackForEmptyAcceptFieldLines(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "GET", "/hello", nil)
+	req.Header.Add(http.AcceptKey, "")
+	req.Header.Add(http.AcceptKey, "")
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+
+	m, err := test.StreamContent.NewFromAccept(req)
+
+	require.NoError(t, err)
+	require.NotNil(t, m.NewEncoder)
+	require.Equal(t, media.NDJSON, m.String())
+}
+
 func TestNewFromAcceptRejectsConcreteOnlyUnsatisfiableAccept(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -186,6 +212,7 @@ func TestNewFromAcceptRejectsConcreteOnlyUnsatisfiableAccept(t *testing.T) {
 		{name: "subtype wildcard with mismatched major type", accept: "text/*"},
 		{name: "bare wildcard with zero quality", accept: "*/*;q=0"},
 		{name: "exact match with zero quality", accept: media.NDJSON + ";q=0"},
+		{name: "exact match with unsupported parameter", accept: media.NDJSON + "; profile=v2"},
 		{name: "zero quality wildcard alongside unproducible concrete type", accept: media.JSON + ", */*;q=0"},
 		{name: "zero quality exact match overrides a co-present bare wildcard", accept: media.NDJSON + ";q=0, */*"},
 		{name: "zero quality exact match overrides a co-present bare wildcard, reversed", accept: "*/*, " + media.NDJSON + ";q=0"},

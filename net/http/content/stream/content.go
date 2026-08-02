@@ -59,8 +59,10 @@ func (c *Content) NewFromMedia(mediaType string) (Media, error) {
 // codec without an encoder is unsupported. A nil Content returns [ErrUnsupportedMedia].
 //
 // An Accept list is satisfiable for the server's producible streaming media type if it contains an
-// exact match, or a matching wildcard ("*/*", or "type/*" where type matches the producible type's own
-// major type), anywhere in the list. Per RFC 9110 §12.5.1, the most specific reference present controls
+// exact match without non-quality parameters, or a matching wildcard ("*/*", or "type/*" where type
+// matches the producible type's own major type) without non-quality parameters, anywhere in the list.
+// The canonical NDJSON representation has no media parameters, so a range that requires one cannot match it.
+// Per RFC 9110 §12.5.1, the most specific reference present controls
 // regardless of list order: an exact subtype match takes precedence over any wildcard, and a "type/*"
 // wildcard takes precedence over the bare "*/*" wildcard. Only that controlling reference's explicit
 // q=0 exclusion (see [github.com/alexfalkowski/go-service/v2/net/http/accept.IsZeroQuality]) decides
@@ -78,9 +80,9 @@ func (c *Content) NewFromAccept(req *http.Request) (Media, error) {
 		return Media{}, ErrUnsupportedMedia
 	}
 
-	header := req.Header.Get(http.AcceptKey)
-	if !strings.IsEmpty(header) {
-		return c.newFromAcceptHeader(header)
+	accept := req.Header.Values(http.AcceptKey)
+	if !strings.IsEmpty(strings.Join(strings.Empty, accept...)) {
+		return c.newFromAcceptHeader(strings.Join(", ", accept...))
 	}
 
 	mediaType := req.Header.Get(http.ContentTypeKey)
@@ -89,23 +91,6 @@ func (c *Content) NewFromAccept(req *http.Request) (Media, error) {
 	}
 
 	return c.newEncoderMedia(mediaType)
-}
-
-func (c *Content) newFromAcceptHeader(header string) (Media, error) {
-	if resolved, ok := knownMedia(header, c.enc); ok {
-		return encoderMedia(resolved, nil)
-	}
-
-	mediaType, ok := matchStreamAccept(header)
-	if !ok {
-		return Media{}, ErrUnsupportedMedia
-	}
-
-	return c.newEncoderMedia(mediaType)
-}
-
-func (c *Content) newEncoderMedia(mediaType string) (Media, error) {
-	return encoderMedia(c.NewFromMedia(mediaType))
 }
 
 // NewFromContentType parses the request Content-Type header and resolves a streaming decoder.
@@ -139,4 +124,21 @@ func (c *Content) NewFromContentType(req *http.Request) (Media, error) {
 	}
 
 	return m, nil
+}
+
+func (c *Content) newFromAcceptHeader(header string) (Media, error) {
+	if resolved, ok := knownMedia(header, c.enc); ok {
+		return encoderMedia(resolved, nil)
+	}
+
+	mediaType, ok := matchStreamAccept(header)
+	if !ok {
+		return Media{}, ErrUnsupportedMedia
+	}
+
+	return c.newEncoderMedia(mediaType)
+}
+
+func (c *Content) newEncoderMedia(mediaType string) (Media, error) {
+	return encoderMedia(c.NewFromMedia(mediaType))
 }
