@@ -16,29 +16,41 @@ import (
 )
 
 func TestNewRequestHandlerUsesAcceptForResponse(t *testing.T) {
-	handler := unary.NewRequestHandler(test.UnaryContent, func(_ context.Context, req *test.Request) (*test.Response, error) {
-		return &test.Response{Greeting: "Hello " + req.Name}, nil
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(`{"name":"Bob"}`))
-	req.Header.Set(http.ContentTypeKey, media.JSON)
-	req.Header.Set(http.AcceptKey, media.YAML)
-	res := httptest.NewRecorder()
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, media.YAML, res.Header().Get(http.ContentTypeKey))
-	var response test.Response
-	require.NoError(t, test.Encoder.Get("yaml").Decode(res.Body, &response))
-	require.Equal(t, "Hello Bob", response.Greeting)
-}
-
-func TestNewRequestHandlerRejectsUnsafeBinaryRequestBody(t *testing.T) {
 	for _, tc := range []struct {
 		mediaType string
 		kind      string
 	}{
+		{mediaType: media.TOML, kind: "toml"},
+		{mediaType: media.YAML, kind: "yaml"},
+	} {
+		t.Run(tc.kind, func(t *testing.T) {
+			handler := unary.NewRequestHandler(test.UnaryContent, func(_ context.Context, req *test.Request) (*test.Response, error) {
+				return &test.Response{Greeting: "Hello " + req.Name}, nil
+			})
+
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(`{"name":"Bob"}`))
+			req.Header.Set(http.ContentTypeKey, media.JSON)
+			req.Header.Set(http.AcceptKey, tc.mediaType)
+			res := httptest.NewRecorder()
+
+			handler.ServeHTTP(res, req)
+
+			require.Equal(t, http.StatusOK, res.Code)
+			require.Equal(t, tc.mediaType, res.Header().Get(http.ContentTypeKey))
+			var response test.Response
+			require.NoError(t, test.Encoder.Get(tc.kind).Decode(res.Body, &response))
+			require.Equal(t, "Hello Bob", response.Greeting)
+		})
+	}
+}
+
+func TestNewRequestHandlerRejectsUnsafeRequestBody(t *testing.T) {
+	for _, tc := range []struct {
+		mediaType string
+		kind      string
+	}{
+		{mediaType: media.TOML, kind: "toml"},
+		{mediaType: media.TOML + "; profile=test", kind: "toml"},
 		{mediaType: "application/gob", kind: "gob"},
 		{mediaType: media.MessagePack + "; profile=test", kind: "msgpack"},
 	} {

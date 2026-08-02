@@ -185,7 +185,7 @@ func TestAllowedRPC(t *testing.T) {
 }
 
 func TestDisallowedRPC(t *testing.T) {
-	for _, mt := range []string{media.JSON, media.HumanJSON, media.YAML, "application/yml", media.TOML, "application/gob", media.MessagePack, "test"} {
+	for _, mt := range []string{media.JSON, media.HumanJSON, media.YAML, media.TOML, "application/gob", media.MessagePack, "test"} {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
 				test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
@@ -212,19 +212,18 @@ func TestDisallowedRPC(t *testing.T) {
 }
 
 func TestInvalidRPCRequest(t *testing.T) {
-	for _, mt := range []string{"gob"} {
+	for _, mt := range []string{"gob", "toml", "yml"} {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 			rpc.Route("/hello", test.SuccessSayHello)
-			httpClient, err := world.NewHTTP()
+			header := http.Header{}
+			header.Set(http.ContentTypeKey, "application/"+mt)
+			res, body, err := world.ResponseWithBody(t.Context(), world.PathServerURL("http", "hello"), http.MethodPost, header, http.NoBody)
+
 			require.NoError(t, err)
-
-			client := rpc.NewClient(world.ServerURL("http"),
-				rpc.WithClientContentType("application/"+mt),
-				rpc.WithClientRoundTripper(httpClient.Transport))
-
-			require.Error(t, client.Post(t.Context(), "/hello", nil, &test.Response{}))
+			require.Equal(t, http.StatusUnsupportedMediaType, res.StatusCode)
+			require.Equal(t, "http: unsupported media type", body)
 		})
 	}
 }

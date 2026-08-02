@@ -42,7 +42,7 @@
 // domain object rather than caller-controlled bytes. Request/response size limits bound input bytes
 // only, so they do not mitigate amplification and are not a substitute for these bounds.
 //
-// json, yaml and protobuf satisfy this rule. msgpack and gob do not, so [Media.CanDecodeRequest] and
+// json, yaml and protobuf satisfy this rule. toml, msgpack and gob do not, so [Media.CanDecodeRequest] and
 // [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewFromContentType] rejects them for
 // request decoding even though both remain valid
 // media types and valid response codecs (see [Content.NewFromMedia] and the go-service HTTP client,

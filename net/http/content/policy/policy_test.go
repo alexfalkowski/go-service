@@ -14,6 +14,7 @@ func TestCanDecode(t *testing.T) {
 	}{
 		{kind: "json", want: true},
 		{kind: "yaml", want: true},
+		{kind: "toml", want: false},
 		{kind: "", want: true},
 		{kind: "gob", want: false},
 		{kind: "msgpack", want: false},
