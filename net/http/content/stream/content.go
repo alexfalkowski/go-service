@@ -127,10 +127,6 @@ func (c *Content) NewFromContentType(req *http.Request) (Media, error) {
 }
 
 func (c *Content) newFromAcceptHeader(header string) (Media, error) {
-	if resolved, ok := knownMedia(header, c.enc); ok {
-		return encoderMedia(resolved, nil)
-	}
-
 	mediaType, ok := matchStreamAccept(header)
 	if !ok {
 		return Media{}, ErrUnsupportedMedia

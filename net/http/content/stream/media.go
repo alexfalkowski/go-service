@@ -40,9 +40,8 @@ type Media struct {
 
 // knownMedia resolves an exact built-in streaming media type without parsing its header value.
 //
-// Streaming currently supports one such type, but keeping this separate from matchStreamAccept
-// makes the concrete-header fast path explicit and leaves the latter responsible only for full
-// Accept-list negotiation.
+// Streaming currently supports one such type. Keeping the direct lookup separate leaves
+// matchStreamAccept responsible only for full Accept-list negotiation.
 func knownMedia(mediaType string, enc *stream.Map) (Media, bool) {
 	if mediaType != media.NDJSON {
 		return Media{}, false
@@ -68,6 +67,20 @@ func encoderMedia(resolved Media, err error) (Media, error) {
 	return resolved, nil
 }
 
+const (
+	noStreamMatch = iota
+	bareStreamMatch
+	majorStreamMatch
+	exactStreamMatch
+)
+
+// streamAcceptMatch is a matching streaming media range and its RFC 9110 specificity.
+type streamAcceptMatch struct {
+	mediaType   string
+	specificity int
+	zeroQuality bool
+}
+
 // matchStreamAccept reports whether header, an Accept header value, is satisfiable for a registered
 // streamKinds entry, and if so, which media type to resolve.
 //
@@ -82,42 +95,44 @@ func encoderMedia(resolved Media, err error) (Media, error) {
 // unparsable item is skipped rather than rejecting the whole list, the same way an unparsable single Accept
 // value already falls through to [Content.NewFromMedia]'s own rejection when nothing else in the list matches.
 func matchStreamAccept(header string) (string, bool) {
-	var exact, major, bare mediaRangeMatch
+	var best streamAcceptMatch
 
 	for _, item := range accept.Items(header) {
-		value, ok := parseParameterlessAcceptRange(item)
-		if !ok {
-			continue
-		}
-
-		zero := accept.IsZeroQuality(item)
-
-		if _, ok := streamKinds[value.String()]; ok {
-			exact.consider(zero, value.String())
-			continue
-		}
-
-		if !accept.IsWildcard(value, ndjsonType) {
-			continue
-		}
-
-		if value.Major() == "*" {
-			bare.consider(zero, media.NDJSON)
-		} else {
-			major.consider(zero, media.NDJSON)
+		candidate := matchStreamRange(item)
+		if candidate.specificity > best.specificity {
+			best = candidate
 		}
 	}
 
-	switch {
-	case exact.found:
-		return exact.value, !exact.zero
-	case major.found:
-		return major.value, !major.zero
-	case bare.found:
-		return bare.value, !bare.zero
-	default:
-		return "", false
+	return best.mediaType, best.specificity != noStreamMatch && !best.zeroQuality
+}
+
+func matchStreamRange(item string) streamAcceptMatch {
+	value, ok := parseParameterlessAcceptRange(item)
+	if !ok {
+		return streamAcceptMatch{}
 	}
+
+	match := streamAcceptMatch{zeroQuality: accept.IsZeroQuality(item)}
+	if _, ok := streamKinds[value.String()]; ok {
+		match.mediaType = value.String()
+		match.specificity = exactStreamMatch
+
+		return match
+	}
+
+	if !accept.IsWildcard(value, ndjsonType) {
+		return streamAcceptMatch{}
+	}
+
+	match.mediaType = media.NDJSON
+	if value.Major() == "*" {
+		match.specificity = bareStreamMatch
+	} else {
+		match.specificity = majorStreamMatch
+	}
+
+	return match
 }
 
 func parseParameterlessAcceptRange(item string) (media.Type, bool) {
@@ -140,22 +155,4 @@ func hasNonQualityParameters(item string) bool {
 	delete(parameters, "q")
 
 	return len(parameters) != 0
-}
-
-// mediaRangeMatch is the controlling media range found so far for one specificity tier (exact subtype,
-// "type/*" wildcard, or bare "*/*" wildcard) in [matchStreamAccept]'s scan.
-type mediaRangeMatch struct {
-	value string
-	found bool
-	zero  bool
-}
-
-// consider records item as this tier's controlling reference if none has been recorded yet. Only the
-// first occurrence within a tier is kept: RFC 9110 §12.5.1 lets the most specific tier present control
-// regardless of order, and within one tier this package has no further precedence rule to break a tie
-// between duplicate references, so the first one found is as good as any.
-func (m *mediaRangeMatch) consider(zero bool, value string) {
-	if !m.found {
-		m.found, m.zero, m.value = true, zero, value
-	}
 }
