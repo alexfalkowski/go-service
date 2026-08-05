@@ -1,6 +1,7 @@
 package strings
 
 import (
+	"iter"
 	"strings"
 
 	"github.com/alexfalkowski/go-service/v2/slices"
@@ -60,6 +61,13 @@ func Cut(s, sep string) (string, string, bool) {
 func CutAfter(s, sep string) string {
 	_, after, _ := Cut(s, sep)
 	return after
+}
+
+// SplitSeq returns an iterator over all substrings of s separated by sep.
+//
+// This is a thin wrapper around [strings.SplitSeq] and does not change semantics.
+func SplitSeq(s, sep string) iter.Seq[string] {
+	return strings.SplitSeq(s, sep)
 }
 
 // HasPrefix reports whether s begins with prefix.

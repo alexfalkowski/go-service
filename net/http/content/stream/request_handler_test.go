@@ -401,11 +401,13 @@ func TestNewRequestHandlerRecvAndSend(t *testing.T) {
 	req.Header.Set(http.ContentTypeKey, media.NDJSON)
 	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
+	res.Header().Set(http.VaryKey, "Accept-Encoding, Accept")
 
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, media.NDJSON, res.Header().Get(http.ContentTypeKey))
+	require.Equal(t, []string{"Accept-Encoding, Accept", http.ContentTypeKey}, res.Header().Values(http.VaryKey))
 
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
@@ -429,6 +431,7 @@ func TestNewRequestHandlerRejectsUnsupportedRequestMedia(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
+	require.Equal(t, []string{http.AcceptKey, http.ContentTypeKey}, res.Header().Values(http.VaryKey))
 }
 
 func TestNewRequestHandlerRecvUnderCapSucceeds(t *testing.T) {

@@ -48,6 +48,7 @@ func NewHandler[Res any](cont *Content, opts Options, handler Handler[Res]) http
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusServiceUnavailable, ErrDraining))
 			return
 		}
+		http.AddVary(res.Header(), http.AcceptKey, http.ContentTypeKey)
 
 		resMedia, err := cont.NewFromAccept(req)
 		if err != nil {
@@ -148,6 +149,7 @@ func NewRequestHandler[Req any, Res any](cont *Content, opts Options, handler Re
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusHTTPVersionNotSupported, ErrBidiRequiresHTTP2))
 			return
 		}
+		http.AddVary(res.Header(), http.AcceptKey, http.ContentTypeKey)
 
 		reqMedia, err := cont.NewFromContentType(req)
 		if err != nil {

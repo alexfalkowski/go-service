@@ -3,6 +3,7 @@ package unary
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/ptr"
@@ -73,10 +74,11 @@ func NewHandler[Res any](cont *Content, handler Handler[Res]) http.HandlerFunc {
 func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res, error)) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
+		http.AddVary(res.Header(), http.AcceptKey, http.ContentTypeKey)
 
 		mediaType := cont.NewFromAccept(req)
 		ctx = meta.WithRequestResponse(ctx, req, res)
-		res.Header().Set(http.ContentTypeKey, mediaType.WithUTF8())
+		res.Header().Set(http.ContentTypeKey, media.MustParse(mediaType.String()).WithUTF8())
 
 		if mediaType.Encoder == nil {
 			_ = status.WriteError(ctx, res, errUnavailableResponseCodec)
