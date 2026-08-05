@@ -84,11 +84,6 @@ func (t Media) CanDecodeRequest() bool {
 	return t.Encoder != nil && policy.CanDecode(t.Subtype())
 }
 
-// WithUTF8 returns the media type with a UTF-8 charset parameter for text media types.
-func (t Media) WithUTF8() string {
-	return t.Type.WithUTF8()
-}
-
 func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {
 	// Exact built-in media types avoid the general parser on hot request paths.
 	// Parameterized values still use the parser so their normalized Type string stays unchanged.

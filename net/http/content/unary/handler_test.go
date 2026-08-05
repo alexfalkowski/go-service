@@ -32,11 +32,13 @@ func TestNewRequestHandlerUsesAcceptForResponse(t *testing.T) {
 			req.Header.Set(http.ContentTypeKey, media.JSON)
 			req.Header.Set(http.AcceptKey, tc.mediaType)
 			res := httptest.NewRecorder()
+			res.Header().Set(http.VaryKey, "Accept-Encoding, Accept")
 
 			handler.ServeHTTP(res, req)
 
 			require.Equal(t, http.StatusOK, res.Code)
 			require.Equal(t, tc.mediaType, res.Header().Get(http.ContentTypeKey))
+			require.Equal(t, []string{"Accept-Encoding, Accept", http.ContentTypeKey}, res.Header().Values(http.VaryKey))
 			var response test.Response
 			require.NoError(t, test.Encoder.Get(tc.kind).Decode(res.Body, &response))
 			require.Equal(t, "Hello Bob", response.Greeting)
@@ -71,6 +73,7 @@ func TestNewRequestHandlerRejectsUnsafeRequestBody(t *testing.T) {
 			require.False(t, called)
 			require.Equal(t, http.StatusUnsupportedMediaType, res.Code)
 			require.Equal(t, "text/error; charset=utf-8", res.Header().Get(http.ContentTypeKey))
+			require.Equal(t, []string{http.AcceptKey, http.ContentTypeKey}, res.Header().Values(http.VaryKey))
 			test.RequireTrimmedResponseBody(t, res, "http: unsupported media type")
 		})
 	}
@@ -123,6 +126,22 @@ func TestNewHandlerReplacesExistingContentType(t *testing.T) {
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, []string{"text/plain; charset=utf-8"}, res.Header().Values(http.ContentTypeKey))
 	test.RequireResponseBody(t, res, "Hello Bob")
+}
+
+func TestNewHandlerCanonicalizesResponseContentType(t *testing.T) {
+	handler := unary.NewHandler(test.UnaryContent, func(_ context.Context) (*test.Response, error) {
+		return &test.Response{Greeting: "Hello Héllo"}, nil
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, "application/json; charset=iso-8859-1; q=0.5")
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, media.JSON, res.Header().Get(http.ContentTypeKey))
+	test.RequireResponseBodyContains(t, res, "Héllo")
 }
 
 func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {

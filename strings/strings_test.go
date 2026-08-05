@@ -3,6 +3,7 @@ package strings_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
@@ -187,6 +188,12 @@ func TestCutAfter(t *testing.T) {
 			require.Equal(t, test.want, strings.CutAfter(test.s, test.sep))
 		})
 	}
+}
+
+func TestSplitSeq(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(t, []string{"accept", "content-type"}, slices.Collect(strings.SplitSeq("accept,content-type", ",")))
 }
 
 func TestLastIndex(t *testing.T) {

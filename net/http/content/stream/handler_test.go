@@ -36,11 +36,13 @@ func TestNewHandlerSendsValuesAndOptsOutOfGzip(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
+	res.Header().Set(http.VaryKey, "Accept-Encoding, Accept")
 
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, media.NDJSON, res.Header().Get(http.ContentTypeKey))
+	require.Equal(t, []string{"Accept-Encoding, Accept", http.ContentTypeKey}, res.Header().Values(http.VaryKey))
 	require.NotEmpty(t, res.Header().Get(compress.HeaderNoCompression))
 
 	scanner := bufio.NewScanner(res.Body)
@@ -510,6 +512,7 @@ func TestNewHandlerRejectsUnsupportedMedia(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusNotAcceptable, res.Code)
+	require.Equal(t, []string{http.AcceptKey, http.ContentTypeKey}, res.Header().Values(http.VaryKey))
 }
 
 func TestNewHandlerResolvesWildcardOrBrowserStyleAccept(t *testing.T) {
