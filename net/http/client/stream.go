@@ -9,14 +9,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/budget"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
-
-// errHandlerPanicked stands in for a recovered [StreamHandler]/[RequestStreamHandler] panic when
-// [RequestResponseStream.finish] needs a non-nil handlerErr to close the pipe with CloseWithError
-// instead of the clean-success path (see [callHandler] and [Client.RequestStream]). It is never
-// returned to a caller: the original panic value is always re-raised after cleanup.
-var errHandlerPanicked = errors.New("client: handler panicked")
 
 // StreamHandler handles a client-side receive-only stream: the response streams, the request does
 // not. It is the client-side counterpart of a call to a send-only streaming route (see
@@ -191,12 +186,11 @@ func (c *Client) Stream(ctx context.Context, method, url string, opts Options, h
 // See [Client.Stream]: the underlying [http.Client] never has a [http.Client.Timeout].
 func (c *Client) RequestStream(ctx context.Context, method, url string, opts Options, handler RequestStreamHandler) error {
 	reqMedia, err := c.streamContent.NewFromMedia(opts.ContentType)
-	if err == nil && reqMedia.NewEncoder == nil {
-		err = contentstream.ErrUnsupportedMedia
-	}
-
 	if err != nil {
 		return errors.Prefix("http: stream media", err)
+	}
+	if reqMedia.NewEncoder == nil {
+		return errors.Prefix("http: stream media", contentstream.ErrUnsupportedMedia)
 	}
 
 	reader, writer := io.Pipe()
@@ -230,12 +224,13 @@ func (c *Client) RequestStream(ctx context.Context, method, url string, opts Opt
 	}
 
 	panicValue, handlerErr := callHandler(func() error { return handler(ctx, stream) })
-	if panicValue != nil && handlerErr == nil {
+	if panicValue != nil {
 		// finish branches on a nil handlerErr by finalizing the encoder and closing the pipe cleanly,
 		// as if the handler had succeeded. A panic is not success: force the error branch
 		// (CloseWithError) so a transport still reading the request body sees a failure, not a clean
-		// end of stream, matching how a returned handler error is already treated.
-		handlerErr = errHandlerPanicked
+		// end of stream, matching how a returned handler error is already treated. ConvertRecover
+		// preserves the panic value for the reader while marking the error as recovered.
+		handlerErr = runtime.ConvertRecover(panicValue)
 	}
 
 	finishErr := stream.finish(handlerErr)

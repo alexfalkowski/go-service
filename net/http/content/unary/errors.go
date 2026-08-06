@@ -8,4 +8,5 @@ import "github.com/alexfalkowski/go-service/v2/errors"
 // parses but resolves to no registered codec. See [Content.NewFromRequestBody].
 var ErrUnsupportedRequestMedia = errors.New("unary: unsupported request media")
 
-var errUnavailableResponseCodec = errors.New("unary: unavailable response codec")
+// ErrUnsupportedMedia is returned when a selected unary media type has no registered codec.
+var ErrUnsupportedMedia = errors.New("unary: unsupported media")

@@ -17,6 +17,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -583,7 +584,9 @@ func TestRequestStreamClosesPipeOnHandlerPanic(t *testing.T) {
 	})
 
 	select {
-	case <-readDone:
+	case err := <-readDone:
+		require.ErrorIs(t, err, runtime.ErrRecovered)
+		require.EqualError(t, err, "recovered: boom")
 	case <-time.After(2 * time.Second):
 		t.Fatal("pipe reader never unblocked after handler panic")
 	}
