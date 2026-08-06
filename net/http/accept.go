@@ -1,4 +1,4 @@
-package accept
+package http
 
 import (
 	"mime"
@@ -8,21 +8,21 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// Items splits header, an HTTP list-valued header value, into its items.
+// AcceptItems splits an Accept header value into its items.
 //
 // It splits on the first unquoted comma per RFC 9110 list syntax (https://www.rfc-editor.org/rfc/rfc9110#section-5.6.1),
 // so a comma inside a quoted parameter value does not split the list. A backslash inside a quoted value
 // escapes the next character, including a quote or comma, per the quoted-pair rule.
 //
 // Surrounding whitespace around each returned item is trimmed. A malformed value (an unterminated quote)
-// is returned as a single item, so Items always returns at least one item.
+// is returned as a single item, so AcceptItems always returns at least one item.
 //
 // Examples:
 //
-//	Items(`application/json`)                                  // ["application/json"]
-//	Items(`application/json, text/html`)                       // ["application/json", "text/html"]
-//	Items(`application/yaml; profile="a,b", application/toml`) // [`application/yaml; profile="a,b"`, "application/toml"]
-func Items(header string) []string {
+//	AcceptItems(`application/json`)                                  // ["application/json"]
+//	AcceptItems(`application/json, text/html`)                       // ["application/json", "text/html"]
+//	AcceptItems(`application/yaml; profile="a,b", application/toml`) // [`application/yaml; profile="a,b"`, "application/toml"]
+func AcceptItems(header string) []string {
 	var items []string
 
 	quoted := false
@@ -59,16 +59,16 @@ func Items(header string) []string {
 	return append(items, strings.TrimSpace(header[start:]))
 }
 
-// First returns the first item of header; see [Items] for the splitting rules.
-func First(header string) string {
-	return Items(header)[0]
+// FirstAcceptItem returns the first item of header; see [AcceptItems] for the splitting rules.
+func FirstAcceptItem(header string) string {
+	return AcceptItems(header)[0]
 }
 
-// IsZeroQuality reports whether item's q parameter is present and exactly zero — the RFC 9110 §12.4.2
+// IsAcceptZeroQuality reports whether item's q parameter is present and exactly zero — the RFC 9110 §12.4.2
 // signal that item is not acceptable at all, distinct from a q value used only to order preference among
 // otherwise-acceptable items. A missing, unparsable, or nonzero q is not zero quality; this only answers
 // the exclusion question, not full quality-value ordering.
-func IsZeroQuality(item string) bool {
+func IsAcceptZeroQuality(item string) bool {
 	_, params, err := mime.ParseMediaType(item)
 	if err != nil {
 		return false
@@ -84,11 +84,11 @@ func IsZeroQuality(item string) bool {
 	return err == nil && value == 0
 }
 
-// IsWildcard reports whether value is a wildcard media range — "*/*" or "type/*" — that is satisfied by
+// IsAcceptWildcard reports whether value is a wildcard media range — "*/*" or "type/*" — that is satisfied by
 // target, a concrete media type a caller can produce: "*" matches any major type, and a concrete major
 // type only matches target's own major type, so "text/*" does not satisfy an "application/x-ndjson"
 // target the way "*/*" or "application/*" does.
-func IsWildcard(value, target media.Type) bool {
+func IsAcceptWildcard(value, target media.Type) bool {
 	if value.Subtype() != "*" {
 		return false
 	}
