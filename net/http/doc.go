@@ -10,6 +10,7 @@
 //     metrics are enabled,
 //   - Router, which registers handlers on a mux together with route policy used by transport middleware,
 //   - Pattern and ParseServiceMethod, which help standardize route naming for telemetry.
+//   - AcceptItems, FirstAcceptItem, IsAcceptZeroQuality, and IsAcceptWildcard, which support Accept header handling.
 //
 // Server construction reads timeout keys from options.Map (`read_timeout`, `write_timeout`,
 // `idle_timeout`, `read_header_timeout`) and also supports `max_header_bytes` as an SI size string.

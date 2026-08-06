@@ -4,7 +4,7 @@ import (
 	"mime"
 
 	"github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http/accept"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 )
 
@@ -85,10 +85,10 @@ type streamAcceptMatch struct {
 // streamKinds entry, and if so, which media type to resolve.
 //
 // It finds the most specific reference to the parameterless producible type present anywhere in the list —
-// an exact subtype match without non-quality parameters, else a "type/*" wildcard [accept.IsWildcard]
+// an exact subtype match without non-quality parameters, else a "type/*" wildcard [http.IsAcceptWildcard]
 // reports as satisfied by [ndjsonType] without non-quality parameters ("text/*" does not satisfy an
 // "application/x-ndjson" route the way "*/*" or "application/*" does), else the bare "*/*" wildcard —
-// and returns satisfiable only if that one reference is not [accept.IsZeroQuality]; a less specific
+// and returns satisfiable only if that one reference is not [http.IsAcceptZeroQuality]; a less specific
 // reference's own quality, zero or not, is irrelevant once a more specific reference is found. This matches
 // RFC 9110 §12.5.1's "most specific reference" rule regardless of list order. When satisfiable, it returns
 // the exact match's media type if the controlling reference was one, otherwise [media.NDJSON]. An
@@ -97,7 +97,7 @@ type streamAcceptMatch struct {
 func matchStreamAccept(header string) (string, bool) {
 	var best streamAcceptMatch
 
-	for _, item := range accept.Items(header) {
+	for _, item := range http.AcceptItems(header) {
 		candidate := matchStreamRange(item)
 		if candidate.specificity > best.specificity {
 			best = candidate
@@ -113,7 +113,7 @@ func matchStreamRange(item string) streamAcceptMatch {
 		return streamAcceptMatch{}
 	}
 
-	match := streamAcceptMatch{zeroQuality: accept.IsZeroQuality(item)}
+	match := streamAcceptMatch{zeroQuality: http.IsAcceptZeroQuality(item)}
 	if _, ok := streamKinds[value.String()]; ok {
 		match.mediaType = value.String()
 		match.specificity = exactStreamMatch
@@ -121,7 +121,7 @@ func matchStreamRange(item string) streamAcceptMatch {
 		return match
 	}
 
-	if !accept.IsWildcard(value, ndjsonType) {
+	if !http.IsAcceptWildcard(value, ndjsonType) {
 		return streamAcceptMatch{}
 	}
 

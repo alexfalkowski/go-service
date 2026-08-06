@@ -1,14 +1,14 @@
-package accept_test
+package http_test
 
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/net/http/accept"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/stretchr/testify/require"
 )
 
-func TestItems(t *testing.T) {
+func TestAcceptItems(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -36,12 +36,12 @@ func TestItems(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			require.Equal(t, tt.expected, accept.Items(tt.header))
+			require.Equal(t, tt.expected, http.AcceptItems(tt.header))
 		})
 	}
 }
 
-func TestFirst(t *testing.T) {
+func TestFirstAcceptItem(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -63,12 +63,12 @@ func TestFirst(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			require.Equal(t, tt.expected, accept.First(tt.header))
+			require.Equal(t, tt.expected, http.FirstAcceptItem(tt.header))
 		})
 	}
 }
 
-func TestIsZeroQuality(t *testing.T) {
+func TestIsAcceptZeroQuality(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -89,12 +89,12 @@ func TestIsZeroQuality(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			require.Equal(t, tt.expected, accept.IsZeroQuality(tt.item))
+			require.Equal(t, tt.expected, http.IsAcceptZeroQuality(tt.item))
 		})
 	}
 }
 
-func TestIsWildcard(t *testing.T) {
+func TestIsAcceptWildcard(t *testing.T) {
 	t.Parallel()
 
 	target := media.MustParse(media.NDJSON)
@@ -118,7 +118,7 @@ func TestIsWildcard(t *testing.T) {
 			value, err := media.Parse(tt.value)
 			require.NoError(t, err)
 
-			require.Equal(t, tt.expected, accept.IsWildcard(value, target))
+			require.Equal(t, tt.expected, http.IsAcceptWildcard(value, target))
 		})
 	}
 }
