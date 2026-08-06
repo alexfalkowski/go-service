@@ -18,6 +18,35 @@ import (
 // [Reader.Exceeds] tells it the budget was spent, rather than asking Reader to build that error itself.
 var ErrExceeded = errors.New("budget: exceeded")
 
+// BufferedLen returns the number of bytes decoder has already pulled from its underlying reader for a
+// value it has not decoded yet, so a caller can subtract them from the raw bytes a [Reader] counted for
+// the value it just decoded (see [Reader.Exceeds]).
+//
+// This only recognizes decoders whose Buffered method matches [encoding/json.Decoder.Buffered]'s shape
+// and returns a concrete [bytes.Reader]. It returns 0 for any decoder that does not match, which is
+// always safe: the correction is skipped, not a wrong non-zero answer, so the check falls back to the
+// same "bound on reads attributed to one value" behavior documented on [Reader] rather than any
+// incorrect result.
+func BufferedLen(decoder stream.Decoder) int64 {
+	buffered, ok := decoder.(interface{ Buffered() io.Reader })
+	if !ok {
+		return 0
+	}
+
+	reader, ok := buffered.Buffered().(*bytes.Reader)
+	if !ok {
+		return 0
+	}
+
+	return int64(reader.Len())
+}
+
+// NewReader constructs a Reader wrapping r with a per-value byte budget of limit. limit <= 0 disables
+// the budget entirely.
+func NewReader(r io.Reader, limit int64) *Reader {
+	return &Reader{r: r, max: limit}
+}
+
 // Reader wraps an [io.Reader] with a resettable per-value byte budget, so a stream decoder bound to it
 // for a whole body gets a per-value cap rather than a cumulative one. The caller resets the budget via
 // [Reader.Reset] at the exact point a decoded value boundary is known.
@@ -37,12 +66,6 @@ type Reader struct {
 	r    io.Reader
 	max  int64
 	read int64
-}
-
-// NewReader constructs a Reader wrapping r with a per-value byte budget of limit. limit <= 0 disables
-// the budget entirely.
-func NewReader(r io.Reader, limit int64) *Reader {
-	return &Reader{r: r, max: limit}
 }
 
 // Reset rearms the byte counter for the next decoded value. bufferedAhead has already been read from the
@@ -66,15 +89,6 @@ func (r *Reader) Exceeds(bufferedAhead int64) bool {
 	attributed := max(r.read-bufferedAhead, 0)
 
 	return attributed > r.max
-}
-
-// exceededLive reports the same live, uncorrected condition [Reader.Read] and [Reader.Err] both answer:
-// the budget is enabled and the raw count since the last [Reader.Reset] already exceeds it. This needs
-// no cached "latched" state of its own — r.read only advances when Read actually reads more from r,
-// which it refuses to do once this already reports true, so re-evaluating it on every call is exactly as
-// sticky as caching its first result would be, without an extra field to keep in sync with Reset.
-func (r *Reader) exceededLive() bool {
-	return r.max > 0 && r.read > r.max
 }
 
 // Read implements [io.Reader]. Once the bytes read since the last [Reader.Reset] already exceed the
@@ -102,25 +116,11 @@ func (r *Reader) Err() error {
 	return nil
 }
 
-// BufferedLen returns the number of bytes decoder has already pulled from its underlying reader for a
-// value it has not decoded yet, so a caller can subtract them from the raw bytes a [Reader] counted for
-// the value it just decoded (see [Reader.Exceeds]).
-//
-// This only recognizes decoders whose Buffered method matches [encoding/json.Decoder.Buffered]'s shape
-// and returns a concrete [bytes.Reader]. It returns 0 for any decoder that does not match, which is
-// always safe: the correction is skipped, not a wrong non-zero answer, so the check falls back to the
-// same "bound on reads attributed to one value" behavior documented on [Reader] rather than any
-// incorrect result.
-func BufferedLen(decoder stream.Decoder) int64 {
-	buffered, ok := decoder.(interface{ Buffered() io.Reader })
-	if !ok {
-		return 0
-	}
-
-	reader, ok := buffered.Buffered().(*bytes.Reader)
-	if !ok {
-		return 0
-	}
-
-	return int64(reader.Len())
+// exceededLive reports the same live, uncorrected condition [Reader.Read] and [Reader.Err] both answer:
+// the budget is enabled and the raw count since the last [Reader.Reset] already exceeds it. This needs
+// no cached "latched" state of its own — r.read only advances when Read actually reads more from r,
+// which it refuses to do once this already reports true, so re-evaluating it on every call is exactly as
+// sticky as caching its first result would be, without an extra field to keep in sync with Reset.
+func (r *Reader) exceededLive() bool {
+	return r.max > 0 && r.read > r.max
 }
