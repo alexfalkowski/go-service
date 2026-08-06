@@ -332,6 +332,25 @@ func TestDoReturnsEncodeErrorFromNewRequest(t *testing.T) {
 	require.ErrorIs(t, err, test.ErrFailed)
 }
 
+func TestDoRejectsUnavailableRequestCodec(t *testing.T) {
+	enc := encoding.NewMap()
+	enc.Register("json", nil)
+	unaryContent := unary.NewContent(enc, test.Pool)
+
+	roundTripped := false
+	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
+		roundTripped = true
+		return nil, test.ErrFailed
+	})
+	c := client.NewClient(unaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(rt))
+
+	err := c.Post(t.Context(), "http://example.com", client.Options{ContentType: media.JSON, Request: &test.Request{Name: "Bob"}})
+
+	require.ErrorIs(t, err, unary.ErrUnsupportedMedia)
+	require.EqualError(t, err, "http: encode: unary: unsupported media")
+	require.False(t, roundTripped)
+}
+
 func TestDoReturnsNewRequestError(t *testing.T) {
 	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
 
@@ -384,6 +403,26 @@ func TestDoReturnsDecodeError(t *testing.T) {
 
 	require.Error(t, err)
 	require.ErrorIs(t, err, test.ErrFailed)
+}
+
+func TestDoRejectsUnavailableResponseCodec(t *testing.T) {
+	enc := encoding.NewMap()
+	enc.Register("json", nil)
+	unaryContent := unary.NewContent(enc, test.Pool)
+
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.Header().Set(http.ContentTypeKey, media.JSON)
+		_, _ = io.WriteString(res, "{}")
+	}))
+	t.Cleanup(server.Close)
+
+	c := client.NewClient(unaryContent, test.StreamContent, test.Pool)
+
+	var res test.Response
+	err := c.Get(t.Context(), server.URL, client.Options{Response: &res})
+
+	require.ErrorIs(t, err, unary.ErrUnsupportedMedia)
+	require.EqualError(t, err, "http: decode: unary: unsupported media")
 }
 
 func TestStreamReturnsCopyErrorFromCheckResponseStatus(t *testing.T) {

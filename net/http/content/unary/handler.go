@@ -81,7 +81,7 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 		res.Header().Set(http.ContentTypeKey, media.MustParse(mediaType.String()).WithUTF8())
 
 		if mediaType.Encoder == nil {
-			_ = status.WriteError(ctx, res, errUnavailableResponseCodec)
+			_ = status.WriteError(ctx, res, ErrUnsupportedMedia)
 
 			return
 		}
