@@ -8,8 +8,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	basebreaker "github.com/alexfalkowski/go-service/v2/transport/breaker"
+	"github.com/alexfalkowski/go-service/v2/time"
+	transportbreaker "github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -134,6 +136,85 @@ func TestUnaryClientInterceptorDoesNotOpenOnCallerCancellation(t *testing.T) {
 	}
 }
 
+func TestUnaryClientInterceptorDoesNotOpenOnExpiredCallerDeadline(t *testing.T) {
+	interceptor := breaker.UnaryClientInterceptor(
+		breaker.WithSettings(settings()),
+	)
+
+	expired, cancel := context.WithTimeout(t.Context(), 0)
+	t.Cleanup(cancel)
+	<-expired.Done()
+
+	calls := 0
+	invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.DeadlineExceeded, "caller deadline exceeded")
+	}
+
+	err := interceptor(expired, "/test.Service/GetBook", nil, nil, nil, invoker)
+	require.Error(t, err)
+	require.Equal(t, codes.DeadlineExceeded, status.Code(err))
+
+	err = interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, 2, calls)
+}
+
+func TestUnaryClientInterceptorOpensOnRemoteDeadline(t *testing.T) {
+	interceptor := breaker.UnaryClientInterceptor(
+		breaker.WithSettings(settings()),
+	)
+
+	calls := 0
+	invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.DeadlineExceeded, "remote deadline exceeded")
+	}
+
+	err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
+	require.Error(t, err)
+	require.Equal(t, codes.DeadlineExceeded, status.Code(err))
+
+	err = interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, invoker)
+	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+	require.Equal(t, 1, calls)
+}
+
+func TestUnaryClientInterceptorOpensOnAttemptDeadline(t *testing.T) {
+	interceptor := breaker.UnaryClientInterceptor(
+		breaker.WithSettings(settings()),
+	)
+	retryConfig := test.NewGRPCRetryConfig(1, time.Nanosecond)
+	retryConfig.Timeout = 10 * time.Millisecond
+	retrying := retry.UnaryClientInterceptor(retryConfig)
+
+	calls := 0
+	attempt := func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, callOpts ...grpc.CallOption) error {
+		return interceptor(ctx, fullMethod, req, resp, conn, func(ctx context.Context, _ string, _ any, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
+			calls++
+			<-ctx.Done()
+			return status.Error(codes.DeadlineExceeded, "attempt deadline exceeded")
+		}, callOpts...)
+	}
+	err := retrying(t.Context(), "/test.Service/GetBook", nil, nil, nil, attempt)
+	require.Error(t, err)
+	require.Equal(t, codes.DeadlineExceeded, status.Code(err))
+
+	err = interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return nil
+	})
+	require.Error(t, err)
+	require.True(t, status.IsLocalError(err))
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+	require.Equal(t, 1, calls)
+}
+
 func TestUnaryClientInterceptorIsolatesBreakersByFullMethod(t *testing.T) {
 	interceptor := breaker.UnaryClientInterceptor(
 		breaker.WithSettings(settings()),
@@ -171,9 +252,9 @@ func TestUnaryClientInterceptorIsolatesBreakersByFullMethod(t *testing.T) {
 	})
 }
 
-func settings(isSuccessful ...func(error) bool) breaker.Settings {
-	settings := breaker.Settings{
-		ReadyToTrip: func(counts basebreaker.Counts) bool {
+func settings(isSuccessful ...func(error) bool) transportbreaker.Settings {
+	settings := transportbreaker.Settings{
+		ReadyToTrip: func(counts transportbreaker.Counts) bool {
 			return counts.ConsecutiveFailures >= 1
 		},
 	}

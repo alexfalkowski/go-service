@@ -31,7 +31,8 @@ type Settings = breaker.Settings
 //
 // The interceptor counts failures based on gRPC status codes. By default it treats a subset of transient/server
 // codes as failures (see [WithFailureCodes] and the defaults in `defaultOpts`). Calls that return other codes
-// do not contribute to opening the breaker.
+// do not contribute to opening the breaker. A context that is already deadline-exceeded before the invocation
+// bypasses breaker accounting, because it provides no downstream-health signal.
 //
 // # Error mapping
 //
@@ -49,6 +50,10 @@ func UnaryClientInterceptor(options ...Option) grpc.UnaryClientInterceptor {
 	r := &registry{opts: o, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
 
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, callOpts ...grpc.CallOption) error {
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			return invoker(ctx, fullMethod, req, resp, conn, callOpts...)
+		}
+
 		cb := r.get(fullMethod)
 		_, err := cb.Execute(func() (any, error) {
 			return nil, invoker(ctx, fullMethod, req, resp, conn, callOpts...)
