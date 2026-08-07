@@ -2,6 +2,7 @@ package health_test
 
 import (
 	"testing"
+	"testing/synctest"
 
 	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -13,19 +14,21 @@ import (
 )
 
 func TestNewServerStopsWithLifecycle(t *testing.T) {
-	checker := newLifecycleChecker()
-	reg := server.NewRegistration("lifecycle", time.Millisecond.Duration(), checker)
-	lc := fxtest.NewLifecycle(t)
-	srv := health.NewServer(lc)
+	synctest.Test(t, func(t *testing.T) {
+		checker := newLifecycleChecker()
+		reg := server.NewRegistration("lifecycle", time.Millisecond.Duration(), checker)
+		lc := fxtest.NewLifecycle(t)
+		srv := health.NewServer(lc)
 
-	srv.Register("test", reg)
-	require.NoError(t, srv.Observe("test", "healthz", "lifecycle"))
+		srv.Register("test", reg)
+		require.NoError(t, srv.Observe("test", "healthz", "lifecycle"))
 
-	require.NoError(t, lc.Start(t.Context()))
-	checker.waitForRunning(t)
+		require.NoError(t, lc.Start(t.Context()))
+		checker.waitForRunning(t)
 
-	require.NoError(t, lc.Stop(t.Context()))
-	checker.waitForStopped(t)
+		require.NoError(t, lc.Stop(t.Context()))
+		checker.waitForStopped(t)
+	})
 }
 
 type lifecycleChecker struct {

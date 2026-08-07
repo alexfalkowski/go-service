@@ -3,6 +3,7 @@ package client_test
 import (
 	"net/http/httptest"
 	"testing"
+	"testing/synctest"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -563,33 +564,35 @@ func TestStreamClosesResponseBodyOnHandlerPanic(t *testing.T) {
 }
 
 func TestRequestStreamClosesPipeOnHandlerPanic(t *testing.T) {
-	readDone := make(chan error, 1)
+	synctest.Test(t, func(t *testing.T) {
+		readDone := make(chan error, 1)
 
-	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		go func() {
-			_, _, err := io.ReadAll(req.Body)
-			readDone <- err
-		}()
+		rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			go func() {
+				_, _, err := io.ReadAll(req.Body)
+				readDone <- err
+			}()
 
-		return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody, Request: req}, nil
+			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody, Request: req}, nil
+		})
+
+		c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(rt))
+
+		require.PanicsWithValue(t, "boom", func() {
+			_ = c.RequestStream(t.Context(), http.MethodPost, "http://example.com", client.Options{ContentType: media.NDJSON},
+				func(_ context.Context, _ *client.RequestResponseStream) error {
+					panic("boom")
+				})
+		})
+
+		select {
+		case err := <-readDone:
+			require.ErrorIs(t, err, runtime.ErrRecovered)
+			require.EqualError(t, err, "recovered: boom")
+		case <-time.After(2 * time.Second):
+			t.Fatal("pipe reader never unblocked after handler panic")
+		}
 	})
-
-	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(rt))
-
-	require.PanicsWithValue(t, "boom", func() {
-		_ = c.RequestStream(t.Context(), http.MethodPost, "http://example.com", client.Options{ContentType: media.NDJSON},
-			func(_ context.Context, _ *client.RequestResponseStream) error {
-				panic("boom")
-			})
-	})
-
-	select {
-	case err := <-readDone:
-		require.ErrorIs(t, err, runtime.ErrRecovered)
-		require.EqualError(t, err, "recovered: boom")
-	case <-time.After(2 * time.Second):
-		t.Fatal("pipe reader never unblocked after handler panic")
-	}
 }
 
 func TestStreamSurvivesSlowValuesWithConfiguredUnaryTimeout(t *testing.T) {

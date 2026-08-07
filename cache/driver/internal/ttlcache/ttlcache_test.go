@@ -2,13 +2,13 @@ package ttlcache_test
 
 import (
 	"testing"
+	"testing/synctest"
 
 	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
 	cachettl "github.com/alexfalkowski/go-service/v2/cache/driver/internal/ttlcache"
 	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
@@ -56,16 +56,15 @@ func TestDriverPings(t *testing.T) {
 }
 
 func TestDriverExpiresEntries(t *testing.T) {
-	d := cachettl.NewDriver(config.DefaultMaxEntries)
+	synctest.Test(t, func(t *testing.T) {
+		d := cachettl.NewDriver(config.DefaultMaxEntries)
 
-	require.NoError(t, d.Save(t.Context(), "key", "value", time.Nanosecond))
+		require.NoError(t, d.Save(t.Context(), "key", "value", time.Nanosecond))
+		time.Sleep(2 * time.Nanosecond)
 
-	var missing error
-	require.Eventually(t, func() bool {
-		_, missing = d.Get(t.Context(), "key")
-		return drivererrors.IsMissingError(missing)
-	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
-	require.ErrorIs(t, missing, drivererrors.ErrMissing)
+		_, err := d.Get(t.Context(), "key")
+		require.ErrorIs(t, err, drivererrors.ErrMissing)
+	})
 }
 
 func TestDriverEvictsEntryAtCapacity(t *testing.T) {
@@ -91,17 +90,18 @@ func TestDriverEvictsEntryAtCapacity(t *testing.T) {
 }
 
 func TestDriverCleansExpiredEntriesOnSave(t *testing.T) {
-	d := cachettl.NewDriver(1)
+	synctest.Test(t, func(t *testing.T) {
+		d := cachettl.NewDriver(1)
 
-	require.NoError(t, d.Save(t.Context(), "expired", "old", time.Nanosecond))
-	require.Eventually(t, func() bool {
+		require.NoError(t, d.Save(t.Context(), "expired", "old", time.Nanosecond))
+		time.Sleep(2 * time.Nanosecond)
 		require.NoError(t, d.Save(t.Context(), "new", "value", 0))
 
 		_, err := d.Get(t.Context(), "expired")
-		return errors.Is(err, drivererrors.ErrMissing)
-	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
+		require.ErrorIs(t, err, drivererrors.ErrMissing)
 
-	value, err := d.Get(t.Context(), "new")
-	require.NoError(t, err)
-	require.Equal(t, "value", value)
+		value, err := d.Get(t.Context(), "new")
+		require.NoError(t, err)
+		require.Equal(t, "value", value)
+	})
 }

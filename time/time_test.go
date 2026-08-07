@@ -2,24 +2,23 @@ package time_test
 
 import (
 	"testing"
+	"testing/synctest"
 
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewTimer(t *testing.T) {
-	timer := time.NewTimer(time.Nanosecond)
-	require.NotNil(t, timer)
-	t.Cleanup(func() {
-		timer.Stop()
-	})
+	synctest.Test(t, func(t *testing.T) {
+		timer := time.NewTimer(time.Nanosecond)
+		require.NotNil(t, timer)
+		t.Cleanup(func() {
+			timer.Stop()
+		})
 
-	select {
-	case tm := <-timer.C:
+		tm := <-timer.C
 		require.False(t, tm.IsZero())
-	case <-time.After(time.Second):
-		require.FailNow(t, "timed out waiting for timer")
-	}
+	})
 }
 
 func TestUntil(t *testing.T) {

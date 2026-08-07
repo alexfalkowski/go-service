@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"net/http/httptest"
 	"testing"
+	"testing/synctest"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
@@ -93,40 +94,42 @@ func TestNewLazyHandlerDoesNotEnforceLimitMidStream(t *testing.T) {
 }
 
 func TestNewLazyHandlerStreamsBodyIncrementally(t *testing.T) {
-	pipeReader, pipeWriter := io.Pipe()
+	synctest.Test(t, func(t *testing.T) {
+		pipeReader, pipeWriter := io.Pipe()
 
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "/test", pipeReader)
-	require.NoError(t, err)
-	req.ContentLength = -1
+		req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "/test", pipeReader)
+		require.NoError(t, err)
+		req.ContentLength = -1
 
-	res := httptest.NewRecorder()
-	lines := make(chan string, 2)
-	done := make(chan struct{})
+		res := httptest.NewRecorder()
+		lines := make(chan string, 2)
+		done := make(chan struct{})
 
-	handler := body.NewLazyHandler(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
-		reader := bufio.NewReader(req.Body)
+		handler := body.NewLazyHandler(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
+			reader := bufio.NewReader(req.Body)
 
-		for range 2 {
-			line, lineErr := reader.ReadString('\n')
-			require.NoError(t, lineErr)
-			lines <- line
-		}
+			for range 2 {
+				line, lineErr := reader.ReadString('\n')
+				require.NoError(t, lineErr)
+				lines <- line
+			}
 
-		close(done)
-	}), 1024)
+			close(done)
+		}), 1024)
 
-	go handler.ServeHTTP(res, req)
+		go handler.ServeHTTP(res, req)
 
-	_, err = pipeWriter.Write([]byte("one\n"))
-	require.NoError(t, err)
-	requireLine(t, lines, "one\n")
+		_, err = pipeWriter.Write([]byte("one\n"))
+		require.NoError(t, err)
+		requireLine(t, lines, "one\n")
 
-	_, err = pipeWriter.Write([]byte("two\n"))
-	require.NoError(t, err)
-	requireLine(t, lines, "two\n")
+		_, err = pipeWriter.Write([]byte("two\n"))
+		require.NoError(t, err)
+		requireLine(t, lines, "two\n")
 
-	require.NoError(t, pipeWriter.Close())
-	requireDone(t, done)
+		require.NoError(t, pipeWriter.Close())
+		requireDone(t, done)
+	})
 }
 
 func requireLine(tb testing.TB, lines chan string, want string) {

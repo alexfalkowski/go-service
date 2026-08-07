@@ -2,6 +2,7 @@ package server_test
 
 import (
 	"testing"
+	"testing/synctest"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -13,60 +14,66 @@ import (
 )
 
 func TestStartRequestsShutdownOnServeError(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
-	l, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
-	require.NoError(t, err)
-	sh := test.NewShutdowner()
-	srv := test.NewObservableServer(test.ErrFailed, nil)
-	svc := server.NewService("test", srv, l, sh)
+	synctest.Test(t, func(t *testing.T) {
+		lc := fxtest.NewLifecycle(t)
+		l, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
+		require.NoError(t, err)
+		sh := test.NewShutdowner()
+		srv := test.NewObservableServer(test.ErrFailed, nil)
+		svc := server.NewService("test", srv, l, sh)
 
-	svc.Start()
+		svc.Start()
 
-	select {
-	case <-srv.Done:
-	case <-time.After(2 * time.Second):
-		require.FailNow(t, "timeout waiting for server to serve")
-	}
+		select {
+		case <-srv.Done:
+		case <-time.After(2 * time.Second):
+			require.FailNow(t, "timeout waiting for server to serve")
+		}
 
-	select {
-	case <-sh.Done():
-	case <-time.After(2 * time.Second):
-		require.FailNow(t, "timeout waiting for shutdown")
-	}
+		select {
+		case <-sh.Done():
+		case <-time.After(2 * time.Second):
+			require.FailNow(t, "timeout waiting for shutdown")
+		}
 
-	require.True(t, sh.Called())
+		require.True(t, sh.Called())
+	})
 }
 
 func TestStartDoesNotShutdownOnNilServeReturn(t *testing.T) {
-	sh := test.NewShutdowner()
-	srv := test.NewObservableServer(nil, nil)
-	svc := server.NewService("test", srv, nil, sh)
+	synctest.Test(t, func(t *testing.T) {
+		sh := test.NewShutdowner()
+		srv := test.NewObservableServer(nil, nil)
+		svc := server.NewService("test", srv, nil, sh)
 
-	svc.Start()
+		svc.Start()
 
-	select {
-	case <-srv.Done:
-	case <-time.After(2 * time.Second):
-		require.FailNow(t, "timeout waiting for server to serve")
-	}
+		select {
+		case <-srv.Done:
+		case <-time.After(2 * time.Second):
+			require.FailNow(t, "timeout waiting for server to serve")
+		}
 
-	require.False(t, sh.Called())
+		require.False(t, sh.Called())
 
-	require.NoError(t, svc.Stop(t.Context()))
+		require.NoError(t, svc.Stop(t.Context()))
+	})
 }
 
 func TestStartReturnsWhileServeIsRunning(t *testing.T) {
-	sh := test.NewShutdowner()
-	srv := newBlockingServer()
-	svc := server.NewService("test", srv, nil, sh)
+	synctest.Test(t, func(t *testing.T) {
+		sh := test.NewShutdowner()
+		srv := newBlockingServer()
+		svc := server.NewService("test", srv, nil, sh)
 
-	startDone := startService(svc)
+		startDone := startService(svc)
 
-	requireStartReturned(t, startDone, srv)
-	requireServeStarted(t, srv)
+		requireStartReturned(t, startDone, srv)
+		requireServeStarted(t, srv)
 
-	require.NoError(t, svc.Stop(t.Context()))
-	require.False(t, sh.Called())
+		require.NoError(t, svc.Stop(t.Context()))
+		require.False(t, sh.Called())
+	})
 }
 
 func TestInvalidStop(t *testing.T) {

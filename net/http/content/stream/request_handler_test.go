@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"net/http/httptest"
 	"testing"
+	"testing/synctest"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -211,53 +212,55 @@ func TestNewRequestHandlerReturnsServiceUnavailableOnDrainBeforeHandler(t *testi
 }
 
 func TestNewRequestHandlerUnblocksRecvOnDrain(t *testing.T) {
-	drain := make(chan struct{})
-	pipeReader, pipeWriter := io.Pipe()
-	defer pipeWriter.Close()
-	started := make(chan struct{})
-	recvErr := make(chan error, 1)
-	handler := contentstream.NewRequestHandler(
-		test.StreamContent,
-		contentstream.Options{Drain: drain},
-		func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
-			close(started)
+	synctest.Test(t, func(t *testing.T) {
+		drain := make(chan struct{})
+		pipeReader, pipeWriter := io.Pipe()
+		defer pipeWriter.Close()
+		started := make(chan struct{})
+		recvErr := make(chan error, 1)
+		handler := contentstream.NewRequestHandler(
+			test.StreamContent,
+			contentstream.Options{Drain: drain},
+			func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+				close(started)
 
-			_, err := stream.Recv()
-			recvErr <- err
+				_, err := stream.Recv()
+				recvErr <- err
 
-			return err
-		},
-	)
+				return err
+			},
+		)
 
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
-	req.ProtoMajor = 2
-	req.ContentLength = -1
-	req.Header.Set(http.ContentTypeKey, media.NDJSON)
-	req.Header.Set(http.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-	done := make(chan struct{})
+		req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
+		req.ProtoMajor = 2
+		req.ContentLength = -1
+		req.Header.Set(http.ContentTypeKey, media.NDJSON)
+		req.Header.Set(http.AcceptKey, media.NDJSON)
+		res := httptest.NewRecorder()
+		done := make(chan struct{})
 
-	go func() {
-		handler.ServeHTTP(res, req)
-		close(done)
-	}()
+		go func() {
+			handler.ServeHTTP(res, req)
+			close(done)
+		}()
 
-	select {
-	case <-started:
-	case <-time.After(time.Second):
-		require.FailNow(t, "timed out waiting for handler to start receiving")
-	}
+		select {
+		case <-started:
+		case <-time.After(time.Second):
+			require.FailNow(t, "timed out waiting for handler to start receiving")
+		}
 
-	close(drain)
+		close(drain)
 
-	select {
-	case <-done:
-	case <-time.After(time.Second):
-		require.FailNow(t, "timed out waiting for drain to unblock receive")
-	}
+		select {
+		case <-done:
+		case <-time.After(time.Second):
+			require.FailNow(t, "timed out waiting for drain to unblock receive")
+		}
 
-	require.ErrorIs(t, <-recvErr, contentstream.ErrDraining)
-	require.Equal(t, http.StatusServiceUnavailable, res.Code)
+		require.ErrorIs(t, <-recvErr, contentstream.ErrDraining)
+		require.Equal(t, http.StatusServiceUnavailable, res.Code)
+	})
 }
 
 func TestNewRequestHandlerRecvRejectsValueWhenDrainStartsAfterDecode(t *testing.T) {
@@ -481,43 +484,45 @@ func TestNewRequestHandlerRecvUnderCapSucceeds(t *testing.T) {
 }
 
 func TestNewRequestHandlerRecvDeliversScalarValueAtExactCap(t *testing.T) {
-	pipeReader, pipeWriter := io.Pipe()
+	synctest.Test(t, func(t *testing.T) {
+		pipeReader, pipeWriter := io.Pipe()
 
-	opts := contentstream.Options{MaxReceiveSize: bytes.Size(2)}
-	handler := contentstream.NewRequestHandler(test.StreamContent, opts, func(_ context.Context, stream *contentstream.RequestStream[int, int]) error {
-		req, err := stream.Recv()
-		if err != nil {
-			return err
+		opts := contentstream.Options{MaxReceiveSize: bytes.Size(2)}
+		handler := contentstream.NewRequestHandler(test.StreamContent, opts, func(_ context.Context, stream *contentstream.RequestStream[int, int]) error {
+			req, err := stream.Recv()
+			if err != nil {
+				return err
+			}
+
+			return stream.Send(req)
+		})
+
+		req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
+		req.ProtoMajor = 2
+		req.ContentLength = -1
+		req.Header.Set(http.ContentTypeKey, media.NDJSON)
+		req.Header.Set(http.AcceptKey, media.NDJSON)
+		res := httptest.NewRecorder()
+
+		done := make(chan struct{})
+		go func() {
+			handler.ServeHTTP(res, req)
+			close(done)
+		}()
+
+		_, err := pipeWriter.Write([]byte("42"))
+		require.NoError(t, err)
+		require.NoError(t, pipeWriter.Close())
+
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			require.FailNow(t, "timed out waiting for handler to finish")
 		}
 
-		return stream.Send(req)
+		require.Equal(t, http.StatusOK, res.Code)
+		require.Equal(t, "42\n", res.Body.String())
 	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
-	req.ProtoMajor = 2
-	req.ContentLength = -1
-	req.Header.Set(http.ContentTypeKey, media.NDJSON)
-	req.Header.Set(http.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
-
-	done := make(chan struct{})
-	go func() {
-		handler.ServeHTTP(res, req)
-		close(done)
-	}()
-
-	_, err := pipeWriter.Write([]byte("42"))
-	require.NoError(t, err)
-	require.NoError(t, pipeWriter.Close())
-
-	select {
-	case <-done:
-	case <-time.After(2 * time.Second):
-		require.FailNow(t, "timed out waiting for handler to finish")
-	}
-
-	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, "42\n", res.Body.String())
 }
 
 func TestNewRequestHandlerRecvRejectsValueOverCap(t *testing.T) {
@@ -633,57 +638,59 @@ func TestNewRequestHandlerRecvRejectsValueOverCapRegardlessOfDecoderBehavior(t *
 }
 
 func TestNewRequestHandlerRecvCapIsPerValueNotCumulative(t *testing.T) {
-	const values = 10
+	synctest.Test(t, func(t *testing.T) {
+		const values = 10
 
-	var names []string
+		var names []string
 
-	pipeReader, pipeWriter := io.Pipe()
+		pipeReader, pipeWriter := io.Pipe()
 
-	opts := contentstream.Options{MaxReceiveSize: 24}
-	handler := contentstream.NewRequestHandler(
-		test.StreamContent,
-		opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
-			for {
-				req, err := stream.Recv()
-				if err != nil {
-					if stream.IsFinished(err) {
-						return nil
+		opts := contentstream.Options{MaxReceiveSize: 24}
+		handler := contentstream.NewRequestHandler(
+			test.StreamContent,
+			opts, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+				for {
+					req, err := stream.Recv()
+					if err != nil {
+						if stream.IsFinished(err) {
+							return nil
+						}
+
+						return err
 					}
 
-					return err
+					names = append(names, req.Name)
 				}
+			})
 
-				names = append(names, req.Name)
-			}
-		})
+		req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
+		req.ProtoMajor = 2
+		req.ContentLength = -1
+		req.Header.Set(http.ContentTypeKey, media.NDJSON)
+		req.Header.Set(http.AcceptKey, media.NDJSON)
+		res := httptest.NewRecorder()
 
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", pipeReader)
-	req.ProtoMajor = 2
-	req.ContentLength = -1
-	req.Header.Set(http.ContentTypeKey, media.NDJSON)
-	req.Header.Set(http.AcceptKey, media.NDJSON)
-	res := httptest.NewRecorder()
+		done := make(chan struct{})
+		go func() {
+			handler.ServeHTTP(res, req)
+			close(done)
+		}()
 
-	done := make(chan struct{})
-	go func() {
-		handler.ServeHTTP(res, req)
-		close(done)
-	}()
+		for range values {
+			_, err := pipeWriter.Write([]byte("{\"Name\":\"Bob\"}\n"))
+			require.NoError(t, err)
+		}
+		require.NoError(t, pipeWriter.Close())
 
-	for range values {
-		_, err := pipeWriter.Write([]byte("{\"Name\":\"Bob\"}\n"))
-		require.NoError(t, err)
-	}
-	require.NoError(t, pipeWriter.Close())
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			require.FailNow(t, "timed out waiting for handler to finish")
+		}
 
-	select {
-	case <-done:
-	case <-time.After(2 * time.Second):
-		require.FailNow(t, "timed out waiting for handler to finish")
-	}
-
-	require.Equal(t, http.StatusOK, res.Code)
-	require.Len(t, names, values)
+		require.Equal(t, http.StatusOK, res.Code)
+		require.Len(t, names, values)
+	})
 }
 
 func TestNewRequestHandlerRecvChargesOneLimiterTokenPerMessage(t *testing.T) {
