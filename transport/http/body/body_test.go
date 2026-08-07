@@ -14,7 +14,7 @@ import (
 
 func TestHandlerBuffersNonStreamingRoutes(t *testing.T) {
 	routePolicy := http.NewRoutePolicy()
-	routePolicy.Streaming("POST /stream")
+	http.NewRouter(http.NewServeMux(), routePolicy).HandleRoute("POST /stream", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), http.WithRouteStreaming())
 	handler := body.NewHandler(routePolicy, 1024)
 
 	t.Run("skips empty body buffering", func(t *testing.T) {
@@ -46,7 +46,7 @@ func TestHandlerBuffersNonStreamingRoutes(t *testing.T) {
 
 func TestHandlerDoesNotLimitRequestStreamingRoutesMidStream(t *testing.T) {
 	routePolicy := http.NewRoutePolicy()
-	routePolicy.Streaming("POST /stream")
+	http.NewRouter(http.NewServeMux(), routePolicy).HandleRoute("POST /stream", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), http.WithRouteStreaming())
 	handler := body.NewHandler(routePolicy, 64)
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "/stream", &test.UnknownLengthReader{Reader: strings.NewReader(strings.Repeat("a", 100))})
@@ -66,7 +66,7 @@ func TestHandlerDoesNotLimitRequestStreamingRoutesMidStream(t *testing.T) {
 
 func TestHandlerRejectsStreamingRouteContentLengthOverLimit(t *testing.T) {
 	routePolicy := http.NewRoutePolicy()
-	routePolicy.Streaming("POST /stream")
+	http.NewRouter(http.NewServeMux(), routePolicy).HandleRoute("POST /stream", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), http.WithRouteStreaming())
 	handler := body.NewHandler(routePolicy, 64)
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "/stream", strings.NewReader(strings.Repeat("a", 100)))

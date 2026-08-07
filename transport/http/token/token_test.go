@@ -93,7 +93,7 @@ func TestAccessHandler(t *testing.T) {
 	for _, tt := range accessHandlerTests {
 		t.Run(tt.name, func(t *testing.T) {
 			policy := http.NewRoutePolicy()
-			policy.Operation("GET /service/healthz")
+			http.NewRouter(http.NewServeMux(), policy).HandleRoute("GET /service/healthz", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), http.WithRouteOperation())
 			handler := token.NewAccessHandler(policy, tt.controller)
 			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, tt.path, http.NoBody)
 			require.NoError(t, err)

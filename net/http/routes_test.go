@@ -8,74 +8,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRoutePolicyClassifiesOperationPaths(t *testing.T) {
-	policy := http.NewRoutePolicy()
-	policy.Operation("GET /service/metrics")
-
-	tests := []struct {
-		name  string
-		path  string
-		match bool
-	}{
-		{name: "registered operation path", path: "/service/metrics", match: true},
-		{name: "nested metrics path", path: "/service/admin/metrics", match: false},
-		{name: "application metrics path", path: "/admin/metrics", match: false},
-		{name: "trailing slash", path: "/service/metrics/", match: false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, tt.path, http.NoBody)
-
-			require.Equal(t, tt.match, policy.IsOperation(req))
-		})
-	}
-}
-
-func TestRoutePolicyClassifiesUnauthenticatedRequests(t *testing.T) {
-	policy := http.NewRoutePolicy()
-	policy.AllowUnauthenticated("POST /events")
-
-	runRouteMatchCases(t, []routeMatchCase{
-		{name: "registered event receiver", method: http.MethodPost, path: "/events", match: true},
-		{name: "wrong method", method: http.MethodGet, path: "/events", match: false},
-		{name: "application event path", method: http.MethodPost, path: "/admin/events", match: false},
-		{name: "nested event path", method: http.MethodPost, path: "/events/foo", match: false},
-	}, policy.IsUnauthenticated)
-}
-
-func TestRoutePolicyClassifiesStreamingRequests(t *testing.T) {
-	policy := http.NewRoutePolicy()
-	policy.Streaming("POST /stream")
-
-	runRouteMatchCases(t, []routeMatchCase{
-		{name: "registered streaming route", method: http.MethodPost, path: "/stream", match: true},
-		{name: "wrong method", method: http.MethodGet, path: "/stream", match: false},
-		{name: "application streaming path", method: http.MethodPost, path: "/admin/stream", match: false},
-		{name: "nested streaming path", method: http.MethodPost, path: "/stream/foo", match: false},
-	}, policy.IsStreaming)
-}
-
-func TestRoutePolicyClassifiesRequestStreamingRequests(t *testing.T) {
-	policy := http.NewRoutePolicy()
-	policy.Streaming("POST /stream")
-
-	runRouteMatchCases(t, []routeMatchCase{
-		{name: "registered request streaming route", method: http.MethodPost, path: "/stream", match: true},
-		{name: "wrong method", method: http.MethodGet, path: "/stream", match: false},
-		{name: "application streaming path", method: http.MethodPost, path: "/admin/stream", match: false},
-		{name: "nested streaming path", method: http.MethodPost, path: "/stream/foo", match: false},
-	}, policy.IsRequestStreaming)
-}
-
 func TestRouterRegistersHandlerAndPolicy(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
 
-	router.HandleUnauthenticated("POST /events/{tenant}", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+	router.HandleRoute("POST /events/{tenant}", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 		res.WriteHeader(http.StatusAccepted)
-	}))
+	}), http.WithRouteUnauthenticated())
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/events/acme", http.NoBody)
 	res := httptest.NewRecorder()
@@ -87,41 +27,90 @@ func TestRouterRegistersHandlerAndPolicy(t *testing.T) {
 	require.Equal(t, http.StatusAccepted, res.Code)
 }
 
-func TestRouterRegistersHandlerAndStreamingPolicy(t *testing.T) {
-	mux := http.NewServeMux()
-	policy := http.NewRoutePolicy()
-	router := http.NewRouter(mux, policy)
+func TestRouterAppliesRouteOptions(t *testing.T) {
+	tests := []struct {
+		name              string
+		options           []http.RouteOption
+		operation         bool
+		unauthenticated   bool
+		requestStreaming  bool
+		responseStreaming bool
+	}{
+		{name: "operation", options: []http.RouteOption{http.WithRouteOperation()}, operation: true},
+		{name: "unauthenticated", options: []http.RouteOption{http.WithRouteUnauthenticated()}, unauthenticated: true},
+		{name: "request streaming", options: []http.RouteOption{http.WithRouteRequestStreaming()}, requestStreaming: true},
+		{name: "response streaming", options: []http.RouteOption{http.WithRouteResponseStreaming()}, responseStreaming: true},
+		{name: "streaming", options: []http.RouteOption{http.WithRouteStreaming()}, requestStreaming: true, responseStreaming: true},
+		{name: "combined streaming", options: []http.RouteOption{http.WithRouteRequestStreaming(), http.WithRouteResponseStreaming()}, requestStreaming: true, responseStreaming: true},
+		{
+			name:              "combined policy and streaming",
+			options:           []http.RouteOption{http.WithRouteOperation(), http.WithRouteUnauthenticated(), http.WithRouteResponseStreaming()},
+			operation:         true,
+			unauthenticated:   true,
+			responseStreaming: true,
+		},
+	}
 
-	router.HandleStreaming("POST /stream/{id}", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		res.WriteHeader(http.StatusOK)
-	}))
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/stream/acme", http.NoBody)
-	res := httptest.NewRecorder()
-
-	mux.ServeHTTP(res, req)
-
-	require.Equal(t, "POST /stream/{id}", req.Pattern)
-	require.True(t, policy.IsStreaming(req))
-	require.True(t, policy.IsRequestStreaming(req))
-	require.Equal(t, http.StatusOK, res.Code)
-}
-
-type routeMatchCase struct {
-	name   string
-	method string
-	path   string
-	match  bool
-}
-
-func runRouteMatchCases(t *testing.T, cases []routeMatchCase, check func(*http.Request) bool) {
-	t.Helper()
-
-	for _, tt := range cases {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequestWithContext(t.Context(), tt.method, tt.path, http.NoBody)
+			mux := http.NewServeMux()
+			policy := http.NewRoutePolicy()
+			router := http.NewRouter(mux, policy)
+			pattern := "POST /stream/{id}"
+			path := "/stream/acme"
+			if tt.operation {
+				pattern = "POST /stream"
+				path = "/stream"
+			}
 
-			require.Equal(t, tt.match, check(req))
+			router.HandleRoute(pattern, http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+				res.WriteHeader(http.StatusOK)
+			}), tt.options...)
+
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, path, http.NoBody)
+			res := httptest.NewRecorder()
+			mux.ServeHTTP(res, req)
+
+			require.Equal(t, pattern, req.Pattern)
+			require.Equal(t, tt.operation, policy.IsOperation(req))
+			require.Equal(t, tt.unauthenticated, policy.IsUnauthenticated(req))
+			require.Equal(t, tt.requestStreaming, policy.IsRequestStreaming(req))
+			require.Equal(t, tt.responseStreaming, policy.IsResponseStreaming(req))
+			require.Equal(t, http.StatusOK, res.Code)
+		})
+	}
+}
+
+func TestRoutePolicyFallsBackForEachRouteProperty(t *testing.T) {
+	tests := []struct {
+		name     string
+		options  []http.RouteOption
+		check    func(*http.RoutePolicy, *http.Request) bool
+		fallback http.RouteOption
+	}{
+		{
+			name:     "unauthenticated",
+			options:  []http.RouteOption{http.WithRouteResponseStreaming()},
+			check:    (*http.RoutePolicy).IsUnauthenticated,
+			fallback: http.WithRouteUnauthenticated(),
+		},
+		{
+			name:     "response streaming",
+			options:  []http.RouteOption{http.WithRouteUnauthenticated()},
+			check:    (*http.RoutePolicy).IsResponseStreaming,
+			fallback: http.WithRouteResponseStreaming(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			policy := http.NewRoutePolicy()
+			router := http.NewRouter(http.NewServeMux(), policy)
+			router.HandleRoute("POST /events", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), tt.options...)
+			router.HandleRoute("/events", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), tt.fallback)
+
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/events", http.NoBody)
+			require.True(t, tt.check(policy, req))
 		})
 	}
 }

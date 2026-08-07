@@ -111,7 +111,7 @@ func TestAccessDeniedUnary(t *testing.T) {
 func TestAuthDoesNotBypassApplicationMetricsPath(t *testing.T) {
 	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
-	world.Handle("GET /admin/metrics", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+	world.HandleRoute("GET /admin/metrics", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 		_, _ = res.Write([]byte("secret"))
 	}))
 	world.Start()

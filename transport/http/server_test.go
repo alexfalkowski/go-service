@@ -62,7 +62,7 @@ func TestServerMaxReceiveSize(t *testing.T) {
 	cfg.HTTP.MaxReceiveSize = 64
 
 	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
-	world.Handle("POST /hello", unary.NewRequestHandler(test.UnaryContent, func(_ context.Context, _ *test.Request) (*test.Response, error) {
+	world.HandleRoute("POST /hello", unary.NewRequestHandler(test.UnaryContent, func(_ context.Context, _ *test.Request) (*test.Response, error) {
 		return &test.Response{Greeting: "hello"}, nil
 	}))
 	world.Start()
@@ -86,7 +86,7 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 	cfg.HTTP.MaxReceiveSize = 64
 
 	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
-	world.Handle("POST /hello", unary.NewRequestHandler(test.UnaryContent, func(_ context.Context, _ *test.Request) (*test.Response, error) {
+	world.HandleRoute("POST /hello", unary.NewRequestHandler(test.UnaryContent, func(_ context.Context, _ *test.Request) (*test.Response, error) {
 		return &test.Response{Greeting: "hello"}, nil
 	}))
 	world.Start()
@@ -108,24 +108,24 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 func TestServerRecoversPanic(t *testing.T) {
 	capture := &test.CaptureHandler{}
 	world := test.NewWorld(t, test.WithWorldHTTP(), test.WithWorldLogger(&logger.Logger{Logger: slog.New(capture)}))
-	world.Handle("GET /panic", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	world.HandleRoute("GET /panic", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		panic("test panic")
 	}))
-	world.Handle("GET /panic-after-informational", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+	world.HandleRoute("GET /panic-after-informational", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 		res.WriteHeader(http.StatusEarlyHints)
 		panic("test panic after informational response")
 	}))
-	world.Handle("GET /panic-after-write", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+	world.HandleRoute("GET /panic-after-write", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 		res.WriteHeader(http.StatusOK)
 		_, _ = res.Write([]byte("partial"))
 		res.(interface{ Flush() }).Flush()
 		res.WriteHeader(http.StatusEarlyHints)
 		panic("test panic after commit")
 	}))
-	world.HandleOperationFunc("GET /panic-operation", func(http.ResponseWriter, *http.Request) {
+	world.HandleRoute("GET /panic-operation", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		panic("test operation panic")
-	})
-	world.Handle("GET /panic-after-error", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+	}), http.WithRouteOperation())
+	world.HandleRoute("GET /panic-after-error", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		_ = status.WriteError(req.Context(), res, status.BadRequestError(test.ErrInvalid))
 		res.(interface{ Flush() }).Flush()
 		panic("test panic after error")

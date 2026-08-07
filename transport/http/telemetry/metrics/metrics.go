@@ -21,6 +21,6 @@ import (
 // The handler is provided by `promhttp.Handler()` and serves the Prometheus text exposition format.
 func Register(name env.Name, cfg *metrics.Config, router *http.Router) {
 	if cfg.IsEnabled() && cfg.IsPrometheus() {
-		router.HandleOperation("GET "+http.Pattern(name, "/metrics"), prometheus.Handler())
+		router.HandleRoute("GET "+http.Pattern(name, "/metrics"), prometheus.Handler(), http.WithRouteOperation())
 	}
 }

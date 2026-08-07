@@ -5,7 +5,7 @@ import (
 	"net/http/httptrace"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/config/options"
+	config "github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
@@ -306,9 +306,9 @@ func ParseTime(value string) (time.Time, error) {
 //
 // Protocols are configured via Protocols().
 //
-// Note: [options.NonNegativeDuration] uses MustParseDuration under the hood; invalid or negative option
+// Note: [opts.NonNegativeDuration] uses MustParseDuration under the hood; invalid or negative option
 // values will panic at server construction time.
-func NewServer(options options.Map, timeout time.Duration, handler Handler) *Server {
+func NewServer(options config.Map, timeout time.Duration, handler Handler) *Server {
 	return &http.Server{
 		Handler:           handler,
 		ReadTimeout:       options.NonNegativeDuration("read_timeout", timeout).Duration(),

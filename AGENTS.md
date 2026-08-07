@@ -389,15 +389,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   `WriteHeader` panics from manually constructed bogus codes unless a concrete
   public API path accepts untrusted status codes or starts promising validation.
 - HTTP operation route patterns registered through
-  `net/http.Router.HandleOperation`/`HandleOperationFunc` and
-  `net/http.RoutePolicy.Operation` are expected to include an HTTP method
-  prefix, such as `"GET /<name>/metrics"`, matching the supported callers in
-  `transport/http/health` and `transport/http/telemetry/metrics`.
-  `RoutePolicy.Operation` stores only the path portion, so a bare method-less
+  `net/http.Router.HandleRoute` with `net/http.WithRouteOperation` are expected
+  to include an HTTP method prefix, such as `"GET /<name>/metrics"`, matching
+  the supported callers in `transport/http/health` and
+  `transport/http/telemetry/metrics`. `HandleRoute` stores only the path portion
+  for operations, so a bare method-less
   pattern registers under the empty key and never matches; operation matching is
   intentionally path-only so method mismatches still reach the mux for normal
   method handling. Do not flag method-less operation patterns failing to match,
-  or the `Operation`-versus-`AllowUnauthenticated` handling asymmetry, as a bug;
+  or the `WithRouteOperation`-versus-`WithRouteUnauthenticated` handling asymmetry, as a bug;
   method-prefixing is the supported registration form. Report only concrete bugs
   where a method-prefixed operation pattern fails to match or the supported
   callers stop prefixing.

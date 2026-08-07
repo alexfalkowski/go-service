@@ -56,7 +56,7 @@ func Register(params RegisterParams) {
 }
 
 func resister(pattern string, params RegisterParams) {
-	params.Router.HandleOperationFunc("GET "+http.Pattern(params.Name, pattern), func(res http.ResponseWriter, req *http.Request) {
+	params.Router.HandleRoute("GET "+http.Pattern(params.Name, pattern), http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		if pattern == "/readyz" {
 			if err := params.Drain.Error(); err != nil {
 				_ = status.WriteError(req.Context(), res, status.ServiceUnavailableError(err))
@@ -75,5 +75,5 @@ func resister(pattern string, params RegisterParams) {
 		}
 
 		_ = status.WriteText(res, "SERVING")
-	})
+	}), http.WithRouteOperation())
 }

@@ -1145,6 +1145,30 @@ handler gets a `*stream.RequestStream[Req, Res]` with both `Send` and `Recv`. Cl
 matching `client.Stream`/`client.RequestStream` functions, which take the same kind of callback.
 See `net/http/client`'s `ExampleClient_RequestStream` for a complete HTTP/2 bidirectional client call.
 
+### HTTP route policy
+
+Register a raw HTTP handler with `http.Router.HandleRoute` and compose its policy in the same call:
+
+```go
+router.HandleRoute(
+	"GET /feed",
+	handler,
+	http.WithRouteOperation(),
+	http.WithRouteUnauthenticated(),
+)
+```
+
+REST and RPC route helpers accept HTTP route options. Streaming helpers add their inherent stream direction,
+and supplied streaming options are additive. MVC accepts only `mvc.WithRouteUnauthenticated` for its view routes.
+MVC static helpers keep their `StaticOption` signature; use
+`mvc.WithStaticUnauthenticated()` to opt a static route out of authentication.
+
+> [!IMPORTANT]
+> Route policy registration now happens only through `HandleRoute`. This intentionally removes the previous
+> `Router.Handle*` and mutating `RoutePolicy` registration APIs from v2. Migrate `Router.Handle` to `HandleRoute`
+> without options, and migrate specialized registration to `HandleRoute` with the corresponding `WithRoute*` option.
+> Replace `IsStreaming` checks with the separate `IsRequestStreaming` and `IsResponseStreaming` checks.
+
 > [!IMPORTANT]
 > Single-value helpers live in `github.com/alexfalkowski/go-service/v2/net/http/content/unary`; streaming helpers
 > live in `github.com/alexfalkowski/go-service/v2/net/http/content/stream`. Import `unary` for `Content`, `Media`,
