@@ -14,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/transport/http/body"
 	"github.com/stretchr/testify/require"
 )
 
@@ -58,11 +59,35 @@ func TestStreamGetSendsValuesAndMarksRouteStreaming(t *testing.T) {
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, media.NDJSON, res.Header().Get(http.ContentTypeKey))
 	require.True(t, policy.IsStreaming(req))
+	require.False(t, policy.IsRequestStreaming(req))
 
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeGreeting(t, scanner))
 	require.Equal(t, "Hello Alice", decodeGreeting(t, scanner))
 	require.False(t, scanner.Scan())
+}
+
+func TestStreamRouteLimitsRequestBody(t *testing.T) {
+	mux := http.NewServeMux()
+	policy := http.NewRoutePolicy()
+	router := http.NewRouter(mux, policy)
+	rest.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
+
+	called := false
+	rest.StreamRoute("POST /hello", func(context.Context, *stream.Stream[test.Response]) error {
+		called = true
+		return nil
+	})
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", &test.UnknownLengthReader{Reader: strings.NewReader(strings.Repeat("a", 100))})
+	require.NoError(t, err)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	body.NewHandler(policy, 64).ServeHTTP(res, req, mux.ServeHTTP)
+
+	require.Equal(t, http.StatusRequestEntityTooLarge, res.Code)
+	require.False(t, called)
 }
 
 func TestStreamPostRejectsHTTP1(t *testing.T) {
@@ -131,6 +156,7 @@ func TestStreamPostPutPatchRecvAndSendOverHTTP2(t *testing.T) {
 
 			require.Equal(t, http.StatusOK, res.Code)
 			require.True(t, policy.IsStreaming(req))
+			require.True(t, policy.IsRequestStreaming(req))
 
 			scanner := bufio.NewScanner(res.Body)
 			require.Equal(t, "Hello Bob", decodeGreeting(t, scanner))

@@ -44,7 +44,7 @@ func TestHandlerBuffersNonStreamingRoutes(t *testing.T) {
 	})
 }
 
-func TestHandlerDoesNotLimitStreamingRoutesMidStream(t *testing.T) {
+func TestHandlerDoesNotLimitRequestStreamingRoutesMidStream(t *testing.T) {
 	routePolicy := http.NewRoutePolicy()
 	routePolicy.Streaming("POST /stream")
 	handler := body.NewHandler(routePolicy, 64)

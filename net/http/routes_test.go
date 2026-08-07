@@ -56,6 +56,18 @@ func TestRoutePolicyClassifiesStreamingRequests(t *testing.T) {
 	}, policy.IsStreaming)
 }
 
+func TestRoutePolicyClassifiesRequestStreamingRequests(t *testing.T) {
+	policy := http.NewRoutePolicy()
+	policy.Streaming("POST /stream")
+
+	runRouteMatchCases(t, []routeMatchCase{
+		{name: "registered request streaming route", method: http.MethodPost, path: "/stream", match: true},
+		{name: "wrong method", method: http.MethodGet, path: "/stream", match: false},
+		{name: "application streaming path", method: http.MethodPost, path: "/admin/stream", match: false},
+		{name: "nested streaming path", method: http.MethodPost, path: "/stream/foo", match: false},
+	}, policy.IsRequestStreaming)
+}
+
 func TestRouterRegistersHandlerAndPolicy(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
@@ -91,6 +103,7 @@ func TestRouterRegistersHandlerAndStreamingPolicy(t *testing.T) {
 
 	require.Equal(t, "POST /stream/{id}", req.Pattern)
 	require.True(t, policy.IsStreaming(req))
+	require.True(t, policy.IsRequestStreaming(req))
 	require.Equal(t, http.StatusOK, res.Code)
 }
 
