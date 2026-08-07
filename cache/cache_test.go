@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"testing"
+	"testing/synctest"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache"
@@ -135,107 +136,110 @@ func TestGetOrPersistSingleWinner(t *testing.T) {
 }
 
 func TestGetOrPersistReleasesWaiterOnItsOwnCancellation(t *testing.T) {
-	drv := &blockingGetDriver{gets: make(chan string, 16)}
-	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
-	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldCacheDriver(drv))
+	synctest.Test(t, func(t *testing.T) {
+		drv := &blockingGetDriver{gets: make(chan string, 16)}
+		cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldCacheDriver(drv))
 
-	leaderStarted := make(chan struct{})
-	release := make(chan struct{})
-	leaderErr := make(chan error, 1)
-	leaderValue := "unchanged"
-	go func() {
-		leaderErr <- world.GetOrPersist(context.Background(), "test", &leaderValue, time.Minute, func() error {
-			close(leaderStarted)
-			<-release
-			leaderValue = "leader"
+		leaderStarted := make(chan struct{})
+		release := make(chan struct{})
+		leaderErr := make(chan error, 1)
+		leaderValue := "unchanged"
+		go func() {
+			leaderErr <- world.GetOrPersist(context.Background(), "test", &leaderValue, time.Minute, func() error {
+				close(leaderStarted)
+				<-release
+				leaderValue = "leader"
 
-			return nil
-		})
-	}()
+				return nil
+			})
+		}()
 
-	<-leaderStarted
-	<-drv.gets // leader's initial Get
-	<-drv.gets // leader's single-flight recheck Get
+		<-leaderStarted
+		<-drv.gets // leader's initial Get
+		<-drv.gets // leader's single-flight recheck Get
 
-	dupCtx, dupCancel := context.WithCancel(context.Background())
-	dupErr := make(chan error, 1)
-	dupValue := "unchanged"
-	go func() {
-		dupErr <- world.GetOrPersist(dupCtx, "test", &dupValue, time.Minute, func() error {
-			dupValue = "duplicate"
+		dupCtx, dupCancel := context.WithCancel(context.Background())
+		dupErr := make(chan error, 1)
+		dupValue := "unchanged"
+		go func() {
+			dupErr <- world.GetOrPersist(dupCtx, "test", &dupValue, time.Minute, func() error {
+				dupValue = "duplicate"
 
-			return nil
-		})
-	}()
+				return nil
+			})
+		}()
 
-	<-drv.gets // duplicate missed and joined the in-flight fill
-	dupCancel()
+		<-drv.gets // duplicate missed and joined the in-flight fill
+		dupCancel()
 
-	select {
-	case err := <-dupErr:
-		require.ErrorIs(t, err, context.Canceled)
-	case <-time.After(5 * time.Second):
-		t.Fatal("duplicate blocked on the shared fill instead of returning on its own cancellation")
-	}
-	require.Equal(t, "unchanged", dupValue)
+		select {
+		case err := <-dupErr:
+			require.ErrorIs(t, err, context.Canceled)
+		case <-time.After(5 * time.Second):
+			t.Fatal("duplicate blocked on the shared fill instead of returning on its own cancellation")
+		}
+		require.Equal(t, "unchanged", dupValue)
 
-	close(release)
-	require.NoError(t, <-leaderErr)
-	require.Equal(t, "leader", leaderValue)
+		close(release)
+		require.NoError(t, <-leaderErr)
+		require.Equal(t, "leader", leaderValue)
+	})
 }
 
 func TestGetOrPersistLeaderCancellationFailsWaiters(t *testing.T) {
-	drv := &blockingGetDriver{gets: make(chan string, 16)}
-	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
-	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldCacheDriver(drv))
+	synctest.Test(t, func(t *testing.T) {
+		drv := &blockingGetDriver{gets: make(chan string, 16)}
+		cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
+		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldCacheDriver(drv))
 
-	leaderStarted := make(chan struct{})
-	release := make(chan struct{})
-	leaderCtx, leaderCancel := context.WithCancel(context.Background())
-	leaderErr := make(chan error, 1)
-	leaderValue := "unchanged"
-	go func() {
-		leaderErr <- world.GetOrPersist(leaderCtx, "test", &leaderValue, time.Minute, func() error {
-			close(leaderStarted)
-			<-release
-			leaderValue = "leader"
+		leaderStarted := make(chan struct{})
+		release := make(chan struct{})
+		leaderCtx, leaderCancel := context.WithCancel(context.Background())
+		leaderErr := make(chan error, 1)
+		leaderValue := "unchanged"
+		go func() {
+			leaderErr <- world.GetOrPersist(leaderCtx, "test", &leaderValue, time.Minute, func() error {
+				close(leaderStarted)
+				<-release
+				leaderValue = "leader"
 
-			return nil
-		})
-	}()
+				return nil
+			})
+		}()
 
-	<-leaderStarted
-	<-drv.gets
-	<-drv.gets
+		<-leaderStarted
+		<-drv.gets
+		<-drv.gets
 
-	followerCalled := make(chan struct{}, 1)
-	followerErr := make(chan error, 1)
-	followerValue := "unchanged"
-	go func() {
-		followerErr <- world.GetOrPersist(context.Background(), "test", &followerValue, time.Minute, func() error {
-			followerCalled <- struct{}{}
+		followerCalled := make(chan struct{}, 1)
+		followerErr := make(chan error, 1)
+		followerValue := "unchanged"
+		go func() {
+			followerErr <- world.GetOrPersist(context.Background(), "test", &followerValue, time.Minute, func() error {
+				followerCalled <- struct{}{}
 
-			return nil
-		})
-	}()
+				return nil
+			})
+		}()
 
-	<-drv.gets // follower missed and is joining the shared fill
-	// Give the follower time to park on the shared fill before it publishes.
-	time.Sleep(100 * time.Millisecond)
+		<-drv.gets // follower missed and is joining the shared fill
+		synctest.Wait()
 
-	// The shared fill runs under the leader context, so canceling the leader and
-	// then letting the fill publish fails the still-live follower too.
-	leaderCancel()
-	close(release)
+		// The shared fill runs under the leader context, so canceling the leader and
+		// then letting the fill publish fails the still-live follower too.
+		leaderCancel()
+		close(release)
 
-	require.ErrorIs(t, <-followerErr, context.Canceled)
-	require.ErrorIs(t, <-leaderErr, context.Canceled)
+		require.ErrorIs(t, <-followerErr, context.Canceled)
+		require.ErrorIs(t, <-leaderErr, context.Canceled)
 
-	select {
-	case <-followerCalled:
-		t.Fatal("follower ran its own loader instead of sharing the leader's fill")
-	default:
-	}
+		select {
+		case <-followerCalled:
+			t.Fatal("follower ran its own loader instead of sharing the leader's fill")
+		default:
+		}
+	})
 }
 
 func TestGenericGetOrPersistDisabledCache(t *testing.T) {
@@ -591,18 +595,19 @@ func TestGetMissesAfterCacheFormatChange(t *testing.T) {
 }
 
 func TestExpiredCache(t *testing.T) {
-	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
-	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
-	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Nanosecond))
+	synctest.Test(t, func(t *testing.T) {
+		cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
+		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+		require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Nanosecond))
 
-	// Simulate expiry.
-	time.Sleep(time.Second)
+		time.Sleep(2 * time.Nanosecond)
 
-	_, ok, err := cache.Get[string](t.Context(), "test")
-	require.NoError(t, err)
-	require.False(t, ok)
+		_, ok, err := cache.Get[string](t.Context(), "test")
+		require.NoError(t, err)
+		require.False(t, ok)
 
-	require.NoError(t, world.Remove(t.Context(), "test"))
+		require.NoError(t, world.Remove(t.Context(), "test"))
+	})
 }
 
 func TestErroneousCache(t *testing.T) {

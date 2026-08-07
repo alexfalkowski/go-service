@@ -2,6 +2,7 @@ package server_test
 
 import (
 	"testing"
+	"testing/synctest"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
@@ -68,30 +69,32 @@ func TestRegisterStartsAllServices(t *testing.T) {
 }
 
 func TestRegisterStopsServicesConcurrently(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
-	first := newBlockingShutdownServer()
-	second := newShutdownContextServer()
-	sh := test.NewShutdowner()
+	synctest.Test(t, func(t *testing.T) {
+		lc := fxtest.NewLifecycle(t)
+		first := newBlockingShutdownServer()
+		second := newShutdownContextServer()
+		sh := test.NewShutdowner()
 
-	server.Register(server.RegisterParams{
-		Lifecycle: lc,
-		Drain:     server.NewDrain(),
-		Services: []*server.Service{
-			server.NewService("first", first, nil, sh),
-			server.NewService("second", second, nil, sh),
-		},
+		server.Register(server.RegisterParams{
+			Lifecycle: lc,
+			Drain:     server.NewDrain(),
+			Services: []*server.Service{
+				server.NewService("first", first, nil, sh),
+				server.NewService("second", second, nil, sh),
+			},
+		})
+
+		require.NoError(t, lc.Start(t.Context()))
+		waitForRegisteredService(t, first.Done)
+		waitForRegisteredService(t, second.Done)
+
+		ctx, cancel := context.WithTimeout(t.Context(), 25*time.Millisecond)
+		defer cancel()
+
+		err := lc.Stop(ctx)
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+		require.NoError(t, <-second.ShutdownErrs)
 	})
-
-	require.NoError(t, lc.Start(t.Context()))
-	waitForRegisteredService(t, first.Done)
-	waitForRegisteredService(t, second.Done)
-
-	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Millisecond)
-	defer cancel()
-
-	err := lc.Stop(ctx)
-	require.ErrorIs(t, err, context.DeadlineExceeded)
-	require.NoError(t, <-second.ShutdownErrs)
 }
 
 func TestRegisterStartsDrainBeforeStoppingServices(t *testing.T) {

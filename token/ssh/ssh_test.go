@@ -2,6 +2,7 @@ package ssh_test
 
 import (
 	"testing"
+	"testing/synctest"
 
 	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	cryptossh "github.com/alexfalkowski/go-service/v2/crypto/ssh"
@@ -155,19 +156,21 @@ func TestInvalidAudience(t *testing.T) {
 }
 
 func TestInvalidExpired(t *testing.T) {
-	cfg := test.NewToken("ssh").SSH
-	cfg.Expiration = time.Nanosecond
-	token := ssh.NewToken(cfg, test.FS)
+	synctest.Test(t, func(t *testing.T) {
+		cfg := test.NewToken("ssh").SSH
+		cfg.Expiration = time.Nanosecond
+		token := ssh.NewToken(cfg, test.FS)
 
-	tkn, err := token.Generate("/service.Method", strings.Empty)
-	require.NoError(t, err)
-	require.NotEmpty(t, tkn)
+		tkn, err := token.Generate("/service.Method", strings.Empty)
+		require.NoError(t, err)
+		require.NotEmpty(t, tkn)
 
-	time.Sleep(time.Millisecond)
+		time.Sleep(time.Millisecond)
 
-	sub, err := token.Verify(tkn, "/service.Method")
-	require.Empty(t, sub)
-	require.ErrorIs(t, err, errors.ErrInvalidTime)
+		sub, err := token.Verify(tkn, "/service.Method")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidTime)
+	})
 }
 
 func TestInvalidLifetimeExceedsConfig(t *testing.T) {
