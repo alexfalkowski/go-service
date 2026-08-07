@@ -7,18 +7,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParseInvalidMediaType(t *testing.T) {
+func TestParseRejectsInvalidMediaTypes(t *testing.T) {
 	t.Parallel()
 
-	_, err := media.Parse("json")
-	require.ErrorIs(t, err, media.ErrInvalidType)
-}
+	for _, tc := range []struct {
+		name  string
+		value string
+	}{
+		{name: "missing type", value: "json"},
+		{name: "invalid parameter", value: "text/plain; charset"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 
-func TestParseInvalidMediaTypeParameter(t *testing.T) {
-	t.Parallel()
-
-	_, err := media.Parse("text/plain; charset")
-	require.ErrorIs(t, err, media.ErrInvalidType)
+			_, err := media.Parse(tc.value)
+			require.ErrorIs(t, err, media.ErrInvalidType)
+		})
+	}
 }
 
 func TestParseNormalizesMediaTypeCase(t *testing.T) {

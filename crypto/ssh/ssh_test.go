@@ -63,25 +63,33 @@ func TestValid(t *testing.T) {
 func TestInvalidConfig(t *testing.T) {
 	t.Setenv("SSH_EMPTY", "")
 
-	t.Run("missing signer private key", func(t *testing.T) {
-		_, err := ssh.NewSigner(test.FS, &ssh.Config{})
-		require.ErrorIs(t, err, errors.ErrMissingKey)
-	})
+	newSigner := func(config *ssh.Config) error {
+		_, err := ssh.NewSigner(test.FS, config)
 
-	t.Run("missing verifier public key", func(t *testing.T) {
-		_, err := ssh.NewVerifier(test.FS, &ssh.Config{})
-		require.ErrorIs(t, err, errors.ErrMissingKey)
-	})
+		return err
+	}
+	newVerifier := func(config *ssh.Config) error {
+		_, err := ssh.NewVerifier(test.FS, config)
 
-	t.Run("empty signer private key source", func(t *testing.T) {
-		_, err := ssh.NewSigner(test.FS, &ssh.Config{Private: "env:SSH_EMPTY"})
-		require.ErrorIs(t, err, errors.ErrMissingKey)
-	})
+		return err
+	}
 
-	t.Run("empty verifier public key source", func(t *testing.T) {
-		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: "env:SSH_EMPTY"})
-		require.ErrorIs(t, err, errors.ErrMissingKey)
-	})
+	tests := []struct {
+		name        string
+		constructor func(*ssh.Config) error
+		config      *ssh.Config
+	}{
+		{name: "missing signer private key", constructor: newSigner, config: &ssh.Config{}},
+		{name: "missing verifier public key", constructor: newVerifier, config: &ssh.Config{}},
+		{name: "empty signer private key source", constructor: newSigner, config: &ssh.Config{Private: "env:SSH_EMPTY"}},
+		{name: "empty verifier public key source", constructor: newVerifier, config: &ssh.Config{Public: "env:SSH_EMPTY"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.ErrorIs(t, tt.constructor(tt.config), errors.ErrMissingKey)
+		})
+	}
 }
 
 func TestInvalidPublicKeyConfig(t *testing.T) {

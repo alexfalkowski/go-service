@@ -27,21 +27,6 @@ func TestConfigValidation(t *testing.T) {
 				Writer: &config.Pool{Settings: &config.PoolSettings{MaxOpenConns: 1, MaxIdleConns: 1}},
 			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			requireConfigValidation(t, tt.cfg, tt.err)
-		})
-	}
-}
-
-func TestPoolValidation(t *testing.T) {
-	tests := []struct {
-		cfg  *config.Config
-		name string
-		err  bool
-	}{
 		{
 			name: "missing reader pool settings",
 			cfg: &config.Config{

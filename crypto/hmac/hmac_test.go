@@ -52,24 +52,28 @@ func TestValidSigner(t *testing.T) {
 func TestSignerMissingKey(t *testing.T) {
 	t.Setenv("HMAC_EMPTY", "")
 
-	t.Run("missing key", func(t *testing.T) {
-		signer, err := hmac.NewSigner(test.FS, &hmac.Config{})
-		require.ErrorIs(t, err, errors.ErrMissingKey)
-		require.Nil(t, signer)
-	})
+	tests := []struct {
+		name        string
+		config      *hmac.Config
+		wantErr     error
+		errContains string
+	}{
+		{name: "missing key", config: &hmac.Config{}, wantErr: errors.ErrMissingKey},
+		{name: "empty key source", config: &hmac.Config{Key: "env:HMAC_EMPTY"}, wantErr: errors.ErrMissingKey},
+		{name: "missing key source", config: &hmac.Config{Key: "env:HMAC_MISSING"}, errContains: "env:HMAC_MISSING"},
+	}
 
-	t.Run("empty key source", func(t *testing.T) {
-		signer, err := hmac.NewSigner(test.FS, &hmac.Config{Key: "env:HMAC_EMPTY"})
-		require.ErrorIs(t, err, errors.ErrMissingKey)
-		require.Nil(t, signer)
-	})
-
-	t.Run("missing key source", func(t *testing.T) {
-		signer, err := hmac.NewSigner(test.FS, &hmac.Config{Key: "env:HMAC_MISSING"})
-		require.Error(t, err)
-		require.ErrorContains(t, err, "env:HMAC_MISSING")
-		require.Nil(t, signer)
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			signer, err := hmac.NewSigner(test.FS, tt.config)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.ErrorContains(t, err, tt.errContains)
+			}
+			require.Nil(t, signer)
+		})
+	}
 }
 
 func TestInvalidSigner(t *testing.T) {

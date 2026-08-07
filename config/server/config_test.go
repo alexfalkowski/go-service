@@ -123,14 +123,23 @@ func TestNewConfig(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestNewConfigDefaults(t *testing.T) {
+func TestNewConfigWithOptionalTLSMaterial(t *testing.T) {
 	tests := []struct {
-		config *config.Config
-		name   string
+		config       *config.Config
+		name         string
+		certificates int
 	}{
 		{name: "nil"},
 		{name: "empty", config: &config.Config{}},
 		{name: "server name", config: &config.Config{ServerName: "localhost"}},
+		{
+			name: "key pair only",
+			config: &config.Config{
+				Cert: test.FilePath("certs/cert.pem"),
+				Key:  test.FilePath("certs/key.pem"),
+			},
+			certificates: 1,
+		},
 	}
 
 	for _, tt := range tests {
@@ -139,30 +148,11 @@ func TestNewConfigDefaults(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, tlsConfig)
 			require.Equal(t, uint16(tls.VersionTLS13), tlsConfig.MinVersion)
-			require.Empty(t, tlsConfig.Certificates)
+			require.Len(t, tlsConfig.Certificates, tt.certificates)
 			require.Nil(t, tlsConfig.ClientCAs)
 			require.Equal(t, tls.NoClientCert, tlsConfig.ClientAuth)
 		})
 	}
-}
-
-func TestNewConfigWithKeyPairOnly(t *testing.T) {
-	tlsConfig, err := server.NewConfig(test.FS, &config.Config{
-		Cert: test.FilePath("certs/cert.pem"),
-		Key:  test.FilePath("certs/key.pem"),
-	})
-	require.NoError(t, err)
-	require.Len(t, tlsConfig.Certificates, 1)
-	require.Nil(t, tlsConfig.ClientCAs)
-	require.Equal(t, tls.NoClientCert, tlsConfig.ClientAuth)
-}
-
-func TestNewConfigWithCAOnly(t *testing.T) {
-	tlsConfig, err := server.NewConfig(test.FS, &config.Config{CA: test.FilePath("certs/rootCA.pem")})
-	require.ErrorIs(t, err, server.ErrMissingKeyPair)
-	require.Empty(t, tlsConfig.Certificates)
-	require.Nil(t, tlsConfig.ClientCAs)
-	require.Equal(t, tls.NoClientCert, tlsConfig.ClientAuth)
 }
 
 func TestNewConfigRejectsIncompleteKeyPair(t *testing.T) {
@@ -170,6 +160,7 @@ func TestNewConfigRejectsIncompleteKeyPair(t *testing.T) {
 		config *config.Config
 		name   string
 	}{
+		{name: "CA only", config: &config.Config{CA: test.FilePath("certs/rootCA.pem")}},
 		{name: "cert only", config: &config.Config{Cert: test.FilePath("certs/cert.pem")}},
 		{name: "key only", config: &config.Config{Key: test.FilePath("certs/key.pem")}},
 	}
