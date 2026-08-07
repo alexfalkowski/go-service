@@ -24,12 +24,21 @@ var debugPaths = []string{
 	"debug/pprof/trace",
 }
 
-func TestInsecureDebug(t *testing.T) {
-	requireDebugEndpoints(t, "http", test.WithWorldDebug())
-}
+func TestDebugEndpoints(t *testing.T) {
+	tests := []struct {
+		name    string
+		scheme  string
+		options []test.WorldOption
+	}{
+		{name: "insecure", scheme: "http", options: []test.WorldOption{test.WithWorldDebug()}},
+		{name: "secure", scheme: "https", options: []test.WorldOption{test.WithWorldSecure(), test.WithWorldDebug()}},
+	}
 
-func TestSecureDebug(t *testing.T) {
-	requireDebugEndpoints(t, "https", test.WithWorldSecure(), test.WithWorldDebug())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requireDebugEndpoints(t, tt.scheme, tt.options...)
+		})
+	}
 }
 
 func TestInvalidServer(t *testing.T) {

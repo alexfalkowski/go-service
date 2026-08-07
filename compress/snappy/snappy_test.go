@@ -49,19 +49,19 @@ func TestDecompressRejectsTooLarge(t *testing.T) {
 func TestDecompressRejectsInvalidData(t *testing.T) {
 	t.Parallel()
 
-	cmp := snappy.NewCompressor()
+	for _, tt := range []struct {
+		name string
+		data []byte
+	}{
+		{name: "non-compressed data", data: strings.Bytes("invalid")},
+		{name: "invalid decoded length", data: []byte{0x80}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	_, err := cmp.Decompress(strings.Bytes("invalid"), bytes.KB)
-	require.Error(t, err)
-	require.NotErrorIs(t, err, errors.ErrTooLarge)
-}
-
-func TestDecompressReturnsDecodedLenError(t *testing.T) {
-	t.Parallel()
-
-	cmp := snappy.NewCompressor()
-
-	_, err := cmp.Decompress([]byte{0x80}, bytes.KB)
-	require.Error(t, err)
-	require.NotErrorIs(t, err, errors.ErrTooLarge)
+			_, err := snappy.NewCompressor().Decompress(tt.data, bytes.KB)
+			require.Error(t, err)
+			require.NotErrorIs(t, err, errors.ErrTooLarge)
+		})
+	}
 }

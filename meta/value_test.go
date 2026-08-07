@@ -33,10 +33,6 @@ func TestValue(t *testing.T) {
 	}
 }
 
-func TestErrorWithNil(t *testing.T) {
-	require.Equal(t, meta.Blank(), meta.Error(nil))
-}
-
 func TestError(t *testing.T) {
 	value := meta.Error(&test.MessageError{Message: "boom"})
 
@@ -45,10 +41,20 @@ func TestError(t *testing.T) {
 	require.False(t, value.IsEmpty())
 }
 
-func TestErrorWithTypedNil(t *testing.T) {
-	var err error = (*test.MessageError)(nil)
+func TestErrorWithNil(t *testing.T) {
+	var typedNil error = (*test.MessageError)(nil)
 
-	require.Equal(t, meta.Blank(), meta.Error(err))
+	for _, test := range []struct {
+		name string
+		err  error
+	}{
+		{name: "nil"},
+		{name: "typed nil", err: typedNil},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, meta.Blank(), meta.Error(test.err))
+		})
+	}
 }
 
 func TestStringerConversions(t *testing.T) {
@@ -72,26 +78,25 @@ func TestStringerConversions(t *testing.T) {
 	}
 }
 
-func TestToStringWithNil(t *testing.T) {
-	require.Equal(t, meta.Blank(), meta.ToString(nil))
-}
-
-func TestToStringWithTypedNil(t *testing.T) {
+func TestStringerConversionsWithNil(t *testing.T) {
 	var stringer fmt.Stringer = (*test.Stringer)(nil)
 
-	require.Equal(t, meta.Blank(), meta.ToString(stringer))
-}
+	tests := []struct {
+		name    string
+		convert func(fmt.Stringer) meta.Value
+		value   fmt.Stringer
+	}{
+		{name: "to string with nil", convert: meta.ToString},
+		{name: "to string with typed nil", convert: meta.ToString, value: stringer},
+		{name: "to redacted with typed nil", convert: meta.ToRedacted, value: stringer},
+		{name: "to ignored with typed nil", convert: meta.ToIgnored, value: stringer},
+	}
 
-func TestToRedactedWithTypedNil(t *testing.T) {
-	var stringer fmt.Stringer = (*test.Stringer)(nil)
-
-	require.Equal(t, meta.Blank(), meta.ToRedacted(stringer))
-}
-
-func TestToIgnoredWithTypedNil(t *testing.T) {
-	var stringer fmt.Stringer = (*test.Stringer)(nil)
-
-	require.Equal(t, meta.Blank(), meta.ToIgnored(stringer))
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.Equal(t, meta.Blank(), test.convert(test.value))
+		})
+	}
 }
 
 func TestRedactedWithMultiByteValue(t *testing.T) {

@@ -48,38 +48,29 @@ func TestValidCipher(t *testing.T) {
 func TestInvalidCipherConfig(t *testing.T) {
 	t.Setenv("AES_EMPTY", "")
 
-	t.Run("missing key", func(t *testing.T) {
-		gen := rand.NewGenerator(rand.NewReader())
+	tests := []struct {
+		name        string
+		config      *aes.Config
+		wantErr     error
+		errContains string
+	}{
+		{name: "missing key", config: &aes.Config{}, wantErr: errors.ErrMissingKey},
+		{name: "empty key source", config: &aes.Config{Key: "env:AES_EMPTY"}, wantErr: errors.ErrMissingKey},
+		{name: "missing key source", config: &aes.Config{Key: "env:AES_MISSING"}, errContains: "env:AES_MISSING"},
+		{name: "invalid key", config: &aes.Config{Key: test.FilePath("secrets/aes_invalid")}, wantErr: errors.ErrInvalidKeySize},
+	}
 
-		cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{})
-		require.ErrorIs(t, err, errors.ErrMissingKey)
-		require.Nil(t, cipher)
-	})
-
-	t.Run("empty key source", func(t *testing.T) {
-		gen := rand.NewGenerator(rand.NewReader())
-
-		cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{Key: "env:AES_EMPTY"})
-		require.ErrorIs(t, err, errors.ErrMissingKey)
-		require.Nil(t, cipher)
-	})
-
-	t.Run("missing key source", func(t *testing.T) {
-		gen := rand.NewGenerator(rand.NewReader())
-
-		cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{Key: "env:AES_MISSING"})
-		require.Error(t, err)
-		require.ErrorContains(t, err, "env:AES_MISSING")
-		require.Nil(t, cipher)
-	})
-
-	t.Run("invalid key", func(t *testing.T) {
-		gen := rand.NewGenerator(rand.NewReader())
-
-		cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
-		require.ErrorIs(t, err, errors.ErrInvalidKeySize)
-		require.Nil(t, cipher)
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cipher, err := aes.NewCipher(rand.NewGenerator(rand.NewReader()), test.FS, tt.config)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.ErrorContains(t, err, tt.errContains)
+			}
+			require.Nil(t, cipher)
+		})
+	}
 }
 
 func TestInvalidCipher(t *testing.T) {
