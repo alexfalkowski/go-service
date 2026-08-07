@@ -28,33 +28,34 @@ func NotFound[Model any](controller NotFoundController[Model]) bool {
 }
 
 // Delete registers an HTTP DELETE route that invokes controller.
-func Delete[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(strings.Space, http.MethodDelete, pattern), controller)
+func Delete[Model any](pattern string, controller Controller[Model], options ...RouteOption) bool {
+	return Route(strings.Join(strings.Space, http.MethodDelete, pattern), controller, options...)
 }
 
 // Get registers an HTTP GET route that invokes controller.
-func Get[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(strings.Space, http.MethodGet, pattern), controller)
+func Get[Model any](pattern string, controller Controller[Model], options ...RouteOption) bool {
+	return Route(strings.Join(strings.Space, http.MethodGet, pattern), controller, options...)
 }
 
 // Post registers an HTTP POST route that invokes controller.
-func Post[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(strings.Space, http.MethodPost, pattern), controller)
+func Post[Model any](pattern string, controller Controller[Model], options ...RouteOption) bool {
+	return Route(strings.Join(strings.Space, http.MethodPost, pattern), controller, options...)
 }
 
 // Put registers an HTTP PUT route that invokes controller.
-func Put[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(strings.Space, http.MethodPut, pattern), controller)
+func Put[Model any](pattern string, controller Controller[Model], options ...RouteOption) bool {
+	return Route(strings.Join(strings.Space, http.MethodPut, pattern), controller, options...)
 }
 
 // Patch registers an HTTP PATCH route that invokes controller.
-func Patch[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(strings.Space, http.MethodPatch, pattern), controller)
+func Patch[Model any](pattern string, controller Controller[Model], options ...RouteOption) bool {
+	return Route(strings.Join(strings.Space, http.MethodPatch, pattern), controller, options...)
 }
 
 // Route registers a handler for pattern that invokes controller and renders the returned view.
 //
 // It returns false when MVC is not defined (see IsDefined).
+// Options apply MVC route registration policy.
 //
 // The handler sets the response Content-Type to HTML and stores the request and response writer in the
 // request context (via net/http/meta) before invoking the controller.
@@ -67,9 +68,14 @@ func Patch[Model any](pattern string, controller Controller[Model]) bool {
 // Controller errors and rendering failures are recorded as request-scoped operator diagnostics via
 // [github.com/alexfalkowski/go-service/v2/net/http/status.RecordError], surfaced through the HTTP access log.
 // When more than one error occurs, the first error is retained.
-func Route[Model any](pattern string, controller Controller[Model]) bool {
+func Route[Model any](pattern string, controller Controller[Model], options ...RouteOption) bool {
 	if !IsDefined() {
 		return false
+	}
+
+	routeOptions := &routeOptions{}
+	for _, option := range options {
+		option(routeOptions)
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
@@ -94,7 +100,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 		writeView(ctx, res, view, model, http.StatusOK)
 	}
 
-	router.Handle(pattern, http.HandlerFunc(handler))
+	router.HandleRoute(pattern, http.HandlerFunc(handler), routeOptions.httpOptions()...)
 	return true
 }
 

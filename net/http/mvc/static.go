@@ -27,7 +27,7 @@ func StaticFile(pattern, name string, opts ...StaticOption) bool {
 		serveFile(req.Context(), res, name, options)
 	}
 
-	router.Handle(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler))
+	router.HandleRoute(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler), options.httpOptions()...)
 	return true
 }
 
@@ -56,7 +56,7 @@ func StaticPathValue(pattern, value, prefix string, opts ...StaticOption) bool {
 		serveFile(req.Context(), res, name, options)
 	}
 
-	router.Handle(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler))
+	router.HandleRoute(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler), options.httpOptions()...)
 	return true
 }
 

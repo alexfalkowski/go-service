@@ -36,6 +36,21 @@ func TestStreamRouteRejectsHTTP1(t *testing.T) {
 	require.Equal(t, http.StatusHTTPVersionNotSupported, res.Code)
 }
 
+func TestRouteAppliesRouteOptions(t *testing.T) {
+	mux := http.NewServeMux()
+	policy := http.NewRoutePolicy()
+	router := http.NewRouter(mux, policy)
+	rpc.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
+
+	rpc.Route("/hello", test.SuccessSayHello, http.WithRouteOperation(), http.WithRouteUnauthenticated())
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+	require.True(t, policy.IsOperation(req))
+	require.True(t, policy.IsUnauthenticated(req))
+	require.False(t, policy.IsRequestStreaming(req))
+	require.False(t, policy.IsResponseStreaming(req))
+}
+
 func TestStreamRouteRecvAndSendOverHTTP2(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
@@ -57,7 +72,7 @@ func TestStreamRouteRecvAndSendOverHTTP2(t *testing.T) {
 				return err
 			}
 		}
-	})
+	}, http.WithRouteOperation(), http.WithRouteUnauthenticated())
 
 	body := "{\"Name\":\"Bob\"}\n{\"Name\":\"Alice\"}\n"
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
@@ -69,7 +84,10 @@ func TestStreamRouteRecvAndSendOverHTTP2(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.True(t, policy.IsStreaming(req))
+	require.True(t, policy.IsOperation(req))
+	require.True(t, policy.IsUnauthenticated(req))
+	require.True(t, policy.IsRequestStreaming(req))
+	require.True(t, policy.IsResponseStreaming(req))
 
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeGreeting(t, scanner))

@@ -61,7 +61,7 @@ func testNotFoundHandler(t *testing.T, tt notFoundHandlerTest) {
 	mux := http.NewServeMux()
 	if tt.registerRoute {
 		router := http.NewRouter(mux, http.NewRoutePolicy())
-		router.Handle("GET /hello", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		router.HandleRoute("GET /hello", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 			res.WriteHeader(http.StatusOK)
 		}))
 	}

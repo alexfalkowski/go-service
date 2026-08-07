@@ -70,7 +70,7 @@ func TestHandlerSkipsOperationPath(t *testing.T) {
 	var logs bytes.Buffer
 	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
 	policy := http.NewRoutePolicy()
-	policy.Operation("GET /test/metrics")
+	http.NewRouter(http.NewServeMux(), policy).HandleRoute("GET /test/metrics", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), http.WithRouteOperation())
 	handler := httplogger.NewHandler(policy, &logger.Logger{Logger: slogLogger})
 	res := httptest.NewRecorder()
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/test/metrics", http.NoBody)

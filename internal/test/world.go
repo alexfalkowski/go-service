@@ -209,7 +209,7 @@ func (w *World) Start() *World {
 
 // HandleHello registers a simple HTTP hello endpoint on the world's mux.
 func (w *World) HandleHello() {
-	w.Handle("GET /hello", http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	w.HandleRoute("GET /hello", http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write(strings.Bytes("hello!"))
 	}))
 }

@@ -2,12 +2,68 @@ package http
 
 import "github.com/alexfalkowski/go-service/v2/strings"
 
+// RouteOption configures an HTTP route.
+type RouteOption func(*routeOptions)
+
+type routeOptions struct {
+	operation         bool
+	unauthenticated   bool
+	requestStreaming  bool
+	responseStreaming bool
+}
+
+// WithRouteOperation marks a route as a service-owned operation path.
+//
+// Operation matching is path-only so method mismatches can reach the mux and receive normal method handling.
+func WithRouteOperation() RouteOption {
+	return func(options *routeOptions) {
+		options.operation = true
+	}
+}
+
+// WithRouteUnauthenticated marks a route as not requiring transport token authentication.
+func WithRouteUnauthenticated() RouteOption {
+	return func(options *routeOptions) {
+		options.unauthenticated = true
+	}
+}
+
+// WithRouteRequestStreaming marks a route whose request body is streamed incrementally rather than buffered whole.
+func WithRouteRequestStreaming() RouteOption {
+	return func(options *routeOptions) {
+		options.requestStreaming = true
+	}
+}
+
+// WithRouteResponseStreaming marks a route whose response body is streamed incrementally rather than buffered whole.
+func WithRouteResponseStreaming() RouteOption {
+	return func(options *routeOptions) {
+		options.responseStreaming = true
+	}
+}
+
+// WithRouteStreaming marks a route whose request and response bodies are streamed incrementally rather than buffered whole.
+func WithRouteStreaming() RouteOption {
+	return func(options *routeOptions) {
+		options.requestStreaming = true
+		options.responseStreaming = true
+	}
+}
+
+func options(opts ...RouteOption) *routeOptions {
+	options := &routeOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	return options
+}
+
 // NewRoutePolicy constructs an empty route policy registry.
 func NewRoutePolicy() *RoutePolicy {
 	return &RoutePolicy{
-		operations:      map[string]struct{}{},
-		unauthenticated: map[string]struct{}{},
-		streams:         map[string]streamPolicy{},
+		operations: map[string]struct{}{},
+		routes:     map[string]routePolicy{},
 	}
 }
 
@@ -17,36 +73,14 @@ func NewRoutePolicy() *RoutePolicy {
 // inferring intent from path substrings. RoutePolicy is intended to be populated during startup before serving
 // requests.
 type RoutePolicy struct {
-	operations      map[string]struct{}
-	unauthenticated map[string]struct{}
-	streams         map[string]streamPolicy
+	operations map[string]struct{}
+	routes     map[string]routePolicy
 }
 
-type streamPolicy struct {
-	request  bool
-	response bool
-}
-
-// Operation marks pattern as a service-owned operation path.
-//
-// Operation matching is path-only so method mismatches can reach the mux and receive normal method handling.
-func (r *RoutePolicy) Operation(pattern string) {
-	r.operations[routePatternPath(pattern)] = struct{}{}
-}
-
-// AllowUnauthenticated marks pattern as not requiring transport token authentication.
-func (r *RoutePolicy) AllowUnauthenticated(pattern string) {
-	r.unauthenticated[pattern] = struct{}{}
-}
-
-// Streaming marks pattern as a route whose request body, response body, or both are streamed
-// incrementally rather than buffered whole.
-func (r *RoutePolicy) Streaming(pattern string) {
-	r.streams[pattern] = streamPolicy{request: true, response: true}
-}
-
-func (r *RoutePolicy) responseStreaming(pattern string) {
-	r.streams[pattern] = streamPolicy{response: true}
+type routePolicy struct {
+	unauthenticated   bool
+	requestStreaming  bool
+	responseStreaming bool
 }
 
 // IsOperation reports whether req targets a registered operation path.
@@ -58,40 +92,40 @@ func (r *RoutePolicy) IsOperation(req *Request) bool {
 // IsUnauthenticated reports whether req targets a route that does not require transport token authentication.
 func (r *RoutePolicy) IsUnauthenticated(req *Request) bool {
 	if !strings.IsEmpty(req.Pattern) {
-		_, ok := r.unauthenticated[req.Pattern]
-		return ok
+		return r.routes[req.Pattern].unauthenticated
 	}
 
-	if _, ok := r.unauthenticated[routeRequestPattern(req)]; ok {
+	if r.routes[routeRequestPattern(req)].unauthenticated {
 		return true
 	}
 
-	_, ok := r.unauthenticated[req.URL.Path]
-	return ok
-}
-
-// IsStreaming reports whether req targets a route whose request body, response body, or both are
-// streamed incrementally rather than buffered whole.
-func (r *RoutePolicy) IsStreaming(req *Request) bool {
-	policy := r.stream(req)
-	return policy.request || policy.response
+	return r.routes[req.URL.Path].unauthenticated
 }
 
 // IsRequestStreaming reports whether req targets a route whose request body is streamed incrementally rather than buffered whole.
 func (r *RoutePolicy) IsRequestStreaming(req *Request) bool {
-	return r.stream(req).request
+	if !strings.IsEmpty(req.Pattern) {
+		return r.routes[req.Pattern].requestStreaming
+	}
+
+	if r.routes[routeRequestPattern(req)].requestStreaming {
+		return true
+	}
+
+	return r.routes[req.URL.Path].requestStreaming
 }
 
-func (r *RoutePolicy) stream(req *Request) streamPolicy {
+// IsResponseStreaming reports whether req targets a route whose response body is streamed incrementally rather than buffered whole.
+func (r *RoutePolicy) IsResponseStreaming(req *Request) bool {
 	if !strings.IsEmpty(req.Pattern) {
-		return r.streams[req.Pattern]
+		return r.routes[req.Pattern].responseStreaming
 	}
 
-	if policy, ok := r.streams[routeRequestPattern(req)]; ok {
-		return policy
+	if r.routes[routeRequestPattern(req)].responseStreaming {
+		return true
 	}
 
-	return r.streams[req.URL.Path]
+	return r.routes[req.URL.Path].responseStreaming
 }
 
 // NewRouter constructs a Router backed by mux and routePolicy.
@@ -105,39 +139,22 @@ type Router struct {
 	routePolicy *RoutePolicy
 }
 
-// Handle registers handler for pattern on the Router's mux.
-func (r *Router) Handle(pattern string, handler Handler) {
+// HandleRoute applies options to the route policy and registers handler for pattern on the Router's mux.
+func (r *Router) HandleRoute(pattern string, handler Handler, opts ...RouteOption) {
+	options := options(opts...)
+
+	if options.operation {
+		r.routePolicy.operations[routePatternPath(pattern)] = struct{}{}
+	}
+	if options.unauthenticated || options.requestStreaming || options.responseStreaming {
+		r.routePolicy.routes[pattern] = routePolicy{
+			unauthenticated:   options.unauthenticated,
+			requestStreaming:  options.requestStreaming,
+			responseStreaming: options.responseStreaming,
+		}
+	}
+
 	r.mux.Handle(pattern, handler)
-}
-
-// HandleOperation registers handler and marks pattern as a service-owned operation path.
-func (r *Router) HandleOperation(pattern string, handler Handler) {
-	r.routePolicy.Operation(pattern)
-	r.Handle(pattern, handler)
-}
-
-// HandleOperationFunc registers handler and marks pattern as a service-owned operation path.
-func (r *Router) HandleOperationFunc(pattern string, handler HandlerFunc) {
-	r.HandleOperation(pattern, handler)
-}
-
-// HandleUnauthenticated registers handler and marks pattern as not requiring transport token authentication.
-func (r *Router) HandleUnauthenticated(pattern string, handler Handler) {
-	r.routePolicy.AllowUnauthenticated(pattern)
-	r.Handle(pattern, handler)
-}
-
-// HandleStreaming registers handler and marks pattern as a route whose request body, response body,
-// or both are streamed incrementally rather than buffered whole.
-func (r *Router) HandleStreaming(pattern string, handler Handler) {
-	r.routePolicy.Streaming(pattern)
-	r.Handle(pattern, handler)
-}
-
-// HandleResponseStreaming registers handler and marks pattern as a route whose response body is streamed incrementally.
-func (r *Router) HandleResponseStreaming(pattern string, handler Handler) {
-	r.routePolicy.responseStreaming(pattern)
-	r.Handle(pattern, handler)
 }
 
 func routePatternPath(pattern string) string {

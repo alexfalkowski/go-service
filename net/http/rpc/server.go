@@ -25,11 +25,13 @@ import (
 //
 // Registration:
 // The resulting handler is registered on the package-level router configured via [Register].
+// Options are forwarded to the router registration.
 // [Register] must be called before Route; otherwise router/unaryContent will be nil and this function will panic.
-func Route[Req any, Res any](pattern string, handler unary.RequestHandler[Req, Res]) {
-	router.Handle(
+func Route[Req any, Res any](pattern string, handler unary.RequestHandler[Req, Res], options ...http.RouteOption) {
+	router.HandleRoute(
 		strings.Join(strings.Space, http.MethodPost, pattern),
 		unary.NewRequestHandler(unaryContent, handler),
+		options...,
 	)
 }
 
@@ -61,17 +63,19 @@ func Route[Req any, Res any](pattern string, handler unary.RequestHandler[Req, R
 // Registration:
 // The resulting handler is registered on the package-level router configured via [Register], and the
 // route is marked streaming on the router's route policy (see
-// [github.com/alexfalkowski/go-service/v2/net/http.RoutePolicy.Streaming]) so inbound request body
+// [github.com/alexfalkowski/go-service/v2/net/http.WithRouteStreaming]) so inbound request body
 // limiting is applied lazily instead of buffering the whole body.
+// Options are additive to the route's bidirectional streaming policy.
 // [Register] must be called before StreamRoute; otherwise router/streamContent will be nil and this function
 // will panic.
 //
 // Inbound size limiting:
 // opts.MaxReceiveSize (set via [Register]) bounds each value decoded by the resulting stream's
 // Recv, not the request body as a whole — see [stream.NewRequestHandler].
-func StreamRoute[Req any, Res any](pattern string, handler stream.RequestHandler[Req, Res]) {
-	router.HandleStreaming(
+func StreamRoute[Req any, Res any](pattern string, handler stream.RequestHandler[Req, Res], options ...http.RouteOption) {
+	router.HandleRoute(
 		strings.Join(strings.Space, http.MethodPost, pattern),
 		stream.NewRequestHandler(streamContent, opts, handler),
+		append(options, http.WithRouteStreaming())...,
 	)
 }

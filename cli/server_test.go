@@ -314,8 +314,7 @@ func startDrainingApplication(t *testing.T) (context.CancelFunc, <-chan int) {
 	started := make(chan struct{})
 	opts := []di.Option{
 		module.Server,
-		di.Register(func(policy *http.RoutePolicy) {
-			policy.AllowUnauthenticated("GET /drain")
+		di.Register(func() {
 			rest.StreamGet("/drain", func(ctx context.Context, stream *stream.Stream[test.Response]) error {
 				if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 					return err
@@ -324,7 +323,7 @@ func startDrainingApplication(t *testing.T) (context.CancelFunc, <-chan int) {
 				<-ctx.Done()
 
 				return ctx.Err()
-			})
+			}, http.WithRouteUnauthenticated())
 		}),
 		di.Register(func(lc di.Lifecycle) {
 			lc.Append(di.Hook{

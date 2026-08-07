@@ -80,7 +80,7 @@ func TestHandlerBypassesOperationPathWithNoLimiterOnContext(t *testing.T) {
 	t.Cleanup(func() { require.NoError(t, server.Close(t.Context())) })
 
 	routePolicy := http.NewRoutePolicy()
-	routePolicy.Operation("GET /healthz")
+	http.NewRouter(http.NewServeMux(), routePolicy).HandleRoute("GET /healthz", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), http.WithRouteOperation())
 
 	handler := httplimiter.NewHandler(routePolicy, server)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com/healthz", http.NoBody)

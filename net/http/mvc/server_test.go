@@ -692,6 +692,48 @@ func TestStaticFileSetsContentLength(t *testing.T) {
 	test.RequireResponseBody(t, res, "hello")
 }
 
+func TestGetAppliesRouteOptions(t *testing.T) {
+	mux := http.NewServeMux()
+	policy := http.NewRoutePolicy()
+	mvc.Register(mvc.RegisterParams{
+		Router:      http.NewRouter(mux, policy),
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem:  test.FileSystem,
+		Pool:        test.Pool,
+		Layout:      test.Layout,
+	})
+
+	require.True(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return mvc.NewFullView("views/hello.tmpl"), &test.Page{}, nil
+	}, mvc.WithRouteUnauthenticated()))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+	require.True(t, policy.IsUnauthenticated(req))
+}
+
+func TestStaticFileAppliesRouteOptions(t *testing.T) {
+	mux := http.NewServeMux()
+	policy := http.NewRoutePolicy()
+	mvc.Register(mvc.RegisterParams{
+		Router:      http.NewRouter(mux, policy),
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem:  test.FileSystem,
+		Pool:        test.Pool,
+		Layout:      test.Layout,
+	})
+
+	require.True(t, mvc.StaticFile("/robots.txt", "static/robots.txt", mvc.WithStaticUnauthenticated()))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/robots.txt", http.NoBody)
+	res := httptest.NewRecorder()
+	mux.ServeHTTP(res, req)
+
+	require.True(t, policy.IsUnauthenticated(req))
+}
+
 type requestModel struct {
 	Method string
 	Path   string

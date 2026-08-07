@@ -423,7 +423,7 @@ func benchmarkHTTP(b *testing.B, log *logger.Logger, trace, tlsEnabled bool) {
 	b.ReportAllocs()
 
 	address, cleanup := startBenchmarkHTTPServer(b, log, trace, tlsEnabled, func(router *transporthttp.Router, _ *transporthttp.Config) {
-		router.Handle("GET /hello", transporthttp.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
+		router.HandleRoute("GET /hello", transporthttp.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
 	})
 	httpClient, scheme, closeIdleConnections := newBenchmarkHTTPClient(b, tlsEnabled)
 	url := fmt.Sprintf("%s://%s/hello", scheme, address)

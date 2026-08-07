@@ -58,5 +58,5 @@ func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverF
 	})
 	handler = hooks.NewHandler(r.hook, handler)
 
-	r.router.HandleUnauthenticated(strings.Join(strings.Space, http.MethodPost, path), handler)
+	r.router.HandleRoute(strings.Join(strings.Space, http.MethodPost, path), handler, http.WithRouteUnauthenticated())
 }

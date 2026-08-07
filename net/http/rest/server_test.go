@@ -20,13 +20,14 @@ import (
 
 func TestGetAcceptsUnaryHandler(t *testing.T) {
 	mux := http.NewServeMux()
-	router := http.NewRouter(mux, http.NewRoutePolicy())
+	policy := http.NewRoutePolicy()
+	router := http.NewRouter(mux, policy)
 	rest.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
 
 	var handler unary.Handler[test.Response] = func(context.Context) (*test.Response, error) {
 		return &test.Response{Greeting: "Hello Bob"}, nil
 	}
-	rest.Get("/hello", handler)
+	rest.Get("/hello", handler, http.WithRouteOperation(), http.WithRouteUnauthenticated())
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	res := httptest.NewRecorder()
@@ -34,6 +35,8 @@ func TestGetAcceptsUnaryHandler(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
+	require.True(t, policy.IsOperation(req))
+	require.True(t, policy.IsUnauthenticated(req))
 }
 
 func TestStreamGetSendsValuesAndMarksRouteStreaming(t *testing.T) {
@@ -48,7 +51,7 @@ func TestStreamGetSendsValuesAndMarksRouteStreaming(t *testing.T) {
 		}
 
 		return stream.Send(&test.Response{Greeting: "Hello Alice"})
-	})
+	}, http.WithRouteOperation(), http.WithRouteUnauthenticated())
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(http.AcceptKey, media.NDJSON)
@@ -58,8 +61,10 @@ func TestStreamGetSendsValuesAndMarksRouteStreaming(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, media.NDJSON, res.Header().Get(http.ContentTypeKey))
-	require.True(t, policy.IsStreaming(req))
+	require.True(t, policy.IsOperation(req))
+	require.True(t, policy.IsUnauthenticated(req))
 	require.False(t, policy.IsRequestStreaming(req))
+	require.True(t, policy.IsResponseStreaming(req))
 
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeGreeting(t, scanner))
@@ -77,7 +82,7 @@ func TestStreamRouteLimitsRequestBody(t *testing.T) {
 	rest.StreamRoute("POST /hello", func(context.Context, *stream.Stream[test.Response]) error {
 		called = true
 		return nil
-	})
+	}, http.WithRouteOperation(), http.WithRouteUnauthenticated())
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", &test.UnknownLengthReader{Reader: strings.NewReader(strings.Repeat("a", 100))})
 	require.NoError(t, err)
@@ -88,6 +93,10 @@ func TestStreamRouteLimitsRequestBody(t *testing.T) {
 
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.Code)
 	require.False(t, called)
+	require.True(t, policy.IsOperation(req))
+	require.True(t, policy.IsUnauthenticated(req))
+	require.False(t, policy.IsRequestStreaming(req))
+	require.True(t, policy.IsResponseStreaming(req))
 }
 
 func TestStreamPostRejectsHTTP1(t *testing.T) {
@@ -114,7 +123,7 @@ func TestStreamPostPutPatchRecvAndSendOverHTTP2(t *testing.T) {
 	tests := []struct {
 		name   string
 		method string
-		call   func(string, stream.RequestHandler[test.Request, test.Response])
+		call   func(string, stream.RequestHandler[test.Request, test.Response], ...http.RouteOption)
 	}{
 		{name: "post", method: http.MethodPost, call: rest.StreamPost[test.Request, test.Response]},
 		{name: "put", method: http.MethodPut, call: rest.StreamPut[test.Request, test.Response]},
@@ -155,8 +164,8 @@ func TestStreamPostPutPatchRecvAndSendOverHTTP2(t *testing.T) {
 			mux.ServeHTTP(res, req)
 
 			require.Equal(t, http.StatusOK, res.Code)
-			require.True(t, policy.IsStreaming(req))
 			require.True(t, policy.IsRequestStreaming(req))
+			require.True(t, policy.IsResponseStreaming(req))
 
 			scanner := bufio.NewScanner(res.Body)
 			require.Equal(t, "Hello Bob", decodeGreeting(t, scanner))
