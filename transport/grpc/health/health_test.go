@@ -329,6 +329,69 @@ func TestWatchStaysOpenPastServerTimeout(t *testing.T) {
 	requireWatchStaysOpenUntilCancelAfter(t, cancel, wc, 2*time.Second)
 }
 
+func TestWatchDefaultConcurrentStreamLimit(t *testing.T) {
+	const maximumWatchStreams = 64
+
+	world := newGRPCHealthWorld(t, test.StatusURL("200"))
+	requireGRPCReady(t, world)
+
+	conn := test.RequireGRPCConn(t, world)
+	t.Cleanup(func() {
+		require.NoError(t, conn.Close())
+	})
+
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
+	cancels := make([]context.CancelFunc, 0, maximumWatchStreams)
+	defer func() {
+		for _, cancel := range cancels {
+			cancel()
+		}
+	}()
+
+	for range maximumWatchStreams {
+		ctx, cancel := context.WithCancel(t.Context())
+		cancels = append(cancels, cancel)
+
+		wc, err := client.Watch(ctx, req)
+		require.NoError(t, err)
+
+		resp, err := wc.Recv()
+		require.NoError(t, err)
+		require.Equal(t, health.Serving, resp.GetStatus())
+	}
+
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	errCh := make(chan error, 1)
+	go func() {
+		wc, err := client.Watch(ctx, req)
+		if err != nil {
+			errCh <- err
+			return
+		}
+
+		_, err = wc.Recv()
+		errCh <- err
+	}()
+
+	select {
+	case err := <-errCh:
+		require.FailNow(t, "watch exceeded the default concurrent stream limit", err)
+	case <-time.After(150 * time.Millisecond):
+	}
+
+	cancels[0]()
+
+	select {
+	case err := <-errCh:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		require.FailNow(t, "watch did not proceed after a stream closed")
+	}
+}
+
 func TestWatchServerLimiter(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"),
 		test.WithWorldTelemetry("otlp"),
