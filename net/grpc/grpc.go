@@ -413,7 +413,7 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 //
 // Additional low-level server tuning may be provided through options using:
 //
-//   - max_concurrent_streams
+//   - max_concurrent_streams (defaults to 64; set to 0 for the upstream unbounded behavior)
 //   - max_header_list_size
 //   - initial_window_size
 //   - initial_conn_window_size
@@ -440,9 +440,7 @@ func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption)
 		Timeout:               timeout.Duration(),
 	}))
 	serverOptions = append(serverOptions, grpc.ConnectionTimeout(options.NonNegativeDuration("connection_timeout", timeout).Duration()))
-	if _, ok := options["max_concurrent_streams"]; ok {
-		serverOptions = append(serverOptions, grpc.MaxConcurrentStreams(options.Uint32("max_concurrent_streams", 0)))
-	}
+	serverOptions = append(serverOptions, grpc.MaxConcurrentStreams(options.Uint32("max_concurrent_streams", 64)))
 
 	if _, ok := options["max_header_list_size"]; ok {
 		serverOptions = append(serverOptions, grpc.MaxHeaderListSize(options.Uint32Size("max_header_list_size", 0)))

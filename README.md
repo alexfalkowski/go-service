@@ -1247,6 +1247,7 @@ transport:
 > - Address may use `<network>://<address>` (for example `tcp://:8000`) or a raw listen address such as `:8000`, which defaults to the `tcp` network.
 > - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
 > - `transport.grpc.timeout` bounds unary RPC handlers and feeds gRPC server keepalive/connection defaults; it does not cap stream lifetime. Long-lived streams remain open until client cancellation or stream-specific controls apply.
+> - gRPC limits each client connection to 64 concurrent streams by default. Set `transport.grpc.options.max_concurrent_streams` to a positive base-10 integer to override it, or to `"0"` to explicitly retain upstream's unbounded behavior.
 > - `max_receive_size` limits inbound payload size. A zero value uses the default `4MB`.
 > - For HTTP, `max_receive_size` applies per request body, except for bidirectional streaming routes (see [HTTP streaming (NDJSON)](#http-streaming-ndjson)), where it applies per decoded value instead, with no cumulative total. For gRPC, it applies per inbound unary request and per inbound stream message.
 > - MVC does not enforce its own body-size caps; supported HTTP server wiring applies `max_receive_size` before MVC handlers run, and go-service HTTP clients apply their configured response-size cap when reading responses.

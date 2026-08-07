@@ -31,13 +31,15 @@
 //
 // NewServer also supports the following low-level server tuning keys:
 //
-//   - max_concurrent_streams: base-10 unsigned integer string
+//   - max_concurrent_streams: base-10 unsigned integer string; defaults to 64
 //   - max_header_list_size: SI size string such as 16MB
 //   - initial_window_size: SI size string such as 1MB
 //   - initial_conn_window_size: SI size string such as 4MB
 //   - max_send_msg_size: SI size string such as 16MB
 //
-// The timeout argument is also used as the keepalive ping Timeout. Request
+// The `max_concurrent_streams` default bounds live streams per client connection.
+// Set it to `0` to explicitly retain the upstream unbounded behavior. The timeout
+// argument is also used as the keepalive ping Timeout. Request
 // handler timeouts are applied by higher-level transport wiring, not by
 // NewServer itself.
 //
