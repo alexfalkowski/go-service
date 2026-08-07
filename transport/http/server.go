@@ -102,10 +102,10 @@ type ServerParams struct {
 //   - optional token verification ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Verifier` is non-nil
 //   - optional rate limiting ([github.com/alexfalkowski/go-service/v2/transport/http/limiter]) when `params.Limiter` is non-nil
 //   - optional access control ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Access` is non-nil
-//   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v2/transport/http/body]); routes
-//     registered as streaming (see `params.RoutePolicy`) are never buffered by this middleware, and
-//     bidirectional streaming routes cap each decoded request value independently at the content layer
-//     instead (see [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv])
+//   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v2/transport/http/body]);
+//     bidirectional streaming routes (see `params.RoutePolicy`) are never buffered by this middleware and
+//     cap each decoded request value independently at the content layer instead (see
+//     [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv])
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - gzip compression wrapping the final mux handler, including not-found fallbacks
 //     ([github.com/alexfalkowski/go-service/v2/net/http/compress.GzipHandler] with [http.NewNotFoundHandler])
@@ -113,9 +113,10 @@ type ServerParams struct {
 // Route policy from `params.RoutePolicy` controls middleware bypasses. Registered operation routes
 // (health/metrics/etc.) bypass logging, token verification, rate limiting, and access control.
 // Registered unauthenticated routes bypass token verification and access control only. Registered
-// streaming routes are never buffered by the inbound body middleware (see
+// bidirectional streaming routes are never buffered by the inbound body middleware (see
 // [github.com/alexfalkowski/go-service/v2/transport/http/body.NewHandler]); they keep the
-// declared-Content-Length short-circuit but no cumulative mid-stream limit.
+// declared-Content-Length short-circuit but no cumulative mid-stream limit. Response-only streaming
+// routes retain the normal cumulative request-body limit.
 //
 // TLS:
 //

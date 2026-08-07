@@ -172,10 +172,10 @@ func StreamRouteRequest[Req any, Res any](pattern string, handler stream.Request
 // Registration:
 // The resulting handler is registered on the package-level router configured via Register, and the
 // route is marked streaming on the router's route policy (see
-// [github.com/alexfalkowski/go-service/v2/net/http.RoutePolicy.Streaming]) so inbound request body
-// limiting is applied lazily instead of buffering the whole body.
+// [github.com/alexfalkowski/go-service/v2/net/http.RoutePolicy.Streaming]). Its request body retains
+// the usual cumulative request-body limit because it is not streamed.
 // Register must be called before StreamRoute; otherwise router/streamContent will be nil and this function will
 // panic.
 func StreamRoute[Res any](pattern string, handler stream.Handler[Res]) {
-	router.HandleStreaming(pattern, stream.NewHandler(streamContent, opts, handler))
+	router.HandleResponseStreaming(pattern, stream.NewHandler(streamContent, opts, handler))
 }

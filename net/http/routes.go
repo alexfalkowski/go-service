@@ -7,7 +7,7 @@ func NewRoutePolicy() *RoutePolicy {
 	return &RoutePolicy{
 		operations:      map[string]struct{}{},
 		unauthenticated: map[string]struct{}{},
-		streaming:       map[string]struct{}{},
+		streams:         map[string]streamPolicy{},
 	}
 }
 
@@ -19,7 +19,12 @@ func NewRoutePolicy() *RoutePolicy {
 type RoutePolicy struct {
 	operations      map[string]struct{}
 	unauthenticated map[string]struct{}
-	streaming       map[string]struct{}
+	streams         map[string]streamPolicy
+}
+
+type streamPolicy struct {
+	request  bool
+	response bool
 }
 
 // Operation marks pattern as a service-owned operation path.
@@ -37,7 +42,11 @@ func (r *RoutePolicy) AllowUnauthenticated(pattern string) {
 // Streaming marks pattern as a route whose request body, response body, or both are streamed
 // incrementally rather than buffered whole.
 func (r *RoutePolicy) Streaming(pattern string) {
-	r.streaming[pattern] = struct{}{}
+	r.streams[pattern] = streamPolicy{request: true, response: true}
+}
+
+func (r *RoutePolicy) responseStreaming(pattern string) {
+	r.streams[pattern] = streamPolicy{response: true}
 }
 
 // IsOperation reports whether req targets a registered operation path.
@@ -64,17 +73,25 @@ func (r *RoutePolicy) IsUnauthenticated(req *Request) bool {
 // IsStreaming reports whether req targets a route whose request body, response body, or both are
 // streamed incrementally rather than buffered whole.
 func (r *RoutePolicy) IsStreaming(req *Request) bool {
+	policy := r.stream(req)
+	return policy.request || policy.response
+}
+
+// IsRequestStreaming reports whether req targets a route whose request body is streamed incrementally rather than buffered whole.
+func (r *RoutePolicy) IsRequestStreaming(req *Request) bool {
+	return r.stream(req).request
+}
+
+func (r *RoutePolicy) stream(req *Request) streamPolicy {
 	if !strings.IsEmpty(req.Pattern) {
-		_, ok := r.streaming[req.Pattern]
-		return ok
+		return r.streams[req.Pattern]
 	}
 
-	if _, ok := r.streaming[routeRequestPattern(req)]; ok {
-		return true
+	if policy, ok := r.streams[routeRequestPattern(req)]; ok {
+		return policy
 	}
 
-	_, ok := r.streaming[req.URL.Path]
-	return ok
+	return r.streams[req.URL.Path]
 }
 
 // NewRouter constructs a Router backed by mux and routePolicy.
@@ -114,6 +131,12 @@ func (r *Router) HandleUnauthenticated(pattern string, handler Handler) {
 // or both are streamed incrementally rather than buffered whole.
 func (r *Router) HandleStreaming(pattern string, handler Handler) {
 	r.routePolicy.Streaming(pattern)
+	r.Handle(pattern, handler)
+}
+
+// HandleResponseStreaming registers handler and marks pattern as a route whose response body is streamed incrementally.
+func (r *Router) HandleResponseStreaming(pattern string, handler Handler) {
+	r.routePolicy.responseStreaming(pattern)
 	r.Handle(pattern, handler)
 }
 
