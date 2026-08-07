@@ -29,7 +29,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/jellydator/ttlcache/v3 v3.4.1
-	github.com/klauspost/compress v1.19.1
+	github.com/klauspost/compress v1.19.2
 	github.com/lmittmann/tint v1.2.0
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/oklog/ulid v1.3.1
@@ -93,7 +93,7 @@ require (
 	github.com/golang/mock v1.7.0-rc.1 // indirect
 	github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hjson/hjson-go/v4 v4.6.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect
