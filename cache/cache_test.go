@@ -119,9 +119,11 @@ func TestGetOrPersistSingleWinner(t *testing.T) {
 				return fmt.Sprintf("value-%d", i), nil
 			})
 			errs[i] = err
-			if err == nil {
-				values[i] = *value
+			if err != nil {
+				return
 			}
+
+			values[i] = *value
 		}(i)
 	}
 	group.Wait()

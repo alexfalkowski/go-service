@@ -172,6 +172,16 @@ func Register(params TracerParams) error {
 
 	switch params.Config.Kind {
 	case "otlp":
+		if err := otlp.ValidateCadence(params.Config.BatchTimeout); err != nil {
+			return prefix(err)
+		}
+		if err := otlp.ValidateBatchConfig(otlp.BatchConfig{
+			MaxQueueSize:       params.Config.MaxQueueSize,
+			MaxExportBatchSize: params.Config.MaxExportBatchSize,
+		}); err != nil {
+			return prefix(err)
+		}
+
 		if err := otlp.ValidateEndpoint(otlp.Endpoint{
 			Protocol: params.Config.GetProtocol(),
 			Address:  params.Config.URL,

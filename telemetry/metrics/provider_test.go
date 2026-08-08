@@ -275,7 +275,7 @@ func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
 	cfg := &metrics.Config{
 		Kind:     "otlp",
 		URL:      server.URL,
-		Interval: 20 * time.Millisecond,
+		Interval: time.Second,
 		Timeout:  time.Second,
 	}
 	reader, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})

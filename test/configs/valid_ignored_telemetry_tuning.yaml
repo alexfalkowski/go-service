@@ -1,0 +1,9 @@
+telemetry:
+  logger:
+    kind: text
+    batch_timeout: 1500ms
+    max_queue_size: 8193
+    max_export_batch_size: 2049
+  metrics:
+    kind: prometheus
+    interval: 1500ms

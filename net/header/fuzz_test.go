@@ -26,17 +26,17 @@ func FuzzParseBearer(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, value string) {
 		token, err := header.ParseBearer(value)
-		if err == nil {
-			require.NotEmpty(t, token)
+		if err != nil {
+			require.Empty(t, token)
+			require.True(
+				t,
+				errors.Is(err, header.ErrInvalidAuthorization) || errors.Is(err, header.ErrNotSupportedAuthorization),
+				"unexpected error: %v",
+				err,
+			)
 			return
 		}
 
-		require.Empty(t, token)
-		require.True(
-			t,
-			errors.Is(err, header.ErrInvalidAuthorization) || errors.Is(err, header.ErrNotSupportedAuthorization),
-			"unexpected error: %v",
-			err,
-		)
+		require.NotEmpty(t, token)
 	})
 }

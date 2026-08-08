@@ -15,6 +15,10 @@ import (
 // Values are often configured as go-service "source strings" so that secrets can be
 // supplied at runtime rather than embedded directly in config files. See Secrets
 // for the supported forms and resolution behavior.
+//
+// Map does not validate HTTP or gRPC header syntax. After source resolution, callers
+// pass names and values unchanged to the selected exporter, which owns any
+// protocol-specific validation and may reject them only when an export is attempted.
 type Map map[string]string
 
 // Secrets resolves configured header values using the go-service "source string" convention.

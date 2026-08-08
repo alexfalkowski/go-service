@@ -31,6 +31,13 @@
 // [runtime.Must]. This is intended for strict startup paths where missing secrets
 // should abort service startup.
 //
+// # Protocol syntax
+//
+// This package does not validate HTTP or gRPC header syntax. After source resolution,
+// telemetry packages pass names and values to the selected exporter, which owns any
+// protocol-specific validation. Invalid syntax may therefore be reported when an
+// export is attempted rather than during service startup.
+//
 // # Mutability and usage notes
 //
 // [Map.Secrets] and [Map.MustSecrets] mutate the map in place after all values
