@@ -28,12 +28,12 @@ func requireAnyNetworkNow(t *testing.T, configs ...*time.Config) {
 		require.NoError(t, err)
 
 		_, err = n.Now()
-		if err == nil {
-			return
+		if err != nil {
+			errs = append(errs, err)
+			continue
 		}
 
-		t.Logf("%s %q failed: %v", cfg.Kind, cfg.Address, err)
-		errs = append(errs, err)
+		return
 	}
 
 	require.NoError(t, errors.Join(errs...))

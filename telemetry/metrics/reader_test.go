@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/metric"
@@ -165,6 +166,18 @@ func TestOTLPGRPCReader(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, reader)
 	require.NoError(t, reader.Shutdown(t.Context()))
+}
+
+func TestOTLPGRPCReaderRejectsFractionalSecondInterval(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &metrics.Config{
+		Kind:     "otlp",
+		Protocol: "grpc",
+		Interval: 1500 * time.Millisecond,
+	}
+
+	_, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
+	require.ErrorIs(t, err, otlp.ErrInvalidCadence)
 }
 
 func TestInvalidOTLPGRPCEndpoint(t *testing.T) {

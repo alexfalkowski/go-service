@@ -429,7 +429,7 @@ func TestRegisterOTLPGRPCExporterWithBatchTuning(t *testing.T) {
 			Kind:               "otlp",
 			Protocol:           "grpc",
 			URL:                "localhost:4317",
-			BatchTimeout:       20 * time.Millisecond,
+			BatchTimeout:       time.Second,
 			ExportTimeout:      time.Second,
 			MaxQueueSize:       1024,
 			MaxExportBatchSize: 256,
@@ -442,6 +442,41 @@ func TestRegisterOTLPGRPCExporterWithBatchTuning(t *testing.T) {
 
 	require.NoError(t, err)
 	require.True(t, tracer.IsEnabled())
+}
+
+func TestRegisterOTLPGRPCExporterRejectsFractionalSecondBatchTimeout(t *testing.T) {
+	err := tracer.Register(tracer.TracerParams{
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config: &tracer.Config{
+			Kind:         "otlp",
+			Protocol:     "grpc",
+			BatchTimeout: 1500 * time.Millisecond,
+		},
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+
+	require.ErrorIs(t, err, otlp.ErrInvalidCadence)
+}
+
+func TestRegisterOTLPGRPCExporterRejectsExportBatchLargerThanQueue(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	err := tracer.Register(tracer.TracerParams{
+		Lifecycle: lc,
+		Config: &tracer.Config{
+			Kind:               "otlp",
+			Protocol:           "grpc",
+			MaxQueueSize:       1,
+			MaxExportBatchSize: 2,
+		},
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+	require.ErrorIs(t, err, otlp.ErrInvalidBatchConfig)
 }
 
 func withUnsampledRemoteParent(ctx context.Context) context.Context {

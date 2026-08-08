@@ -43,11 +43,12 @@ func TestEncodeOrCloseReturnsError(t *testing.T) {
 	encoder := yaml.NewEncoder(test.ErrWriter{})
 
 	err := encoder.Encode(map[string]string{"test": "test"})
-	if err == nil {
-		err = encoder.Close()
+	if err != nil {
+		require.Error(t, err)
+		return
 	}
 
-	require.Error(t, err)
+	require.Error(t, encoder.Close())
 }
 
 func TestDecodeReturnsError(t *testing.T) {

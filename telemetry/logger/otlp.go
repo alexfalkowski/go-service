@@ -18,6 +18,16 @@ import (
 )
 
 func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
+	if err := otlp.ValidateCadence(params.Config.BatchTimeout); err != nil {
+		return nil, err
+	}
+	if err := otlp.ValidateBatchConfig(otlp.BatchConfig{
+		MaxQueueSize:       params.Config.MaxQueueSize,
+		MaxExportBatchSize: params.Config.MaxExportBatchSize,
+	}); err != nil {
+		return nil, err
+	}
+
 	if err := otlp.ValidateEndpoint(otlp.Endpoint{
 		Protocol: params.Config.GetProtocol(),
 		Address:  params.Config.URL,

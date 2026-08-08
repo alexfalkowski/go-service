@@ -43,6 +43,33 @@ func TestValidateEndpoint(t *testing.T) {
 	}
 }
 
+func TestValidateBatchConfig(t *testing.T) {
+	tests := []struct {
+		config  otlp.BatchConfig
+		name    string
+		wantErr bool
+	}{
+		{name: "defaults"},
+		{name: "limits", config: otlp.BatchConfig{MaxQueueSize: otlp.MaxQueueSize, MaxExportBatchSize: otlp.MaxExportBatchSize}},
+		{name: "queue above limit", config: otlp.BatchConfig{MaxQueueSize: otlp.MaxQueueSize + 1}, wantErr: true},
+		{name: "batch above limit", config: otlp.BatchConfig{MaxExportBatchSize: otlp.MaxExportBatchSize + 1}, wantErr: true},
+		{name: "configured batch above queue", config: otlp.BatchConfig{MaxQueueSize: 1, MaxExportBatchSize: 2}, wantErr: true},
+		{name: "default batch above queue", config: otlp.BatchConfig{MaxQueueSize: 1}, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := otlp.ValidateBatchConfig(tt.config)
+			if tt.wantErr {
+				require.ErrorIs(t, err, otlp.ErrInvalidBatchConfig)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestValidateEndpointInvalidURL(t *testing.T) {
 	err := otlp.ValidateEndpoint(otlp.Endpoint{
 		Protocol: "http",

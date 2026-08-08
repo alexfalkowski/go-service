@@ -71,9 +71,9 @@ type Config struct {
 
 	// BatchTimeout is the maximum delay between batched log record exports.
 	//
-	// A zero value keeps the OpenTelemetry SDK default. Negative values are
-	// invalid. This field only applies when Kind is "otlp".
-	BatchTimeout time.Duration `yaml:"batch_timeout,omitempty" json:"batch_timeout,omitempty" toml:"batch_timeout,omitempty" validate:"gte=0"`
+	// A zero value keeps the OpenTelemetry SDK default. Nonzero values must use
+	// whole-second precision. This field only applies when Kind is "otlp".
+	BatchTimeout time.Duration `yaml:"batch_timeout,omitempty" json:"batch_timeout,omitempty" toml:"batch_timeout,omitempty" validate:"gte=0,otlp_duration_second_precision"`
 
 	// ExportTimeout is the maximum duration allowed for a single batch export.
 	//
@@ -84,15 +84,16 @@ type Config struct {
 	// MaxQueueSize is the maximum number of log records buffered before older
 	// records are dropped.
 	//
-	// A zero value keeps the OpenTelemetry SDK default, which is 2048.
-	// Negative values are invalid. This field only applies when Kind is "otlp".
-	MaxQueueSize int `yaml:"max_queue_size,omitempty" json:"max_queue_size,omitempty" toml:"max_queue_size,omitempty" validate:"gte=0"`
+	// A zero value keeps the OpenTelemetry SDK default, which is 2048. Explicit
+	// values may not exceed 8192. This field only applies when Kind is "otlp".
+	MaxQueueSize int `yaml:"max_queue_size,omitempty" json:"max_queue_size,omitempty" toml:"max_queue_size,omitempty" validate:"gte=0,otlp_lte=8192"`
 
 	// MaxExportBatchSize is the maximum number of log records exported in a single batch.
 	//
-	// A zero value keeps the OpenTelemetry SDK default, which is 512. Negative
-	// values are invalid. This field only applies when Kind is "otlp".
-	MaxExportBatchSize int `yaml:"max_export_batch_size,omitempty" json:"max_export_batch_size,omitempty" toml:"max_export_batch_size,omitempty" validate:"gte=0"`
+	// A zero value keeps the OpenTelemetry SDK default, which is 512. Explicit
+	// values may not exceed 2048 or the effective queue size. This field only
+	// applies when Kind is "otlp".
+	MaxExportBatchSize int `yaml:"max_export_batch_size,omitempty" json:"max_export_batch_size,omitempty" toml:"max_export_batch_size,omitempty" validate:"gte=0,otlp_lte=2048"`
 }
 
 // IsEnabled reports whether logging configuration is present.

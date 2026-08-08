@@ -59,6 +59,8 @@ func TestInvalidFileConfig(t *testing.T) {
 		test.FilePath("configs/invalid.yaml"),
 		test.FilePath("configs/invalid_logger_kind.yaml"),
 		test.FilePath("configs/invalid_metrics_kind.yaml"),
+		test.FilePath("configs/invalid_telemetry_batch.yaml"),
+		test.FilePath("configs/invalid_telemetry_cadence.yaml"),
 		test.FilePath("configs/invalid_telemetry.config.yaml"),
 		test.FilePath("configs/invalid_trace.yaml"),
 		test.FilePath("configs/invalid_tracer_kind.yaml"),
@@ -78,6 +80,25 @@ func TestInvalidFileConfig(t *testing.T) {
 
 			_, err := config.NewConfig[config.Config](decoder, test.Validator)
 			require.Error(t, err)
+		})
+	}
+}
+
+func TestValidTelemetryConfig(t *testing.T) {
+	files := []string{
+		test.FilePath("configs/valid_telemetry_batch.yaml"),
+		test.FilePath("configs/valid_ignored_telemetry_tuning.yaml"),
+	}
+
+	for _, file := range files {
+		t.Run(file, func(t *testing.T) {
+			set := flag.NewFlagSet("test")
+			set.AddConfig(file)
+
+			decoder := test.NewDecoder(set)
+
+			_, err := config.NewConfig[config.Config](decoder, test.Validator)
+			require.NoError(t, err)
 		})
 	}
 }

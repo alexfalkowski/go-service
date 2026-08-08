@@ -426,7 +426,7 @@ func TestOTLPGRPCLoggerWithBatchTuning(t *testing.T) {
 		Kind:               "otlp",
 		Protocol:           "grpc",
 		URL:                "localhost:4317",
-		BatchTimeout:       20 * time.Millisecond,
+		BatchTimeout:       time.Second,
 		ExportTimeout:      time.Second,
 		MaxQueueSize:       1024,
 		MaxExportBatchSize: 256,
@@ -444,6 +444,48 @@ func TestOTLPGRPCLoggerWithBatchTuning(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, log)
 	require.NoError(t, lc.Stop(t.Context()))
+}
+
+func TestOTLPGRPCLoggerRejectsFractionalSecondBatchTimeout(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &logger.Config{
+		Kind:         "otlp",
+		Protocol:     "grpc",
+		BatchTimeout: 1500 * time.Millisecond,
+	}
+	params := logger.LoggerParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}
+
+	_, err := logger.NewLogger(params)
+	require.ErrorIs(t, err, otlp.ErrInvalidCadence)
+}
+
+func TestOTLPGRPCLoggerRejectsExportBatchLargerThanQueue(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &logger.Config{
+		Kind:               "otlp",
+		Protocol:           "grpc",
+		MaxQueueSize:       1,
+		MaxExportBatchSize: 2,
+	}
+	params := logger.LoggerParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}
+
+	log, err := logger.NewLogger(params)
+	require.Nil(t, log)
+	require.ErrorIs(t, err, otlp.ErrInvalidBatchConfig)
 }
 
 func TestOTLPLoggerUsesConfiguredLevel(t *testing.T) {

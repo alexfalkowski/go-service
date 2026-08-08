@@ -1,6 +1,8 @@
 package config
 
 import (
+	"strconv"
+
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -18,6 +20,8 @@ type FieldLevel = validator.FieldLevel
 // It also registers repository-owned validation tags:
 //   - `config_size`: accepts integer-like byte sizes between 0 and [bytes.MaxConfigSize].
 //   - `duration_second_precision`: accepts positive durations that are exact multiples of one second.
+//   - `otlp_duration_second_precision`: applies whole-second duration validation to OTLP configuration.
+//   - `otlp_lte`: applies an inclusive integer limit to OTLP configuration.
 //
 // This constructor is typically wired via [Module] and consumed by `NewConfig[T]` to validate
 // decoded configuration before returning it to the caller.
@@ -25,6 +29,8 @@ func NewValidator() *Validator {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	runtime.Must(validate.RegisterValidation("config_size", validateConfigSize))
 	runtime.Must(validate.RegisterValidation("duration_second_precision", validateDurationSecondPrecision))
+	runtime.Must(validate.RegisterValidation("otlp_duration_second_precision", validateOTLPDurationSecondPrecision))
+	runtime.Must(validate.RegisterValidation("otlp_lte", validateOTLPMax))
 
 	return &Validator{validate}
 }
@@ -47,4 +53,27 @@ func validateDurationSecondPrecision(fl FieldLevel) bool {
 	field := fl.Field()
 	duration := time.Duration(field.Int())
 	return duration > 0 && duration%time.Second == 0
+}
+
+func validateOTLPDurationSecondPrecision(fl FieldLevel) bool {
+	if !isOTLP(fl) {
+		return true
+	}
+
+	duration := time.Duration(fl.Field().Int())
+	return duration == 0 || duration%time.Second == 0
+}
+
+func validateOTLPMax(fl FieldLevel) bool {
+	if !isOTLP(fl) {
+		return true
+	}
+
+	maxValue, err := strconv.ParseInt(fl.Param(), 10, 64)
+	return err == nil && fl.Field().Int() <= maxValue
+}
+
+func isOTLP(fl FieldLevel) bool {
+	kind := fl.Parent().FieldByName("Kind")
+	return kind.IsValid() && kind.String() == "otlp"
 }

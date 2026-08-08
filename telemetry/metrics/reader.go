@@ -73,6 +73,10 @@ func NewReader(params ReaderParams) (metric.Reader, error) {
 func newMetricReader(name env.Name, fs *os.FS, cfg *Config) (metric.Reader, error) {
 	switch cfg.Kind {
 	case "otlp":
+		if err := otlp.ValidateCadence(cfg.Interval); err != nil {
+			return nil, prefix(err)
+		}
+
 		if err := otlp.ValidateEndpoint(otlp.Endpoint{
 			Protocol: cfg.GetProtocol(),
 			Address:  cfg.URL,
