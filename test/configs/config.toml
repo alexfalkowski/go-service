@@ -85,6 +85,9 @@ level = "info"
 "k8s.namespace.name" = "payments"
 "service.instance.id" = "instance-1"
 
+[telemetry.metadata]
+max_value_size = "4KB"
+
 [telemetry.metrics]
 kind = "prometheus"
 interval = "30s"

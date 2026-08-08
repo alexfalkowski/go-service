@@ -111,11 +111,11 @@ func TestMetaTruncatesLongValues(t *testing.T) {
 		meta.WithRequestID(meta.String(value)),
 	)
 
-	attrs := logger.Meta(ctx)
+	attrs := logger.Meta(ctx, 7)
 
 	require.Len(t, attrs, 1)
 	require.Equal(t, meta.RequestIDKey, attrs[0].Key)
-	require.Len(t, attrs[0].Value.String(), 1024)
+	require.Len(t, attrs[0].Value.String(), 7)
 }
 
 func TestMetaTruncatesLongValuesAtUTF8Boundary(t *testing.T) {
@@ -123,7 +123,7 @@ func TestMetaTruncatesLongValuesAtUTF8Boundary(t *testing.T) {
 		t.Context(),
 		meta.WithRequestID(meta.String(strings.Repeat("a", 2048))),
 	)
-	attrs := logger.Meta(ctx)
+	attrs := logger.Meta(ctx, 3)
 	require.Len(t, attrs, 1)
 
 	maxLength := len(attrs[0].Value.String())
@@ -142,7 +142,7 @@ func TestMetaTruncatesLongValuesAtUTF8Boundary(t *testing.T) {
 				meta.WithRequestID(meta.String(tt.value)),
 			)
 
-			attrs := logger.Meta(ctx)
+			attrs := logger.Meta(ctx, 3)
 			truncated := attrs[0].Value.String()
 
 			require.Len(t, attrs, 1)
@@ -258,7 +258,16 @@ func TestDisabledLogger(t *testing.T) {
 
 func TestLogAddsMetadataAndError(t *testing.T) {
 	handler := &test.CaptureHandler{}
-	log := &logger.Logger{Logger: slog.New(handler)}
+	original := slog.Default()
+	t.Cleanup(func() {
+		slog.SetDefault(original)
+	})
+	log, err := logger.NewLogger(logger.LoggerParams{
+		Config: &logger.Config{Kind: "json"},
+		Limit:  1024,
+	})
+	require.NoError(t, err)
+	log.Logger = slog.New(handler)
 	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
 
 	log.Log(ctx, logger.NewText("plain"), logger.String("component", "test"))

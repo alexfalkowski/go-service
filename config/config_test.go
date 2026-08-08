@@ -384,6 +384,7 @@ func verifySQLConfig(t *testing.T, cfg *config.Config) {
 func verifyTelemetryConfig(t *testing.T, cfg *config.Config) {
 	t.Helper()
 
+	require.Equal(t, 4*bytes.KB, cfg.Telemetry.Metadata.MaxValueSize)
 	require.Equal(t, "text", cfg.Telemetry.Logger.Kind)
 	require.Equal(t, "info", cfg.Telemetry.Logger.Level)
 	require.Equal(t, "payments", cfg.Telemetry.Attributes["k8s.namespace.name"])

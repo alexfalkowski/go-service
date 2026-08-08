@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -97,8 +98,8 @@ func SpanFromContext(ctx context.Context) Span {
 // It always installs the metadata span processor (see [Meta]) so spans created
 // by any instrumentation carry the request/service context used to correlate
 // them with logs.
-func NewProvider(opts ...ProviderOption) *SDKProvider {
-	opts = append([]ProviderOption{sdk.WithSpanProcessor(newMetaProcessor())}, opts...)
+func NewProvider(limit meta.Limit, opts ...ProviderOption) *SDKProvider {
+	opts = append([]ProviderOption{sdk.WithSpanProcessor(&metaProcessor{limit: limit})}, opts...)
 
 	return sdk.NewTracerProvider(opts...)
 }
@@ -144,6 +145,9 @@ type TracerParams struct {
 	// Environment is the deployment environment name used for the resource's
 	// deployment.environment.name attribute.
 	Environment env.Environment
+
+	// Limit bounds metadata values attached to spans.
+	Limit meta.Limit
 }
 
 // Register configures and installs a global OpenTelemetry tracer provider.
@@ -198,7 +202,7 @@ func Register(params TracerParams) error {
 			providerOpts = append(providerOpts, sdk.WithSampler(sampler))
 		}
 
-		provider := NewProvider(providerOpts...)
+		provider := NewProvider(params.Limit, providerOpts...)
 		setProvider(provider, true)
 
 		params.Lifecycle.Append(di.Hook{

@@ -572,6 +572,8 @@ Telemetry config root is `telemetry.Config`:
 telemetry:
   attributes:
     k8s.namespace.name: payments
+  metadata:
+    max_value_size: 4KB
   logger: ...
   metrics: ...
   propagation: ...
@@ -583,6 +585,23 @@ and traces. They are not source strings. Fixed go-service identity attributes
 such as `host.id`, `service.instance.id`, `service.name`, `service.version`,
 and `deployment.environment.name` take precedence if the same key is
 configured.
+
+### Metadata
+
+Request and service metadata is copied from the context to go-service logger
+records and trace attributes. Configure the maximum size of each exported value:
+
+```yaml
+telemetry:
+  metadata:
+    max_value_size: 4KB
+```
+
+When `max_value_size` is omitted or `0`, each value defaults to 1,024 bytes.
+Values are truncated on a UTF-8 boundary only in telemetry; the original value
+remains in the request context and transport metadata. Choose a value that fits
+the service's log and trace payload budgets: the limit applies to every
+metadata-bearing log record and span.
 
 ### Propagation
 

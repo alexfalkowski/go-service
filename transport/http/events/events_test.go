@@ -170,9 +170,19 @@ func TestReceiveCanReportProcessingFailure(t *testing.T) {
 
 func TestReceiveLogsPanickingProcessor(t *testing.T) {
 	capture := &test.CaptureHandler{}
+	original := slog.Default()
+	t.Cleanup(func() {
+		slog.SetDefault(original)
+	})
+	log, err := logger.NewLogger(logger.LoggerParams{
+		Config: &logger.Config{Kind: "json"},
+		Limit:  1024,
+	})
+	require.NoError(t, err)
+	log.Logger = slog.New(capture)
 	world := test.NewWorld(t,
 		test.WithWorldHTTP(),
-		test.WithWorldLogger(&logger.Logger{Logger: slog.New(capture)}),
+		test.WithWorldLogger(log),
 	)
 	world.Receiver.Register(t.Context(), "/events", func(context.Context, events.Event) events.Result {
 		panic("processor exploded")

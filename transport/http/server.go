@@ -8,11 +8,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
+	httpmeta "github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
@@ -42,6 +43,15 @@ type ServerParams struct {
 	// Shutdowner is used by the underlying *[server.Service] to coordinate shutdown.
 	Shutdowner di.Shutdowner
 
+	// ID generates request IDs when one is not already present.
+	ID id.Generator
+
+	// Verifier enables server-side token verification middleware when non-nil.
+	Verifier token.Verifier
+
+	// Access enables server-side access control middleware when non-nil.
+	Access access.Controller
+
 	// Mux is the HTTP request multiplexer that holds registered routes/handlers.
 	Mux *http.ServeMux
 
@@ -54,31 +64,25 @@ type ServerParams struct {
 	// Logger enables HTTP server logging middleware when non-nil.
 	Logger *logger.Logger
 
-	// UserAgent is the service user agent used by metadata middleware.
-	UserAgent env.UserAgent
-
-	// Version is the service version reported via response headers and/or request context metadata.
-	Version env.Version
-
-	// ID generates request IDs when one is not already present.
-	ID id.Generator
-
 	// RoutePolicy stores route policy used by transport middleware.
 	RoutePolicy *http.RoutePolicy
 
 	// Limiter enables server-side rate limiting middleware when non-nil.
 	Limiter *limiter.Server
 
-	// Verifier enables server-side token verification middleware when non-nil.
-	Verifier token.Verifier
+	// UserAgent is the service user agent used by metadata middleware.
+	UserAgent env.UserAgent
 
-	// Access enables server-side access control middleware when non-nil.
-	Access access.Controller
+	// Version is the service version reported via response headers and/or request context metadata.
+	Version env.Version
 
 	// Handlers are additional chained handlers to insert into the middleware chain.
 	//
 	// These handlers are applied in the order provided.
 	Handlers []ChainedHandler `optional:"true"`
+
+	// Limit bounds metadata values attached to server spans.
+	Limit meta.Limit
 }
 
 // NewServer constructs an HTTP transport [Server] when the transport is enabled.
@@ -137,7 +141,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	neg := NewChainedHandlers()
-	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID, params.Mux))
+	neg.Use(httpmeta.NewHandler(params.UserAgent, params.Version, params.ID, params.Mux, params.Limit))
 
 	if params.Logger != nil {
 		neg.Use(logger.NewHandler(params.RoutePolicy, params.Logger))

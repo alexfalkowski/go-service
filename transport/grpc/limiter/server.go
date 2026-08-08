@@ -9,13 +9,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
-// NewServerLimiter constructs a gRPC server-side rate limiter.
+// NewServer constructs a gRPC server-side rate limiter.
 //
 // If cfg is disabled, it returns (nil, nil) so callers can treat the limiter as not configured.
 //
 // The returned limiter is backed by [limiter.NewLimiter] and is registered with the provided lifecycle.
-// The `keys` map controls how request contexts are turned into limiter keys (for example, per user-agent).
-func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
+// The `keys` map controls how request contexts are turned into limiter keys (for example, per user-agent),
+// and policy controls which unary methods bypass limiting.
+func NewServer(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config, policy *method.Policy) (*Server, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
@@ -25,15 +26,16 @@ func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Serve
 		return nil, err
 	}
 
-	return &Server{rateLimiter}, nil
+	return &Server{Limiter: rateLimiter, policy: policy}, nil
 }
 
 // Server wraps *[limiter.Limiter] for gRPC server integration.
 type Server struct {
 	*limiter.Limiter
+	policy *method.Policy
 }
 
-// UnaryServerInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
+// UnaryInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
 //
 // Operation unary methods bypass limiting.
 // Stream RPCs do not bypass limiting because long-lived streams, such as health Watch, can hold server resources
@@ -47,13 +49,13 @@ type Server struct {
 //   - Otherwise, it invokes the handler.
 //
 // Callers should only install this interceptor when limiter is non-nil.
-func UnaryServerInterceptor(policy *method.Policy, limiter *Server) grpc.UnaryServerInterceptor {
+func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if policy.IsOperation(info.FullMethod) {
+		if s.policy.IsOperation(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
-		decision, err := take(ctx, limiter.Limiter)
+		decision, err := take(ctx, s.Limiter)
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +69,7 @@ func UnaryServerInterceptor(policy *method.Policy, limiter *Server) grpc.UnarySe
 	}
 }
 
-// StreamServerInterceptor returns a gRPC stream server interceptor that enforces rate limiting.
+// StreamInterceptor returns a gRPC stream server interceptor that enforces rate limiting.
 //
 // Unlike unary RPCs, operation streams are limited. This keeps long-lived streams, such as health Watch, from
 // bypassing the resource controls that protect regular service streams.
@@ -84,9 +86,9 @@ func UnaryServerInterceptor(policy *method.Policy, limiter *Server) grpc.UnarySe
 //   - Otherwise, it invokes the handler.
 //
 // Callers should only install this interceptor when limiter is non-nil.
-func StreamServerInterceptor(limiter *Server) grpc.StreamServerInterceptor {
+func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		decision, err := take(stream.Context(), limiter.Limiter)
+		decision, err := take(stream.Context(), s.Limiter)
 		if err != nil {
 			return err
 		}
@@ -96,7 +98,7 @@ func StreamServerInterceptor(limiter *Server) grpc.StreamServerInterceptor {
 			return serverLimitError(decision)
 		}
 
-		return handler(srv, &serverStream{ServerStream: stream, limiter: limiter.Limiter})
+		return handler(srv, &serverStream{ServerStream: stream, limiter: s.Limiter})
 	}
 }
 

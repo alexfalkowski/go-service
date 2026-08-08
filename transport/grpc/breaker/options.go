@@ -5,9 +5,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 )
 
-// Option configures the gRPC circuit breaker interceptor returned by [UnaryClientInterceptor].
+// Option configures the gRPC circuit breaker client returned by [NewClient].
 //
-// Options are applied in the order provided to [UnaryClientInterceptor]. If multiple options configure
+// Options are applied in the order provided to [NewClient]. If multiple options configure
 // the same field, the last one wins.
 type Option interface {
 	apply(opts *opts)

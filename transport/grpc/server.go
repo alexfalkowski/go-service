@@ -9,11 +9,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	grpcmeta "github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	grpcserver "github.com/alexfalkowski/go-service/v2/net/grpc/server"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
@@ -23,9 +24,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/recovery"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 )
 
 // ServerParams defines dependencies for constructing a gRPC transport [Server].
@@ -47,20 +48,20 @@ type ServerParams struct {
 	// Shutdowner is used by the underlying *[server.Service] to coordinate shutdown.
 	Shutdowner di.Shutdowner
 
+	// ID generates request IDs when one is not already present.
+	ID id.Generator
+
+	// Verifier enables server-side token verification when non-nil.
+	Verifier token.Verifier
+
+	// Access enables server-side access control when non-nil.
+	Access access.Controller
+
 	// Config controls gRPC server enablement, address, timeouts, TLS, and low-level gRPC options.
 	Config *Config
 
 	// Logger enables gRPC server logging interceptors when non-nil.
 	Logger *logger.Logger
-
-	// UserAgent is the service user agent used by metadata interceptors.
-	UserAgent env.UserAgent
-
-	// Version is the service version reported via metadata interceptors.
-	Version env.Version
-
-	// ID generates request IDs when one is not already present.
-	ID id.Generator
 
 	// MethodPolicy stores gRPC method behavior used by server middleware.
 	MethodPolicy *grpc.MethodPolicy
@@ -68,11 +69,11 @@ type ServerParams struct {
 	// Limiter enables server-side rate limiting when non-nil.
 	Limiter *limiter.Server
 
-	// Verifier enables server-side token verification when non-nil.
-	Verifier token.Verifier
+	// UserAgent is the service user agent used by metadata interceptors.
+	UserAgent env.UserAgent
 
-	// Access enables server-side access control when non-nil.
-	Access access.Controller
+	// Version is the service version reported via metadata interceptors.
+	Version env.Version
 
 	// Unary are additional unary server interceptors to append after the standard chain.
 	Unary []grpc.UnaryServerInterceptor `optional:"true"`
@@ -85,6 +86,9 @@ type ServerParams struct {
 	// This is an escape hatch for passing options not modeled by this package, such as
 	// grpc.InTapHandle, a second grpc.StatsHandler, or grpc.UnknownServiceHandler.
 	Options []grpc.ServerOption `optional:"true"`
+
+	// Limit bounds metadata values attached to server spans.
+	Limit meta.Limit
 }
 
 // NewServer constructs a gRPC transport [Server] when the transport is enabled.
@@ -180,27 +184,27 @@ func (s *Server) GetService() *grpcserver.Service {
 
 func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	uis := []grpc.UnaryServerInterceptor{
-		recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)),
-		meta.UnaryServerInterceptor(params.MethodPolicy, params.UserAgent, params.Version, params.ID),
+		recovery.NewServer(recoveryHandler).UnaryInterceptor(),
+		grpcmeta.NewServer(params.MethodPolicy, params.UserAgent, params.Version, params.ID, params.Limit).UnaryInterceptor(),
 		grpc.TimeoutUnaryServerInterceptor(params.Config.GetTimeout()),
 	}
 
 	if params.Logger != nil {
-		uis = append(uis, logger.UnaryServerInterceptor(params.MethodPolicy, params.Logger))
+		uis = append(uis, logger.NewServer(params.MethodPolicy, params.Logger).UnaryInterceptor())
 	}
 
-	uis = append(uis, recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)))
+	uis = append(uis, recovery.NewServer(recoveryHandler).UnaryInterceptor())
 
 	if params.Verifier != nil {
-		uis = append(uis, token.UnaryServerInterceptor(params.MethodPolicy, params.Verifier))
+		uis = append(uis, token.NewServer(params.MethodPolicy, params.Verifier, nil).UnaryInterceptor())
 	}
 
 	if params.Limiter != nil {
-		uis = append(uis, limiter.UnaryServerInterceptor(params.MethodPolicy, params.Limiter))
+		uis = append(uis, params.Limiter.UnaryInterceptor())
 	}
 
 	if params.Access != nil {
-		uis = append(uis, token.UnaryAccessServerInterceptor(params.MethodPolicy, params.Access))
+		uis = append(uis, token.NewServer(params.MethodPolicy, nil, params.Access).UnaryAccessInterceptor())
 	}
 
 	uis = append(uis, interceptors...)
@@ -210,26 +214,26 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 
 func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	sis := []grpc.StreamServerInterceptor{
-		recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)),
-		meta.StreamServerInterceptor(params.MethodPolicy, params.UserAgent, params.Version, params.ID),
+		recovery.NewServer(recoveryHandler).StreamInterceptor(),
+		grpcmeta.NewServer(params.MethodPolicy, params.UserAgent, params.Version, params.ID, params.Limit).StreamInterceptor(),
 	}
 
 	if params.Logger != nil {
-		sis = append(sis, logger.StreamServerInterceptor(params.MethodPolicy, params.Logger))
+		sis = append(sis, logger.NewServer(params.MethodPolicy, params.Logger).StreamInterceptor())
 	}
 
-	sis = append(sis, recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(recoveryHandler)))
+	sis = append(sis, recovery.NewServer(recoveryHandler).StreamInterceptor())
 
 	if params.Verifier != nil {
-		sis = append(sis, token.StreamServerInterceptor(params.MethodPolicy, params.Verifier))
+		sis = append(sis, token.NewServer(params.MethodPolicy, params.Verifier, nil).StreamInterceptor())
 	}
 
 	if params.Limiter != nil {
-		sis = append(sis, limiter.StreamServerInterceptor(params.Limiter))
+		sis = append(sis, params.Limiter.StreamInterceptor())
 	}
 
 	if params.Access != nil {
-		sis = append(sis, token.StreamAccessServerInterceptor(params.MethodPolicy, params.Access))
+		sis = append(sis, token.NewServer(params.MethodPolicy, nil, params.Access).StreamAccessInterceptor())
 	}
 
 	sis = append(sis, interceptors...)

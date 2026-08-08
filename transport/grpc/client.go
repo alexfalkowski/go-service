@@ -336,28 +336,28 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	resolved := options(opts...)
 	unary := []grpc.UnaryClientInterceptor{}
 
-	unary = append(unary, meta.UnaryClientInterceptor(resolved.userAgent, resolved.generator))
+	unary = append(unary, meta.NewClient(resolved.userAgent, resolved.generator).UnaryInterceptor())
 	unary = append(unary, resolved.unary...)
 	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(resolved.timeout))
 
 	if resolved.logger != nil {
-		unary = append(unary, logger.UnaryClientInterceptor(resolved.logger))
+		unary = append(unary, logger.NewClient(resolved.logger).UnaryInterceptor())
 	}
 
 	if resolved.retry != nil {
-		unary = append(unary, retry.UnaryClientInterceptor(resolved.retry, resolved.retryPolicies...))
+		unary = append(unary, retry.NewClient(resolved.retry, resolved.retryPolicies...).UnaryInterceptor())
 	}
 
 	if resolved.limiter != nil {
-		unary = append(unary, limiter.UnaryClientInterceptor(resolved.limiter))
+		unary = append(unary, resolved.limiter.UnaryInterceptor())
 	}
 
 	if resolved.breaker != nil {
-		unary = append(unary, breaker.UnaryClientInterceptor(resolved.breaker.Options()...))
+		unary = append(unary, breaker.NewClient(resolved.breaker.Options()...).UnaryInterceptor())
 	}
 
 	if resolved.gen != nil {
-		unary = append(unary, token.UnaryClientInterceptor(resolved.id, resolved.gen))
+		unary = append(unary, token.NewClient(resolved.id, resolved.gen).UnaryInterceptor())
 	}
 
 	return unary
@@ -365,21 +365,21 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 
 func streamDialOption(opts *clientOpts) grpc.DialOption {
 	stream := []grpc.StreamClientInterceptor{}
-	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.generator))
+	stream = append(stream, meta.NewClient(opts.userAgent, opts.generator).StreamInterceptor())
 	stream = append(stream, opts.stream...)
 
 	if opts.logger != nil {
-		stream = append(stream, logger.StreamClientInterceptor(opts.logger))
+		stream = append(stream, logger.NewClient(opts.logger).StreamInterceptor())
 	}
 
 	// gRPC chains stream interceptors outermost-first, so keep the limiter before token injection
 	// to shed over-quota stream opens before token generation does key loading or signing work.
 	if opts.limiter != nil {
-		stream = append(stream, limiter.StreamClientInterceptor(opts.limiter))
+		stream = append(stream, opts.limiter.StreamInterceptor())
 	}
 
 	if opts.gen != nil {
-		stream = append(stream, token.StreamClientInterceptor(opts.id, opts.gen))
+		stream = append(stream, token.NewClient(opts.id, opts.gen).StreamInterceptor())
 	}
 
 	return grpc.WithChainStreamInterceptor(stream...)

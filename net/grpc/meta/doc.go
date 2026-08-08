@@ -49,8 +49,7 @@
 // strips or overwrites client-supplied forwarding metadata before traffic
 // reaches the service.
 //
-// Start with [UnaryServerInterceptor] / [StreamServerInterceptor] for
-// server-side extraction and [UnaryClientInterceptor] /
-// [StreamClientInterceptor] for client-side injection. Use [ExtractIncoming]
-// and [ExtractOutgoing] when you need mutable copies of metadata maps.
+// Start with [NewServer] for server-side extraction and [NewClient] for
+// client-side injection. Use [ExtractIncoming] and [ExtractOutgoing] when you
+// need mutable copies of metadata maps.
 package meta

@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	grpcmeta "github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/time"
 	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
@@ -63,10 +64,10 @@ func TestServerLimiterStream(t *testing.T) {
 }
 
 func TestServerLimiterStreamHeader(t *testing.T) {
-	limiter, err := grpclimiter.NewServerLimiter(fxtest.NewLifecycle(t), limiter.NewKeyMap(), test.NewLimiterConfig("user-agent", "1s", 0))
+	limiter, err := grpclimiter.NewServer(fxtest.NewLifecycle(t), limiter.NewKeyMap(), test.NewLimiterConfig("user-agent", "1s", 0), method.NewPolicy())
 	require.NoError(t, err)
 	ctx := grpcmeta.WithAttributes(t.Context(), grpcmeta.WithUserAgent(grpcmeta.String("test-agent")))
-	interceptor := grpclimiter.StreamServerInterceptor(limiter)
+	interceptor := limiter.StreamInterceptor()
 
 	allowed := &test.MetaServerStream{Ctx: ctx}
 	err = interceptor(nil, allowed, &grpc.StreamServerInfo{FullMethod: "/greet.v1.GreeterService/SayStreamHello"}, func(any, grpc.ServerStream) error {

@@ -47,7 +47,7 @@ func TestClientEmptyTLSConfigUsesTLS(t *testing.T) {
 }
 
 func TestRetryDoesNotReenterClientLimiter(t *testing.T) {
-	clientLimiter, err := grpclimiter.NewClientLimiter(
+	clientLimiter, err := grpclimiter.NewClient(
 		test.NoopLifecycle{},
 		limiter.NewKeyMap(),
 		test.NewLimiterConfig("user-agent", "1m", 0),
@@ -55,13 +55,13 @@ func TestRetryDoesNotReenterClientLimiter(t *testing.T) {
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, clientLimiter.Close(t.Context())) })
 
-	limiting := grpclimiter.UnaryClientInterceptor(clientLimiter)
+	limiting := clientLimiter.UnaryInterceptor()
 	err = limiting(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
 		return nil
 	})
 	require.NoError(t, err)
 
-	retrying := grpcretry.UnaryClientInterceptor(test.NewGRPCRetryConfig(3, time.Nanosecond, codes.ResourceExhausted))
+	retrying := grpcretry.NewClient(test.NewGRPCRetryConfig(3, time.Nanosecond, codes.ResourceExhausted)).UnaryInterceptor()
 	limiterCalls := 0
 	downstreamCalls := 0
 	invoker := func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, opts ...grpc.CallOption) error {
@@ -81,7 +81,7 @@ func TestRetryDoesNotReenterClientLimiter(t *testing.T) {
 }
 
 func TestRetryDoesNotReenterClosedClientLimiter(t *testing.T) {
-	clientLimiter, err := grpclimiter.NewClientLimiter(
+	clientLimiter, err := grpclimiter.NewClient(
 		test.NoopLifecycle{},
 		limiter.NewKeyMap(),
 		test.NewLimiterConfig("user-agent", "1m", 10),
@@ -89,8 +89,8 @@ func TestRetryDoesNotReenterClosedClientLimiter(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, clientLimiter.Close(t.Context()))
 
-	limiting := grpclimiter.UnaryClientInterceptor(clientLimiter)
-	retrying := grpcretry.UnaryClientInterceptor(test.NewGRPCRetryConfig(3, time.Nanosecond, codes.Internal))
+	limiting := clientLimiter.UnaryInterceptor()
+	retrying := grpcretry.NewClient(test.NewGRPCRetryConfig(3, time.Nanosecond, codes.Internal)).UnaryInterceptor()
 	limiterCalls := 0
 	downstreamCalls := 0
 	invoker := func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, opts ...grpc.CallOption) error {
@@ -110,16 +110,16 @@ func TestRetryDoesNotReenterClosedClientLimiter(t *testing.T) {
 }
 
 func TestRetryDoesNotReenterClientBreaker(t *testing.T) {
-	breaking := grpcbreaker.UnaryClientInterceptor(
+	breaking := grpcbreaker.NewClient(
 		grpcbreaker.NewConfig(test.NewBreaker(1), codes.Unavailable).Options()...,
-	)
+	).UnaryInterceptor()
 	err := breaking(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
 		return status.Error(codes.Unavailable, "unavailable")
 	})
 	require.Error(t, err)
 	require.Equal(t, codes.Unavailable, status.Code(err))
 
-	retrying := grpcretry.UnaryClientInterceptor(test.NewGRPCRetryConfig(3, time.Nanosecond, codes.ResourceExhausted))
+	retrying := grpcretry.NewClient(test.NewGRPCRetryConfig(3, time.Nanosecond, codes.ResourceExhausted)).UnaryInterceptor()
 	breakerCalls := 0
 	downstreamCalls := 0
 	invoker := func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, opts ...grpc.CallOption) error {
@@ -140,7 +140,7 @@ func TestRetryDoesNotReenterClientBreaker(t *testing.T) {
 }
 
 func TestRetryPreservesRemoteResourceExhausted(t *testing.T) {
-	clientLimiter, err := grpclimiter.NewClientLimiter(
+	clientLimiter, err := grpclimiter.NewClient(
 		test.NoopLifecycle{},
 		limiter.NewKeyMap(),
 		test.NewLimiterConfig("user-agent", "1m", 2),
@@ -148,8 +148,8 @@ func TestRetryPreservesRemoteResourceExhausted(t *testing.T) {
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, clientLimiter.Close(t.Context())) })
 
-	limiting := grpclimiter.UnaryClientInterceptor(clientLimiter)
-	retrying := grpcretry.UnaryClientInterceptor(test.NewGRPCRetryConfig(3, time.Nanosecond, codes.ResourceExhausted))
+	limiting := clientLimiter.UnaryInterceptor()
+	retrying := grpcretry.NewClient(test.NewGRPCRetryConfig(3, time.Nanosecond, codes.ResourceExhausted)).UnaryInterceptor()
 	limiterCalls := 0
 	downstreamCalls := 0
 	invoker := func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, opts ...grpc.CallOption) error {

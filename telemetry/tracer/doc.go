@@ -30,7 +30,9 @@
 // by any instrumentation (server, database, cache, ...) carry the same context
 // used to correlate them with logs. The server/root span is created before that
 // metadata is available, so the transport metadata middleware stamps it
-// directly.
+// directly. Metadata values use telemetry.metadata.max_value_size, which
+// defaults to 1,024 bytes; full values remain in the request context and on
+// transport metadata.
 //
 // This package does not configure propagation. Propagation is configured at the top-level
 // telemetry package ([github.com/alexfalkowski/go-service/v2/telemetry.RegisterPropagation]), which sets the global

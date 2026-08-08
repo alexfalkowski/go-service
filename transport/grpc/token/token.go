@@ -56,12 +56,24 @@ func NewVerifier(token *Token) Verifier {
 // principal) on success.
 type Verifier token.Verifier
 
-// UnaryServerInterceptor returns a gRPC unary server interceptor that verifies Authorization tokens.
+// NewServer constructs gRPC server token interceptors.
+func NewServer(policy *method.Policy, verifier Verifier, controller access.Controller) *Server {
+	return &Server{policy: policy, verifier: verifier, controller: controller}
+}
+
+// Server provides gRPC server interceptors for token verification and access control.
+type Server struct {
+	controller access.Controller
+	policy     *method.Policy
+	verifier   Verifier
+}
+
+// UnaryInterceptor returns a gRPC unary server interceptor that verifies Authorization tokens.
 //
 // Operation and unauthenticated methods bypass verification.
 //
 // The interceptor expects an Authorization value to have been extracted into the context by the metadata
-// interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.UnaryServerInterceptor]). It verifies the token using verifier, scoping
+// interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.NewServer]). It verifies the token using verifier, scoping
 // verification to the RPC `FullMethod`.
 //
 // Behavior:
@@ -69,16 +81,16 @@ type Verifier token.Verifier
 //   - If verification succeeds, it stores the verified subject as the user id in the context and invokes
 //     the handler.
 //
-// Callers should only install this interceptor when verifier is non-nil.
-func UnaryServerInterceptor(policy *method.Policy, verifier Verifier) grpc.UnaryServerInterceptor {
+// Callers should only install this interceptor when the server has a non-nil verifier.
+func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if bypassAuth(policy, info.FullMethod) {
+		if bypassAuth(s.policy, info.FullMethod) {
 			return handler(ctx, req)
 		}
 
 		auth := meta.Authorization(ctx).Value()
 
-		sub, err := verifier.Verify(strings.Bytes(auth), info.FullMethod)
+		sub, err := s.verifier.Verify(strings.Bytes(auth), info.FullMethod)
 		if err != nil {
 			return nil, status.SafeError(codes.Unauthenticated, err)
 		}
@@ -88,12 +100,12 @@ func UnaryServerInterceptor(policy *method.Policy, verifier Verifier) grpc.Unary
 	}
 }
 
-// StreamServerInterceptor returns a gRPC stream server interceptor that verifies Authorization tokens.
+// StreamInterceptor returns a gRPC stream server interceptor that verifies Authorization tokens.
 //
 // Operation and unauthenticated methods bypass verification.
 //
 // The interceptor expects an Authorization value to have been extracted into the stream context by the
-// metadata interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.StreamServerInterceptor]). It verifies the token using verifier,
+// metadata interceptor ([github.com/alexfalkowski/go-service/v2/net/grpc/meta.NewServer]). It verifies the token using verifier,
 // scoping verification to the RPC `FullMethod`.
 //
 // Behavior:
@@ -101,17 +113,17 @@ func UnaryServerInterceptor(policy *method.Policy, verifier Verifier) grpc.Unary
 //   - If verification succeeds, it injects the verified subject as the user id into the stream context and
 //     invokes the handler using a wrapped stream (`go-grpc-middleware` wrapper) that carries the new context.
 //
-// Callers should only install this interceptor when verifier is non-nil.
-func StreamServerInterceptor(policy *method.Policy, verifier Verifier) grpc.StreamServerInterceptor {
+// Callers should only install this interceptor when the server has a non-nil verifier.
+func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if bypassAuth(policy, info.FullMethod) {
+		if bypassAuth(s.policy, info.FullMethod) {
 			return handler(srv, stream)
 		}
 
 		ctx := stream.Context()
 		auth := meta.Authorization(ctx).Value()
 
-		sub, err := verifier.Verify(strings.Bytes(auth), info.FullMethod)
+		sub, err := s.verifier.Verify(strings.Bytes(auth), info.FullMethod)
 		if err != nil {
 			return status.SafeError(codes.Unauthenticated, err)
 		}
@@ -124,14 +136,14 @@ func StreamServerInterceptor(policy *method.Policy, verifier Verifier) grpc.Stre
 	}
 }
 
-// UnaryAccessServerInterceptor returns a gRPC unary server interceptor that enforces access policy.
+// UnaryAccessInterceptor returns a gRPC unary server interceptor that enforces access policy.
 //
 // Operation and unauthenticated methods bypass access control. For application RPCs, a missing verified user id is treated
 // as unauthenticated, a policy denial returns [codes.PermissionDenied], and policy evaluation errors return
 // [codes.Internal].
-func UnaryAccessServerInterceptor(policy *method.Policy, controller access.Controller) grpc.UnaryServerInterceptor {
+func (s *Server) UnaryAccessInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if bypassAuth(policy, info.FullMethod) {
+		if bypassAuth(s.policy, info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -139,7 +151,7 @@ func UnaryAccessServerInterceptor(policy *method.Policy, controller access.Contr
 			return nil, status.SafeError(codes.Unauthenticated, header.ErrInvalidAuthorization)
 		}
 
-		ok, err := controller.HasAccess(ctx)
+		ok, err := s.controller.HasAccess(ctx)
 		if err != nil {
 			return nil, status.SafeError(codes.Internal, err)
 		}
@@ -151,14 +163,14 @@ func UnaryAccessServerInterceptor(policy *method.Policy, controller access.Contr
 	}
 }
 
-// StreamAccessServerInterceptor returns a gRPC stream server interceptor that enforces access policy.
+// StreamAccessInterceptor returns a gRPC stream server interceptor that enforces access policy.
 //
 // Operation and unauthenticated methods bypass access control. For application RPCs, a missing verified user id is treated
 // as unauthenticated, a policy denial returns [codes.PermissionDenied], and policy evaluation errors return
 // [codes.Internal].
-func StreamAccessServerInterceptor(policy *method.Policy, controller access.Controller) grpc.StreamServerInterceptor {
+func (s *Server) StreamAccessInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if bypassAuth(policy, info.FullMethod) {
+		if bypassAuth(s.policy, info.FullMethod) {
 			return handler(srv, stream)
 		}
 
@@ -167,7 +179,7 @@ func StreamAccessServerInterceptor(policy *method.Policy, controller access.Cont
 			return status.SafeError(codes.Unauthenticated, header.ErrInvalidAuthorization)
 		}
 
-		ok, err := controller.HasAccess(ctx)
+		ok, err := s.controller.HasAccess(ctx)
 		if err != nil {
 			return status.SafeError(codes.Internal, err)
 		}
@@ -200,7 +212,18 @@ func NewGenerator(token *Token) Generator {
 // and a caller identity (user id).
 type Generator token.Generator
 
-// UnaryClientInterceptor returns a gRPC unary client interceptor that injects an Authorization token.
+// NewClient constructs gRPC client token interceptors.
+func NewClient(id env.UserID, generator Generator) *Client {
+	return &Client{id: id, generator: generator}
+}
+
+// Client provides gRPC client interceptors that inject Authorization tokens.
+type Client struct {
+	generator Generator
+	id        env.UserID
+}
+
+// UnaryInterceptor returns a gRPC unary client interceptor that injects an Authorization token.
 //
 // For each outbound unary RPC, it generates a token scoped to `fullMethod` and the provided user id and
 // stores it in outgoing metadata under the "authorization" key using the `Bearer` scheme.
@@ -214,10 +237,10 @@ type Generator token.Generator
 //   - If token generation returns an empty token, it returns [codes.Unauthenticated] with
 //     [header.ErrInvalidAuthorization].
 //
-// Callers should only install this interceptor when generator is non-nil.
-func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClientInterceptor {
+// Callers should only install this interceptor when the client has a non-nil generator.
+func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		token, err := generator.Generate(fullMethod, id.String())
+		token, err := c.generator.Generate(fullMethod, c.id.String())
 		if err != nil {
 			return status.SafeError(codes.Unauthenticated, err)
 		}
@@ -238,7 +261,7 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 	}
 }
 
-// StreamClientInterceptor returns a gRPC stream client interceptor that injects an Authorization token.
+// StreamInterceptor returns a gRPC stream client interceptor that injects an Authorization token.
 //
 // For each outbound streaming RPC, it generates a token scoped to `fullMethod` and the provided user id and
 // stores it in outgoing metadata under the "authorization" key using the `Bearer` scheme.
@@ -252,10 +275,10 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 //   - If token generation returns an empty token, it returns [codes.Unauthenticated] with
 //     [header.ErrInvalidAuthorization].
 //
-// Callers should only install this interceptor when generator is non-nil.
-func StreamClientInterceptor(id env.UserID, generator Generator) grpc.StreamClientInterceptor {
+// Callers should only install this interceptor when the client has a non-nil generator.
+func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		token, err := generator.Generate(fullMethod, id.String())
+		token, err := c.generator.Generate(fullMethod, c.id.String())
 		if err != nil {
 			return nil, status.SafeError(codes.Unauthenticated, err)
 		}

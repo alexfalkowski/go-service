@@ -38,9 +38,9 @@
 // This ensures common request/service metadata and errors show up consistently across
 // handlers/exporters.
 //
-// Metadata values are capped at 1024 bytes before being attached to the log
-// record. Truncation preserves UTF-8 validity so multi-byte characters are not
-// split.
+// Metadata values use telemetry.metadata.max_value_size, which defaults to
+// 1,024 bytes. Truncation preserves UTF-8 validity so multi-byte characters
+// are not split.
 //
 // # Trace correlation
 //

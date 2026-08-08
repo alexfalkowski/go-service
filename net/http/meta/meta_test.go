@@ -3,6 +3,7 @@ package meta_test
 import (
 	"net/http/httptest"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -112,7 +113,7 @@ func TestRoundTripperStoresServiceMethod(t *testing.T) {
 }
 
 func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
-	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil)
+	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil, 1024)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
 	res := httptest.NewRecorder()
@@ -128,7 +129,7 @@ func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
 func TestHandlerStampsSpanWithMeta(t *testing.T) {
 	exporter := test.EnableIsolatedSpanExporter(t)
 
-	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil)
+	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil, 1024)
 	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(t.Context(), "request")
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "/users/123", http.NoBody)
 	require.NoError(t, err)
@@ -147,8 +148,36 @@ func TestHandlerStampsSpanWithMeta(t *testing.T) {
 	require.Equal(t, "request-id", values[meta.RequestIDKey])
 }
 
+func TestHandlerBoundsSpanMetaWithoutChangingRequestID(t *testing.T) {
+	exporter := test.EnableIsolatedSpanExporter(t)
+	requestID := "aaé"
+
+	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"), nil, 3)
+	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(t.Context(), "request")
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "/users/123", http.NoBody)
+	require.NoError(t, err)
+	req.Header.Set("Request-Id", requestID)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
+		require.Equal(t, requestID, meta.RequestID(req.Context()).Value())
+	})
+	span.End()
+
+	spans := exporter.Spans()
+	require.Len(t, spans, 1)
+
+	values := make(map[string]string)
+	for _, attr := range spans[0].Attributes() {
+		values[string(attr.Key)] = attr.Value.AsString()
+	}
+	require.Equal(t, "aa", values[meta.RequestIDKey])
+	require.True(t, utf8.ValidString(values[meta.RequestIDKey]))
+	require.Equal(t, requestID, res.Header().Get("Request-Id"))
+}
+
 func TestHandlerStoresServiceMethodFromPath(t *testing.T) {
-	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil)
+	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil, 1024)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/users/123", http.NoBody)
 	require.NoError(t, err)
 	res := httptest.NewRecorder()
@@ -164,7 +193,7 @@ func TestHandlerStoresServiceMethodFromPattern(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
 	router.HandleRoute("GET /users/{id}", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
-	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), mux)
+	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), mux, 1024)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/users/123", http.NoBody)
 	require.NoError(t, err)
 	res := httptest.NewRecorder()
@@ -178,7 +207,7 @@ func TestHandlerStoresServiceMethodFromPattern(t *testing.T) {
 }
 
 func TestHandlerStoresGeolocationAsIgnored(t *testing.T) {
-	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil)
+	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil, 1024)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
 	req.Header.Set("Geolocation", "geo:47,11")

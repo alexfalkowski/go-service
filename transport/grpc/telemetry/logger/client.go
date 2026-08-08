@@ -11,7 +11,17 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// UnaryClientInterceptor returns a gRPC unary client interceptor that logs the RPC outcome.
+// NewClient constructs gRPC client logging interceptors.
+func NewClient(log *Logger) *Client {
+	return &Client{log: log}
+}
+
+// Client provides gRPC client interceptors that log RPC outcomes.
+type Client struct {
+	log *Logger
+}
+
+// UnaryInterceptor returns a gRPC unary client interceptor that logs the RPC outcome.
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -31,7 +41,7 @@ import (
 // The raw gRPC client target is intentionally included to identify the configured downstream endpoint in
 // operator logs. Client targets are expected to be configuration-controlled service addresses and must not
 // contain credentials, tokens, request data, or other secrets.
-func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
+func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service, method := grpc.ParseServiceMethod(fullMethod)
 		start := time.Now()
@@ -46,13 +56,13 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 		code := status.Code(err)
 		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
 
-		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(conn.Target()+fullMethod), err), attrs...)
+		c.log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(conn.Target()+fullMethod), err), attrs...)
 
 		return err
 	}
 }
 
-// StreamClientInterceptor returns a gRPC stream client interceptor that logs stream creation and terminal failures.
+// StreamInterceptor returns a gRPC stream client interceptor that logs stream creation and terminal failures.
 //
 // It logs whether the client stream was opened successfully. When the stream opens successfully, the returned
 // stream is wrapped so later RecvMsg and SendMsg failures are logged as terminal stream-operation failures.
@@ -75,7 +85,7 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 // The raw gRPC client target is intentionally included to identify the configured downstream endpoint in
 // operator logs. Client targets are expected to be configuration-controlled service addresses and must not
 // contain credentials, tokens, request data, or other secrets.
-func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
+func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service, method := grpc.ParseServiceMethod(fullMethod)
 		start := time.Now()
@@ -90,7 +100,7 @@ func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 		code := status.Code(err)
 		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
 
-		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(conn.Target()+fullMethod), err), attrs...)
+		c.log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(conn.Target()+fullMethod), err), attrs...)
 
 		if err != nil || stream == nil {
 			return stream, err
@@ -99,7 +109,7 @@ func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 		return &clientStream{
 			ClientStream: stream,
 			ctx:          ctx,
-			log:          log,
+			log:          c.log,
 			message:      conn.Target() + fullMethod,
 			service:      service,
 			method:       method,

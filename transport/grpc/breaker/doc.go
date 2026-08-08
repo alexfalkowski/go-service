@@ -20,5 +20,5 @@
 // interceptor returns a locally marked gRPC ResourceExhausted status error. Retry middleware treats
 // the local marker as terminal while preserving the status code and wrapped breaker cause.
 //
-// Start with [UnaryClientInterceptor].
+// Start with [NewClient].
 package breaker

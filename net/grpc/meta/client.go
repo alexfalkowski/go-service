@@ -11,7 +11,18 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// UnaryClientInterceptor returns a gRPC unary client interceptor that injects metadata into outgoing requests.
+// NewClient constructs a metadata interceptor provider for a gRPC client.
+func NewClient(userAgent env.UserAgent, generator id.Generator) *Client {
+	return &Client{userAgent: userAgent, generator: generator}
+}
+
+// Client provides gRPC client interceptors that inject request metadata.
+type Client struct {
+	generator id.Generator
+	userAgent env.UserAgent
+}
+
+// UnaryInterceptor returns a gRPC unary client interceptor that injects metadata into outgoing requests.
 //
 // It ensures "user-agent" and "request-id" are present in outgoing metadata,
 // preferring values already present in the context or outgoing metadata, and
@@ -20,9 +31,9 @@ import (
 // Existing outgoing metadata values for these keys are replaced so repeated
 // interceptor invocation does not accumulate duplicates or preserve stale
 // values ahead of the resolved value.
-func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.UnaryClientInterceptor {
+func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		md, ua, requestID := clientMetadata(ctx, userAgent, generator)
+		md, ua, requestID := clientMetadata(ctx, c.userAgent, c.generator)
 
 		ctx = meta.WithAttributes(ctx,
 			meta.WithTransport(meta.Ignored("grpc")),
@@ -35,7 +46,7 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 	}
 }
 
-// StreamClientInterceptor returns a gRPC stream client interceptor that injects metadata into outgoing requests.
+// StreamInterceptor returns a gRPC stream client interceptor that injects metadata into outgoing requests.
 //
 // It ensures "user-agent" and "request-id" are present in outgoing metadata,
 // preferring values already present in the context or outgoing metadata, and
@@ -44,9 +55,9 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 // Existing outgoing metadata values for these keys are replaced so repeated
 // interceptor invocation does not accumulate duplicates or preserve stale
 // values ahead of the resolved value.
-func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.StreamClientInterceptor {
+func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		md, ua, requestID := clientMetadata(ctx, userAgent, generator)
+		md, ua, requestID := clientMetadata(ctx, c.userAgent, c.generator)
 
 		ctx = meta.WithAttributes(ctx,
 			meta.WithTransport(meta.Ignored("grpc")),

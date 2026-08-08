@@ -15,10 +15,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUnaryClientInterceptorUsesConfigFailureCodes(t *testing.T) {
-	interceptor := breaker.UnaryClientInterceptor(
+func TestClientUnaryInterceptorUsesConfigFailureCodes(t *testing.T) {
+	interceptor := breaker.NewClient(
 		breaker.NewConfig(test.NewBreaker(1), codes.InvalidArgument).Options()...,
-	)
+	).UnaryInterceptor()
 
 	calls := 0
 	invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -37,11 +37,11 @@ func TestUnaryClientInterceptorUsesConfigFailureCodes(t *testing.T) {
 	require.Equal(t, 1, calls)
 }
 
-func TestUnaryClientInterceptorDoesNotOpenOnNonFailureCode(t *testing.T) {
-	interceptor := breaker.UnaryClientInterceptor(
+func TestClientUnaryInterceptorDoesNotOpenOnNonFailureCode(t *testing.T) {
+	interceptor := breaker.NewClient(
 		breaker.WithSettings(settings()),
 		breaker.WithFailureCodes(codes.Unavailable),
-	)
+	).UnaryInterceptor()
 
 	calls := 0
 	invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -59,7 +59,7 @@ func TestUnaryClientInterceptorDoesNotOpenOnNonFailureCode(t *testing.T) {
 	require.Equal(t, 2, calls)
 }
 
-func TestUnaryClientInterceptorOpensOnClassifiedFailures(t *testing.T) {
+func TestClientUnaryInterceptorOpensOnClassifiedFailures(t *testing.T) {
 	tests := map[string]struct {
 		isSuccessful func(error) bool
 		code         codes.Code
@@ -80,10 +80,10 @@ func TestUnaryClientInterceptorOpensOnClassifiedFailures(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			interceptor := breaker.UnaryClientInterceptor(
+			interceptor := breaker.NewClient(
 				breaker.WithSettings(settings(test.isSuccessful)),
 				breaker.WithFailureCodes(codes.Unavailable),
-			)
+			).UnaryInterceptor()
 
 			calls := 0
 			invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -104,7 +104,7 @@ func TestUnaryClientInterceptorOpensOnClassifiedFailures(t *testing.T) {
 	}
 }
 
-func TestUnaryClientInterceptorDoesNotOpenOnCallerCancellation(t *testing.T) {
+func TestClientUnaryInterceptorDoesNotOpenOnCallerCancellation(t *testing.T) {
 	tests := map[string][]breaker.Option{
 		"canceled configured as a failure code": {
 			breaker.WithSettings(settings()),
@@ -117,7 +117,7 @@ func TestUnaryClientInterceptorDoesNotOpenOnCallerCancellation(t *testing.T) {
 
 	for name, opts := range tests {
 		t.Run(name, func(t *testing.T) {
-			interceptor := breaker.UnaryClientInterceptor(opts...)
+			interceptor := breaker.NewClient(opts...).UnaryInterceptor()
 
 			invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
 				return status.Error(codes.Canceled, "canceled")
@@ -136,10 +136,10 @@ func TestUnaryClientInterceptorDoesNotOpenOnCallerCancellation(t *testing.T) {
 	}
 }
 
-func TestUnaryClientInterceptorDoesNotOpenOnExpiredCallerDeadline(t *testing.T) {
-	interceptor := breaker.UnaryClientInterceptor(
+func TestClientUnaryInterceptorDoesNotOpenOnExpiredCallerDeadline(t *testing.T) {
+	interceptor := breaker.NewClient(
 		breaker.WithSettings(settings()),
-	)
+	).UnaryInterceptor()
 
 	expired, cancel := context.WithTimeout(t.Context(), 0)
 	t.Cleanup(cancel)
@@ -163,10 +163,10 @@ func TestUnaryClientInterceptorDoesNotOpenOnExpiredCallerDeadline(t *testing.T) 
 	require.Equal(t, 2, calls)
 }
 
-func TestUnaryClientInterceptorOpensOnRemoteDeadline(t *testing.T) {
-	interceptor := breaker.UnaryClientInterceptor(
+func TestClientUnaryInterceptorOpensOnRemoteDeadline(t *testing.T) {
+	interceptor := breaker.NewClient(
 		breaker.WithSettings(settings()),
-	)
+	).UnaryInterceptor()
 
 	calls := 0
 	invoker := func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
@@ -185,13 +185,13 @@ func TestUnaryClientInterceptorOpensOnRemoteDeadline(t *testing.T) {
 	require.Equal(t, 1, calls)
 }
 
-func TestUnaryClientInterceptorOpensOnAttemptDeadline(t *testing.T) {
-	interceptor := breaker.UnaryClientInterceptor(
+func TestClientUnaryInterceptorOpensOnAttemptDeadline(t *testing.T) {
+	interceptor := breaker.NewClient(
 		breaker.WithSettings(settings()),
-	)
+	).UnaryInterceptor()
 	retryConfig := test.NewGRPCRetryConfig(1, time.Nanosecond)
 	retryConfig.Timeout = 10 * time.Millisecond
-	retrying := retry.UnaryClientInterceptor(retryConfig)
+	retrying := retry.NewClient(retryConfig).UnaryInterceptor()
 
 	calls := 0
 	attempt := func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, callOpts ...grpc.CallOption) error {
@@ -215,11 +215,11 @@ func TestUnaryClientInterceptorOpensOnAttemptDeadline(t *testing.T) {
 	require.Equal(t, 1, calls)
 }
 
-func TestUnaryClientInterceptorIsolatesBreakersByFullMethod(t *testing.T) {
-	interceptor := breaker.UnaryClientInterceptor(
+func TestClientUnaryInterceptorIsolatesBreakersByFullMethod(t *testing.T) {
+	interceptor := breaker.NewClient(
 		breaker.WithSettings(settings()),
 		breaker.WithFailureCodes(codes.Unavailable),
-	)
+	).UnaryInterceptor()
 
 	calls := make(map[string]int)
 	invoker := func(_ context.Context, fullMethod string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {

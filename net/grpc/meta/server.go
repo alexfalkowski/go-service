@@ -19,7 +19,27 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
-// UnaryServerInterceptor returns a gRPC unary server interceptor that extracts metadata into the context.
+// NewServer constructs a metadata interceptor provider for a gRPC server.
+func NewServer(policy *method.Policy, userAgent env.UserAgent, version env.Version, generator id.Generator, limit meta.Limit) *Server {
+	return &Server{
+		policy:    policy,
+		userAgent: userAgent,
+		version:   version,
+		generator: generator,
+		limit:     limit,
+	}
+}
+
+// Server provides gRPC server interceptors that extract request metadata.
+type Server struct {
+	generator id.Generator
+	policy    *method.Policy
+	userAgent env.UserAgent
+	version   env.Version
+	limit     meta.Limit
+}
+
+// UnaryInterceptor returns a gRPC unary server interceptor that extracts metadata into the context.
 //
 // Requests with ignorable unary methods bypass extraction.
 //
@@ -39,16 +59,16 @@ import (
 //
 // If the Authorization header is present but invalid, the interceptor returns a
 // [codes.InvalidArgument] gRPC status error.
-func UnaryServerInterceptor(policy *method.Policy, userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.UnaryServerInterceptor {
-	serviceVersion := version.String()
+func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
+	serviceVersion := s.version.String()
 
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if policy.IsOperation(info.FullMethod) {
+		if s.policy.IsOperation(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
-		ua := serverUserAgent(ctx, userAgent)
-		id := serverRequestID(ctx, generator)
+		ua := serverUserAgent(ctx, s.userAgent)
+		id := serverRequestID(ctx, s.generator)
 
 		ipKind, ipAddr := serverIPAddr(ctx)
 		geolocation := serverGeolocation(ctx)
@@ -67,7 +87,7 @@ func UnaryServerInterceptor(policy *method.Policy, userAgent env.UserAgent, vers
 			meta.WithGeolocation(geolocation),
 			meta.WithAuthorization(auth),
 		)
-		stampSpan(ctx)
+		stampSpan(ctx, s.limit)
 
 		_ = grpc.SetHeader(ctx, serverResponseHeaders(serviceVersion, id.Value()))
 
@@ -75,22 +95,22 @@ func UnaryServerInterceptor(policy *method.Policy, userAgent env.UserAgent, vers
 	}
 }
 
-// StreamServerInterceptor returns a gRPC stream server interceptor that extracts metadata into the stream context.
+// StreamInterceptor returns a gRPC stream server interceptor that extracts metadata into the stream context.
 //
 // Stream methods always run metadata extraction. This keeps long-lived operation streams, such as health Watch,
 // visible to downstream stream interceptors that need request metadata for resource controls.
 //
-// The interceptor performs the same metadata-to-context projection as [UnaryServerInterceptor], but applies it to
+// The interceptor performs the same metadata-to-context projection as [Server.UnaryInterceptor], but applies it to
 // the wrapped stream context, stores "grpc" as the ignored transport attribute, and emits response headers
 // through the stream API.
-func StreamServerInterceptor(policy *method.Policy, userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.StreamServerInterceptor {
-	serviceVersion := version.String()
+func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
+	serviceVersion := s.version.String()
 
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
-		ua := serverUserAgent(ctx, userAgent)
+		ua := serverUserAgent(ctx, s.userAgent)
 
-		id := serverRequestID(ctx, generator)
+		id := serverRequestID(ctx, s.generator)
 
 		ipKind, ipAddr := serverIPAddr(ctx)
 		geolocation := serverGeolocation(ctx)
@@ -98,7 +118,7 @@ func StreamServerInterceptor(policy *method.Policy, userAgent env.UserAgent, ver
 		// Operation streams still need metadata for limiting, but they keep the same auth bypass as unary
 		// operation methods.
 		var auth meta.Value
-		if policy.IsOperation(info.FullMethod) {
+		if s.policy.IsOperation(info.FullMethod) {
 			auth = meta.Blank()
 		} else {
 			a, err := serverAuthorization(ctx)
@@ -117,7 +137,7 @@ func StreamServerInterceptor(policy *method.Policy, userAgent env.UserAgent, ver
 			meta.WithGeolocation(geolocation),
 			meta.WithAuthorization(auth),
 		)
-		stampSpan(ctx)
+		stampSpan(ctx, s.limit)
 
 		_ = stream.SetHeader(serverResponseHeaders(serviceVersion, id.Value()))
 
@@ -134,8 +154,8 @@ func StreamServerInterceptor(policy *method.Policy, userAgent env.UserAgent, ver
 // The tracer's metadata span processor cannot cover the server span, because
 // its context has no metadata yet when the span starts; child spans (database,
 // cache, ...) are stamped by that processor instead.
-func stampSpan(ctx context.Context) {
-	attributes.Record(ctx, attributes.Strings(meta.CamelStrings(ctx, meta.NoPrefix))...)
+func stampSpan(ctx context.Context, limit meta.Limit) {
+	attributes.Record(ctx, attributes.Strings(meta.Attributes(ctx, limit))...)
 }
 
 func serverResponseHeaders(serviceVersion, requestID string) Map {

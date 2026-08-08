@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
@@ -14,6 +15,14 @@ func attributeMap(cfg *Config) attributes.Map {
 		return cfg.Telemetry.Attributes
 	}
 	return nil
+}
+
+func metadataLimit(cfg *Config) meta.Limit {
+	if cfg.Telemetry.IsEnabled() {
+		return cfg.Telemetry.Metadata.GetMaxValueSize()
+	}
+
+	return 0
 }
 
 func loggerConfig(cfg *Config, fs *os.FS) *logger.Config {

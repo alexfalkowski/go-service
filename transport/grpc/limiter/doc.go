@@ -21,6 +21,5 @@
 // terminally. Server-side denials remain ordinary remote ResourceExhausted
 // statuses and may be retried by configured clients.
 //
-// Start with [UnaryServerInterceptor] or [StreamServerInterceptor] for server-side limiting and
-// [UnaryClientInterceptor] or [StreamClientInterceptor] for client-side limiting.
+// Start with [NewServer] for server-side limiting or [NewClient] for client-side limiting.
 package limiter

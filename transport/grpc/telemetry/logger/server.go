@@ -10,7 +10,18 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// UnaryServerInterceptor returns a gRPC unary server interceptor that logs the RPC outcome.
+// NewServer constructs gRPC server logging interceptors.
+func NewServer(policy *method.Policy, log *Logger) *Server {
+	return &Server{policy: policy, log: log}
+}
+
+// Server provides gRPC server interceptors that log RPC outcomes.
+type Server struct {
+	log    *Logger
+	policy *method.Policy
+}
+
+// UnaryInterceptor returns a gRPC unary server interceptor that logs the RPC outcome.
 //
 // Operation methods bypass logging.
 //
@@ -27,9 +38,9 @@ import (
 // The raw error is intentionally attached to the log record for backend observability. Client-facing
 // responses remain controlled by the gRPC status/error path; logs are expected to be protected operator
 // telemetry.
-func UnaryServerInterceptor(policy *method.Policy, log *Logger) grpc.UnaryServerInterceptor {
+func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if policy.IsOperation(info.FullMethod) {
+		if s.policy.IsOperation(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -46,13 +57,13 @@ func UnaryServerInterceptor(policy *method.Policy, log *Logger) grpc.UnaryServer
 		code := status.Code(err)
 		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
 
-		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(info.FullMethod), err), attrs...)
+		s.log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(info.FullMethod), err), attrs...)
 
 		return resp, err
 	}
 }
 
-// StreamServerInterceptor returns a gRPC stream server interceptor that logs the RPC outcome.
+// StreamInterceptor returns a gRPC stream server interceptor that logs the RPC outcome.
 //
 // Operation methods bypass logging.
 //
@@ -69,9 +80,9 @@ func UnaryServerInterceptor(policy *method.Policy, log *Logger) grpc.UnaryServer
 // The raw error is intentionally attached to the log record for backend observability. Client-facing
 // responses remain controlled by the gRPC status/error path; logs are expected to be protected operator
 // telemetry.
-func StreamServerInterceptor(policy *method.Policy, log *Logger) grpc.StreamServerInterceptor {
+func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if policy.IsOperation(info.FullMethod) {
+		if s.policy.IsOperation(info.FullMethod) {
 			return handler(srv, stream)
 		}
 
@@ -89,7 +100,7 @@ func StreamServerInterceptor(policy *method.Policy, log *Logger) grpc.StreamServ
 		code := status.Code(err)
 		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
 
-		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(info.FullMethod), err), attrs...)
+		s.log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(info.FullMethod), err), attrs...)
 
 		return err
 	}
