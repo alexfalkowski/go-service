@@ -98,6 +98,9 @@
       "k8s.namespace.name": payments
       "service.instance.id": "instance-1"
     }
+    metadata: {
+      max_value_size: 4KB
+    }
     logger: {
       kind: text
       level: info

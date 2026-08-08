@@ -74,7 +74,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	meter, err := meter(lc, router, os)
 	require.NoError(tb, err)
 
-	grpcServerLimiter, err := NewGRPCServerLimiter(lc, LimiterKeyMap, os.serverLimiter)
+	grpcServerLimiter, err := NewGRPCServerLimiter(lc, LimiterKeyMap, os.serverLimiter, grpcPolicy)
 	require.NoError(tb, err)
 	httpServerLimiter, err := NewHTTPServerLimiter(lc, LimiterKeyMap, os.serverLimiter)
 	require.NoError(tb, err)

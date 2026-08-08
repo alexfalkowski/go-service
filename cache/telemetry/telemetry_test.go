@@ -20,7 +20,7 @@ func TestInstrumentTracingDisablesRawCommandStatements(t *testing.T) {
 	})
 
 	exporter := &test.SpanExporter{}
-	provider := tracer.NewProvider(tracer.WithSyncer(exporter))
+	provider := tracer.NewProvider(1024, tracer.WithSyncer(exporter))
 	tracer.SetProvider(provider)
 	t.Cleanup(func() {
 		require.NoError(t, provider.Shutdown(context.Background()))

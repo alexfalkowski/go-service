@@ -8,7 +8,8 @@
 // access interceptors enforce configured authorization policy using that subject and the transport
 // service-method.
 //
-// Start with [UnaryServerInterceptor] / [StreamServerInterceptor] for server-side verification and
-// [UnaryAccessServerInterceptor] / [StreamAccessServerInterceptor] for server-side authorization.
-// Use [UnaryClientInterceptor] / [StreamClientInterceptor] for client-side injection.
+// Use [NewServer] to construct server-side verification ([Server.UnaryInterceptor] /
+// [Server.StreamInterceptor]) and authorization ([Server.UnaryAccessInterceptor] /
+// [Server.StreamAccessInterceptor]) interceptors. Use [NewClient] to construct client-side injection
+// interceptors ([Client.UnaryInterceptor] / [Client.StreamInterceptor]).
 package token

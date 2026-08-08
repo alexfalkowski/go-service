@@ -7,29 +7,28 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 )
 
-const (
-	// LevelError is the error log level.
-	//
-	// It is an alias of slog.LevelError, provided so callers can depend on the
-	// go-service logger package while using standard slog levels.
-	LevelError = slog.LevelError
+// LevelError is the error log level.
+//
+// It is an alias of slog.LevelError, provided so callers can depend on the
+// go-service logger package while using standard slog levels.
+const LevelError = slog.LevelError
 
-	// LevelInfo is the info log level.
-	//
-	// It is an alias of slog.LevelInfo, provided so callers can depend on the
-	// go-service logger package while using standard slog levels.
-	LevelInfo = slog.LevelInfo
+// LevelInfo is the info log level.
+//
+// It is an alias of slog.LevelInfo, provided so callers can depend on the
+// go-service logger package while using standard slog levels.
+const LevelInfo = slog.LevelInfo
 
-	// LevelWarn is the warning log level.
-	//
-	// It is an alias of slog.LevelWarn, provided so callers can depend on the
-	// go-service logger package while using standard slog levels.
-	LevelWarn = slog.LevelWarn
-)
+// LevelWarn is the warning log level.
+//
+// It is an alias of slog.LevelWarn, provided so callers can depend on the
+// go-service logger package while using standard slog levels.
+const LevelWarn = slog.LevelWarn
 
 // Attr is an alias of [slog.Attr].
 //
@@ -129,6 +128,9 @@ type LoggerParams struct {
 	// Stdout-oriented logger kinds attach it as an "environment" attribute. The
 	// OTLP logger uses it when constructing the OpenTelemetry resource.
 	Environment env.Environment
+
+	// Limit bounds metadata values appended to log records.
+	Limit meta.Limit
 }
 
 // NewLogger constructs the configured slog logger, installs it as the
@@ -163,7 +165,7 @@ func NewLogger(params LoggerParams) (*Logger, error) {
 	}
 
 	slog.SetDefault(logger)
-	return &Logger{logger}, nil
+	return &Logger{Logger: logger, limit: params.Limit}, nil
 }
 
 // Logger wraps [slog.Logger] and adds go-service logging helpers.
@@ -182,6 +184,7 @@ func NewLogger(params LoggerParams) (*Logger, error) {
 // attributes automatically.
 type Logger struct {
 	*slog.Logger
+	limit meta.Limit
 }
 
 // Info logs at [LevelInfo].
@@ -247,7 +250,7 @@ func (l *Logger) LogAttrs(ctx context.Context, level slog.Level, msg Message, at
 		return
 	}
 
-	attrs = append(attrs, Meta(ctx)...)
+	attrs = append(attrs, Meta(ctx, l.limit)...)
 	attrs = append(attrs, Error(msg.Error))
 
 	l.Logger.LogAttrs(ctx, level, msg.Text, attrs...)

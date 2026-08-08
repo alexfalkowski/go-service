@@ -37,7 +37,7 @@ func EnableSpanExporter(tb testing.TB) *SpanExporter {
 	tb.Helper()
 
 	exporter := &SpanExporter{}
-	provider := tracer.NewProvider(tracer.WithSyncer(exporter))
+	provider := tracer.NewProvider(1024, tracer.WithSyncer(exporter))
 	tracer.SetProvider(provider)
 
 	tb.Cleanup(func() {

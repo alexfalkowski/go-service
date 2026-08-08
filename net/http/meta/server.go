@@ -20,8 +20,8 @@ import (
 // It is designed to be used early in the server middleware chain so downstream middleware and handlers can
 // rely on a populated context (for example, logging, auth, rate limiting, and tracing). When mux is non-nil,
 // the handler uses it to resolve the matched route pattern before downstream middleware runs.
-func NewHandler(userAgent env.UserAgent, version env.Version, generator id.Generator, mux *http.ServeMux) *Handler {
-	return &Handler{userAgent: userAgent, serviceVersion: version.String(), generator: generator, mux: mux}
+func NewHandler(userAgent env.UserAgent, version env.Version, generator id.Generator, mux *http.ServeMux, limit meta.Limit) *Handler {
+	return &Handler{userAgent: userAgent, serviceVersion: version.String(), generator: generator, mux: mux, limit: limit}
 }
 
 // Handler extracts request metadata and stores it in the request context.
@@ -34,6 +34,7 @@ type Handler struct {
 	mux            *http.ServeMux
 	userAgent      env.UserAgent
 	serviceVersion string
+	limit          meta.Limit
 }
 
 // ServeHTTP extracts metadata from req and stores it in the request context.
@@ -82,7 +83,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		meta.WithGeolocation(geolocation),
 		meta.WithAuthorization(auth),
 	)
-	stampSpan(ctx)
+	h.stampSpan(ctx)
 
 	next(res, req.WithContext(ctx))
 }
@@ -93,8 +94,8 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 // The tracer's metadata span processor cannot cover the server span, because
 // its context has no metadata yet when the span starts; child spans (database,
 // cache, ...) are stamped by that processor instead.
-func stampSpan(ctx context.Context) {
-	attributes.Record(ctx, attributes.Strings(meta.CamelStrings(ctx, meta.NoPrefix))...)
+func (h *Handler) stampSpan(ctx context.Context) {
+	attributes.Record(ctx, attributes.Strings(meta.Attributes(ctx, h.limit))...)
 }
 
 func serverSetResponseHeaders(header http.Header, serviceVersion, requestID string) {

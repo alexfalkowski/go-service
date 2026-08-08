@@ -19,9 +19,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUnaryServerInterceptorLogs(t *testing.T) {
+func TestServerUnaryInterceptorLogs(t *testing.T) {
 	var logs bytes.Buffer
-	interceptor := grpclogger.UnaryServerInterceptor(method.NewPolicy(), newLogger(&logs))
+	interceptor := grpclogger.NewServer(method.NewPolicy(), newLogger(&logs)).UnaryInterceptor()
 
 	resp, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.GreeterService/SayHello"}, func(context.Context, any) (any, error) {
 		return "ok", nil
@@ -37,9 +37,9 @@ func TestUnaryServerInterceptorLogs(t *testing.T) {
 	require.Contains(t, logs.String(), `"code":"OK"`)
 }
 
-func TestUnaryServerInterceptorLogsSafeErrorCause(t *testing.T) {
+func TestServerUnaryInterceptorLogsSafeErrorCause(t *testing.T) {
 	var logs bytes.Buffer
-	interceptor := grpclogger.UnaryServerInterceptor(method.NewPolicy(), newLogger(&logs))
+	interceptor := grpclogger.NewServer(method.NewPolicy(), newLogger(&logs)).UnaryInterceptor()
 
 	_, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.GreeterService/SayHello"}, func(context.Context, any) (any, error) {
 		return nil, status.SafeError(codes.Unauthenticated, errors.New("jwt: signature invalid"))
@@ -58,11 +58,11 @@ func TestUnaryServerInterceptorLogsSafeErrorCause(t *testing.T) {
 	require.Equal(t, "grpc: unauthenticated", s.Message())
 }
 
-func TestUnaryServerInterceptorSkipsOperationMethod(t *testing.T) {
+func TestServerUnaryInterceptorSkipsOperationMethod(t *testing.T) {
 	var logs bytes.Buffer
 	policy := method.NewPolicy()
 	policy.Operation(health.CheckFullMethodName)
-	interceptor := grpclogger.UnaryServerInterceptor(policy, newLogger(&logs))
+	interceptor := grpclogger.NewServer(policy, newLogger(&logs)).UnaryInterceptor()
 	called := false
 
 	resp, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: health.CheckFullMethodName}, func(context.Context, any) (any, error) {
@@ -76,9 +76,9 @@ func TestUnaryServerInterceptorSkipsOperationMethod(t *testing.T) {
 	require.Empty(t, logs.String())
 }
 
-func TestStreamServerInterceptorLogs(t *testing.T) {
+func TestServerStreamInterceptorLogs(t *testing.T) {
 	var logs bytes.Buffer
-	interceptor := grpclogger.StreamServerInterceptor(method.NewPolicy(), newLogger(&logs))
+	interceptor := grpclogger.NewServer(method.NewPolicy(), newLogger(&logs)).StreamInterceptor()
 	stream := &test.MetaServerStream{Ctx: t.Context()}
 
 	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/greet.v1.GreeterService/SayStreamHello"}, func(any, grpc.ServerStream) error {
@@ -96,9 +96,9 @@ func TestStreamServerInterceptorLogs(t *testing.T) {
 	require.Contains(t, logs.String(), `"error":"rpc error: code = NotFound desc = missing"`)
 }
 
-func TestUnaryClientInterceptorLogs(t *testing.T) {
+func TestClientUnaryInterceptorLogs(t *testing.T) {
 	var logs bytes.Buffer
-	interceptor := grpclogger.UnaryClientInterceptor(newLogger(&logs))
+	interceptor := grpclogger.NewClient(newLogger(&logs)).UnaryInterceptor()
 	conn, err := grpc.NewClient("passthrough:///backend", grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
 	require.NoError(t, err)
 	defer func() {
@@ -120,9 +120,9 @@ func TestUnaryClientInterceptorLogs(t *testing.T) {
 	require.Contains(t, logs.String(), `"error":"rpc error: code = Unavailable desc = unavailable"`)
 }
 
-func TestStreamClientInterceptorLogs(t *testing.T) {
+func TestClientStreamInterceptorLogs(t *testing.T) {
 	var logs bytes.Buffer
-	interceptor := grpclogger.StreamClientInterceptor(newLogger(&logs))
+	interceptor := grpclogger.NewClient(newLogger(&logs)).StreamInterceptor()
 	conn, err := grpc.NewClient("passthrough:///backend", grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
 	require.NoError(t, err)
 	defer func() {
@@ -147,7 +147,7 @@ func TestStreamClientInterceptorLogs(t *testing.T) {
 	require.Contains(t, logs.String(), `"error":"rpc error: code = InvalidArgument desc = invalid"`)
 }
 
-func TestStreamClientInterceptorLogsStreamOperationError(t *testing.T) {
+func TestClientStreamInterceptorLogsStreamOperationError(t *testing.T) {
 	t.Run("recv", func(t *testing.T) {
 		requireStreamClientOperationError(t,
 			&grpc.StreamDesc{ServerStreams: true},
@@ -173,9 +173,9 @@ func TestStreamClientInterceptorLogsStreamOperationError(t *testing.T) {
 	})
 }
 
-func TestStreamClientInterceptorDoesNotLogRecvMsgEOF(t *testing.T) {
+func TestClientStreamInterceptorDoesNotLogRecvMsgEOF(t *testing.T) {
 	var logs bytes.Buffer
-	interceptor := grpclogger.StreamClientInterceptor(newLogger(&logs))
+	interceptor := grpclogger.NewClient(newLogger(&logs)).StreamInterceptor()
 	conn, err := grpc.NewClient("passthrough:///backend", grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
 	require.NoError(t, err)
 	defer func() {
@@ -224,7 +224,7 @@ func requireStreamClientOperationError(t *testing.T, desc *grpc.StreamDesc, clie
 	t.Helper()
 
 	var logs bytes.Buffer
-	interceptor := grpclogger.StreamClientInterceptor(newLogger(&logs))
+	interceptor := grpclogger.NewClient(newLogger(&logs)).StreamInterceptor()
 	conn, err := grpc.NewClient("passthrough:///backend", grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
 	require.NoError(t, err)
 	defer func() {

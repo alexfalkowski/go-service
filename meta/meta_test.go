@@ -29,6 +29,15 @@ func TestStrings(t *testing.T) {
 	})
 }
 
+func TestAttributesBoundsCamelCasedValues(t *testing.T) {
+	ctx := meta.WithAttributes(t.Context(),
+		meta.NewPair("request-id", meta.String("abcd")),
+		meta.NewPair("secret", meta.Ignored("hidden")),
+	)
+
+	require.Equal(t, meta.Map{"requestId": "abc"}, meta.Attributes(ctx, meta.Limit(3)))
+}
+
 func TestWithAttributesReturnsSameContextWithoutPairs(t *testing.T) {
 	ctx := t.Context()
 

@@ -1,6 +1,9 @@
 package meta
 
 import (
+	"unicode/utf8"
+
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -57,6 +60,31 @@ func CamelStrings(ctx context.Context, prefix string) Map {
 	return attributes(ctx).Strings(prefix, strings.ToLowerCamel)
 }
 
+// Limit bounds the length of an exported metadata value.
+//
+// Standard telemetry wiring resolves this value from telemetry configuration.
+// Values are truncated at a valid UTF-8 boundary, while the original context
+// metadata remains unchanged.
+type Limit bytes.Size
+
+// Bytes returns the limit as a byte count.
+func (l Limit) Bytes() int {
+	return int(l)
+}
+
+// Attributes returns context metadata as lowerCamelCase string attributes.
+//
+// Attribute values are bounded by limit so one metadata value cannot dominate a
+// log record or telemetry payload. Metadata retained in ctx is not truncated.
+func Attributes(ctx context.Context, limit Limit) Map {
+	attrs := CamelStrings(ctx, NoPrefix)
+	for key, value := range attrs {
+		attrs[key] = truncate(value, limit)
+	}
+
+	return attrs
+}
+
 // Strings returns all stored attributes as a string map with keys unchanged.
 //
 // The prefix parameter is prepended to each exported key (if non-empty).
@@ -67,4 +95,19 @@ func Strings(ctx context.Context, prefix string) Map {
 
 func identity(s string) string {
 	return s
+}
+
+func truncate(value string, limit Limit) string {
+	size := limit.Bytes()
+	if len(value) <= size {
+		return value
+	}
+
+	truncated := value[:size]
+	for !utf8.ValidString(truncated) {
+		_, size := utf8.DecodeLastRuneInString(truncated)
+		truncated = truncated[:len(truncated)-size]
+	}
+
+	return truncated
 }

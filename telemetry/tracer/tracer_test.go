@@ -2,11 +2,13 @@ package tracer_test
 
 import (
 	"testing"
+	"unicode/utf8"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
@@ -21,7 +23,7 @@ func TestMeta(t *testing.T) {
 		meta.WithUserID(meta.String("user-id")),
 	)
 
-	attrs := tracer.Meta(ctx)
+	attrs := tracer.Meta(ctx, 1024)
 
 	values := make(map[string]string, len(attrs))
 	for _, attr := range attrs {
@@ -33,7 +35,31 @@ func TestMeta(t *testing.T) {
 }
 
 func TestMetaWithoutAttributesIsEmpty(t *testing.T) {
-	require.Empty(t, tracer.Meta(t.Context()))
+	require.Empty(t, tracer.Meta(t.Context(), 1024))
+}
+
+func TestMetaBoundsValuesAtUTF8Boundary(t *testing.T) {
+	tests := []struct {
+		name     string
+		value    string
+		expected string
+	}{
+		{name: "exact limit", value: strings.Repeat("a", 3), expected: strings.Repeat("a", 3)},
+		{name: "over limit", value: strings.Repeat("a", 4), expected: strings.Repeat("a", 3)},
+		{name: "multibyte", value: "aaé", expected: "aa"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String(tt.value)))
+
+			attrs := tracer.Meta(ctx, 3)
+
+			require.Len(t, attrs, 1)
+			require.Equal(t, tt.expected, attrs[0].Value.AsString())
+			require.True(t, utf8.ValidString(attrs[0].Value.AsString()))
+		})
+	}
 }
 
 func TestMetaSpanProcessorStampsChildSpans(t *testing.T) {
@@ -65,7 +91,7 @@ func TestIsEnabled(t *testing.T) {
 	tracer.SetProvider(nil)
 	require.False(t, tracer.IsEnabled())
 
-	provider := tracer.NewProvider()
+	provider := tracer.NewProvider(1024)
 	tracer.SetProvider(provider)
 	require.True(t, tracer.IsEnabled())
 	require.NoError(t, provider.Shutdown(t.Context()))

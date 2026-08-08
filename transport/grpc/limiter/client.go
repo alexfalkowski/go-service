@@ -8,13 +8,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
-// NewClientLimiter constructs a gRPC client-side rate limiter.
+// NewClient constructs a gRPC client-side rate limiter.
 //
 // If cfg is disabled, it returns (nil, nil) so callers can treat the limiter as not configured.
 //
 // The returned limiter is backed by [limiter.NewLimiter] and is registered with the provided lifecycle.
 // The `keys` map controls how request contexts are turned into limiter keys.
-func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
+func NewClient(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
@@ -32,7 +32,7 @@ type Client struct {
 	*limiter.Limiter
 }
 
-// UnaryClientInterceptor returns a gRPC unary client interceptor that enforces rate limiting.
+// UnaryInterceptor returns a gRPC unary client interceptor that enforces rate limiting.
 //
 // The interceptor calls `limiter.TakeDecision(ctx)` before invoking the RPC:
 //
@@ -41,9 +41,9 @@ type Client struct {
 //   - Otherwise, it invokes the underlying `invoker`.
 //
 // Callers should only install this interceptor when limiter is non-nil.
-func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
+func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		decision, err := take(ctx, limiter.Limiter)
+		decision, err := take(ctx, c.Limiter)
 		if err != nil {
 			return status.LocalError(err)
 		}
@@ -56,7 +56,7 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 	}
 }
 
-// StreamClientInterceptor returns a gRPC stream client interceptor that enforces rate limiting.
+// StreamInterceptor returns a gRPC stream client interceptor that enforces rate limiting.
 //
 // The interceptor calls `limiter.TakeDecision(ctx)` before opening the stream, then meters each sent and received
 // stream message:
@@ -66,9 +66,9 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 //   - Otherwise, it invokes the underlying `streamer`.
 //
 // Callers should only install this interceptor when limiter is non-nil.
-func StreamClientInterceptor(limiter *Client) grpc.StreamClientInterceptor {
+func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		decision, err := take(ctx, limiter.Limiter)
+		decision, err := take(ctx, c.Limiter)
 		if err != nil {
 			return nil, status.LocalError(err)
 		}
@@ -82,7 +82,7 @@ func StreamClientInterceptor(limiter *Client) grpc.StreamClientInterceptor {
 			return nil, err
 		}
 
-		return &clientStream{ClientStream: stream, ctx: ctx, limiter: limiter.Limiter}, nil
+		return &clientStream{ClientStream: stream, ctx: ctx, limiter: c.Limiter}, nil
 	}
 }
 

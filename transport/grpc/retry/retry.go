@@ -43,7 +43,18 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 	return StandardReadMethods(ctx, fullMethod, req) || HasRequestID(ctx, fullMethod, req)
 }
 
-// UnaryClientInterceptor returns a gRPC unary client interceptor that retries failed calls.
+// NewClient returns a gRPC client that retries failed calls.
+func NewClient(cfg *Config, policies ...Policy) *Client {
+	return &Client{cfg: cfg, policies: policies}
+}
+
+// Client provides gRPC client retry interceptors.
+type Client struct {
+	cfg      *Config
+	policies []Policy
+}
+
+// UnaryInterceptor returns a gRPC unary client interceptor that retries failed calls.
 //
 // Behavior:
 //   - It checks whether the logical RPC is eligible for retry using policies.
@@ -66,17 +77,17 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 // Notes:
 // This interceptor does not automatically retry on every error; application-level errors that map to other
 // status codes will not be retried by default.
-func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInterceptor {
-	policy := composePolicy(policies)
-	maxAttempts := cfg.MaxAttempts()
-	timeout := cfg.GetTimeout()
-	backoff := cfg.GetBackoff()
-	maxBackoff := cfg.GetMaxBackoff()
+func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
+	policy := composePolicy(c.policies)
+	maxAttempts := c.cfg.MaxAttempts()
+	timeout := c.cfg.GetTimeout()
+	backoff := c.cfg.GetBackoff()
+	maxBackoff := c.cfg.GetMaxBackoff()
 	if maxBackoff > 0 && maxBackoff < backoff {
 		backoff = maxBackoff
 	}
-	strategy := cfg.GetStrategy()
-	codes := retryableCodes(cfg)
+	strategy := c.cfg.GetStrategy()
+	codes := retryableCodes(c.cfg)
 
 	invoke := func(ctx context.Context, attempt func(context.Context) error) error {
 		if maxAttempts == 0 {

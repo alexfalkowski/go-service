@@ -3,6 +3,7 @@ package test
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
 	grpc "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	http "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
@@ -23,12 +24,12 @@ func NewHTTPServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Con
 
 // NewGRPCClientLimiter returns a gRPC client limiter and any construction error.
 func NewGRPCClientLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Config) (*grpc.Client, error) {
-	return grpc.NewClientLimiter(lc, keys, cfg)
+	return grpc.NewClient(lc, keys, cfg)
 }
 
 // NewGRPCServerLimiter returns a gRPC server limiter and any construction error.
-func NewGRPCServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Config) (*grpc.Server, error) {
-	return grpc.NewServerLimiter(lc, keys, cfg)
+func NewGRPCServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Config, policy *method.Policy) (*grpc.Server, error) {
+	return grpc.NewServer(lc, keys, cfg, policy)
 }
 
 // AllowAllLimiter is a [github.com/alexfalkowski/go-service/v2/net/http/meta.RateLimiter] test double

@@ -17,9 +17,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUnaryClientInterceptorReplacesOutgoingAuthorization(t *testing.T) {
+func TestClientUnaryInterceptorReplacesOutgoingAuthorization(t *testing.T) {
 	ctx := meta.NewOutgoingContext(context.Background(), meta.Pairs("authorization", "Bearer stale-token"))
-	interceptor := token.UnaryClientInterceptor(env.UserID("service-user"), staticTokenGenerator("fresh-token"))
+	interceptor := token.NewClient(env.UserID("service-user"), staticTokenGenerator("fresh-token")).UnaryInterceptor()
 
 	err := interceptor(ctx, "/greet.v1.Greeter/SayHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
 		md, ok := meta.FromOutgoingContext(ctx)
@@ -31,9 +31,9 @@ func TestUnaryClientInterceptorReplacesOutgoingAuthorization(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestStreamClientInterceptorReplacesOutgoingAuthorization(t *testing.T) {
+func TestClientStreamInterceptorReplacesOutgoingAuthorization(t *testing.T) {
 	ctx := meta.NewOutgoingContext(context.Background(), meta.Pairs("authorization", "Bearer stale-token"))
-	interceptor := token.StreamClientInterceptor(env.UserID("service-user"), staticTokenGenerator("fresh-token"))
+	interceptor := token.NewClient(env.UserID("service-user"), staticTokenGenerator("fresh-token")).StreamInterceptor()
 	streamer := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		md, ok := meta.FromOutgoingContext(ctx)
 		require.True(t, ok)
@@ -49,10 +49,10 @@ func TestStreamClientInterceptorReplacesOutgoingAuthorization(t *testing.T) {
 	require.Nil(t, stream)
 }
 
-func TestUnaryServerInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
+func TestServerUnaryInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
 	policy := method.NewPolicy()
 	policy.AllowUnauthenticated("/events.v1.EventsService/Receive")
-	interceptor := token.UnaryServerInterceptor(policy, &test.Verifier{})
+	interceptor := token.NewServer(policy, &test.Verifier{}, nil).UnaryInterceptor()
 	called := false
 
 	_, err := interceptor(t.Context(), nil, &grpc.UnaryServerInfo{FullMethod: "/events.v1.EventsService/Receive"}, func(context.Context, any) (any, error) {
@@ -64,10 +64,10 @@ func TestUnaryServerInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
 	require.True(t, called)
 }
 
-func TestStreamServerInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
+func TestServerStreamInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
 	policy := method.NewPolicy()
 	policy.AllowUnauthenticated("/events.v1.EventsService/Subscribe")
-	interceptor := token.StreamServerInterceptor(policy, &test.Verifier{})
+	interceptor := token.NewServer(policy, &test.Verifier{}, nil).StreamInterceptor()
 	stream := &test.MetaServerStream{Ctx: t.Context()}
 	called := false
 
@@ -80,7 +80,7 @@ func TestStreamServerInterceptorBypassesUnauthenticatedMethod(t *testing.T) {
 	require.True(t, called)
 }
 
-func TestUnaryAccessServerInterceptor(t *testing.T) {
+func TestServerUnaryAccessInterceptor(t *testing.T) {
 	for _, tt := range accessServerTests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := t.Context()
@@ -94,7 +94,7 @@ func TestUnaryAccessServerInterceptor(t *testing.T) {
 			if tt.unauthenticated {
 				policy.AllowUnauthenticated(tt.method)
 			}
-			interceptor := token.UnaryAccessServerInterceptor(policy, tt.controller)
+			interceptor := token.NewServer(policy, nil, tt.controller).UnaryAccessInterceptor()
 			called := false
 
 			_, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: tt.method}, func(context.Context, any) (any, error) {
@@ -108,7 +108,7 @@ func TestUnaryAccessServerInterceptor(t *testing.T) {
 	}
 }
 
-func TestStreamAccessServerInterceptor(t *testing.T) {
+func TestServerStreamAccessInterceptor(t *testing.T) {
 	for _, tt := range accessServerTests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := t.Context()
@@ -122,7 +122,7 @@ func TestStreamAccessServerInterceptor(t *testing.T) {
 			if tt.unauthenticated {
 				policy.AllowUnauthenticated(tt.method)
 			}
-			interceptor := token.StreamAccessServerInterceptor(policy, tt.controller)
+			interceptor := token.NewServer(policy, nil, tt.controller).StreamAccessInterceptor()
 			stream := &test.MetaServerStream{Ctx: ctx}
 			called := false
 

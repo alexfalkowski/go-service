@@ -16,7 +16,22 @@ import (
 // half-open probing, etc.) without importing the lower-level breaker package directly.
 type Settings = breaker.Settings
 
-// UnaryClientInterceptor returns a gRPC unary client interceptor guarded by circuit breakers.
+// NewClient returns a gRPC client guarded by circuit breakers.
+func NewClient(options ...Option) *Client {
+	o := defaultOpts()
+	for _, option := range options {
+		option.apply(o)
+	}
+
+	return &Client{registry: &registry{opts: o, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}}
+}
+
+// Client provides gRPC client circuit-breaking interceptors.
+type Client struct {
+	registry *registry
+}
+
+// UnaryInterceptor returns a gRPC unary client interceptor guarded by circuit breakers.
 //
 // The interceptor wraps the outgoing unary invocation (`invoker`) in a circuit breaker execution.
 // When the breaker is closed, calls flow through normally. When the breaker transitions open, new calls
@@ -41,20 +56,13 @@ type Settings = breaker.Settings
 // a locally marked gRPC `ResourceExhausted` status error so retry middleware returns it terminally.
 //
 // All other errors from the invoker are returned as-is.
-func UnaryClientInterceptor(options ...Option) grpc.UnaryClientInterceptor {
-	o := defaultOpts()
-	for _, option := range options {
-		option.apply(o)
-	}
-
-	r := &registry{opts: o, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
-
+func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, callOpts ...grpc.CallOption) error {
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			return invoker(ctx, fullMethod, req, resp, conn, callOpts...)
 		}
 
-		cb := r.get(fullMethod)
+		cb := c.registry.get(fullMethod)
 		_, err := cb.Execute(func() (any, error) {
 			return nil, invoker(ctx, fullMethod, req, resp, conn, callOpts...)
 		})
