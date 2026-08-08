@@ -17,7 +17,7 @@ Long-running services are expected to start from [`go-service-template`](https:/
 
 ## 🚀 Install
 
-For a new long-running service, start from `go-service-template` so the application `main`, server command wiring, configuration fixtures, and standard module composition are generated together. For a short-lived control, migration, or batch command, start from `go-client-template`; it demonstrates `cli.Application.AddClient`, `module.Client`, and lifecycle startup work.
+For a new long-running service, start from `go-service-template` so the application `main`, server command wiring, configuration fixtures, and standard module composition are generated together. For a short-lived control, migration, or batch command, start from `go-client-template`; it demonstrates `cli.Application.AddClient`, `module.Client`, and lifecycle `OnStart` command work.
 
 For direct package use in an existing module, add the library dependency with the versioned module path:
 
@@ -683,9 +683,10 @@ telemetry:
 ```
 
 > [!NOTE]
-> - `batch_timeout`, `export_timeout`, `max_queue_size`, and `max_export_batch_size` tune the OTLP batch export pipeline and apply only when `kind` is `otlp`. When a value is unset or zero, the OpenTelemetry SDK default is used (queue `2048`, batch `512`).
+> - `batch_timeout`, `export_timeout`, `max_queue_size`, and `max_export_batch_size` tune the OTLP batch export pipeline and apply only when `kind` is `otlp`. When a value is unset or zero, the OpenTelemetry SDK default is used (queue `2048`, batch `512`). A nonzero `batch_timeout` must use whole-second precision. Explicit queue and batch limits may be at most `8192` and `2048`, respectively; the effective batch may not exceed the effective queue.
 > - `headers` values are source strings.
 > - Telemetry header maps are resolved during config projection; unset `env:` values and unreadable `file:` values fail fast (panic during startup).
+> - After resolution, go-service passes header names and values to the selected exporter without validating HTTP or gRPC syntax. Use headers valid for the selected protocol; an exporter may report invalid syntax only when it attempts an export, not during startup.
 
 > [!WARNING]
 > OTLP exporters reject non-loopback `http://` endpoints when headers are configured. Use HTTPS for remote collectors that require authorization headers; cleartext with headers is accepted only for local loopback endpoints.
@@ -757,7 +758,8 @@ telemetry:
 ```
 
 `interval` and `timeout` apply only to OTLP push metrics. When either value is
-unset or zero, the OpenTelemetry SDK default is used.
+unset or zero, the OpenTelemetry SDK default is used. A nonzero `interval` must
+use whole-second precision.
 
 #### Histogram buckets
 
@@ -776,11 +778,17 @@ telemetry:
 ```
 
 Boundaries are in the instrument's unit (seconds for duration histograms, bytes
-for size histograms) and must be listed in increasing order. Views apply to
+for size histograms) and should be listed in increasing order. Views apply to
 histogram instruments regardless of metrics kind; an unset or empty list keeps the
 OpenTelemetry SDK default buckets. Views are evaluated in list order; the first
 matching view is applied. Migrate the previous map form by making each map entry a
 list item with `pattern` and `boundaries` fields.
+
+go-service passes configured boundaries to OpenTelemetry unchanged and does not
+validate their order. Boundaries should be increasing: the supported OpenTelemetry SDK reports duplicate or
+decreasing boundaries through its global error handler and uses its default
+histogram aggregation for the matching instrument; configuration and startup do
+not fail.
 
 ### Tracing
 
@@ -804,7 +812,7 @@ telemetry:
 ```
 
 > [!NOTE]
-> `batch_timeout`, `export_timeout`, `max_queue_size`, and `max_export_batch_size` tune the OTLP batch span export pipeline. When a value is unset or zero, the OpenTelemetry SDK default is used (queue `2048`, batch `512`).
+> `batch_timeout`, `export_timeout`, `max_queue_size`, and `max_export_batch_size` tune the OTLP batch span export pipeline. When a value is unset or zero, the OpenTelemetry SDK default is used (queue `2048`, batch `512`). A nonzero `batch_timeout` must use whole-second precision. Explicit queue and batch limits may be at most `8192` and `2048`, respectively; the effective batch may not exceed the effective queue.
 >
 > OTLP exporters default to `protocol: http`. Set `protocol: grpc` and use a
 > `host:port` `url`, such as `localhost:4317`, to export through OTLP/gRPC.

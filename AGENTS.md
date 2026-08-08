@@ -172,14 +172,16 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
   returns `os.ExitCodeFailure`.
 - `cli.Application.AddClient` intentionally models short-lived client command
-  work as DI/Fx startup work. Client commands may perform their main action
-  from constructors or lifecycle `OnStart` hooks, then stop the graph
-  immediately after startup completes. Do not flag the absence of a separate
-  post-DI command-task API solely because command work lives in `OnStart`; this
-  is the supported pattern, as used by downstream client templates. Report only
-  concrete broken behavior such as incorrect error propagation, ignored
-  shutdown exit codes, lifecycle ordering bugs, or a documented command
-  contract that cannot be expressed with the DI lifecycle.
+  work as DI/Fx startup work. Client commands perform their main action from a
+  lifecycle `OnStart` hook, then stop the graph immediately after startup
+  completes. Constructors and invocations only wire dependencies and register
+  lifecycle hooks; they do not perform the command action while the graph is
+  being built. Do not flag the absence of a separate post-DI command-task API
+  solely because command work lives in `OnStart`; this is the supported pattern,
+  as used by downstream client templates. Report only concrete broken behavior
+  such as incorrect error propagation, ignored shutdown exit codes, lifecycle
+  ordering bugs, or a documented command contract that cannot be expressed with
+  the DI lifecycle.
 - `cli.Application.Run` intentionally sanitizes Go test harness `-test.*`
   arguments before handing `os.Args` to the command runner because this
   repository commonly exercises CLI applications through Go test binaries. Do
@@ -215,6 +217,14 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   should set the go-service config values through their deployment/config
   source; do not flag missing automatic `OTEL_*` endpoint projection as a
   feature gap unless the documented support boundary changes.
+- OTLP header maps are intentionally passed to the selected exporter after
+  source resolution without repository-owned HTTP or gRPC syntax validation.
+  Missing `env:` values and unreadable `file:` values still fail startup, but
+  malformed administrator-supplied names or resolved values may be rejected by
+  the exporter only when it attempts an export. Do not flag that upstream
+  protocol rejection as a local code issue. Report only concrete local bugs such
+  as valid headers being altered or dropped, explicit headers being ignored,
+  secret values being exposed, or a public promise of local syntax validation.
 - Prometheus pull metrics are intentionally exposed through the service HTTP
   transport at `/<name>/metrics` when HTTP transport and Prometheus metrics are
   enabled. Do not flag the absence of a Prometheus scrape endpoint on the debug

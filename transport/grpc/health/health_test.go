@@ -420,9 +420,12 @@ func TestWatchServerLimiter(t *testing.T) {
 	require.Equal(t, health.Serving, resp.GetStatus())
 
 	rejected, err := client.Watch(t.Context(), req)
-	if err == nil {
-		_, err = rejected.Recv()
+	if err != nil {
+		require.Equal(t, codes.ResourceExhausted, status.Code(err))
+		return
 	}
+
+	_, err = rejected.Recv()
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }

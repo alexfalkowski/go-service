@@ -426,7 +426,7 @@ func TestOTLPGRPCLoggerWithBatchTuning(t *testing.T) {
 		Kind:               "otlp",
 		Protocol:           "grpc",
 		URL:                "localhost:4317",
-		BatchTimeout:       20 * time.Millisecond,
+		BatchTimeout:       time.Second,
 		ExportTimeout:      time.Second,
 		MaxQueueSize:       1024,
 		MaxExportBatchSize: 256,

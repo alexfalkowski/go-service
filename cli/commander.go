@@ -31,7 +31,8 @@ type Commander interface {
 	//   - starts a DI application built from opts plus client-specific wiring,
 	//   - then stops the DI application immediately after startup completes.
 	//
-	// Run the command's main action from an invoked constructor or a lifecycle
-	// OnStart hook so it completes before startup returns.
+	// Run the command's main action from a lifecycle OnStart hook so it completes
+	// before startup returns. Constructors and invocations should only wire
+	// dependencies and register lifecycle hooks.
 	AddClient(name, description string, opts ...Option) *Command
 }

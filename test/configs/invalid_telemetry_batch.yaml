@@ -1,0 +1,9 @@
+telemetry:
+  logger:
+    kind: otlp
+    max_queue_size: 8193
+    max_export_batch_size: 2049
+  tracer:
+    kind: otlp
+    max_queue_size: 8193
+    max_export_batch_size: 2049
