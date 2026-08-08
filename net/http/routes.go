@@ -85,6 +85,12 @@ type routePolicy struct {
 
 // IsOperation reports whether req targets a registered operation path.
 func (r *RoutePolicy) IsOperation(req *Request) bool {
+	if !strings.IsEmpty(req.Pattern) {
+		if _, ok := r.operations[routePatternPath(req.Pattern)]; ok {
+			return true
+		}
+	}
+
 	_, ok := r.operations[req.URL.Path]
 	return ok
 }

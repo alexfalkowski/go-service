@@ -547,6 +547,18 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   panics as request-path reliability gaps solely because those constructors
   panic; report only concrete supported paths that construct views per request
   contrary to the documented lifecycle.
+- Terminal writes and closes after a buffered HTTP response has already been
+  produced are best-effort transport and cleanup signals, not delivery
+  acknowledgements. Go may accept a `ResponseWriter.Write` into internal
+  buffers without proving that the client received it, and the standard
+  library itself discards equivalent terminal response-copy errors. Do not flag
+  ignored final `ResponseWriter.Write`, `bytes.Buffer.WriteTo`, response/body or
+  codec `Close` errors solely to observe client disconnects, write-deadline
+  expiry, or cleanup failure. Report only a concrete repository-owned contract
+  that requires the error to change control flow, preserve data, or feed an
+  actionable required diagnostic. This does not apply to active streaming
+  `Send`/`Recv`/`Flush` errors, which participate in the documented stream
+  abort, limiting, and truncation contracts.
 - MVC static files are expected to be served from embedded or otherwise stable
   application assets. Do not flag ignored mid-stream `io.Copy` errors in
   `mvc.writeStaticFile` as reliability gaps solely because an artificial

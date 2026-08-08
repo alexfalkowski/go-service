@@ -11,6 +11,9 @@ var EOF = io.EOF
 // ErrUnexpectedEOF aliases [io.ErrUnexpectedEOF].
 var ErrUnexpectedEOF = io.ErrUnexpectedEOF
 
+// ErrClosedPipe aliases [io.ErrClosedPipe].
+var ErrClosedPipe = io.ErrClosedPipe
+
 // Discard aliases [io.Discard].
 var Discard = io.Discard
 

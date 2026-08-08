@@ -81,6 +81,42 @@ func TestRouterAppliesRouteOptions(t *testing.T) {
 	}
 }
 
+func TestRouterMatchesParameterizedOperationPath(t *testing.T) {
+	mux := http.NewServeMux()
+	policy := http.NewRoutePolicy()
+	router := http.NewRouter(mux, policy)
+	router.HandleRoute("GET /operations/{id}", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.WriteHeader(http.StatusNoContent)
+	}), http.WithRouteOperation())
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/operations/ready", http.NoBody)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusNoContent, res.Code)
+	require.True(t, policy.IsOperation(req))
+}
+
+func TestRouterRetainsLiteralOperationFallbackAfterNonOperationMatch(t *testing.T) {
+	mux := http.NewServeMux()
+	policy := http.NewRoutePolicy()
+	router := http.NewRouter(mux, policy)
+	router.HandleRoute("GET /health", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), http.WithRouteOperation())
+	router.HandleRoute("POST /{id}", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.WriteHeader(http.StatusNoContent)
+	}))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/health", http.NoBody)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	require.Equal(t, "POST /{id}", req.Pattern)
+	require.Equal(t, http.StatusNoContent, res.Code)
+	require.True(t, policy.IsOperation(req))
+}
+
 func TestRoutePolicyFallsBackForEachRouteProperty(t *testing.T) {
 	tests := []struct {
 		name     string

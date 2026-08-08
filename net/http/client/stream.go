@@ -169,8 +169,9 @@ func (c *Client) Stream(ctx context.Context, method, url string, opts Options, h
 // response only exists once the server has read enough of the request stream to answer, so handler is
 // always called. A text/error response or a 4xx/5xx status code (see [Client.checkResponseStatus]) is
 // instead surfaced as the error returned by the first [RequestResponseStream.Recv] call, exactly like
-// any other Recv error; a handler that never calls Recv never observes it as a Recv error, but
-// RequestStream still resolves and closes the response before returning.
+// any other Recv error. If an early error response closes the request pipe before Send completes and
+// handler returns that closed-pipe error, RequestStream returns the response status instead. A handler
+// that never calls Recv still resolves and closes the response before returning.
 //
 // Retries:
 // RequestStream's request body has no [http.Request.GetBody] (it is pipe-backed), so
@@ -402,8 +403,8 @@ func (s *RequestResponseStream) Send(v any) error {
 }
 
 // finish closes the request-side pipe according to handlerErr, then always resolves and closes the
-// response, returning the first of handlerErr, an encoder finalize error, or a response-resolution
-// error, in that priority order.
+// response. A response status error replaces only handlerErr when it is the stream's own closed-pipe
+// Send failure; all other handler and encoder errors retain priority.
 func (s *RequestResponseStream) finish(handlerErr error) error {
 	if handlerErr != nil {
 		_ = s.writer.CloseWithError(handlerErr)
@@ -415,6 +416,10 @@ func (s *RequestResponseStream) finish(handlerErr error) error {
 	}
 
 	closeErr := s.close()
+	if errors.Is(handlerErr, s.sendErr) && errors.Is(s.sendErr, io.ErrClosedPipe) && status.IsError(closeErr) {
+		return closeErr
+	}
+
 	if handlerErr != nil {
 		return handlerErr
 	}
