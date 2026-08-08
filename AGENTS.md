@@ -636,6 +636,12 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 - HTTP webhook signing intentionally ignores the Standard Webhooks `Sign` error
   because the current vendored implementation always returns nil. Do not flag
   this unless the dependency behavior changes.
+- Standard Webhooks currently accepts a `whsec_` secret whose decoded HMAC key
+  is empty. Treat this as an upstream library defect: do not duplicate its
+  private prefix/Base64 parsing in `hooks` as a local workaround. Pursue an
+  upstream fix and update the dependency when one is available; add local
+  validation only if this repository explicitly takes ownership of that
+  validation contract.
 - HTTP CloudEvents receiver registration intentionally ignores the current
   CloudEvents constructor errors because supported wiring passes no protocol
   options and uses the typed `ReceiverFunc`, which matches the SDK receive

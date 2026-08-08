@@ -27,17 +27,6 @@ type Config struct {
 	// config enables TLS; Cert, Key, and CA values use go-service source strings.
 	TLS *tls.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 
-	// Views maps OpenTelemetry instrument names to explicit histogram bucket
-	// boundaries, overriding the SDK default boundaries for matching histogram
-	// instruments such as "http.server.request.duration" or "rpc.server.call.duration".
-	//
-	// Instrument name matching follows OpenTelemetry view semantics and supports
-	// "*" wildcards (for example "rpc.*.duration"). Boundaries are expressed in the
-	// instrument's unit (seconds for duration histograms, bytes for size
-	// histograms) and must be listed in increasing order. A nil or empty map keeps
-	// the SDK default boundaries, so this field is a no-op unless configured.
-	Views map[string][]float64 `yaml:"views,omitempty" json:"views,omitempty" toml:"views,omitempty"`
-
 	// Prometheus configures Prometheus exporter output shaping.
 	//
 	// A nil value preserves the current exporter output. This field only
@@ -71,6 +60,17 @@ type Config struct {
 	// For "prometheus", URL is typically ignored by the exporter/reader implementation.
 	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 
+	// Views configures explicit histogram bucket boundaries for matching OpenTelemetry
+	// instruments such as "http.server.request.duration" or "rpc.server.call.duration".
+	//
+	// Instrument name matching follows OpenTelemetry view semantics and supports
+	// "*" wildcards (for example "rpc.*.duration"). Views are evaluated in list
+	// order and the first matching view is applied. Boundaries are expressed in the
+	// instrument's unit (seconds for duration histograms, bytes for size histograms)
+	// and must be listed in increasing order. A nil or empty list keeps the SDK
+	// default boundaries, so this field is a no-op unless configured.
+	Views []ViewConfig `yaml:"views,omitempty" json:"views,omitempty" toml:"views,omitempty" validate:"omitempty,dive"`
+
 	// Interval is the OTLP periodic export interval.
 	//
 	// A zero value keeps the OpenTelemetry SDK default. Negative values are
@@ -82,6 +82,19 @@ type Config struct {
 	// A zero value keeps the OpenTelemetry SDK default. Negative values are
 	// invalid. This field only applies when Kind is "otlp".
 	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty" validate:"gte=0"`
+}
+
+// ViewConfig configures explicit histogram bucket boundaries for instruments that
+// match Pattern.
+//
+// Pattern supports OpenTelemetry "*" wildcards. Configured views are evaluated in
+// list order, and the first matching view is applied.
+type ViewConfig struct {
+	// Pattern is an OpenTelemetry instrument name or wildcard pattern.
+	Pattern string `yaml:"pattern" json:"pattern" toml:"pattern" validate:"required"`
+
+	// Boundaries are explicit histogram bucket boundaries in the instrument's unit.
+	Boundaries []float64 `yaml:"boundaries" json:"boundaries" toml:"boundaries" validate:"min=1"`
 }
 
 // PrometheusConfig configures Prometheus exporter output shaping.

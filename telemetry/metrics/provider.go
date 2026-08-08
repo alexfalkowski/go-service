@@ -105,25 +105,6 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	return provider
 }
 
-// configViews builds explicit-bucket-histogram views from the configured
-// instrument-name-to-boundaries map. It returns nil when no views are
-// configured, leaving the OpenTelemetry SDK default boundaries in place.
-func configViews(cfg *Config) []sdk.View {
-	if cfg == nil || len(cfg.Views) == 0 {
-		return nil
-	}
-
-	views := make([]sdk.View, 0, len(cfg.Views))
-	for name, boundaries := range cfg.Views {
-		views = append(views, sdk.NewView(
-			sdk.Instrument{Name: name},
-			sdk.Stream{Aggregation: sdk.AggregationExplicitBucketHistogram{Boundaries: boundaries}},
-		))
-	}
-
-	return views
-}
-
 // IsEnabled reports whether this package has registered metrics as enabled.
 func IsEnabled() bool {
 	return enabled.Load()
@@ -132,4 +113,31 @@ func IsEnabled() bool {
 // NewManualReader constructs an OpenTelemetry SDK manual metric reader.
 func NewManualReader() sdk.Reader {
 	return sdk.NewManualReader()
+}
+
+// configViews builds one first-match view from the configured view list. It
+// returns nil when no views are configured, leaving the OpenTelemetry SDK
+// default boundaries in place.
+func configViews(cfg *Config) []sdk.View {
+	if cfg == nil || len(cfg.Views) == 0 {
+		return nil
+	}
+
+	views := make([]sdk.View, 0, len(cfg.Views))
+	for _, cfg := range cfg.Views {
+		views = append(views, sdk.NewView(
+			sdk.Instrument{Name: cfg.Pattern, Kind: sdk.InstrumentKindHistogram},
+			sdk.Stream{Aggregation: sdk.AggregationExplicitBucketHistogram{Boundaries: cfg.Boundaries}},
+		))
+	}
+
+	return []sdk.View{func(instrument sdk.Instrument) (sdk.Stream, bool) {
+		for _, view := range views {
+			if stream, ok := view(instrument); ok {
+				return stream, true
+			}
+		}
+
+		return sdk.Stream{}, false
+	}}
 }

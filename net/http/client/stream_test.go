@@ -631,7 +631,7 @@ func TestRequestStreamClosesPipeOnHandlerPanic(t *testing.T) {
 			require.ErrorIs(t, err, runtime.ErrRecovered)
 			require.EqualError(t, err, "recovered: boom")
 		case <-time.After(2 * time.Second):
-			t.Fatal("pipe reader never unblocked after handler panic")
+			require.Fail(t, "pipe reader never unblocked after handler panic")
 		}
 	})
 }
