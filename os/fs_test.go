@@ -20,9 +20,18 @@ func TestReadFile(t *testing.T) {
 }
 
 func TestPathExtension(t *testing.T) {
-	for _, path := range []string{"file.yaml", "file.test.yaml", "test/.config/existing.client.yaml"} {
-		t.Run(path, func(t *testing.T) {
-			require.Equal(t, "yaml", test.FS.PathExtension(path))
+	tests := []struct {
+		name string
+		path string
+	}{
+		{name: "extracts single extension", path: "file.yaml"},
+		{name: "extracts extension after multiple periods", path: "file.test.yaml"},
+		{name: "extracts extension from nested path", path: "test/.config/existing.client.yaml"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, "yaml", test.FS.PathExtension(tt.path))
 		})
 	}
 

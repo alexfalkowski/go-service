@@ -32,11 +32,21 @@ func TestUnlimited(t *testing.T) {
 }
 
 func TestServerLimiter(t *testing.T) {
-	for _, f := range []string{"user-agent", "ip", "service-method", "transport-service-method"} {
-		t.Run(f, func(t *testing.T) {
+	keys := []struct {
+		name string
+		kind string
+	}{
+		{name: "limits by user agent", kind: "user-agent"},
+		{name: "limits by IP address", kind: "ip"},
+		{name: "limits by service method", kind: "service-method"},
+		{name: "limits by transport service method", kind: "transport-service-method"},
+	}
+
+	for _, key := range keys {
+		t.Run(key.name, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
 				test.WithWorldTelemetry("otlp"),
-				test.WithWorldServerLimiter(test.NewLimiterConfig(f, "1s", 0)),
+				test.WithWorldServerLimiter(test.NewLimiterConfig(key.kind, "1s", 0)),
 				test.WithWorldHTTP(),
 				test.WithWorldHello(),
 			)
@@ -103,11 +113,21 @@ func TestServerLimiterDoesNotBypassApplicationMetricsPath(t *testing.T) {
 }
 
 func TestClientLimiter(t *testing.T) {
-	for _, f := range []string{"user-agent", "ip", "service-method", "transport-service-method"} {
-		t.Run(f, func(t *testing.T) {
+	keys := []struct {
+		name string
+		kind string
+	}{
+		{name: "limits by user agent", kind: "user-agent"},
+		{name: "limits by IP address", kind: "ip"},
+		{name: "limits by service method", kind: "service-method"},
+		{name: "limits by transport service method", kind: "transport-service-method"},
+	}
+
+	for _, key := range keys {
+		t.Run(key.name, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
 				test.WithWorldTelemetry("otlp"),
-				test.WithWorldClientLimiter(test.NewLimiterConfig(f, "1s", 0)),
+				test.WithWorldClientLimiter(test.NewLimiterConfig(key.kind, "1s", 0)),
 				test.WithWorldHTTP(),
 				test.WithWorldHello(),
 			)

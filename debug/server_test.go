@@ -16,12 +16,15 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-var debugPaths = []string{
-	"debug/statsviz",
-	"debug/pprof/",
-	"debug/pprof/cmdline",
-	"debug/pprof/symbol",
-	"debug/pprof/trace",
+var debugPaths = []struct {
+	name string
+	path string
+}{
+	{name: "serves statsviz", path: "debug/statsviz"},
+	{name: "serves pprof index", path: "debug/pprof/"},
+	{name: "serves pprof command line", path: "debug/pprof/cmdline"},
+	{name: "serves pprof symbol lookup", path: "debug/pprof/symbol"},
+	{name: "serves pprof trace", path: "debug/pprof/trace"},
 }
 
 func TestDebugEndpoints(t *testing.T) {
@@ -115,12 +118,12 @@ func requireDebugEndpoints(t *testing.T, scheme string, options ...test.WorldOpt
 
 	options = append([]test.WorldOption{test.WithWorldTelemetry("otlp")}, options...)
 
-	for _, path := range debugPaths {
-		t.Run(path, func(t *testing.T) {
+	for _, endpoint := range debugPaths {
+		t.Run(endpoint.name, func(t *testing.T) {
 			world := test.NewStartedWorld(t, options...)
 
 			header := http.Header{}
-			url := world.NamedDebugURL(scheme, path)
+			url := world.NamedDebugURL(scheme, endpoint.path)
 
 			res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
 			require.NoError(t, err)

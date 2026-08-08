@@ -18,13 +18,20 @@ import (
 )
 
 func TestHealth(t *testing.T) {
-	checks := []string{"healthz", "livez", "readyz"}
+	checks := []struct {
+		name string
+		path string
+	}{
+		{name: "serves health endpoint", path: "healthz"},
+		{name: "serves liveness endpoint", path: "livez"},
+		{name: "serves readiness endpoint", path: "readyz"},
+	}
 
 	for _, check := range checks {
-		t.Run(check, func(t *testing.T) {
+		t.Run(check.name, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
 				test.WithWorldTelemetry("otlp"),
-				test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("200"), test.HealthObserve(check, "http")),
+				test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("200"), test.HealthObserve(check.path, "http")),
 			)
 
 			ctx := meta.WithAttributes(t.Context(),
@@ -33,7 +40,7 @@ func TestHealth(t *testing.T) {
 			)
 
 			header := http.Header{}
-			url := world.NamedServerURL("http", check)
+			url := world.NamedServerURL("http", check.path)
 
 			res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
 			require.NoError(t, err)
@@ -129,10 +136,17 @@ func TestInvalidHealth(t *testing.T) {
 }
 
 func TestMissingHealth(t *testing.T) {
-	checks := []string{"healthz", "livez", "readyz"}
+	checks := []struct {
+		name string
+		path string
+	}{
+		{name: "rejects unobserved health endpoint", path: "healthz"},
+		{name: "rejects unobserved liveness endpoint", path: "livez"},
+		{name: "rejects unobserved readiness endpoint", path: "readyz"},
+	}
 
 	for _, check := range checks {
-		t.Run(check, func(t *testing.T) {
+		t.Run(check.name, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
 				test.WithWorldTelemetry("otlp"),
 				test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("200")),
@@ -146,7 +160,7 @@ func TestMissingHealth(t *testing.T) {
 			header := http.Header{}
 			header.Set(http.ContentTypeKey, media.JSON)
 
-			url := world.NamedServerURL("http", check)
+			url := world.NamedServerURL("http", check.path)
 
 			res, err := world.ResponseWithNoBody(ctx, url, http.MethodGet, header)
 			require.NoError(t, err)

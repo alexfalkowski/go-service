@@ -69,17 +69,22 @@ func TestDecodeRejectsUnknownFields(t *testing.T) {
 func TestDecodeRejectsTrailingData(t *testing.T) {
 	t.Parallel()
 
-	for _, input := range []string{
-		`{"test":"test"} garbage`,
-		`{"test":"test"}{"test":"other"}`,
-	} {
-		t.Run(input, func(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{name: "rejects trailing non-JSON data", input: `{"test":"test"} garbage`},
+		{name: "rejects second JSON value", input: `{"test":"test"}{"test":"other"}`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			encoder := json.NewEncoder()
 			var msg map[string]string
 
-			err := encoder.Decode(bytes.NewBufferString(input), &msg)
+			err := encoder.Decode(bytes.NewBufferString(tt.input), &msg)
 
 			require.ErrorIs(t, err, errors.ErrTrailingData)
 		})

@@ -55,26 +55,36 @@ func TestValidateEndpointInvalidURL(t *testing.T) {
 }
 
 func TestValidateEndpointRejectsInvalidEndpoint(t *testing.T) {
-	for _, rawURL := range []string{
-		"htps://collector.example.com/v1/traces",
-		"https:///v1/traces",
-	} {
-		t.Run(rawURL, func(t *testing.T) {
-			err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: rawURL})
+	httpTests := []struct {
+		name    string
+		address string
+	}{
+		{name: "rejects unsupported URL scheme", address: "htps://collector.example.com/v1/traces"},
+		{name: "rejects URL without host", address: "https:///v1/traces"},
+	}
+
+	for _, tt := range httpTests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: tt.address})
 
 			require.ErrorIs(t, err, otlp.ErrInvalidEndpoint)
 		})
 	}
 
-	for _, address := range []string{
-		"https://collector.example.com:4317",
-		"collector.example.com",
-		"collector.example.com:",
-		"collector.example.com:0",
-		"collector.example.com:4317/v1/traces",
-	} {
-		t.Run(address, func(t *testing.T) {
-			err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "grpc", Address: address})
+	grpcTests := []struct {
+		name    string
+		address string
+	}{
+		{name: "rejects URL address", address: "https://collector.example.com:4317"},
+		{name: "rejects missing port", address: "collector.example.com"},
+		{name: "rejects empty port", address: "collector.example.com:"},
+		{name: "rejects zero port", address: "collector.example.com:0"},
+		{name: "rejects path", address: "collector.example.com:4317/v1/traces"},
+	}
+
+	for _, tt := range grpcTests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "grpc", Address: tt.address})
 
 			require.ErrorIs(t, err, otlp.ErrInvalidEndpoint)
 		})
