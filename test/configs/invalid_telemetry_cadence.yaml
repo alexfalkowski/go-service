@@ -1,0 +1,10 @@
+telemetry:
+  logger:
+    kind: otlp
+    batch_timeout: 1500ms
+  metrics:
+    kind: otlp
+    interval: 1500ms
+  tracer:
+    kind: otlp
+    batch_timeout: 1500ms

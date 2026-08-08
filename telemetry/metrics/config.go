@@ -67,15 +67,18 @@ type Config struct {
 	// "*" wildcards (for example "rpc.*.duration"). Views are evaluated in list
 	// order and the first matching view is applied. Boundaries are expressed in the
 	// instrument's unit (seconds for duration histograms, bytes for size histograms)
-	// and must be listed in increasing order. A nil or empty list keeps the SDK
-	// default boundaries, so this field is a no-op unless configured.
+	// and should be listed in increasing order. This package passes configured
+	// boundaries to OpenTelemetry unchanged; the SDK reports duplicate or decreasing
+	// values through its global error handler and uses its default aggregation for
+	// the matching instrument. A nil or empty list keeps the SDK default boundaries,
+	// so this field is a no-op unless configured.
 	Views []ViewConfig `yaml:"views,omitempty" json:"views,omitempty" toml:"views,omitempty" validate:"omitempty,dive"`
 
 	// Interval is the OTLP periodic export interval.
 	//
-	// A zero value keeps the OpenTelemetry SDK default. Negative values are
-	// invalid. This field only applies when Kind is "otlp".
-	Interval time.Duration `yaml:"interval,omitempty" json:"interval,omitempty" toml:"interval,omitempty" validate:"gte=0"`
+	// A zero value keeps the OpenTelemetry SDK default. Nonzero values must use
+	// whole-second precision. This field only applies when Kind is "otlp".
+	Interval time.Duration `yaml:"interval,omitempty" json:"interval,omitempty" toml:"interval,omitempty" validate:"gte=0,otlp_cadence"`
 
 	// Timeout is the OTLP periodic export timeout.
 	//

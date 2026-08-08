@@ -31,6 +31,10 @@
 //   - [Application.AddClient] creates a short-lived client-style command. It starts the DI app, then stops it
 //     immediately after startup completes.
 //
+// Register a client command's main action as a lifecycle OnStart hook. Constructors
+// and invocations should wire dependencies and register lifecycle hooks rather than
+// perform the command action while the DI graph is being built.
+//
 // Each added subcommand returns a *[Command], which embeds a `*flag.FlagSet`.
 // Define command-specific flags on that `FlagSet` before execution. The
 // command implementation parses it and wires the parsed flag set into DI so
