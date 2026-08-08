@@ -312,6 +312,47 @@ func TestRequestStreamSurfacesErrorResponseViaRecv(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, status.Code(err))
 }
 
+func TestRequestStreamReturnsEarlyRejectionAfterSendFailure(t *testing.T) {
+	tests := []struct {
+		name       string
+		statusCode int
+		message    string
+	}{
+		{name: "unauthorized", statusCode: http.StatusUnauthorized, message: "unauthorized"},
+		{name: "unsupported media type", statusCode: http.StatusUnsupportedMediaType, message: "unsupported media type"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewUnstartedServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+				res.Header().Set(http.ContentTypeKey, media.Error)
+				res.WriteHeader(tt.statusCode)
+				_, _ = io.WriteString(res, tt.message)
+			}))
+			server.EnableHTTP2 = true
+			server.StartTLS()
+			t.Cleanup(server.Close)
+
+			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+			t.Cleanup(cancel)
+
+			c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(server.Client().Transport))
+
+			var sendErr error
+			err := c.RequestStream(ctx, http.MethodPost, server.URL, client.Options{ContentType: media.NDJSON},
+				func(_ context.Context, stream *client.RequestResponseStream) error {
+					sendErr = stream.Send(&test.Request{Name: strings.Repeat("x", int(bytes.MB))})
+					return sendErr
+				})
+
+			require.Error(t, sendErr)
+			require.ErrorIs(t, sendErr, io.ErrClosedPipe)
+			require.EqualError(t, err, tt.message)
+			require.Equal(t, tt.statusCode, status.Code(err))
+		})
+	}
+}
+
 func TestRequestStreamSendIsSticky(t *testing.T) {
 	handler := contentstream.NewRequestHandler(
 		test.StreamContent,
