@@ -158,14 +158,17 @@ func TestApplicationClientShutdownExitCodeIsReturnedWhenStopFails(t *testing.T) 
 }
 
 func TestApplicationClientInvalidConfig(t *testing.T) {
-	configs := []string{
-		test.FilePath("configs/invalid_http.config.yaml"),
-		test.FilePath("configs/invalid_grpc.config.yaml"),
+	tests := []struct {
+		name   string
+		config string
+	}{
+		{name: "rejects invalid HTTP configuration", config: test.FilePath("configs/invalid_http.config.yaml")},
+		{name: "rejects invalid gRPC configuration", config: test.FilePath("configs/invalid_grpc.config.yaml")},
 	}
 
-	for _, config := range configs {
-		t.Run(config, func(t *testing.T) {
-			test.SetupCLI("client", "-config", config)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.SetupCLI("client", "-config", tt.config)
 
 			app := cli.NewApplication(
 				func(c cli.Commander) {

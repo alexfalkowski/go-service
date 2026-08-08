@@ -124,15 +124,18 @@ func TestApplicationServerDrainsStreamingRoute(t *testing.T) {
 }
 
 func TestApplicationServerInvalidConfig(t *testing.T) {
-	configs := []string{
-		test.FilePath("configs/invalid_http.config.yaml"),
-		test.FilePath("configs/invalid_grpc.config.yaml"),
-		test.FilePath("configs/invalid_debug.config.yaml"),
+	tests := []struct {
+		name   string
+		config string
+	}{
+		{name: "rejects invalid HTTP configuration", config: test.FilePath("configs/invalid_http.config.yaml")},
+		{name: "rejects invalid gRPC configuration", config: test.FilePath("configs/invalid_grpc.config.yaml")},
+		{name: "rejects invalid debug configuration", config: test.FilePath("configs/invalid_debug.config.yaml")},
 	}
 
-	for _, config := range configs {
-		t.Run(config, func(t *testing.T) {
-			test.SetupCLI("server", "-config", config)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.SetupCLI("server", "-config", tt.config)
 
 			app := cli.NewApplication(
 				func(c cli.Commander) {

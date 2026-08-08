@@ -16,16 +16,19 @@ import (
 )
 
 func TestValidFileConfig(t *testing.T) {
-	files := []string{
-		test.FilePath("configs/config.hjson"),
-		test.FilePath("configs/config.toml"),
-		test.FilePath("configs/config.yaml"),
+	tests := []struct {
+		name string
+		file string
+	}{
+		{name: "loads HJSON configuration", file: test.FilePath("configs/config.hjson")},
+		{name: "loads TOML configuration", file: test.FilePath("configs/config.toml")},
+		{name: "loads YAML configuration", file: test.FilePath("configs/config.yaml")},
 	}
 
-	for _, file := range files {
-		t.Run(file, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			set := flag.NewFlagSet("test")
-			set.AddConfig(file)
+			set.AddConfig(tt.file)
 
 			decoder := test.NewDecoder(set)
 
@@ -55,26 +58,29 @@ func TestValidHomeFileConfig(t *testing.T) {
 }
 
 func TestInvalidFileConfig(t *testing.T) {
-	files := []string{
-		test.FilePath("configs/invalid.yaml"),
-		test.FilePath("configs/invalid_logger_kind.yaml"),
-		test.FilePath("configs/invalid_metrics_kind.yaml"),
-		test.FilePath("configs/invalid_telemetry.config.yaml"),
-		test.FilePath("configs/invalid_telemetry_batch.yaml"),
-		test.FilePath("configs/invalid_telemetry_cadence.yaml"),
-		test.FilePath("configs/invalid_trace.yaml"),
-		test.FilePath("configs/invalid_tracer_kind.yaml"),
-		test.FilePath("configs/missing.yml"),
-		test.FilePath("configs/script.sh"),
-		test.FilePath("config.go"),
-		strings.Empty,
-		"env:BOB",
+	tests := []struct {
+		name string
+		file string
+	}{
+		{name: "rejects invalid configuration", file: test.FilePath("configs/invalid.yaml")},
+		{name: "rejects invalid logger kind", file: test.FilePath("configs/invalid_logger_kind.yaml")},
+		{name: "rejects invalid metrics kind", file: test.FilePath("configs/invalid_metrics_kind.yaml")},
+		{name: "rejects invalid telemetry configuration", file: test.FilePath("configs/invalid_telemetry.config.yaml")},
+		{name: "rejects invalid telemetry batch", file: test.FilePath("configs/invalid_telemetry_batch.yaml")},
+		{name: "rejects invalid telemetry cadence", file: test.FilePath("configs/invalid_telemetry_cadence.yaml")},
+		{name: "rejects invalid trace configuration", file: test.FilePath("configs/invalid_trace.yaml")},
+		{name: "rejects invalid tracer kind", file: test.FilePath("configs/invalid_tracer_kind.yaml")},
+		{name: "rejects missing configuration file", file: test.FilePath("configs/missing.yml")},
+		{name: "rejects shell script", file: test.FilePath("configs/script.sh")},
+		{name: "rejects Go source file", file: test.FilePath("config.go")},
+		{name: "rejects empty configuration source", file: strings.Empty},
+		{name: "rejects missing environment variable", file: "env:BOB"},
 	}
 
-	for _, file := range files {
-		t.Run(file, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			set := flag.NewFlagSet("test")
-			set.AddConfig(file)
+			set.AddConfig(tt.file)
 
 			decoder := test.NewDecoder(set)
 
@@ -85,15 +91,18 @@ func TestInvalidFileConfig(t *testing.T) {
 }
 
 func TestValidTelemetryConfig(t *testing.T) {
-	files := []string{
-		test.FilePath("configs/valid_telemetry_batch.yaml"),
-		test.FilePath("configs/valid_ignored_telemetry_tuning.yaml"),
+	tests := []struct {
+		name string
+		file string
+	}{
+		{name: "accepts batch configuration", file: test.FilePath("configs/valid_telemetry_batch.yaml")},
+		{name: "accepts ignored telemetry tuning", file: test.FilePath("configs/valid_ignored_telemetry_tuning.yaml")},
 	}
 
-	for _, file := range files {
-		t.Run(file, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			set := flag.NewFlagSet("test")
-			set.AddConfig(file)
+			set.AddConfig(tt.file)
 
 			decoder := test.NewDecoder(set)
 
@@ -119,9 +128,9 @@ func TestValidEnvConfig(t *testing.T) {
 		kind string
 		path string
 	}{
-		{name: "yaml", kind: "yaml", path: "configs/config.yaml"},
-		{name: "hjson", kind: "hjson", path: "configs/config.hjson"},
-		{name: "toml", kind: "toml", path: "configs/config.toml"},
+		{name: "loads YAML configuration from environment", kind: "yaml", path: "configs/config.yaml"},
+		{name: "loads HJSON configuration from environment", kind: "hjson", path: "configs/config.hjson"},
+		{name: "loads TOML configuration from environment", kind: "toml", path: "configs/config.toml"},
 	}
 
 	for _, tt := range tests {
@@ -201,9 +210,9 @@ func TestValidCommonConfig(t *testing.T) {
 		path string
 		ext  string
 	}{
-		{name: "yaml", path: "configs/config.yaml", ext: ".yaml"},
-		{name: "hjson", path: "configs/config.hjson", ext: ".hjson"},
-		{name: "toml", path: "configs/config.toml", ext: ".toml"},
+		{name: "loads YAML configuration from default location", path: "configs/config.yaml", ext: ".yaml"},
+		{name: "loads HJSON configuration from default location", path: "configs/config.hjson", ext: ".hjson"},
+		{name: "loads TOML configuration from default location", path: "configs/config.toml", ext: ".toml"},
 	}
 
 	for _, tt := range tests {

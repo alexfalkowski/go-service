@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/encoding/stream/yaml"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/stretchr/testify/require"
@@ -42,13 +43,10 @@ func TestEncodeOrCloseReturnsError(t *testing.T) {
 
 	encoder := yaml.NewEncoder(test.ErrWriter{})
 
-	err := encoder.Encode(map[string]string{"test": "test"})
-	if err != nil {
-		require.Error(t, err)
-		return
-	}
-
-	require.Error(t, encoder.Close())
+	require.Error(t, errors.Join(
+		encoder.Encode(map[string]string{"test": "test"}),
+		encoder.Close(),
+	))
 }
 
 func TestDecodeReturnsError(t *testing.T) {

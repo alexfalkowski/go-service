@@ -79,17 +79,22 @@ func TestDecodeRejectsUnknownFields(t *testing.T) {
 func TestDecodeRejectsTrailingDocument(t *testing.T) {
 	t.Parallel()
 
-	for _, input := range []string{
-		"test: test\n---\ntest: other",
-		"test: test\n---\n: invalid",
-	} {
-		t.Run(input, func(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{name: "rejects second YAML document", input: "test: test\n---\ntest: other"},
+		{name: "rejects invalid trailing YAML document", input: "test: test\n---\n: invalid"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			encoder := yaml.NewEncoder()
 			var msg map[string]string
 
-			err := encoder.Decode(bytes.NewBufferString(input), &msg)
+			err := encoder.Decode(bytes.NewBufferString(tt.input), &msg)
 
 			require.ErrorIs(t, err, errors.ErrTrailingData)
 		})
