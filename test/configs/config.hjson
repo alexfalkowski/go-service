@@ -109,6 +109,16 @@
       kind: prometheus
       interval: "30s"
       timeout: "5s"
+      views: [
+        {
+          pattern: http.server.request.duration
+          boundaries: [0.005, 0.01, 0.05, 0.1, 0.5, 1, 5]
+        }
+        {
+          pattern: "rpc.*.duration"
+          boundaries: [0.01, 0.1, 1]
+        }
+      ]
     }
     propagation: {
       formats: [

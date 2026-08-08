@@ -177,7 +177,7 @@ func TestGetOrPersistReleasesWaiterOnItsOwnCancellation(t *testing.T) {
 		case err := <-dupErr:
 			require.ErrorIs(t, err, context.Canceled)
 		case <-time.After(5 * time.Second):
-			t.Fatal("duplicate blocked on the shared fill instead of returning on its own cancellation")
+			require.Fail(t, "duplicate blocked on the shared fill instead of returning on its own cancellation")
 		}
 		require.Equal(t, "unchanged", dupValue)
 
@@ -236,7 +236,7 @@ func TestGetOrPersistLeaderCancellationFailsWaiters(t *testing.T) {
 
 		select {
 		case <-followerCalled:
-			t.Fatal("follower ran its own loader instead of sharing the leader's fill")
+			require.Fail(t, "follower ran its own loader instead of sharing the leader's fill")
 		default:
 		}
 	})

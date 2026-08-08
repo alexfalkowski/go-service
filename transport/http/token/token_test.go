@@ -118,7 +118,7 @@ func TestRoundTripperClosesBodyOnGenerateError(t *testing.T) {
 		env.UserID("service-user"),
 		test.NewGenerator("", test.ErrGenerate),
 		test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
-			t.Fatal("unexpected round trip")
+			require.Fail(t, "unexpected round trip")
 			return nil, nil
 		}),
 	)
@@ -137,7 +137,7 @@ func TestRoundTripperClosesBodyOnEmptyToken(t *testing.T) {
 		env.UserID("service-user"),
 		test.NewGenerator("", nil),
 		test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
-			t.Fatal("unexpected round trip")
+			require.Fail(t, "unexpected round trip")
 			return nil, nil
 		}),
 	)
@@ -157,7 +157,7 @@ func TestRoundTripperClosesBodyOnCrossOriginRedirect(t *testing.T) {
 		env.UserID("service-user"),
 		test.NewGenerator("fresh-token", nil),
 		test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
-			t.Fatal("unexpected round trip")
+			require.Fail(t, "unexpected round trip")
 			return nil, nil
 		}),
 	)

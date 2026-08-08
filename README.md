@@ -761,22 +761,26 @@ unset or zero, the OpenTelemetry SDK default is used.
 
 #### Histogram buckets
 
-Override the default histogram bucket boundaries per instrument with
-`telemetry.metrics.views`, keyed by instrument name (OpenTelemetry name matching,
-including `*` wildcards):
+Override the default histogram bucket boundaries per instrument with an ordered
+`telemetry.metrics.views` list. Each `pattern` uses OpenTelemetry name matching,
+including `*` wildcards:
 
 ```yaml
 telemetry:
   metrics:
     views:
-      http.server.request.duration: [0.005, 0.01, 0.05, 0.1, 0.5, 1, 5]
-      "rpc.*.duration": [0.01, 0.1, 1]
+      - pattern: http.server.request.duration
+        boundaries: [0.005, 0.01, 0.05, 0.1, 0.5, 1, 5]
+      - pattern: "rpc.*.duration"
+        boundaries: [0.01, 0.1, 1]
 ```
 
 Boundaries are in the instrument's unit (seconds for duration histograms, bytes
 for size histograms) and must be listed in increasing order. Views apply to
-histogram instruments regardless of metrics kind; an unset or empty map keeps the
-OpenTelemetry SDK default buckets.
+histogram instruments regardless of metrics kind; an unset or empty list keeps the
+OpenTelemetry SDK default buckets. Views are evaluated in list order; the first
+matching view is applied. Migrate the previous map form by making each map entry a
+list item with `pattern` and `boundaries` fields.
 
 ### Tracing
 

@@ -19,7 +19,7 @@ func TestRoundTripperClosesBodyOnLimiterError(t *testing.T) {
 	require.NoError(t, client.Close(t.Context()))
 
 	rt := httplimiter.NewRoundTripper(client, test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
-		t.Fatal("unexpected round trip")
+		require.Fail(t, "unexpected round trip")
 		return nil, nil
 	}))
 	body := &test.TrackedBody{Reader: strings.NewReader("body")}
@@ -67,7 +67,7 @@ func TestHandlerDoesNotStoreLimiterOnContextWhenDenied(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	httplimiter.NewHandler(routePolicy, server).ServeHTTP(res, req, func(http.ResponseWriter, *http.Request) {
-		t.Fatal("unexpected next call")
+		require.Fail(t, "unexpected next call")
 	})
 
 	require.Equal(t, http.StatusTooManyRequests, res.Code)

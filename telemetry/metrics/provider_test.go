@@ -135,8 +135,10 @@ func TestMeterProviderViews(t *testing.T) {
 	boundaries := []float64{0.1, 0.5, 1}
 	reader := metrics.NewManualReader()
 	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   fxtest.NewLifecycle(t),
-		Config:      &metrics.Config{Views: map[string][]float64{"test.duration": boundaries}},
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config: &metrics.Config{Views: []metrics.ViewConfig{
+			{Pattern: "test.duration", Boundaries: boundaries},
+		}},
 		Reader:      reader,
 		ID:          test.ID,
 		Name:        test.Name,
@@ -152,6 +154,109 @@ func TestMeterProviderViews(t *testing.T) {
 	require.NoError(t, reader.Collect(t.Context(), &rm))
 
 	require.Equal(t, boundaries, collectHistogramBounds(t, rm, "test.duration"))
+}
+
+func TestMeterProviderViewsKeepNonHistogramInstrumentsDefault(t *testing.T) {
+	t.Cleanup(func() {
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+	})
+
+	reader := metrics.NewManualReader()
+	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
+		Lifecycle: fxtest.NewLifecycle(t),
+		Config: &metrics.Config{Views: []metrics.ViewConfig{
+			{Pattern: "test.*", Boundaries: []float64{0.1, 0.5, 1}},
+		}},
+		Reader:      reader,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	})
+
+	meter := provider.Meter(test.Name.String())
+	histogram, err := meter.Float64Histogram("test.duration")
+	require.NoError(t, err)
+	histogram.Record(t.Context(), 0.3)
+
+	counter, err := meter.Int64Counter("test.requests")
+	require.NoError(t, err)
+	counter.Add(t.Context(), 1)
+
+	gauge, err := meter.Int64Gauge("test.queue.depth")
+	require.NoError(t, err)
+	gauge.Record(t.Context(), 1)
+
+	rm := metrics.ResourceMetrics{}
+	require.NoError(t, reader.Collect(t.Context(), &rm))
+
+	require.IsType(t, metrics.Histogram[float64]{}, collectMetric(t, rm, "test.duration").Data)
+	require.IsType(t, metrics.Sum[int64]{}, collectMetric(t, rm, "test.requests").Data)
+	require.IsType(t, metrics.Gauge[int64]{}, collectMetric(t, rm, "test.queue.depth").Data)
+}
+
+func TestMeterProviderViewsUseConfiguredOrder(t *testing.T) {
+	t.Cleanup(func() {
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+	})
+
+	tests := map[string]struct {
+		views []metrics.ViewConfig
+		name  string
+		want  []float64
+	}{
+		"first matching view wins": {
+			views: []metrics.ViewConfig{
+				{Pattern: "test.*", Boundaries: []float64{2}},
+				{Pattern: "test.duration", Boundaries: []float64{1}},
+			},
+			name: "test.duration",
+			want: []float64{2},
+		},
+		"later matching view does not override": {
+			views: []metrics.ViewConfig{
+				{Pattern: "test.duration.*", Boundaries: []float64{1}},
+				{Pattern: "test.*", Boundaries: []float64{2}},
+			},
+			name: "test.duration.request",
+			want: []float64{1},
+		},
+		"order resolves equally specific patterns": {
+			views: []metrics.ViewConfig{
+				{Pattern: "test.duration.*", Boundaries: []float64{2}},
+				{Pattern: "test.*.duration", Boundaries: []float64{1}},
+			},
+			name: "test.duration.duration",
+			want: []float64{2},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			for range 20 {
+				reader := metrics.NewManualReader()
+				provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
+					Lifecycle:   fxtest.NewLifecycle(t),
+					Config:      &metrics.Config{Views: tt.views},
+					Reader:      reader,
+					ID:          test.ID,
+					Name:        test.Name,
+					Version:     test.Version,
+					Environment: test.Environment,
+				})
+
+				histogram, err := provider.Meter(test.Name.String()).Float64Histogram(tt.name)
+				require.NoError(t, err)
+				histogram.Record(t.Context(), 0.3)
+
+				rm := metrics.ResourceMetrics{}
+				require.NoError(t, reader.Collect(t.Context(), &rm))
+				require.Len(t, rm.ScopeMetrics, 1)
+				require.Len(t, rm.ScopeMetrics[0].Metrics, 1)
+				require.Equal(t, tt.want, collectHistogramBounds(t, rm, tt.name))
+			}
+		})
+	}
 }
 
 func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
@@ -200,20 +305,27 @@ func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
 func collectHistogramBounds(t *testing.T, rm metrics.ResourceMetrics, name string) []float64 {
 	t.Helper()
 
+	metric := collectMetric(t, rm, name)
+	histogram, ok := metric.Data.(metrics.Histogram[float64])
+	require.True(t, ok)
+	require.NotEmpty(t, histogram.DataPoints)
+
+	return histogram.DataPoints[0].Bounds
+}
+
+func collectMetric(t *testing.T, rm metrics.ResourceMetrics, name string) metrics.Metrics {
+	t.Helper()
+
 	for _, sm := range rm.ScopeMetrics {
 		for _, m := range sm.Metrics {
 			if m.Name != name {
 				continue
 			}
 
-			histogram, ok := m.Data.(metrics.Histogram[float64])
-			require.True(t, ok)
-			require.NotEmpty(t, histogram.DataPoints)
-
-			return histogram.DataPoints[0].Bounds
+			return m
 		}
 	}
 
-	t.Fatalf("histogram %q not collected", name)
-	return nil
+	require.Failf(t, "metric not collected", "metric %q not collected", name)
+	return metrics.Metrics{}
 }
