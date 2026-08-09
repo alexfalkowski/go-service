@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBackground(t *testing.T) {
+func TestBackgroundHasNoCancellationOrDeadline(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -22,7 +22,7 @@ func TestBackground(t *testing.T) {
 	require.NoError(t, context.Cause(ctx))
 }
 
-func TestCauseBeforeCancellation(t *testing.T) {
+func TestCauseIsNilBeforeCancellation(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -31,7 +31,7 @@ func TestCauseBeforeCancellation(t *testing.T) {
 	require.NoError(t, context.Cause(ctx))
 }
 
-func TestWithCancel(t *testing.T) {
+func TestWithCancelReportsCancellationAsCause(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -43,7 +43,7 @@ func TestWithCancel(t *testing.T) {
 	require.ErrorIs(t, context.Cause(ctx), context.Canceled)
 }
 
-func TestWithCancelCause(t *testing.T) {
+func TestWithCancelCausePreservesProvidedOrDefaultCause(t *testing.T) {
 	t.Parallel()
 
 	t.Run("records provided cause", func(t *testing.T) {
@@ -72,7 +72,7 @@ func TestWithCancelCause(t *testing.T) {
 	})
 }
 
-func TestWithTimeoutCause(t *testing.T) {
+func TestWithTimeoutCauseReportsTimeoutOrCancellationCause(t *testing.T) {
 	t.Parallel()
 
 	t.Run("returns configured cause when timeout expires", func(t *testing.T) {
@@ -101,7 +101,7 @@ func TestWithTimeoutCause(t *testing.T) {
 	})
 }
 
-func TestWithDeadline(t *testing.T) {
+func TestWithDeadlineReportsDeadlineOrCancellationCause(t *testing.T) {
 	t.Parallel()
 
 	t.Run("returns deadline exceeded when deadline passes", func(t *testing.T) {
@@ -128,7 +128,7 @@ func TestWithDeadline(t *testing.T) {
 	})
 }
 
-func TestWithDeadlineCause(t *testing.T) {
+func TestWithDeadlineCauseReportsConfiguredCause(t *testing.T) {
 	t.Parallel()
 
 	cause := errors.New("deadline cause")
@@ -140,7 +140,7 @@ func TestWithDeadlineCause(t *testing.T) {
 	require.ErrorIs(t, context.Cause(ctx), cause)
 }
 
-func TestWithTimeout(t *testing.T) {
+func TestWithTimeoutReportsDeadlineOrCancellationCause(t *testing.T) {
 	t.Parallel()
 
 	t.Run("returns deadline exceeded when timeout expires", func(t *testing.T) {
@@ -183,7 +183,7 @@ func TestCausePropagatesFromParent(t *testing.T) {
 	require.ErrorIs(t, context.Cause(child), cause)
 }
 
-func TestWithoutCancel(t *testing.T) {
+func TestWithoutCancelPreservesValuesWithoutCancellation(t *testing.T) {
 	t.Parallel()
 
 	key := context.Key("key")
@@ -202,7 +202,7 @@ func TestWithoutCancel(t *testing.T) {
 	require.Equal(t, "value", child.Value(key))
 }
 
-func TestWithValue(t *testing.T) {
+func TestWithValueStoresValueByKey(t *testing.T) {
 	t.Parallel()
 
 	key := context.Key("key")

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDefaultSettings(t *testing.T) {
+func TestCircuitBreakerUsesDefaultSettings(t *testing.T) {
 	settings := breaker.DefaultSettings
 
 	require.Equal(t, uint32(3), settings.MaxRequests)
@@ -49,7 +49,7 @@ func TestDefaultSettings(t *testing.T) {
 	}
 }
 
-func TestConfig(t *testing.T) {
+func TestConfigIsEnabledUnlessNil(t *testing.T) {
 	require.False(t, (*breaker.Config)(nil).IsEnabled())
 	require.True(t, (&breaker.Config{}).IsEnabled())
 }
@@ -133,7 +133,7 @@ func TestConfigSettingsDefaults(t *testing.T) {
 	require.True(t, settings.ReadyToTrip(breaker.Counts{ConsecutiveFailures: 5}))
 }
 
-func TestNewCircuitBreaker(t *testing.T) {
+func TestNewCircuitBreakerAppliesConfiguredSettings(t *testing.T) {
 	errFailed := errors.New("failed")
 	cb := breaker.NewCircuitBreaker(breaker.Settings{
 		ReadyToTrip: func(counts breaker.Counts) bool {

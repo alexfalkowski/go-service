@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerate(t *testing.T) {
+func TestGenerateCreatesSupportedTokenKinds(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
@@ -28,7 +28,7 @@ func TestGenerate(t *testing.T) {
 	}
 }
 
-func TestVerify(t *testing.T) {
+func TestVerifyReturnsSubjectForMatchingAudience(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
@@ -190,7 +190,7 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 	}
 }
 
-func TestUnknownKindConfig(t *testing.T) {
+func TestNewTokenRejectsUnknownKindConfiguration(t *testing.T) {
 	cfg := test.NewToken("none")
 	tkn := token.NewToken(cfg, test.FS, nil)
 
@@ -203,12 +203,12 @@ func TestUnknownKindConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 
-func TestNewTokenWithNilConfig(t *testing.T) {
+func TestNewTokenReturnsNilForNilConfig(t *testing.T) {
 	tkn := token.NewToken(nil, test.FS, nil)
 	require.Nil(t, tkn)
 }
 
-func TestInvalidKindConfig(t *testing.T) {
+func TestRejectsInvalidKindConfig(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "ssh"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := &token.Config{Kind: kind}
@@ -238,7 +238,7 @@ func TestInvalidDependenciesDoNotPanic(t *testing.T) {
 	}
 }
 
-func TestInvalidMatchClassification(t *testing.T) {
+func TestRejectsInvalidMatchClassification(t *testing.T) {
 	gen := uuid.NewGenerator()
 
 	for _, kind := range []string{"jwt", "paseto"} {

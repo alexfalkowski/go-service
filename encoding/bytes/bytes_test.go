@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEncoder(t *testing.T) {
+func TestEncoderEncodesAndDecodesByteBuffers(t *testing.T) {
 	t.Parallel()
 
 	encoder := encoding.NewEncoder()
@@ -49,7 +49,7 @@ func TestDecodeResetsDestination(t *testing.T) {
 	require.Equal(t, "fresh", buffer.String())
 }
 
-func TestInvalidTypedNilEncode(t *testing.T) {
+func TestEncodeRejectsTypedNilValue(t *testing.T) {
 	t.Parallel()
 
 	encoder := encoding.NewEncoder()
@@ -74,7 +74,7 @@ func TestDecodeReturnsReadFromError(t *testing.T) {
 	require.ErrorIs(t, encoder.Decode(bytes.NewBufferString("test"), errReaderFrom{}), test.ErrFailed)
 }
 
-func TestInvalidTypedNilDecode(t *testing.T) {
+func TestDecodeRejectsTypedNilDestination(t *testing.T) {
 	t.Parallel()
 
 	encoder := encoding.NewEncoder()

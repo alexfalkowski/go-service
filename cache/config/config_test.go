@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetMaxSize(t *testing.T) {
+func TestGetMaxSizeReturnsConfiguredOrDefaultValue(t *testing.T) {
 	tests := []struct {
 		cfg  *config.Config
 		name string
@@ -38,7 +38,7 @@ func TestGetMaxSize(t *testing.T) {
 	}
 }
 
-func TestConfigValidation(t *testing.T) {
+func TestConfigAcceptsValidLimitsAndRejectsInvalidLimits(t *testing.T) {
 	tests := []struct {
 		cfg  *config.Config
 		name string

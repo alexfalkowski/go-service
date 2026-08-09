@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewTimer(t *testing.T) {
+func TestNewTimerDeliversConfiguredDeadline(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		timer := time.NewTimer(time.Nanosecond)
 		require.NotNil(t, timer)
@@ -21,7 +21,7 @@ func TestNewTimer(t *testing.T) {
 	})
 }
 
-func TestUntil(t *testing.T) {
+func TestUntilReturnsDurationUntilFutureTime(t *testing.T) {
 	future := time.Now().Add(time.Hour.Duration())
 
 	duration := time.Until(future)

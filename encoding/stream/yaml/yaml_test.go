@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEncodeDecode(t *testing.T) {
+func TestEncoderRoundTripsValue(t *testing.T) {
 	t.Parallel()
 
 	buffer := test.Pool.Get()

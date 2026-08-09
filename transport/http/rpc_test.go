@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRPCNoContent(t *testing.T) {
+func TestRPCReturnsNoContent(t *testing.T) {
 	for _, mt := range test.MessageMediaTypes() {
 		t.Run(mt.Name, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
@@ -41,7 +41,7 @@ func TestRPCNoContent(t *testing.T) {
 	}
 }
 
-func TestRPCWithContent(t *testing.T) {
+func TestRPCWritesContentResponse(t *testing.T) {
 	for _, mt := range test.MessageMediaTypes() {
 		t.Run(mt.Name, func(t *testing.T) {
 			requireSuccessfulRPCPost(t, mt.ContentType)
@@ -49,7 +49,7 @@ func TestRPCWithContent(t *testing.T) {
 	}
 }
 
-func TestSuccessProtobufRPC(t *testing.T) {
+func TestRPCWritesProtobufResponse(t *testing.T) {
 	for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
@@ -67,7 +67,7 @@ func TestSuccessProtobufRPC(t *testing.T) {
 	}
 }
 
-func TestErroneousProtobufRPC(t *testing.T) {
+func TestRPCPropagatesProtobufErrors(t *testing.T) {
 	handlers := []struct {
 		handler unary.RequestHandler[v1.SayHelloRequest, v1.SayHelloResponse]
 		name    string
@@ -99,7 +99,7 @@ func TestErroneousProtobufRPC(t *testing.T) {
 	}
 }
 
-func TestErroneousUnmarshalRPC(t *testing.T) {
+func TestRPCReportsUnmarshalErrors(t *testing.T) {
 	for _, mt := range test.MessageMediaTypes() {
 		t.Run(mt.Name, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
@@ -119,7 +119,7 @@ func TestErroneousUnmarshalRPC(t *testing.T) {
 	}
 }
 
-func TestErrorRPC(t *testing.T) {
+func TestRPCReturnsStatusError(t *testing.T) {
 	handlers := []struct {
 		handler unary.RequestHandler[test.Request, test.Response]
 		name    string
@@ -163,7 +163,7 @@ func TestErrorRPC(t *testing.T) {
 	}
 }
 
-func TestRPCNotFound(t *testing.T) {
+func TestRPCReturnsNotFound(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	header := http.Header{}
@@ -176,7 +176,7 @@ func TestRPCNotFound(t *testing.T) {
 	require.Equal(t, "http: not found", body)
 }
 
-func TestAllowedRPC(t *testing.T) {
+func TestRPCAllowsConfiguredOperation(t *testing.T) {
 	for _, mt := range test.MessageMediaTypes() {
 		t.Run(mt.Name, func(t *testing.T) {
 			requireSuccessfulRPCPost(t, mt.ContentType)
@@ -184,7 +184,7 @@ func TestAllowedRPC(t *testing.T) {
 	}
 }
 
-func TestDisallowedRPC(t *testing.T) {
+func TestRPCRejectsDisallowedMediaType(t *testing.T) {
 	for _, mt := range []string{media.JSON, media.HumanJSON, media.YAML, media.TOML, "application/gob", media.MessagePack, "test"} {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
@@ -211,7 +211,7 @@ func TestDisallowedRPC(t *testing.T) {
 	}
 }
 
-func TestInvalidRPCRequest(t *testing.T) {
+func TestRejectsInvalidRPCRequest(t *testing.T) {
 	for _, mt := range []string{"gob", "toml", "yml"} {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
@@ -228,7 +228,7 @@ func TestInvalidRPCRequest(t *testing.T) {
 	}
 }
 
-func TestInvalidRPCResponse(t *testing.T) {
+func TestRejectsInvalidRPCResponse(t *testing.T) {
 	for _, mt := range []string{"json"} {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())

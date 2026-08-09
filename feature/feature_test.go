@@ -10,7 +10,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestRegister(t *testing.T) {
+func TestRegisterInitializesClientWithOptionalProvider(t *testing.T) {
 	for _, tt := range []struct {
 		provider openfeature.FeatureProvider
 		name     string

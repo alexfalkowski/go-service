@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewNetworkNilConfig(t *testing.T) {
+func TestNewNetworkAcceptsNilConfig(t *testing.T) {
 	net, err := time.NewNetwork(nil)
 	require.NoError(t, err)
 	require.Nil(t, net)
 }
 
-func TestNewNetworkInvalidKind(t *testing.T) {
+func TestNewNetworkRejectsInvalidKind(t *testing.T) {
 	_, err := time.NewNetwork(&time.Config{Kind: "invalid"})
 	require.Error(t, err)
 }

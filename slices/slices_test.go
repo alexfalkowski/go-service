@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAppendEmpty(t *testing.T) {
+func TestAppendNotZeroExcludesZeroValues(t *testing.T) {
 	t.Parallel()
 
 	var writer *test.ErrWriter
@@ -36,7 +36,7 @@ func TestAppendEmpty(t *testing.T) {
 	}
 }
 
-func TestAppendNotZero(t *testing.T) {
+func TestAppendNotZeroIncludesNonZeroValues(t *testing.T) {
 	t.Parallel()
 
 	integer := 2
@@ -61,7 +61,7 @@ func TestAppendNotZero(t *testing.T) {
 	}
 }
 
-func TestBackward(t *testing.T) {
+func TestBackwardIteratesValuesInReverseOrder(t *testing.T) {
 	t.Parallel()
 
 	values := []string{}
@@ -72,7 +72,7 @@ func TestBackward(t *testing.T) {
 	require.Equal(t, []string{"second", "first"}, values)
 }
 
-func TestElemFunc(t *testing.T) {
+func TestElemFuncReturnsMatchingElementOrNil(t *testing.T) {
 	t.Parallel()
 
 	elems := []*string{new("test")}
@@ -104,7 +104,7 @@ func TestElemFunc(t *testing.T) {
 	}
 }
 
-func TestClip(t *testing.T) {
+func TestClipPreventsAppendFromMutatingOriginalArray(t *testing.T) {
 	t.Parallel()
 
 	values := [...]string{"first", "second"}
@@ -117,7 +117,7 @@ func TestClip(t *testing.T) {
 	require.Equal(t, []string{"second"}, second)
 }
 
-func TestContains(t *testing.T) {
+func TestContainsRecognizesPresentValue(t *testing.T) {
 	t.Parallel()
 
 	type names []string

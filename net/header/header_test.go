@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidParseBearer(t *testing.T) {
+func TestParseBearerAcceptsValidHeader(t *testing.T) {
 	t.Parallel()
 
 	value, err := header.ParseBearer("Bearer token")
@@ -16,7 +16,7 @@ func TestValidParseBearer(t *testing.T) {
 	require.Equal(t, "token", value)
 }
 
-func TestForwardedIPs(t *testing.T) {
+func TestForwardedIPsExtractsForwardedAddresses(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, [...]header.ForwardedIP{
@@ -27,7 +27,7 @@ func TestForwardedIPs(t *testing.T) {
 	}, header.ForwardedIPs)
 }
 
-func TestValidFieldName(t *testing.T) {
+func TestFieldNameAcceptsValidValue(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -51,7 +51,7 @@ func TestValidFieldName(t *testing.T) {
 	}
 }
 
-func TestValidFieldValue(t *testing.T) {
+func TestFieldValueAcceptsValidValue(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -75,7 +75,7 @@ func TestValidFieldValue(t *testing.T) {
 	}
 }
 
-func TestValidParseBearerWithLowercaseScheme(t *testing.T) {
+func TestParseBearerAcceptsLowercaseScheme(t *testing.T) {
 	t.Parallel()
 
 	value, err := header.ParseBearer("bearer token")
@@ -83,7 +83,7 @@ func TestValidParseBearerWithLowercaseScheme(t *testing.T) {
 	require.Equal(t, "token", value)
 }
 
-func TestMissingParseBearer(t *testing.T) {
+func TestParseBearerRejectsMissingHeader(t *testing.T) {
 	t.Parallel()
 
 	_, err := header.ParseBearer(strings.Empty)

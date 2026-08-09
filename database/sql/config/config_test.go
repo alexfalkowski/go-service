@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConfigValidation(t *testing.T) {
+func TestConfigRejectsInvalidPoolSettings(t *testing.T) {
 	tests := []struct {
 		cfg  *config.Config
 		name string

@@ -13,14 +13,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestVerify(t *testing.T) {
+func TestWebhookVerifiesWhenNoHookIsConfigured(t *testing.T) {
 	hook := httphooks.NewWebhook(nil, nil)
 	req := &http.Request{Body: &test.ErrReaderCloser{}}
 
 	require.NoError(t, hook.Verify(req))
 }
 
-func TestSign(t *testing.T) {
+func TestWebhookSignsWhenNoHookIsConfigured(t *testing.T) {
 	hook := httphooks.NewWebhook(nil, nil)
 	req := &http.Request{Body: &test.ErrReaderCloser{}}
 
@@ -84,7 +84,7 @@ func TestSignHandlesNilRequestHeader(t *testing.T) {
 	require.NoError(t, hook.Verify(req))
 }
 
-func TestRoundTripper(t *testing.T) {
+func TestRoundTripperDelegatesRequestWhenNoHookIsConfigured(t *testing.T) {
 	hook := httphooks.NewWebhook(nil, nil)
 	rt := httphooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
@@ -192,7 +192,7 @@ func TestRoundTripperClosesBodyOnSignError(t *testing.T) {
 	require.True(t, body.Closed)
 }
 
-func TestHandler(t *testing.T) {
+func TestHandlerDelegatesRequestWhenNoHookIsConfigured(t *testing.T) {
 	handler := httphooks.NewHandler(nil)
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
 	res := httptest.NewRecorder()

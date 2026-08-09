@@ -39,7 +39,7 @@ func TestConfigGetMaxKeys(t *testing.T) {
 	}
 }
 
-func TestValidLimiter(t *testing.T) {
+func TestLimiterAllowsRequestsWithinQuota(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
@@ -61,7 +61,7 @@ func TestNewLimiterRejectsTooLargeInterval(t *testing.T) {
 	require.ErrorIs(t, err, limiter.ErrIntervalTooLarge)
 }
 
-func TestTake(t *testing.T) {
+func TestTakeRejectsRequestsBeyondQuota(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
@@ -93,7 +93,7 @@ func TestTake(t *testing.T) {
 	require.Equal(t, `"default";r=0;t=1`, header)
 }
 
-func TestTakeDecisionHeaders(t *testing.T) {
+func TestTakeDecisionIncludesRateLimitHeaders(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 2, Interval: 1500 * time.Millisecond}
@@ -197,7 +197,7 @@ func TestTakeSupportsCustomKeyKind(t *testing.T) {
 	})
 }
 
-func TestTakeRefillsAfterConfiguredInterval(t *testing.T) {
+func TestTakeRefillsBucketAfterConfiguredInterval(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: 25 * time.Millisecond}
@@ -323,7 +323,7 @@ func TestTakeDoesNotCollideOversizedKeysWithRawHashKeys(t *testing.T) {
 	require.Equal(t, `"default";r=0;t=1`, header)
 }
 
-func TestNewKeyMap(t *testing.T) {
+func TestNewKeyMapReturnsIndependentLimiters(t *testing.T) {
 	tests := []struct {
 		name string
 		ctx  context.Context
@@ -384,7 +384,7 @@ func TestLifecycleStopsLimiter(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestMissingLimiter(t *testing.T) {
+func TestLimiterHandlesMissingConfiguration(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
@@ -393,7 +393,7 @@ func TestMissingLimiter(t *testing.T) {
 	require.ErrorIs(t, err, limiter.ErrMissingKey)
 }
 
-func TestNilKeyFuncLimiter(t *testing.T) {
+func TestNewLimiterRejectsNilKeyFunction(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": nil}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
@@ -402,7 +402,7 @@ func TestNilKeyFuncLimiter(t *testing.T) {
 	require.ErrorIs(t, err, limiter.ErrMissingKey)
 }
 
-func TestDisabledLimiter(t *testing.T) {
+func TestLimiterAllowsRequestsWhenDisabled(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 

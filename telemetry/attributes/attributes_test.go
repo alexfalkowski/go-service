@@ -55,7 +55,7 @@ func TestResourceIncludesServiceInstanceIDWithoutConfiguredDuplicate(t *testing.
 	require.Equal(t, "host-id", attrs["service.instance.id"])
 }
 
-func TestDeploymentEnvironmentName(t *testing.T) {
+func TestDeploymentEnvironmentNameNormalizesAliases(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

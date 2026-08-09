@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConfig(t *testing.T) {
+func TestConfigIsEnabledUnlessNil(t *testing.T) {
 	require.False(t, (*client.Config)(nil).IsEnabled())
 	require.True(t, (&client.Config{}).IsEnabled())
 }
@@ -34,7 +34,7 @@ func TestConfigRejectsNegativeBreakerDurations(t *testing.T) {
 	require.Error(t, test.Validator.Struct(cfg))
 }
 
-func TestNewConfig(t *testing.T) {
+func TestNewConfigLoadsMutuallyAuthenticatedTLS(t *testing.T) {
 	tlsConfig, err := client.NewConfig(test.FS, test.NewTLSClientConfig())
 	require.NoError(t, err)
 	require.NotNil(t, tlsConfig)
@@ -56,7 +56,7 @@ func TestNewConfig(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestNewConfigWithOptionalTLSMaterial(t *testing.T) {
+func TestNewConfigAcceptsOptionalTLSMaterial(t *testing.T) {
 	tests := []struct {
 		config       *config.Config
 		name         string
@@ -103,7 +103,7 @@ func TestNewConfigWithOptionalTLSMaterial(t *testing.T) {
 	}
 }
 
-func TestNewConfigInvalidKeyPair(t *testing.T) {
+func TestNewConfigRejectsInvalidKeyPair(t *testing.T) {
 	_, err := client.NewConfig(test.FS, &config.Config{
 		Cert: test.FilePath("certs/client-cert.pem"),
 		Key:  test.FilePath("secrets/none"),
@@ -111,7 +111,7 @@ func TestNewConfigInvalidKeyPair(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestNewConfigInvalidCA(t *testing.T) {
+func TestNewConfigRejectsInvalidCA(t *testing.T) {
 	_, err := client.NewConfig(test.FS, &config.Config{CA: "invalid ca"})
 	require.Error(t, err)
 	require.ErrorIs(t, err, config.ErrInvalidCA)

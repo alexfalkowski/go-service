@@ -14,7 +14,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestInvalidReader(t *testing.T) {
+func TestRejectsInvalidReader(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &metrics.Config{Kind: "wrong"}
 
@@ -139,7 +139,7 @@ func gatherFamilyNames(t *testing.T) []string {
 	return names
 }
 
-func TestInvalidOTLPEndpoint(t *testing.T) {
+func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind: "otlp",
@@ -167,7 +167,7 @@ func TestOTLPGRPCReader(t *testing.T) {
 	require.NoError(t, reader.Shutdown(t.Context()))
 }
 
-func TestInvalidOTLPGRPCEndpoint(t *testing.T) {
+func TestRejectsInvalidOTLPGRPCEndpoint(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind:     "otlp",

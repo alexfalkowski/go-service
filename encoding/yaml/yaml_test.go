@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEncode(t *testing.T) {
+func TestEncoderWritesEncodedValue(t *testing.T) {
 	t.Parallel()
 
 	buffer := test.Pool.Get()
@@ -24,7 +24,7 @@ func TestEncode(t *testing.T) {
 	require.Equal(t, "test: test", strings.TrimSpace(buffer.String()))
 }
 
-func TestMarshalUnmarshal(t *testing.T) {
+func TestMarshalAndUnmarshalRoundTripValue(t *testing.T) {
 	t.Parallel()
 
 	msg := map[string]string{"test": "test"}
@@ -54,7 +54,7 @@ func TestEncodeReturnsError(t *testing.T) {
 	require.Error(t, encoder.Encode(test.ErrWriter{}, map[string]string{"test": "test"}))
 }
 
-func TestDecode(t *testing.T) {
+func TestDecoderReadsEncodedValue(t *testing.T) {
 	t.Parallel()
 
 	encoder := yaml.NewEncoder()

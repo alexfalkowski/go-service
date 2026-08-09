@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWriteString(t *testing.T) {
+func TestWriteStringWritesCompleteString(t *testing.T) {
 	buffer := test.Pool.Get()
 	defer test.Pool.Put(buffer)
 

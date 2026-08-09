@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerator(t *testing.T) {
+func TestGeneratorGeneratesKeyOrReturnsEntropyError(t *testing.T) {
 	gen := aes.NewGenerator(rand.NewGenerator(rand.NewReader()))
 	key, err := gen.Generate()
 	require.NoError(t, err)
@@ -26,7 +26,7 @@ func TestGenerator(t *testing.T) {
 	require.Empty(t, key)
 }
 
-func TestValidCipher(t *testing.T) {
+func TestNewCipherEncryptsAndDecryptsOrDisablesWhenUnconfigured(t *testing.T) {
 	gen := rand.NewGenerator(rand.NewReader())
 
 	cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
@@ -45,7 +45,7 @@ func TestValidCipher(t *testing.T) {
 	require.Nil(t, cipher)
 }
 
-func TestInvalidCipherConfig(t *testing.T) {
+func TestNewCipherRejectsInvalidKeyConfiguration(t *testing.T) {
 	t.Setenv("AES_EMPTY", "")
 
 	tests := []struct {
@@ -73,7 +73,7 @@ func TestInvalidCipherConfig(t *testing.T) {
 	}
 }
 
-func TestInvalidCipher(t *testing.T) {
+func TestCipherRejectsInvalidCiphertext(t *testing.T) {
 	t.Run("nonce generation error", func(t *testing.T) {
 		gen := rand.NewGenerator(&test.ErrReaderCloser{})
 

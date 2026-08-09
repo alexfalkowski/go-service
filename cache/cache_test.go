@@ -28,7 +28,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestValidCache(t *testing.T) {
+func TestCacheRoundTripsSupportedFormats(t *testing.T) {
 	for _, tt := range cacheRoundTripCases() {
 		t.Run(tt.name, func(t *testing.T) {
 			test.RequireCacheRoundTrip(t, tt.config, tt.persist(), tt.get())
@@ -36,7 +36,7 @@ func TestValidCache(t *testing.T) {
 	}
 }
 
-func TestGenericValidCache(t *testing.T) {
+func TestGenericCachePersistsAndGetsValue(t *testing.T) {
 	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
@@ -50,7 +50,7 @@ func TestGenericValidCache(t *testing.T) {
 	require.NoError(t, world.Remove(t.Context(), "test"))
 }
 
-func TestGetOrPersist(t *testing.T) {
+func TestGetOrPersistLoadsOnlyOnCacheMiss(t *testing.T) {
 	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
@@ -74,7 +74,7 @@ func TestGetOrPersist(t *testing.T) {
 	require.NoError(t, world.Remove(t.Context(), "test"))
 }
 
-func TestGetOrPersistRedis(t *testing.T) {
+func TestGetOrPersistUsesRedisCache(t *testing.T) {
 	cfg := test.NewCacheConfig("redis", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 	ctx := t.Context()
@@ -420,7 +420,7 @@ func TestModuleRegistersGenericCache(t *testing.T) {
 	require.Equal(t, "hello?", *value)
 }
 
-func TestGenericDisabledCache(t *testing.T) {
+func TestGenericCacheIgnoresValuesWhenDisabled(t *testing.T) {
 	cache.Register(nil)
 
 	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
@@ -445,7 +445,7 @@ func TestGenericGetValidEmptyCache(t *testing.T) {
 	require.NoError(t, world.Remove(t.Context(), "test"))
 }
 
-func TestGenericGetMissingCache(t *testing.T) {
+func TestGenericCacheReportsMissWithoutValue(t *testing.T) {
 	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
@@ -457,7 +457,7 @@ func TestGenericGetMissingCache(t *testing.T) {
 	require.NoError(t, world.Remove(t.Context(), "missing"))
 }
 
-func TestGenericGetDisabledCache(t *testing.T) {
+func TestGenericCacheReportsMissWhenDisabled(t *testing.T) {
 	cache.Register(nil)
 	t.Cleanup(func() {
 		cache.Register(nil)
@@ -471,7 +471,7 @@ func TestGenericGetDisabledCache(t *testing.T) {
 	require.Nil(t, value)
 }
 
-func TestMaxSizeOnPersist(t *testing.T) {
+func TestCachePersistRejectsValuesOverConfiguredLimit(t *testing.T) {
 	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	cfg.MaxSize = 4
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
@@ -480,7 +480,7 @@ func TestMaxSizeOnPersist(t *testing.T) {
 	require.ErrorIs(t, err, compresserrors.ErrTooLarge)
 }
 
-func TestMaxSizeOnPersistCompressedValue(t *testing.T) {
+func TestCachePersistRejectsCompressedValuesOverConfiguredLimit(t *testing.T) {
 	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	cfg.MaxSize = 4
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
@@ -500,7 +500,7 @@ func TestMaxSizeOnPersistStopsOversizedEncodedValue(t *testing.T) {
 	require.Equal(t, cfg.MaxSize.Bytes(), value.written)
 }
 
-func TestMaxSizeOnGet(t *testing.T) {
+func TestGetRejectsValueExceedingConfiguredLimit(t *testing.T) {
 	cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
 
@@ -596,7 +596,7 @@ func TestGetMissesAfterCacheFormatChange(t *testing.T) {
 	}
 }
 
-func TestExpiredCache(t *testing.T) {
+func TestCacheDoesNotReturnExpiredValue(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		cfg := test.NewCacheConfig("ttlcache", "snappy", "json", "redis")
 		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
@@ -612,7 +612,7 @@ func TestExpiredCache(t *testing.T) {
 	})
 }
 
-func TestErroneousCache(t *testing.T) {
+func TestNewDriverRejectsInvalidCacheConfiguration(t *testing.T) {
 	tests := []struct {
 		config *config.Config
 		name   string
@@ -634,7 +634,7 @@ func TestErroneousCache(t *testing.T) {
 	}
 }
 
-func TestDisabledCache(t *testing.T) {
+func TestNewDriverAndCacheSupportDisabledConfiguration(t *testing.T) {
 	t.Run("driver", func(t *testing.T) {
 		_, err := driver.NewDriver(driver.DriverParams{
 			Lifecycle: fxtest.NewLifecycle(t),
@@ -650,7 +650,7 @@ func TestDisabledCache(t *testing.T) {
 	})
 }
 
-func TestErroneousSave(t *testing.T) {
+func TestCachePersistReportsEncodingErrors(t *testing.T) {
 	t.Run("invalid encoder", func(t *testing.T) {
 		cfg := test.NewCacheConfig("ttlcache", "snappy", "error", "redis")
 		test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
@@ -670,7 +670,7 @@ func TestErroneousSave(t *testing.T) {
 	})
 }
 
-func TestErroneousGet(t *testing.T) {
+func TestGetPropagatesDriverAndDecodeErrors(t *testing.T) {
 	tests := []struct {
 		driver driver.Driver
 		config *config.Config

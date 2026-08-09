@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUnlimited(t *testing.T) {
+func TestLimiterAllowsRequestsWithinConfiguredQuota(t *testing.T) {
 	cfg := test.NewLimiterConfig("user-agent", "1s", 100)
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
@@ -112,7 +112,7 @@ func TestServerLimiterDoesNotBypassApplicationMetricsPath(t *testing.T) {
 	require.Equal(t, `"default";q=1;w=1`, res.Header.Get("Ratelimit-Policy"))
 }
 
-func TestClientLimiter(t *testing.T) {
+func TestClientLimiterRejectsExcessRequests(t *testing.T) {
 	keys := []struct {
 		name string
 		kind string

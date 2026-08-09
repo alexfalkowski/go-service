@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerator(t *testing.T) {
+func TestGeneratorProducesUsableKeyPairOrReturnsEntropyError(t *testing.T) {
 	gen := ssh.NewGenerator(rand.NewGenerator(rand.NewReader()))
 	pub, pri, err := gen.Generate()
 	require.NoError(t, err)
@@ -38,7 +38,7 @@ func TestGenerator(t *testing.T) {
 	require.Empty(t, pri)
 }
 
-func TestValid(t *testing.T) {
+func TestSignerAndVerifierSignAndVerifyOrDisableWhenUnconfigured(t *testing.T) {
 	cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
 
 	signer, err := ssh.NewSigner(test.FS, cfg)
@@ -60,7 +60,7 @@ func TestValid(t *testing.T) {
 	require.Nil(t, verifier)
 }
 
-func TestInvalidConfig(t *testing.T) {
+func TestSignerAndVerifierRejectMissingKeyConfiguration(t *testing.T) {
 	t.Setenv("SSH_EMPTY", "")
 
 	newSigner := func(config *ssh.Config) error {
@@ -92,7 +92,7 @@ func TestInvalidConfig(t *testing.T) {
 	}
 }
 
-func TestInvalidPublicKeyConfig(t *testing.T) {
+func TestRejectsInvalidPublicKeyConfig(t *testing.T) {
 	data, err := test.FS.ReadSource(test.FilePath("secrets/ssh_public"))
 	require.NoError(t, err)
 	public := bytes.String(data)
@@ -125,7 +125,7 @@ func TestInvalidPublicKeyConfig(t *testing.T) {
 	})
 }
 
-func TestInvalidPrivateKeyConfig(t *testing.T) {
+func TestNewSignerRejectsInvalidPrivateKeyConfiguration(t *testing.T) {
 	t.Run("invalid signer private key", func(t *testing.T) {
 		_, err := ssh.NewSigner(test.FS, &ssh.Config{Private: test.FilePath("secrets/redis")})
 		require.Error(t, err)
@@ -143,7 +143,7 @@ func TestInvalidPrivateKeyConfig(t *testing.T) {
 	})
 }
 
-func TestInvalidSignature(t *testing.T) {
+func TestVerifierRejectsAlteredSignatureAndMessage(t *testing.T) {
 	cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
 
 	signer, err := ssh.NewSigner(test.FS, cfg)
@@ -163,7 +163,7 @@ func TestInvalidSignature(t *testing.T) {
 	require.ErrorIs(t, verifier.Verify(sig, strings.Bytes("bob")), errors.ErrInvalidMatch)
 }
 
-func TestInvalidSignerPrivateKey(t *testing.T) {
+func TestRejectsInvalidSignerPrivateKey(t *testing.T) {
 	tests := []struct {
 		signer *ssh.Signer
 		name   string
@@ -188,7 +188,7 @@ func TestInvalidSignerPrivateKey(t *testing.T) {
 	}
 }
 
-func TestInvalidVerifierPublicKey(t *testing.T) {
+func TestRejectsInvalidVerifierPublicKey(t *testing.T) {
 	tests := []struct {
 		verifier *ssh.Verifier
 		name     string
@@ -209,7 +209,7 @@ func TestInvalidVerifierPublicKey(t *testing.T) {
 	}
 }
 
-func TestInvalidKeyType(t *testing.T) {
+func TestSignerAndVerifierRejectUnsupportedKeyType(t *testing.T) {
 	var verifierErr error
 	require.NotPanics(t, func() {
 		_, verifierErr = ssh.NewVerifier(test.FS, &ssh.Config{

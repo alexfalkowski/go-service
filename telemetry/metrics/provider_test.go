@@ -14,7 +14,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestIsEnabled(t *testing.T) {
+func TestIsEnabledReflectsInstalledMeterProvider(t *testing.T) {
 	t.Cleanup(func() {
 		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
 	})

@@ -17,7 +17,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestMeta(t *testing.T) {
+func TestMetaConvertsContextAttributesToTraceAttributes(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(),
 		meta.WithRequestID(meta.String("request-id")),
 		meta.WithUserID(meta.String("user-id")),
@@ -80,7 +80,7 @@ func TestMetaSpanProcessorStampsChildSpans(t *testing.T) {
 	require.Equal(t, "request-id", values[meta.RequestIDKey])
 }
 
-func TestIsEnabled(t *testing.T) {
+func TestIsEnabledReflectsInstalledTracerProvider(t *testing.T) {
 	t.Cleanup(func() {
 		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	})

@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewFromMedia(t *testing.T) {
+func TestNewFromMediaSelectsUsableCodec(t *testing.T) {
 	for _, tc := range mediaTests() {
 		t.Run(tc.name, func(t *testing.T) {
 			media := test.UnaryContent.NewFromMedia(tc.mediaType)
@@ -23,7 +23,7 @@ func TestNewFromMedia(t *testing.T) {
 	}
 }
 
-func TestNewFromRequest(t *testing.T) {
+func TestContentSelectionUsesRequestMediaType(t *testing.T) {
 	for _, tc := range mediaTests() {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
@@ -135,7 +135,7 @@ func TestNewFromRequestFallsBackFromInternalErrorMedia(t *testing.T) {
 	require.Same(t, test.Encoder.Get("bytes"), media.Encoder)
 }
 
-func TestNewFromContentType(t *testing.T) {
+func TestContentSelectionUsesContentType(t *testing.T) {
 	for _, tc := range mediaTests() {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
@@ -311,7 +311,7 @@ func TestEveryEncoderKindIsClassified(t *testing.T) {
 	}
 }
 
-func TestNewFromMediaWithParameters(t *testing.T) {
+func TestContentSelectionParsesParameterizedMediaType(t *testing.T) {
 	tests := []struct {
 		name      string
 		mediaType string

@@ -9,14 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestVersion(t *testing.T) {
+func TestNewVersionUsesEnvironmentOverrideOrDevelopmentDefault(t *testing.T) {
 	require.Equal(t, "(devel)", env.NewVersion().String())
 
 	t.Setenv("SERVICE_VERSION", test.Version.String())
 	require.Equal(t, "1.0.0", env.NewVersion().String())
 }
 
-func TestVersionString(t *testing.T) {
+func TestVersionStringNormalizesVersionValue(t *testing.T) {
 	for _, tt := range []struct {
 		name     string
 		version  env.Version

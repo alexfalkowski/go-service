@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewController(t *testing.T) {
+func TestNewControllerLoadsConfiguredModelsAndPolicies(t *testing.T) {
 	_, err := access.NewController(&access.Config{
 		Model:  test.FilePath("configs/rbac.conf"),
 		Policy: test.FilePath("configs/bob"),
@@ -22,7 +22,7 @@ func TestNewController(t *testing.T) {
 	require.Nil(t, controller)
 }
 
-func TestHasAccess(t *testing.T) {
+func TestHasAccessAllowsConfiguredPrincipalAndOperationOnly(t *testing.T) {
 	config := test.NewAccessConfig()
 
 	controller, err := access.NewController(config, test.FS)
@@ -75,7 +75,7 @@ func TestHasAccessUsesTransportServiceMethod(t *testing.T) {
 	require.True(t, ok)
 }
 
-func TestNewControllerErrors(t *testing.T) {
+func TestNewControllerRejectsInvalidModelOrPolicySources(t *testing.T) {
 	tests := []struct {
 		err    error
 		config *access.Config

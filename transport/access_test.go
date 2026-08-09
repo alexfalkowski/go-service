@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewAccessController(t *testing.T) {
+func TestNewAccessControllerBuildsConfiguredController(t *testing.T) {
 	for _, tc := range []struct {
 		name           string
 		config         *access.Config

@@ -75,7 +75,7 @@ func TestNotFoundHandlerWritesStatusError(t *testing.T) {
 	test.RequireTrimmedResponseBody(t, res, "http: not found")
 }
 
-func TestDefaultMessage(t *testing.T) {
+func TestStatusErrorUsesDefaultMessage(t *testing.T) {
 	require.Equal(t, "http: bad request", httpstatus.DefaultMessage(http.StatusBadRequest))
 	require.Equal(t, "http: client closed request", httpstatus.DefaultMessage(http.StatusClientClosedRequest))
 	require.Equal(t, "http: internal server error", httpstatus.DefaultMessage(999))
@@ -94,7 +94,7 @@ func TestSafeErrorKeepsWrappedCoder(t *testing.T) {
 	require.Same(t, err, httpstatus.SafeError(http.StatusBadRequest, err))
 }
 
-func TestSafeErrorf(t *testing.T) {
+func TestSafeErrorfFormatsSafeHTTPMessage(t *testing.T) {
 	err := httpstatus.SafeErrorf(http.StatusUnauthorized, test.ErrInvalid, "load tenant %s", "tenant-1")
 
 	require.ErrorIs(t, err, test.ErrInvalid)
@@ -128,7 +128,7 @@ func TestSafeErrorfWithoutFormat(t *testing.T) {
 	test.RequireTrimmedResponseBody(t, res, "http: unauthorized")
 }
 
-func TestLocalError(t *testing.T) {
+func TestLocalErrorCreatesLocalHTTPError(t *testing.T) {
 	err := httpstatus.LocalError(httpstatus.SafeError(http.StatusTooManyRequests, test.ErrInvalid))
 
 	require.True(t, httpstatus.IsLocalError(err))

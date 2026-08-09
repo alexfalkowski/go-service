@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIsNil(t *testing.T) {
+func TestIsNilRecognizesNilAndTypedNil(t *testing.T) {
 	var err error = (*test.NilError)(nil)
 
 	tests := []struct {
@@ -29,7 +29,7 @@ func TestIsNil(t *testing.T) {
 	}
 }
 
-func TestIsZero(t *testing.T) {
+func TestIsZeroRecognizesZeroAndTypedNil(t *testing.T) {
 	var err error = (*test.NilError)(nil)
 
 	tests := []struct {

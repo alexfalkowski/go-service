@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerator(t *testing.T) {
+func TestGeneratorGeneratesKeyOrReturnsEntropyError(t *testing.T) {
 	gen := hmac.NewGenerator(rand.NewGenerator(rand.NewReader()))
 	key, err := gen.Generate()
 	require.NoError(t, err)
@@ -25,13 +25,13 @@ func TestGenerator(t *testing.T) {
 	require.Empty(t, key)
 }
 
-func TestIsEnabled(t *testing.T) {
+func TestConfigIsEnabledUnlessNil(t *testing.T) {
 	require.False(t, (*hmac.Config)(nil).IsEnabled())
 	require.True(t, (&hmac.Config{}).IsEnabled())
 	require.True(t, test.NewHMAC().IsEnabled())
 }
 
-func TestValidSigner(t *testing.T) {
+func TestNewSignerSignsAndVerifiesOrDisablesWhenUnconfigured(t *testing.T) {
 	signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
 	require.NoError(t, err)
 	require.NotNil(t, signer)
@@ -49,7 +49,7 @@ func TestValidSigner(t *testing.T) {
 	require.Nil(t, signer)
 }
 
-func TestSignerMissingKey(t *testing.T) {
+func TestNewSignerRejectsMissingKey(t *testing.T) {
 	t.Setenv("HMAC_EMPTY", "")
 
 	tests := []struct {
@@ -76,7 +76,7 @@ func TestSignerMissingKey(t *testing.T) {
 	}
 }
 
-func TestInvalidSigner(t *testing.T) {
+func TestSignerRejectsInvalidSignature(t *testing.T) {
 	t.Run("tampered signature", func(t *testing.T) {
 		signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
 		require.NoError(t, err)

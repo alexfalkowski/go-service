@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidFileConfig(t *testing.T) {
+func TestConfigLoadsValidFileSources(t *testing.T) {
 	tests := []struct {
 		name string
 		file string
@@ -39,7 +39,7 @@ func TestValidFileConfig(t *testing.T) {
 	}
 }
 
-func TestValidHomeFileConfig(t *testing.T) {
+func TestConfigExpandsHomeDirectoryInFileSource(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 
@@ -57,7 +57,7 @@ func TestValidHomeFileConfig(t *testing.T) {
 	verifyConfig(t, cfg)
 }
 
-func TestInvalidFileConfig(t *testing.T) {
+func TestConfigRejectsInvalidFileSources(t *testing.T) {
 	tests := []struct {
 		name string
 		file string
@@ -90,7 +90,7 @@ func TestInvalidFileConfig(t *testing.T) {
 	}
 }
 
-func TestValidTelemetryConfig(t *testing.T) {
+func TestConfigAcceptsValidTelemetrySettings(t *testing.T) {
 	tests := []struct {
 		name string
 		file string
@@ -112,7 +112,7 @@ func TestValidTelemetryConfig(t *testing.T) {
 	}
 }
 
-func TestInvalidTimeTimeoutConfig(t *testing.T) {
+func TestConfigRejectsInvalidTimeout(t *testing.T) {
 	set := flag.NewFlagSet("test")
 	set.AddConfig(test.FilePath("configs/invalid_time.config.yaml"))
 
@@ -122,7 +122,7 @@ func TestInvalidTimeTimeoutConfig(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestValidEnvConfig(t *testing.T) {
+func TestConfigLoadsValidEnvironmentSources(t *testing.T) {
 	tests := []struct {
 		name string
 		kind string
@@ -152,7 +152,7 @@ func TestValidEnvConfig(t *testing.T) {
 	}
 }
 
-func TestInvalidEnvMissingConfig(t *testing.T) {
+func TestConfigReportsMissingEnvironmentSource(t *testing.T) {
 	set := flag.NewFlagSet("test")
 	set.AddConfig("env:CONFIG")
 
@@ -163,7 +163,7 @@ func TestInvalidEnvMissingConfig(t *testing.T) {
 	require.ErrorContains(t, err, "env CONFIG")
 }
 
-func TestInvalidEnvKindConfig(t *testing.T) {
+func TestConfigRejectsUnknownEnvironmentSourceKind(t *testing.T) {
 	d, err := test.FS.ReadFile(test.Path("configs/config.yaml"))
 	require.NoError(t, err)
 
@@ -180,7 +180,7 @@ func TestInvalidEnvKindConfig(t *testing.T) {
 	require.ErrorContains(t, err, "kind what")
 }
 
-func TestInvalidFileKindConfig(t *testing.T) {
+func TestConfigRejectsUnknownFileSourceKind(t *testing.T) {
 	set := flag.NewFlagSet("test")
 	set.AddConfig("file:config.go")
 
@@ -192,7 +192,7 @@ func TestInvalidFileKindConfig(t *testing.T) {
 	require.ErrorContains(t, err, "extension go")
 }
 
-func TestInvalidEnvDataConfig(t *testing.T) {
+func TestConfigRejectsInvalidEnvironmentSourceData(t *testing.T) {
 	t.Setenv("CONFIG", "yaml:not_good")
 
 	set := flag.NewFlagSet("test")
@@ -204,7 +204,7 @@ func TestInvalidEnvDataConfig(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestValidCommonConfig(t *testing.T) {
+func TestConfigLoadsValidDefaultLocationSources(t *testing.T) {
 	tests := []struct {
 		name string
 		path string
@@ -245,7 +245,7 @@ func TestValidCommonConfig(t *testing.T) {
 	}
 }
 
-func TestInvalidCommonConfig(t *testing.T) {
+func TestConfigReportsMissingDefaultLocationSource(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", test.FS.Join(home, ".config"))
@@ -261,7 +261,7 @@ func TestInvalidCommonConfig(t *testing.T) {
 	require.ErrorContains(t, err, "/etc/"+test.Name.String()+"/"+test.Name.String()+".yaml")
 }
 
-func TestInvalidKindConfig(t *testing.T) {
+func TestConfigRejectsUnknownDefaultLocationSourceKind(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", test.FS.Join(home, ".config"))

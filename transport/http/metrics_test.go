@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPrometheusHTTP(t *testing.T) {
+func TestPrometheusEndpointExportsMetrics(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("prometheus"),
 		test.WithWorldPGConfig(nil),
@@ -37,7 +37,7 @@ func TestPrometheusHTTP(t *testing.T) {
 	require.Contains(t, body, "runtime")
 }
 
-func TestPrometheusAuthHTTP(t *testing.T) {
+func TestPrometheusEndpointRequiresAuthentication(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	gen := uuid.NewGenerator()
 	tkn := token.NewToken(cfg, test.FS, gen)

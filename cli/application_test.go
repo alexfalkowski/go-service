@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestApplicationDuplicateCommand(t *testing.T) {
+func TestNewApplicationRejectsDuplicateCommand(t *testing.T) {
 	var err error
 
 	func() {

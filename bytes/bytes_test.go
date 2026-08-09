@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClone(t *testing.T) {
+func TestCloneReturnsEqualBytes(t *testing.T) {
 	hello := strings.Bytes("hello")
 	require.Equal(t, hello, bytes.Clone(hello))
 }

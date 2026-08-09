@@ -26,7 +26,7 @@ func init() {
 	grpc.Register(test.FS)
 }
 
-func TestServer(t *testing.T) {
+func TestServerRegistersAndRunsConfiguredServices(t *testing.T) {
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(t)
 	logger, err := test.NewLogger(lc, test.NewTextLoggerConfig())
@@ -40,21 +40,21 @@ func TestServer(t *testing.T) {
 	lc.RequireStop()
 }
 
-func TestDisabledServer(t *testing.T) {
+func TestServerSkipsStartupWhenDisabled(t *testing.T) {
 	srv, err := grpc.NewServer(grpc.ServerParams{Config: nil})
 
 	require.NoError(t, err)
 	require.Nil(t, srv)
 }
 
-func TestNilServer(t *testing.T) {
+func TestNilServerReturnsNilRegistrars(t *testing.T) {
 	var srv *grpc.Server
 
 	require.Nil(t, srv.ServiceRegistrar())
 	require.Nil(t, srv.GetService())
 }
 
-func TestInvalidServer(t *testing.T) {
+func TestRejectsInvalidServer(t *testing.T) {
 	cfg := &grpc.Config{
 		Config: &server.Config{
 			Timeout: 5 * time.Second,

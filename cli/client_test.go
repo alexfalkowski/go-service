@@ -39,7 +39,7 @@ func TestApplicationClientRunWithInvalidFlag(t *testing.T) {
 	require.Error(t, app.Run(t.Context()))
 }
 
-func TestApplicationClient(t *testing.T) {
+func TestApplicationRunsClientCommand(t *testing.T) {
 	test.SetupCLI("client")
 
 	opts := []di.Option{di.NoLogger}
@@ -157,13 +157,13 @@ func TestApplicationClientShutdownExitCodeIsReturnedWhenStopFails(t *testing.T) 
 	}
 }
 
-func TestApplicationClientInvalidConfig(t *testing.T) {
+func TestApplicationClientRejectsInvalidConfiguration(t *testing.T) {
 	tests := []struct {
 		name   string
 		config string
 	}{
 		{name: "rejects invalid HTTP configuration", config: test.FilePath("configs/invalid_http.config.yaml")},
-		{name: "rejects invalid gRPC configuration", config: test.FilePath("configs/invalid_grpc.config.yaml")},
+		{name: "rejects invalid grpc configuration", config: test.FilePath("configs/invalid_grpc.config.yaml")},
 	}
 
 	for _, tt := range tests {

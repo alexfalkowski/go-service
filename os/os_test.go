@@ -8,7 +8,7 @@ import (
 )
 
 //nolint:usetesting
-func TestEnv(t *testing.T) {
+func TestEnvironmentExposesSetAndUnsetVariables(t *testing.T) {
 	key := "__ENV_KEY"
 
 	require.NoError(t, os.Setenv(key, "test"))
@@ -23,7 +23,7 @@ func TestEnv(t *testing.T) {
 	require.Empty(t, value)
 }
 
-func TestSanitizeArgs(t *testing.T) {
+func TestSanitizeArgsRemovesGoTestArguments(t *testing.T) {
 	args := []string{"service", "-test.v", "server", "-config", "config.yml", "-test.run=TestName", "-test-mode"}
 	sanitized := os.SanitizeArgs(args)
 

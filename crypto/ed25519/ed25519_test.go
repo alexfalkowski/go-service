@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerator(t *testing.T) {
+func TestGeneratorProducesUsableKeyPairOrReturnsEntropyError(t *testing.T) {
 	gen := ed25519.NewGenerator(rand.NewGenerator(rand.NewReader()))
 	pub, pri, err := gen.Generate()
 	require.NoError(t, err)
@@ -40,7 +40,7 @@ func TestGenerator(t *testing.T) {
 	require.Empty(t, pri)
 }
 
-func TestValid(t *testing.T) {
+func TestSignerAndVerifierSignAndVerifyOrDisableWhenUnconfigured(t *testing.T) {
 	cfg := test.NewEd25519()
 
 	signer, err := ed25519.NewSigner(test.PEM, cfg)
@@ -64,7 +64,7 @@ func TestValid(t *testing.T) {
 	require.Nil(t, verifier)
 }
 
-func TestInvalidConfig(t *testing.T) {
+func TestSignerAndVerifierRejectInvalidKeyConfiguration(t *testing.T) {
 	signerTests := []struct {
 		config *ed25519.Config
 		name   string
@@ -108,7 +108,7 @@ func TestInvalidConfig(t *testing.T) {
 	}
 }
 
-func TestInvalidSignature(t *testing.T) {
+func TestVerifierRejectsAlteredSignatureAndMessage(t *testing.T) {
 	cfg := test.NewEd25519()
 
 	signer, err := ed25519.NewSigner(test.PEM, cfg)
@@ -128,7 +128,7 @@ func TestInvalidSignature(t *testing.T) {
 	require.ErrorIs(t, verifier.Verify(sig, strings.Bytes("bob")), errors.ErrInvalidMatch)
 }
 
-func TestInvalidSignerPrivateKey(t *testing.T) {
+func TestRejectsInvalidSignerPrivateKey(t *testing.T) {
 	tests := []struct {
 		signer *ed25519.Signer
 		name   string
@@ -153,7 +153,7 @@ func TestInvalidSignerPrivateKey(t *testing.T) {
 	}
 }
 
-func TestInvalidVerifierPublicKey(t *testing.T) {
+func TestRejectsInvalidVerifierPublicKey(t *testing.T) {
 	tests := []struct {
 		verifier *ed25519.Verifier
 		name     string
@@ -174,7 +174,7 @@ func TestInvalidVerifierPublicKey(t *testing.T) {
 	}
 }
 
-func TestInvalidKeyType(t *testing.T) {
+func TestSignerAndVerifierRejectUnsupportedKeyType(t *testing.T) {
 	public, private, err := rsa.NewGenerator(rand.NewGenerator(rand.NewReader())).Generate()
 	require.NoError(t, err)
 

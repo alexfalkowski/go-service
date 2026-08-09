@@ -399,7 +399,7 @@ func TestClientUnaryInterceptorRetriesWhenPolicyAllowsReadMethod(t *testing.T) {
 	}
 }
 
-func TestClientUnaryInterceptorComposesMultiplePolicies(t *testing.T) {
+func TestClientUnaryInterceptorCombinesMultiplePolicies(t *testing.T) {
 	allow := retry.Policy(func(context.Context, string, any) bool { return true })
 	deny := retry.Policy(func(context.Context, string, any) bool { return false })
 

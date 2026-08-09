@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestReadFile(t *testing.T) {
+func TestReadFileClassifiesMissingFile(t *testing.T) {
 	path := "none"
 
 	_, err := test.FS.ReadFile(path)
@@ -19,7 +19,7 @@ func TestReadFile(t *testing.T) {
 	require.False(t, test.FS.PathExists(path))
 }
 
-func TestPathExtension(t *testing.T) {
+func TestPathExtensionExtractsFinalExtension(t *testing.T) {
 	tests := []struct {
 		name string
 		path string
@@ -38,7 +38,7 @@ func TestPathExtension(t *testing.T) {
 	require.Empty(t, test.FS.PathExtension("file"))
 }
 
-func TestExpandPath(t *testing.T) {
+func TestExpandPathExpandsHomeDirectory(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 
@@ -54,7 +54,7 @@ func TestCleanPathExpandsBeforeCleaning(t *testing.T) {
 	require.Equal(t, test.FS.Join(home, "..", "path.txt"), test.FS.CleanPath("~/../path.txt"))
 }
 
-func TestReadSource(t *testing.T) {
+func TestReadSourceResolvesEnvironmentFileAndLiteralSources(t *testing.T) {
 	t.Setenv("DUMMY", "yes")
 	t.Setenv("EMPTY", "")
 

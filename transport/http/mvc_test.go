@@ -15,7 +15,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-func TestRouteSuccess(t *testing.T) {
+func TestRouteRendersSuccessfulView(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
 
 	full, _ := mvc.NewViewPair("views/hello.tmpl")
@@ -69,7 +69,7 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestRouteError(t *testing.T) {
+func TestRouteRendersErrorView(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
 
 	view := mvc.NewFullView("views/error.tmpl")
@@ -92,7 +92,7 @@ func TestRouteError(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestNotFound(t *testing.T) {
+func TestRouteRendersNotFoundView(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	view := mvc.NewFullView("views/error.tmpl")
@@ -161,7 +161,7 @@ func TestNotFoundHandlesHTMXRequest(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestStaticFileSuccess(t *testing.T) {
+func TestStaticFileRouteServesExistingFile(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	mvc.StaticFile("/robots.txt", "static/robots.txt")
@@ -178,7 +178,7 @@ func TestStaticFileSuccess(t *testing.T) {
 	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get(http.ContentTypeKey))
 }
 
-func TestStaticFileError(t *testing.T) {
+func TestStaticFileRouteReportsMissingFile(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	mvc.StaticFile("/robots.txt", "static/bob.txt")
@@ -191,7 +191,7 @@ func TestStaticFileError(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
 }
 
-func TestStaticPathValueSuccess(t *testing.T) {
+func TestStaticPathRouteServesExistingFile(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	mvc.StaticPathValue("/{file}", "file", "static")
@@ -208,7 +208,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get(http.ContentTypeKey))
 }
 
-func TestStaticPathValueError(t *testing.T) {
+func TestStaticPathRouteReportsMissingFile(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	mvc.StaticPathValue("/{file}", "file", "static")
@@ -221,7 +221,7 @@ func TestStaticPathValueError(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
 }
 
-func TestMissingViews(t *testing.T) {
+func TestNewServerRejectsMissingViews(t *testing.T) {
 	mvc.Register(mvc.RegisterParams{
 		Router:      newTestRouter(),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),

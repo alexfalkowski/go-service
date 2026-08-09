@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestServerError(t *testing.T) {
+func TestServerErrorIgnoresExpectedShutdown(t *testing.T) {
 	t.Parallel()
 
 	require.NoError(t, errors.ServerError(fmt.Errorf("server stopped: %w", grpc.ErrServerStopped)))

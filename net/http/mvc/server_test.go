@@ -348,7 +348,7 @@ func TestNewViewUsesLayoutPathWhenBasenameCollides(t *testing.T) {
 	}
 }
 
-func TestLayoutNames(t *testing.T) {
+func TestLayoutNamesFindsConfiguredLayouts(t *testing.T) {
 	layout := mvc.NewLayout("views/full.tmpl", "views/partial.tmpl")
 
 	require.Equal(t, "full.tmpl", layout.FullName())
@@ -562,7 +562,7 @@ func TestNotFoundUsesDefaultWhenControllerMissing(t *testing.T) {
 	test.RequireResponseBodyContains(t, res, "404 page not found")
 }
 
-func TestFallback(t *testing.T) {
+func TestFallbackRendersFallbackTemplate(t *testing.T) {
 	tests := []struct {
 		name    string
 		accept  string

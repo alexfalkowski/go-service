@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStrings(t *testing.T) {
+func TestStringsFormatsVisibleAttributesWithCaseAndPrefix(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(),
 		meta.NewPair("testId", meta.String("1")),
 		meta.NewPair("see", meta.Ignored("secret")),
@@ -57,7 +57,7 @@ func TestWithAttributesDoesNotCollideWithStringContextKey(t *testing.T) {
 	require.Equal(t, meta.String("request-id"), meta.Attribute(ctx, meta.RequestIDKey))
 }
 
-func TestPairHelpers(t *testing.T) {
+func TestPairHelpersCreatePairsWithExpectedKeys(t *testing.T) {
 	for _, test := range []struct {
 		pair  func(meta.Value) meta.Pair
 		name  string
@@ -116,7 +116,7 @@ func TestWithAttributesKeepsParentContextIsolated(t *testing.T) {
 	require.Equal(t, meta.String("user"), meta.Attribute(child, "userId"))
 }
 
-func TestAccessors(t *testing.T) {
+func TestAccessorsReturnStoredAttributes(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(),
 		meta.WithRequestID(meta.String("request-id")),
 		meta.WithTransport(meta.String("transport")),

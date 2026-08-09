@@ -7,6 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStatusText(t *testing.T) {
+func TestStatusTextMapsCodeToMessage(t *testing.T) {
 	require.Equal(t, codes.Unauthenticated.String(), codes.StatusText(codes.Unauthenticated))
 }

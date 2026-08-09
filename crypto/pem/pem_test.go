@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDecode(t *testing.T) {
+func TestDecodeReturnsMatchingBlockOrValidationError(t *testing.T) {
 	t.Setenv("PEM_EMPTY", "")
 
 	t.Run("valid block", func(t *testing.T) {

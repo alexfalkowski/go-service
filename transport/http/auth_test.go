@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTokenAuthUnary(t *testing.T) {
+func TestUnaryHandlerAuthenticatesSupportedToken(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "ssh"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
@@ -43,7 +43,7 @@ func TestTokenAuthUnary(t *testing.T) {
 	}
 }
 
-func TestUnknownTokenKindAuthUnary(t *testing.T) {
+func TestUnaryHandlerRejectsUnknownTokenKind(t *testing.T) {
 	cfg := test.NewToken("none")
 	tkn := token.NewToken(cfg, test.FS, nil)
 
@@ -63,7 +63,7 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	require.Equal(t, "http: unauthorized", body)
 }
 
-func TestValidAuthUnary(t *testing.T) {
+func TestUnaryHandlerAcceptsValidAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
@@ -81,7 +81,7 @@ func TestValidAuthUnary(t *testing.T) {
 	require.NotEmpty(t, body)
 }
 
-func TestAccessDeniedUnary(t *testing.T) {
+func TestUnaryHandlerRejectsDeniedAccess(t *testing.T) {
 	controller, err := access.NewController(&access.Config{
 		Model:  test.FilePath("configs/rbac.conf"),
 		Policy: "p, " + test.UserID.String() + ", http:POST /other, invoke",
@@ -122,7 +122,7 @@ func TestAuthDoesNotBypassApplicationMetricsPath(t *testing.T) {
 	require.Equal(t, "http: unauthorized", body)
 }
 
-func TestInvalidAuthUnary(t *testing.T) {
+func TestRejectsInvalidAuthUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
@@ -157,7 +157,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	require.NotEmpty(t, body)
 }
 
-func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
+func TestUnaryHandlerAcceptsLowercaseBearerScheme(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
@@ -175,7 +175,7 @@ func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
 	require.NotEmpty(t, body)
 }
 
-func TestMissingAuthUnary(t *testing.T) {
+func TestUnaryHandlerRejectsMissingAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
@@ -192,7 +192,7 @@ func TestMissingAuthUnary(t *testing.T) {
 	require.Equal(t, "http: unauthorized", body)
 }
 
-func TestEmptyAuthUnary(t *testing.T) {
+func TestUnaryHandlerRejectsEmptyAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
@@ -208,7 +208,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 	require.Contains(t, err.Error(), "authorization is invalid")
 }
 
-func TestMissingClientAuthUnary(t *testing.T) {
+func TestUnaryHandlerRejectsMissingClientAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
@@ -225,7 +225,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	require.Equal(t, "http: unauthorized", body)
 }
 
-func TestTokenErrorAuthUnary(t *testing.T) {
+func TestUnaryHandlerPropagatesTokenError(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator(strings.Empty, test.ErrGenerate), test.NewVerifier("test")),
@@ -244,7 +244,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 	require.Contains(t, err.Error(), "token: generation issue")
 }
 
-func TestBreakerAuthUnary(t *testing.T) {
+func TestUnaryHandlerReturnsBreakerError(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator(strings.Empty, test.ErrGenerate), test.NewVerifier("test")),

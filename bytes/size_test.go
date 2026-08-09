@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMustParseSize(t *testing.T) {
+func TestMustParseSizePanicsForInvalidInput(t *testing.T) {
 	t.Parallel()
 
 	require.Panics(t, func() { bytes.MustParseSize("test") })
 }
 
-func TestDefaultSize(t *testing.T) {
+func TestDefaultSizeIsFourMegabytes(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, 4*bytes.MB, bytes.DefaultSize)
@@ -77,7 +77,7 @@ func TestSizeJSONRoundTrip(t *testing.T) {
 	}
 }
 
-func TestSizeUnmarshalTextInvalid(t *testing.T) {
+func TestSizeUnmarshalTextRejectsInvalidInput(t *testing.T) {
 	t.Parallel()
 
 	var size bytes.Size
@@ -86,7 +86,7 @@ func TestSizeUnmarshalTextInvalid(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestSizeUnmarshalJSONInvalid(t *testing.T) {
+func TestSizeUnmarshalJSONRejectsInvalidInput(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -113,7 +113,7 @@ func TestSizeUnmarshalJSONInvalid(t *testing.T) {
 	}
 }
 
-func TestSizeUnmarshalJSONWithWhitespace(t *testing.T) {
+func TestSizeUnmarshalJSONAcceptsWhitespace(t *testing.T) {
 	t.Parallel()
 
 	var size bytes.Size

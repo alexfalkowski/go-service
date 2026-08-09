@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDefaultAddress(t *testing.T) {
+func TestDefaultAddressBindsAllInterfaces(t *testing.T) {
 	require.Equal(t, "tcp://:9000", net.DefaultAddress("9000"))
 }
 
@@ -15,7 +15,7 @@ func TestNetworkAddressValue(t *testing.T) {
 	require.Equal(t, "tcp://localhost:9000", net.NetworkAddress("tcp", "localhost:9000"))
 }
 
-func TestHost(t *testing.T) {
+func TestHostExtractsHostFromAddress(t *testing.T) {
 	tests := []struct {
 		name string
 		addr string
@@ -40,7 +40,7 @@ func TestSplitAndJoinHostPort(t *testing.T) {
 	require.Equal(t, "localhost:9000", net.JoinHostPort(host, port))
 }
 
-func TestLookupPort(t *testing.T) {
+func TestLookupPortResolvesKnownService(t *testing.T) {
 	port, err := net.LookupPort(t.Context(), "tcp", "9000")
 	require.NoError(t, err)
 	require.Equal(t, 9000, port)

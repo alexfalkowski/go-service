@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerator(t *testing.T) {
+func TestGeneratorGeneratesNonEmptyWebhookSecret(t *testing.T) {
 	gen := hooks.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
 	secret, err := gen.Generate()

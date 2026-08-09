@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMustParseDuration(t *testing.T) {
+func TestMustParseDurationPanicsForInvalidInput(t *testing.T) {
 	t.Parallel()
 
 	require.Panics(t, func() { time.MustParseDuration("test") })
 }
 
-func TestDefaultTimeout(t *testing.T) {
+func TestDefaultTimeoutIsThirtySeconds(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, 30*time.Second, time.DefaultTimeout)
@@ -48,7 +48,7 @@ func TestDurationJSONRoundTrip(t *testing.T) {
 	require.Equal(t, duration, decoded)
 }
 
-func TestDurationUnmarshalTextInvalid(t *testing.T) {
+func TestDurationTextRejectsInvalidValue(t *testing.T) {
 	t.Parallel()
 
 	var duration time.Duration
@@ -57,7 +57,7 @@ func TestDurationUnmarshalTextInvalid(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestDurationUnmarshalJSONInvalid(t *testing.T) {
+func TestDurationJSONRejectsInvalidValue(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -83,7 +83,7 @@ func TestDurationUnmarshalJSONInvalid(t *testing.T) {
 	}
 }
 
-func TestDurationZeroValueEncoding(t *testing.T) {
+func TestDurationZeroValueEncodesAsZero(t *testing.T) {
 	t.Parallel()
 
 	var duration time.Duration

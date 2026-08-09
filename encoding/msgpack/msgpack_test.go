@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEncodeDecode(t *testing.T) {
+func TestEncoderRoundTripsValue(t *testing.T) {
 	t.Parallel()
 
 	buffer := test.Pool.Get()
@@ -45,7 +45,7 @@ func TestDecodeReturnsError(t *testing.T) {
 	require.Error(t, encoder.Decode(&test.ErrReaderCloser{}, &actual))
 }
 
-func TestMarshalUnmarshal(t *testing.T) {
+func TestMarshalAndUnmarshalRoundTripValue(t *testing.T) {
 	t.Parallel()
 
 	msg := map[string]string{"test": "test"}

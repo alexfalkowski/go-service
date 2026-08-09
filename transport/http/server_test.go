@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestInvalidServer(t *testing.T) {
+func TestRejectsInvalidServer(t *testing.T) {
 	transporthttp.Register(test.FS)
 
 	cfg := &transporthttp.Config{

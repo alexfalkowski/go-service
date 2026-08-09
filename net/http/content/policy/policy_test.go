@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCanDecode(t *testing.T) {
+func TestCanDecodeMatchesSupportedContentKind(t *testing.T) {
 	tests := []struct {
 		kind string
 		want bool

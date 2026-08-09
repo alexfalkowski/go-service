@@ -21,7 +21,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestLogger(t *testing.T) {
+func TestLoggerEmitsRecordsWithoutPanic(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	log, err := test.NewLogger(lc, test.NewTextLoggerConfig())
 	require.NoError(t, err)
@@ -215,7 +215,7 @@ func TestStdoutLoggerLogsUnderSpan(t *testing.T) {
 	})
 }
 
-func TestInvalidLogger(t *testing.T) {
+func TestRejectsInvalidLogger(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &logger.Config{Kind: "wrong", Level: "debug"}
 	params := logger.LoggerParams{
@@ -241,7 +241,7 @@ func TestInvalidLogger(t *testing.T) {
 	})
 }
 
-func TestDisabledLogger(t *testing.T) {
+func TestNewLoggerDisablesLoggingWhenUnconfigured(t *testing.T) {
 	original := slog.Default()
 	t.Cleanup(func() {
 		slog.SetDefault(original)
@@ -286,7 +286,7 @@ func TestLogAddsMetadataAndError(t *testing.T) {
 	require.Equal(t, context.Canceled, handler.Records[1].Attrs["error"].Any())
 }
 
-func TestInvalidLevel(t *testing.T) {
+func TestNewLoggerRejectsInvalidLevel(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &logger.Config{Kind: "text", Level: "bob"}
 	params := logger.LoggerParams{
@@ -302,7 +302,7 @@ func TestInvalidLevel(t *testing.T) {
 	require.ErrorIs(t, err, logger.ErrInvalidLevel)
 }
 
-func TestInvalidOTLPEndpoint(t *testing.T) {
+func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind: "otlp",
@@ -346,7 +346,7 @@ func TestOTLPGRPCLogger(t *testing.T) {
 	require.NoError(t, lc.Stop(t.Context()))
 }
 
-func TestInvalidOTLPGRPCEndpoint(t *testing.T) {
+func TestRejectsInvalidOTLPGRPCEndpoint(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:     "otlp",

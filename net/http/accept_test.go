@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAcceptItems(t *testing.T) {
+func TestAcceptItemsParsesAndOrdersMediaRanges(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

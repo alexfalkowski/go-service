@@ -65,7 +65,7 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 	require.NoError(t, test.Validator.Struct(valid))
 }
 
-func TestValid(t *testing.T) {
+func TestTokenGeneratesAndVerifiesValidToken(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	token := jwt.NewToken(cfg.JWT, test.FS, uuid.NewGenerator())
 
@@ -139,7 +139,7 @@ func TestVerifyWithLeeway(t *testing.T) {
 	})
 }
 
-func TestInvalid(t *testing.T) {
+func TestTokenRejectsInvalidToken(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	gen := uuid.NewGenerator()
 	token := jwt.NewToken(cfg.JWT, test.FS, gen)
@@ -195,7 +195,7 @@ func TestInvalid(t *testing.T) {
 	})
 }
 
-func TestInvalidSignature(t *testing.T) {
+func TestTokenRejectsInvalidSignature(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	token := jwt.NewToken(cfg.JWT, test.FS, uuid.NewGenerator())
 
@@ -221,7 +221,7 @@ func TestInvalidSignature(t *testing.T) {
 	require.ErrorIs(t, err, jwt.ErrTokenSignatureInvalid)
 }
 
-func TestInvalidKeyID(t *testing.T) {
+func TestTokenRejectsInvalidKeyID(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	gen := uuid.NewGenerator()
 	token := jwt.NewToken(cfg.JWT, test.FS, gen)
@@ -274,7 +274,7 @@ func TestInvalidKeyID(t *testing.T) {
 	})
 }
 
-func TestInvalidRequiredClaims(t *testing.T) {
+func TestRejectsInvalidRequiredClaims(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	token := jwt.NewToken(cfg.JWT, test.FS, uuid.NewGenerator())
 
@@ -313,7 +313,7 @@ func TestInvalidRequiredClaims(t *testing.T) {
 	}
 }
 
-func TestInvalidLifetimeExceedsConfig(t *testing.T) {
+func TestRejectsInvalidLifetimeExceedsConfig(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	gen := uuid.NewGenerator()
 	generatorCfg := cloneConfig(cfg.JWT)
@@ -331,7 +331,7 @@ func TestInvalidLifetimeExceedsConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidTime)
 }
 
-func TestInvalidVerifyExpirationConfig(t *testing.T) {
+func TestRejectsInvalidVerifyExpirationConfig(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	gen := uuid.NewGenerator()
 	generator := jwt.NewToken(cfg.JWT, test.FS, gen)

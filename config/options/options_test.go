@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDuration(t *testing.T) {
+func TestDurationReturnsConfiguredOrDefaultValue(t *testing.T) {
 	require.Equal(t, 10*time.Minute, test.ConfigOptions.Duration("read_timeout", 5*time.Second))
 	require.Equal(t, 5*time.Second, test.ConfigOptions.Duration("timeout", 5*time.Second))
 	require.Equal(t, 5*time.Second, test.ConfigOptions.Duration("missing", 5*time.Second))
 }
 
-func TestNonNegativeDuration(t *testing.T) {
+func TestNonNegativeDurationRejectsNegativeAndInvalidValues(t *testing.T) {
 	opts := options.Map{"timeout": "10s"}
 
 	require.Equal(t, 10*time.Second, opts.NonNegativeDuration("timeout", time.Second))
@@ -25,7 +25,7 @@ func TestNonNegativeDuration(t *testing.T) {
 	require.Panics(t, func() { options.Map{"timeout": "invalid"}.NonNegativeDuration("timeout", time.Second) })
 }
 
-func TestUint32(t *testing.T) {
+func TestUint32RejectsInvalidAndOutOfRangeValues(t *testing.T) {
 	opts := options.Map{"count": "12"}
 
 	require.EqualValues(t, 12, opts.Uint32("count", 5))
@@ -35,7 +35,7 @@ func TestUint32(t *testing.T) {
 	require.Panics(t, func() { options.Map{"overflow": "4294967296"}.Uint32("overflow", 5) })
 }
 
-func TestSize(t *testing.T) {
+func TestSizeRejectsInvalidValues(t *testing.T) {
 	opts := options.Map{"limit": "16MB"}
 
 	require.Equal(t, 16*bytes.MB, opts.Size("limit", bytes.MB))
@@ -43,14 +43,14 @@ func TestSize(t *testing.T) {
 	require.Panics(t, func() { options.Map{"invalid": "abc"}.Size("invalid", bytes.MB) })
 }
 
-func TestIntSize(t *testing.T) {
+func TestIntSizeReturnsConfiguredOrDefaultValue(t *testing.T) {
 	opts := options.Map{"limit": "16MB"}
 
 	require.Equal(t, int(16*bytes.MB), opts.IntSize("limit", bytes.MB))
 	require.Equal(t, int(bytes.MB), opts.IntSize("missing", bytes.MB))
 }
 
-func TestInt32Size(t *testing.T) {
+func TestInt32SizeRejectsOverflow(t *testing.T) {
 	opts := options.Map{"limit": "16MB"}
 
 	require.EqualValues(t, 16*bytes.MB, opts.Int32Size("limit", bytes.MB))
@@ -58,7 +58,7 @@ func TestInt32Size(t *testing.T) {
 	require.Panics(t, func() { options.Map{"overflow": "3GB"}.Int32Size("overflow", 0) })
 }
 
-func TestUint32Size(t *testing.T) {
+func TestUint32SizeRejectsOverflow(t *testing.T) {
 	opts := options.Map{"limit": "16MB"}
 
 	require.EqualValues(t, 16*bytes.MB, opts.Uint32Size("limit", bytes.MB))

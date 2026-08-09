@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEncodeDecode(t *testing.T) {
+func TestEncoderRoundTripsValue(t *testing.T) {
 	for _, tt := range protoEncoders() {
 		t.Run(tt.name, func(t *testing.T) {
 			buffer := test.Pool.Get()
@@ -144,7 +144,7 @@ func TestDecodeReturnsReadError(t *testing.T) {
 	}
 }
 
-func TestInvalidTypedNilEncode(t *testing.T) {
+func TestEncodeRejectsTypedNilValue(t *testing.T) {
 	for _, tt := range protoEncoders() {
 		t.Run(tt.name, func(t *testing.T) {
 			var msg *health.Response

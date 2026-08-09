@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMapGet(t *testing.T) {
+func TestMapGetReturnsConfiguredKeyOrNil(t *testing.T) {
 	key := &keys.Config{Config: test.NewEd25519()}
 
 	tests := []struct {

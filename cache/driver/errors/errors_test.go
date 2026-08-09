@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestErrorClassification(t *testing.T) {
+func TestErrorClassificationIdentifiesCacheErrorKinds(t *testing.T) {
 	tests := []struct {
 		name    string
 		err     error

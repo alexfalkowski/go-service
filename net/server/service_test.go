@@ -76,7 +76,7 @@ func TestStartReturnsWhileServeIsRunning(t *testing.T) {
 	})
 }
 
-func TestInvalidStop(t *testing.T) {
+func TestStopReturnsShutdownFailure(t *testing.T) {
 	sh := test.NewShutdowner()
 	srv := test.NewObservableServer(nil, test.ErrFailed)
 	svc := server.NewService("test", srv, nil, sh)

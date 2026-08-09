@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestInsecureUnary(t *testing.T) {
+func TestUnaryCallSucceedsWithoutTLS(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := meta.WithAttributes(t.Context(),
@@ -43,7 +43,7 @@ func TestInsecureUnary(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
-func TestCompressionUnary(t *testing.T) {
+func TestUnaryCallUsesConfiguredCompression(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldGRPC(), test.WithWorldCompression())
 
 	conn := test.RequireGRPCConn(t, world)
@@ -59,7 +59,7 @@ func TestCompressionUnary(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
-func TestSecureUnary(t *testing.T) {
+func TestGRPCUnaryServesSecureRequest(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC(), test.WithWorldSecure())
 
 	ctx := meta.WithAttributes(t.Context(), meta.NewPair("ip", meta.ToIgnored(net.ParseIP("192.168.8.0"))))
@@ -77,7 +77,7 @@ func TestSecureUnary(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
-func TestStream(t *testing.T) {
+func TestGRPCStreamSendsAndReceivesMessages(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := meta.WithAttributes(t.Context(), test.WithTest(meta.Redacted("test")))
@@ -119,7 +119,7 @@ func TestServerRecoversUnaryPanic(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
-func TestBreakerUnary(t *testing.T) {
+func TestGRPCUnaryOpensCircuitBreakerAfterFailure(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldGRPC(), test.WithWorldBreaker(test.NewBreaker(1)))
 
 	conn := test.RequireGRPCConn(t, world)
@@ -161,7 +161,7 @@ func TestServerRecoversStreamPanic(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
-func TestUnaryMaxReceiveSize(t *testing.T) {
+func TestUnaryServerRejectsOversizedRequest(t *testing.T) {
 	world := newStartedGRPCWorld(t, 64)
 	conn := test.RequireGRPCConn(t, world)
 	t.Cleanup(func() {

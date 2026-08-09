@@ -79,7 +79,7 @@ func TestMapKeysIncludesPartiallyRegisteredKinds(t *testing.T) {
 	require.ElementsMatch(t, []string{"json", "msgpack", "gob", "yaml", "encode-only", "decode-only"}, m.Keys())
 }
 
-func TestMapRegister(t *testing.T) {
+func TestMapRegisterReplacesExistingCodec(t *testing.T) {
 	t.Parallel()
 
 	m := stream.NewMap()
