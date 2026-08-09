@@ -150,7 +150,8 @@ func invalidMatch(err error) error {
 }
 
 func isTokenSentinel(err error) bool {
-	return errors.Is(err, token.ErrInvalidConfig) ||
+	return errors.Is(err, token.ErrInvalidMatch) ||
+		errors.Is(err, token.ErrInvalidConfig) ||
 		errors.Is(err, token.ErrInvalidIssuer) ||
 		errors.Is(err, token.ErrInvalidAudience) ||
 		errors.Is(err, token.ErrInvalidSubject) ||

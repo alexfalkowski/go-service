@@ -3,11 +3,12 @@ package paseto
 import (
 	"aidanwoods.dev/go-paseto"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token/errors"
+	tokenerrors "github.com/alexfalkowski/go-service/v2/token/errors"
 )
 
 // NewToken constructs a Token that issues and validates PASETO v4 public (asymmetric) tokens.
@@ -50,10 +51,11 @@ type Token struct {
 //   - footer kid: from cfg.Key
 func (t *Token) Generate(aud, sub string) (string, error) {
 	if t.generator == nil {
-		return strings.Empty, errors.ErrInvalidConfig
+		return strings.Empty, tokenerrors.ErrInvalidConfig
 	}
+
 	if strings.IsEmpty(t.cfg.Issuer) || strings.IsEmpty(t.cfg.Key) || t.cfg.Expiration <= 0 {
-		return strings.Empty, errors.ErrInvalidConfig
+		return strings.Empty, tokenerrors.ErrInvalidConfig
 	}
 
 	key, err := t.cfg.Keys.Get(t.cfg.Key).Signer(t.decoder)
@@ -96,12 +98,12 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //   - audience matches aud (aud)
 //   - the signed lifetime (exp - iat) does not exceed cfg.Expiration
 //
-// On failure, parser, rule, signature, and key-construction errors may come from
-// the upstream PASETO library. Local config, subject, and signed-lifetime checks
-// return shared sentinel errors from token/errors.
+// On failure, PASETO parsing errors, including invalid signatures, return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidMatch].
+// Rule and key-construction errors may come from the upstream PASETO library.
+// Local config, subject, and signed-lifetime checks return shared sentinel errors from token/errors.
 func (t *Token) Verify(token, aud string) (string, error) {
 	if strings.IsEmpty(t.cfg.Issuer) || t.cfg.Expiration <= 0 {
-		return strings.Empty, errors.ErrInvalidConfig
+		return strings.Empty, tokenerrors.ErrInvalidConfig
 	}
 
 	parser := paseto.NewParserWithoutExpiryCheck()
@@ -120,7 +122,7 @@ func (t *Token) Verify(token, aud string) (string, error) {
 
 	parsed, err := parser.ParseV4Public(s, token, nil)
 	if err != nil {
-		return strings.Empty, err
+		return strings.Empty, invalidMatch(err)
 	}
 
 	if err := validateTime(parsed, t.cfg.Expiration, t.cfg.Leeway); err != nil {
@@ -133,7 +135,7 @@ func (t *Token) Verify(token, aud string) (string, error) {
 func (t *Token) publicKey(token string, parser paseto.Parser) ([]byte, error) {
 	raw, err := parser.UnsafeParseFooter(paseto.V4Public, token)
 	if err != nil {
-		return nil, err
+		return nil, invalidMatch(err)
 	}
 
 	footer, err := parseFooter(raw)
@@ -143,7 +145,7 @@ func (t *Token) publicKey(token string, parser paseto.Parser) ([]byte, error) {
 
 	key := t.cfg.Keys.Get(footer.KeyID)
 	if key == nil {
-		return nil, errors.ErrInvalidKeyID
+		return nil, tokenerrors.ErrInvalidKeyID
 	}
 
 	verifier, err := key.Verifier(t.decoder)
@@ -154,13 +156,22 @@ func (t *Token) publicKey(token string, parser paseto.Parser) ([]byte, error) {
 	return verifier.PublicKey, nil
 }
 
+func invalidMatch(err error) error {
+	if errors.Is(err, TokenError{}) {
+		return tokenerrors.ErrInvalidMatch
+	}
+
+	return err
+}
+
 func subject(token *paseto.Token) (string, error) {
 	sub, err := token.GetSubject()
 	if err != nil {
 		return strings.Empty, err
 	}
+
 	if strings.IsEmpty(sub) {
-		return strings.Empty, errors.ErrInvalidSubject
+		return strings.Empty, tokenerrors.ErrInvalidSubject
 	}
 
 	return sub, nil
@@ -169,24 +180,27 @@ func subject(token *paseto.Token) (string, error) {
 func validateTime(token *paseto.Token, maxLifetime, leeway time.Duration) error {
 	issuedAt, err := token.GetIssuedAt()
 	if err != nil {
-		return errors.ErrInvalidTime
+		return tokenerrors.ErrInvalidTime
 	}
+
 	notBefore, err := token.GetNotBefore()
 	if err != nil {
-		return errors.ErrInvalidTime
+		return tokenerrors.ErrInvalidTime
 	}
+
 	expiresAt, err := token.GetExpiration()
 	if err != nil {
-		return errors.ErrInvalidTime
+		return tokenerrors.ErrInvalidTime
 	}
 
 	now := time.Now()
 	allowedFuture := now.Add(leeway.Duration())
 	if issuedAt.After(allowedFuture) || notBefore.After(allowedFuture) {
-		return errors.ErrInvalidTime
+		return tokenerrors.ErrInvalidTime
 	}
+
 	if !expiresAt.Add(leeway.Duration()).After(now) {
-		return errors.ErrInvalidTime
+		return tokenerrors.ErrInvalidTime
 	}
 
 	return validateLifetimeRange(issuedAt, expiresAt, maxLifetime)
@@ -194,7 +208,7 @@ func validateTime(token *paseto.Token, maxLifetime, leeway time.Duration) error 
 
 func validateLifetimeRange(issuedAt, expiresAt time.Time, maxLifetime time.Duration) error {
 	if !expiresAt.After(issuedAt) || expiresAt.Sub(issuedAt) > maxLifetime.Duration() {
-		return errors.ErrInvalidTime
+		return tokenerrors.ErrInvalidTime
 	}
 
 	return nil

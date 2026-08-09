@@ -8,11 +8,14 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	httplogger "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/stretchr/testify/require"
 )
 
@@ -64,6 +67,29 @@ func TestHandlerLogsStatusError(t *testing.T) {
 	test.RequireTrimmedResponseBody(t, res, "http: bad request")
 	require.Contains(t, logs.String(), `"level":"WARN"`)
 	require.Contains(t, logs.String(), `"error":"`+test.ErrInvalid.Error()+`"`)
+}
+
+func TestHandlerLogsRedactedPasetoTokenError(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	verifier := token.NewToken(cfg, test.FS, uuid.NewGenerator())
+	auth := token.NewHandler(http.NewRoutePolicy(), verifier)
+	var logs bytes.Buffer
+	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+	handler := httplogger.NewHandler(http.NewRoutePolicy(), &logger.Logger{Logger: slogLogger})
+	res := httptest.NewRecorder()
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/greeter/say-hello", http.NoBody)
+	req = req.WithContext(meta.WithAttributes(req.Context(), meta.WithAuthorization(meta.String("secret-header.secret-claims.signature"))))
+
+	handler.ServeHTTP(res, req, func(res http.ResponseWriter, req *http.Request) {
+		auth.ServeHTTP(res, req, func(http.ResponseWriter, *http.Request) {
+			require.Fail(t, "unexpected authorized request")
+		})
+	})
+
+	require.Equal(t, http.StatusUnauthorized, res.Code)
+	require.Contains(t, logs.String(), `"error":"token: invalid match"`)
+	require.NotContains(t, logs.String(), "secret-header")
+	require.NotContains(t, logs.String(), "secret-claims")
 }
 
 func TestHandlerSkipsOperationPath(t *testing.T) {

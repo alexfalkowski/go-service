@@ -58,9 +58,11 @@
 // using [Config.Leeway] as optional clock-skew tolerance and checks that the
 // signed lifetime from iat to exp does not exceed [Config.Expiration].
 //
-// On failure, parser, rule, signature, and key-construction errors may come
-// from the upstream PASETO library. Local config, subject, and signed-lifetime
-// checks return shared sentinel errors from token/errors.
+// On failure, PASETO parsing errors, including invalid signatures, return
+// [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidMatch]. Rule
+// and key-construction errors may come from the upstream PASETO library. Local
+// config, subject, and signed-lifetime checks return shared sentinel errors
+// from token/errors.
 //
 // # Configuration and enablement
 //
