@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"maps"
 	"net/http/httptest"
 	"testing"
 
@@ -35,6 +36,19 @@ func TestNewNotFoundHandler(t *testing.T) {
 			handle:        true,
 			code:          http.StatusMethodNotAllowed,
 		},
+		{
+			name:          "flushes method not allowed headers",
+			method:        http.MethodPost,
+			path:          "/hello",
+			registerRoute: true,
+			code:          http.StatusMethodNotAllowed,
+			header: http.Header{
+				"Content-Type":   {"application/problem+json"},
+				"Content-Length": {"999"},
+			},
+			contentType:        "text/plain; charset=utf-8",
+			checkContentLength: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -45,14 +59,18 @@ func TestNewNotFoundHandler(t *testing.T) {
 }
 
 type notFoundHandlerTest struct {
-	name          string
-	method        string
-	path          string
-	body          string
-	contains      string
-	registerRoute bool
-	handle        bool
-	code          int
+	name               string
+	method             string
+	path               string
+	body               string
+	contains           string
+	header             http.Header
+	registerRoute      bool
+	handle             bool
+	contentType        string
+	contentLength      string
+	checkContentLength bool
+	code               int
 }
 
 func testNotFoundHandler(t *testing.T, tt notFoundHandlerTest) {
@@ -78,6 +96,7 @@ func testNotFoundHandler(t *testing.T, tt notFoundHandlerTest) {
 
 	req := httptest.NewRequestWithContext(t.Context(), tt.method, tt.path, http.NoBody)
 	res := httptest.NewRecorder()
+	maps.Copy(res.Header(), tt.header)
 
 	handler.ServeHTTP(res, req)
 
@@ -87,5 +106,11 @@ func testNotFoundHandler(t *testing.T, tt notFoundHandlerTest) {
 	}
 	if !strings.IsEmpty(tt.contains) {
 		test.RequireResponseBodyContains(t, res, tt.contains)
+	}
+	if !strings.IsEmpty(tt.contentType) {
+		require.Equal(t, tt.contentType, res.Header().Get("Content-Type"))
+	}
+	if tt.checkContentLength {
+		require.Equal(t, tt.contentLength, res.Header().Get("Content-Length"))
 	}
 }

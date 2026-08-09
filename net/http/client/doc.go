@@ -11,7 +11,7 @@
 //
 // [NewClient] accepts optional ClientOption values to configure:
 //   - the underlying RoundTripper (e.g. to add retries, breakers, auth, etc.)
-//   - the overall client timeout ([http.Client.Timeout])
+//   - the unary [Client.Do] timeout, applied through the request context
 //   - the maximum response body size buffered in memory
 //   - redirect behavior (optionally return redirects instead of following them)
 //

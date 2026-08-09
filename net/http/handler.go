@@ -37,7 +37,7 @@ func (h *notFoundHandler) ServeHTTP(res ResponseWriter, req *Request) {
 	}
 
 	response := &bufferedWriter{
-		header:   Header{},
+		header:   res.Header().Clone(),
 		response: res,
 		buffer:   h.pool.Get(),
 		pool:     h.pool,
