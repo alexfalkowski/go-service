@@ -52,6 +52,10 @@ func TestConfigGetProtocol(t *testing.T) {
 	require.Equal(t, otlp.ProtocolGRPC, (&logger.Config{Protocol: otlp.ProtocolGRPC}).GetProtocol())
 }
 
+func TestConfigRejectsNegativeHTTPTimeout(t *testing.T) {
+	require.Error(t, test.Validator.Struct(&logger.Config{HTTPTimeout: -time.Second}))
+}
+
 func TestConfigGetKind(t *testing.T) {
 	require.Equal(t, strings.Empty, (*logger.Config)(nil).GetKind())
 	require.Equal(t, strings.Empty, (&logger.Config{}).GetKind())

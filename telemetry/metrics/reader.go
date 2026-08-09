@@ -136,7 +136,14 @@ func newOTLPExporter(fs *os.FS, cfg *Config) (metric.Exporter, error) {
 		}
 		return otlpmetricgrpc.New(context.Background(), opts...)
 	default:
-		opts := []otlpmetrichttp.Option{otlpmetrichttp.WithHeaders(cfg.Headers)}
+		httpClient, err := otlp.NewHTTPClient(fs, cfg.TLS, cfg.HTTPTimeout)
+		if err != nil {
+			return nil, err
+		}
+		opts := []otlpmetrichttp.Option{
+			otlpmetrichttp.WithHTTPClient(httpClient),
+			otlpmetrichttp.WithHeaders(cfg.Headers),
+		}
 		if !strings.IsEmpty(cfg.URL) {
 			opts = append(opts, otlpmetrichttp.WithEndpointURL(cfg.URL))
 		}

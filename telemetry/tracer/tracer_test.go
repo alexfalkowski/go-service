@@ -1,6 +1,8 @@
 package tracer_test
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"unicode/utf8"
 
@@ -134,6 +136,10 @@ func TestConfigGetProtocol(t *testing.T) {
 	require.Equal(t, otlp.ProtocolGRPC, (&tracer.Config{Protocol: otlp.ProtocolGRPC}).GetProtocol())
 }
 
+func TestConfigRejectsNegativeHTTPTimeout(t *testing.T) {
+	require.Error(t, test.Validator.Struct(&tracer.Config{HTTPTimeout: -time.Second}))
+}
+
 func TestRegisterStopResetsGlobalProvider(t *testing.T) {
 	t.Cleanup(func() {
 		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
@@ -264,6 +270,59 @@ func TestRegisterInvalidOTLPEndpoint(t *testing.T) {
 	})
 
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+}
+
+func TestRegisterOTLPHTTPExporterDoesNotFollowRedirects(t *testing.T) {
+	trustedHeaders := make(chan string, 1)
+	attackerHeaders := make(chan string, 1)
+	attacker := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
+		attackerHeaders <- req.Header.Get("Authorization")
+	}))
+	t.Cleanup(attacker.Close)
+
+	trusted := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		trustedHeaders <- req.Header.Get("Authorization")
+		res.Header().Set("Location", attacker.URL+"/v1/traces")
+		res.WriteHeader(http.StatusTemporaryRedirect)
+	}))
+	t.Cleanup(trusted.Close)
+
+	lifecycle := fxtest.NewLifecycle(t)
+	t.Cleanup(func() {
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+	})
+	require.NoError(t, tracer.Register(tracer.TracerParams{
+		Lifecycle: lifecycle,
+		Config: &tracer.Config{
+			Kind: "otlp",
+			URL:  trusted.URL + "/v1/traces",
+			Headers: header.Map{
+				"Authorization": "Bearer token",
+			},
+		},
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}))
+
+	lifecycle.RequireStart()
+	_, span := tracer.GetProvider().Tracer(test.Name.String()).Start(t.Context(), "redirect")
+	span.End()
+	require.NoError(t, lifecycle.Stop(t.Context()))
+
+	select {
+	case header := <-trustedHeaders:
+		require.Equal(t, "Bearer token", header)
+	default:
+		require.Fail(t, "trusted endpoint did not receive a request")
+	}
+
+	select {
+	case <-attackerHeaders:
+		require.Fail(t, "redirect target received a request")
+	default:
+	}
 }
 
 func TestRegisterOTLPGRPCExporter(t *testing.T) {

@@ -84,6 +84,14 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   projections cannot be supplied through `di.Decorate`, or the support boundary
   changes.
 - Standard module wiring is the supported path. Do not flag hypothetical failures that require hand-wiring an incomplete DI graph unless the public API explicitly promises that custom construction mode.
+- An exported constructor, setter, helper, option, or other symbol does not
+  make every direct invocation or argument a supported contract. Before
+  recording an issue that cannot occur through standard module, CLI, template,
+  or integration wiring, identify a current supported consumer or an explicit
+  contract for the exact construction and triggering input. Package-local tests
+  of nil, zero, invalid, or defensive branches do not establish supported usage
+  by themselves. If no supported path supplies the triggering input, reject the
+  candidate as unsupported misuse.
 - Recommend Fx `optional:"true"` dependency tags only with concrete evidence
   that a supported DI graph may omit that dependency. A nil check, "optional"
   prose, or guarded hook installation is a lead, not enough by itself; verify

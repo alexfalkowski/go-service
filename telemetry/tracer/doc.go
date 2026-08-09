@@ -62,6 +62,8 @@
 // [Config.BatchTimeout], [Config.ExportTimeout], [Config.MaxQueueSize], and
 // [Config.MaxExportBatchSize] tune the batch span processor used for OTLP
 // export. Zero values preserve the OpenTelemetry SDK defaults.
+// [Config.HTTPTimeout] bounds OTLP/HTTP export requests. [Config.TLS] configures
+// TLS for OTLP/HTTPS and OTLP/gRPC exporters.
 //
 // The exporter request headers are provided by [Config.Headers]. Header values may be
 // configured as go-service "source strings" (for example "env:NAME", "file:/path", or a

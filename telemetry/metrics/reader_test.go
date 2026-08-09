@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/metric"
@@ -26,6 +27,10 @@ func TestConfigGetProtocol(t *testing.T) {
 	require.Equal(t, otlp.ProtocolHTTP, (*metrics.Config)(nil).GetProtocol())
 	require.Equal(t, otlp.ProtocolHTTP, (&metrics.Config{}).GetProtocol())
 	require.Equal(t, otlp.ProtocolGRPC, (&metrics.Config{Protocol: otlp.ProtocolGRPC}).GetProtocol())
+}
+
+func TestConfigRejectsNegativeHTTPTimeout(t *testing.T) {
+	require.Error(t, test.Validator.Struct(&metrics.Config{HTTPTimeout: -time.Second}))
 }
 
 func TestReaderShutdownIgnoresAlreadyShutdownReader(t *testing.T) {

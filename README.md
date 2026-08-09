@@ -674,6 +674,7 @@ telemetry:
     level: info
     protocol: http
     url: http://localhost:4318/v1/logs
+    http_timeout: 10s
     batch_timeout: 5s
     export_timeout: 30s
     max_queue_size: 2048
@@ -684,18 +685,21 @@ telemetry:
 
 > [!NOTE]
 > - `batch_timeout`, `export_timeout`, `max_queue_size`, and `max_export_batch_size` tune the OTLP batch export pipeline and apply only when `kind` is `otlp`. When a value is unset or zero, the OpenTelemetry SDK default is used (queue `2048`, batch `512`). A nonzero `batch_timeout` must use whole-second precision. Explicit queue and batch limits may be at most `8192` and `2048`, respectively; the effective batch may not exceed the effective queue.
+> - `http_timeout` bounds one OTLP/HTTP export request. It defaults to `10s` when unset or zero and does not apply to OTLP/gRPC.
 > - `headers` values are source strings.
 > - Telemetry header maps are resolved during config projection; unset `env:` values and unreadable `file:` values fail fast (panic during startup).
 > - After resolution, go-service passes header names and values to the selected exporter without validating HTTP or gRPC syntax. Use headers valid for the selected protocol; an exporter may report invalid syntax only when it attempts an export, not during startup.
 
 > [!WARNING]
 > OTLP exporters reject non-loopback `http://` endpoints when headers are configured. Use HTTPS for remote collectors that require authorization headers; cleartext with headers is accepted only for local loopback endpoints.
+> OTLP/HTTP exporters do not follow redirects; configure the final collector URL.
 >
 > OTLP/gRPC exporters use `protocol: grpc` and a `host:port` endpoint such as `localhost:4317`. Header-bearing remote gRPC endpoints require the signal's `tls` config; loopback gRPC endpoints may still use cleartext.
 >
 > OTLP exporter endpoints must be set in go-service config fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and `telemetry.tracer.url`. Standard OpenTelemetry endpoint environment variables such as `OTEL_EXPORTER_OTLP_ENDPOINT` are not used as fallback sources.
+> Configure OTLP/HTTP request timeouts and TLS material with `http_timeout` and `tls`; corresponding OpenTelemetry timeout and certificate environment variables are not projected into go-service config.
 
-Remote OTLP/gRPC exporters can use the same TLS source-string model as other go-service clients:
+OTLP exporters can use the same TLS source-string model as other go-service clients. HTTP exporters require an `https://` URL for TLS, while gRPC exporters use `protocol: grpc`:
 
 ```yaml
 telemetry:
@@ -712,7 +716,7 @@ telemetry:
       Authorization: env:OTLP_TRACES_AUTH
 ```
 
-Use the same `tls` shape under `telemetry.logger` or `telemetry.metrics` when those signals export through OTLP/gRPC.
+Use the same `tls` shape under `telemetry.logger` or `telemetry.metrics` for OTLP/HTTPS or OTLP/gRPC.
 
 ### Metrics
 
@@ -751,15 +755,17 @@ telemetry:
     kind: otlp
     protocol: http
     url: http://localhost:9009/otlp/v1/metrics
+    http_timeout: 10s
     interval: 30s
     timeout: 5s
     headers:
       Authorization: env:OTLP_METRICS_AUTH
 ```
 
-`interval` and `timeout` apply only to OTLP push metrics. When either value is
-unset or zero, the OpenTelemetry SDK default is used. A nonzero `interval` must
-use whole-second precision.
+`interval` and `timeout` apply only to OTLP push metrics. `http_timeout` bounds
+an OTLP/HTTP request. When `interval` or `timeout` is unset or zero, the
+OpenTelemetry SDK default is used; `http_timeout` defaults to `10s`. A nonzero
+`interval` must use whole-second precision.
 
 #### Histogram buckets
 
@@ -800,6 +806,7 @@ telemetry:
     kind: otlp
     protocol: http
     url: http://localhost:4318/v1/traces
+    http_timeout: 10s
     batch_timeout: 5s
     export_timeout: 30s
     max_queue_size: 2048
@@ -813,6 +820,8 @@ telemetry:
 
 > [!NOTE]
 > `batch_timeout`, `export_timeout`, `max_queue_size`, and `max_export_batch_size` tune the OTLP batch span export pipeline. When a value is unset or zero, the OpenTelemetry SDK default is used (queue `2048`, batch `512`). A nonzero `batch_timeout` must use whole-second precision. Explicit queue and batch limits may be at most `8192` and `2048`, respectively; the effective batch may not exceed the effective queue.
+>
+> `http_timeout` bounds one OTLP/HTTP export request. It defaults to `10s` when unset or zero and does not apply to OTLP/gRPC.
 >
 > OTLP exporters default to `protocol: http`. Set `protocol: grpc` and use a
 > `host:port` `url`, such as `localhost:4317`, to export through OTLP/gRPC.

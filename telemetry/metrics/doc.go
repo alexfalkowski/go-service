@@ -43,6 +43,8 @@
 // reader export cadence. Zero values preserve the OpenTelemetry SDK defaults.
 // [Config.Protocol] selects the OTLP transport protocol. The empty value uses
 // OTLP/HTTP. Set "grpc" to use OTLP/gRPC with a host:port endpoint.
+// [Config.HTTPTimeout] bounds OTLP/HTTP export requests, and [Config.TLS]
+// configures TLS for OTLP/HTTPS and OTLP/gRPC exporters.
 //
 // For "prometheus", [Config.Prometheus] optionally shapes exporter output by
 // dropping unit/counter suffixes, the target_info metric, or the scope-info
