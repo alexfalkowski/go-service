@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
@@ -163,6 +164,7 @@ func TestClientLimiterStreamRecvRejected(t *testing.T) {
 	require.Error(t, err)
 	require.True(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+	require.ErrorIs(t, stream.Context().Err(), context.Canceled)
 }
 
 func TestClientLimiterStreamSendRejected(t *testing.T) {
@@ -181,6 +183,7 @@ func TestClientLimiterStreamSendRejected(t *testing.T) {
 	require.Error(t, err)
 	require.True(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+	require.ErrorIs(t, stream.Context().Err(), context.Canceled)
 }
 
 func TestServerLimiterUsesVerifiedUserIDUnary(t *testing.T) {

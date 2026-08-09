@@ -3,6 +3,8 @@ package limiter
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
@@ -77,33 +79,39 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 			return nil, status.LocalError(limitError())
 		}
 
-		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
+		streamContext, cancel := context.WithCancel(ctx)
+		stream, err := streamer(streamContext, desc, conn, fullMethod, opts...)
 		if err != nil {
+			cancel()
+
 			return nil, err
 		}
 
-		return &clientStream{ClientStream: stream, ctx: ctx, limiter: c.Limiter}, nil
+		return &clientStream{ClientStream: stream, ctx: streamContext, cancel: cancel, limiter: c.Limiter}, nil
 	}
 }
 
 type clientStream struct {
 	grpc.ClientStream
 	ctx     context.Context
+	cancel  context.CancelFunc
 	limiter *limiter.Limiter
 }
 
 func (s *clientStream) RecvMsg(m any) error {
 	if err := s.ClientStream.RecvMsg(m); err != nil {
+		s.cancel()
+
 		return err
 	}
 
 	decision, err := take(s.ctx, s.limiter)
 	if err != nil {
-		return status.LocalError(err)
+		return s.localError(err)
 	}
 
 	if !decision.Allowed() {
-		return status.LocalError(limitError())
+		return s.localError(limitError())
 	}
 
 	return nil
@@ -112,12 +120,23 @@ func (s *clientStream) RecvMsg(m any) error {
 func (s *clientStream) SendMsg(m any) error {
 	decision, err := take(s.ctx, s.limiter)
 	if err != nil {
-		return status.LocalError(err)
+		return s.localError(err)
 	}
 
 	if !decision.Allowed() {
-		return status.LocalError(limitError())
+		return s.localError(limitError())
 	}
 
-	return s.ClientStream.SendMsg(m)
+	err = s.ClientStream.SendMsg(m)
+	if err != nil && !errors.Is(err, io.EOF) {
+		s.cancel()
+	}
+
+	return err
+}
+
+func (s *clientStream) localError(err error) error {
+	s.cancel()
+
+	return status.LocalError(err)
 }
