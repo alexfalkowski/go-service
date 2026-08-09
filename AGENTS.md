@@ -455,6 +455,14 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   external edge, gateway, ingress, load balancer, or service mesh limiter when
   those attempts need quota enforcement.
 - The built-in transport limiter is intentionally in-memory and per-process. Treat it as a last-resort local safeguard; prefer external edge/gateway/ingress/load-balancer/service-mesh limiting for production abuse protection.
+- The built-in transport limiter's memory store returns an error from `Take`
+  only after the store has been closed by its lifecycle hook. Do not report
+  error classification, retry, or status behavior demonstrated solely by
+  explicitly closing a limiter and then reusing it. Before recording such a
+  finding, prove either a non-shutdown `Take` error or a concrete supported
+  request path that can reach the limiter after or concurrently with its
+  lifecycle close; exported `Close`/`Take` methods alone do not establish that
+  post-close reuse is supported.
 - go-service is a microservices framework; browser-facing concerns such as
   CORS are expected to live at a BFF, API gateway, ingress, CDN, or other edge
   layer. Do not flag missing built-in CORS/preflight support solely because
