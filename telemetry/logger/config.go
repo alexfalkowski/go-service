@@ -28,10 +28,11 @@ type Config struct {
 	// prepares configuration for use by the logger/exporter.
 	Headers header.Map `yaml:"headers,omitempty" json:"headers,omitempty" toml:"headers,omitempty"`
 
-	// TLS configures OTLP/gRPC client transport security.
+	// TLS configures OTLP client transport security.
 	//
-	// This only applies when Kind is "otlp" and Protocol is "grpc". A non-nil
-	// config enables TLS; Cert, Key, and CA values use go-service source strings.
+	// This applies when Kind is "otlp" and Protocol is "grpc", or when Protocol
+	// is "http" with an HTTPS URL. Cert, Key, and CA values use go-service source
+	// strings.
 	TLS *tls.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 
 	// Kind selects the logger implementation.
@@ -68,6 +69,13 @@ type Config struct {
 	//
 	// Unknown values are rejected by NewLogger with ErrInvalidLevel.
 	Level string `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
+
+	// HTTPTimeout is the maximum duration allowed for one OTLP/HTTP export request.
+	//
+	// A zero value uses the OpenTelemetry HTTP exporter default of ten seconds.
+	// Negative values are invalid. This field only applies when Kind is "otlp"
+	// and Protocol is "http".
+	HTTPTimeout time.Duration `yaml:"http_timeout,omitempty" json:"http_timeout,omitempty" toml:"http_timeout,omitempty" validate:"gte=0"`
 
 	// BatchTimeout is the maximum delay between batched log record exports.
 	//

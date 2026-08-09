@@ -76,7 +76,14 @@ func newOtlpExporter(params LoggerParams) (log.Exporter, error) {
 		}
 		return otlploggrpc.New(context.Background(), opts...)
 	default:
-		opts := []otlploghttp.Option{otlploghttp.WithHeaders(params.Config.Headers)}
+		httpClient, err := otlp.NewHTTPClient(params.FS, params.Config.TLS, params.Config.HTTPTimeout)
+		if err != nil {
+			return nil, err
+		}
+		opts := []otlploghttp.Option{
+			otlploghttp.WithHTTPClient(httpClient),
+			otlploghttp.WithHeaders(params.Config.Headers),
+		}
 		if !strings.IsEmpty(params.Config.URL) {
 			opts = append(opts, otlploghttp.WithEndpointURL(params.Config.URL))
 		}

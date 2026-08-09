@@ -243,7 +243,14 @@ func newOTLPExporter(params TracerParams) (*otlptrace.Exporter, error) {
 		}
 		return otlptrace.NewUnstarted(otlptracegrpc.NewClient(opts...)), nil
 	default:
-		opts := []otlptracehttp.Option{otlptracehttp.WithHeaders(params.Config.Headers)}
+		httpClient, err := otlp.NewHTTPClient(params.FS, params.Config.TLS, params.Config.HTTPTimeout)
+		if err != nil {
+			return nil, err
+		}
+		opts := []otlptracehttp.Option{
+			otlptracehttp.WithHTTPClient(httpClient),
+			otlptracehttp.WithHeaders(params.Config.Headers),
+		}
 		if !strings.IsEmpty(params.Config.URL) {
 			opts = append(opts, otlptracehttp.WithEndpointURL(params.Config.URL))
 		}

@@ -49,6 +49,10 @@
 // headers. When headers are configured, non-loopback "http://" endpoints are rejected to avoid sending
 // credential-bearing headers over cleartext transport. Use "https://" for external collectors. Local
 // development collectors on "localhost" or loopback IP addresses may use "http://".
+// HTTP exporters return redirect responses without following them, so a collector cannot forward configured
+// headers to another endpoint.
+// HTTP request timeouts and TLS material are configured with each signal's HTTPTimeout and TLS fields; the
+// corresponding OpenTelemetry timeout and certificate environment variables are not projected into config.
 // OTLP/gRPC exporters use host:port endpoints. Header-bearing remote gRPC endpoints
 // require the signal's TLS config; loopback gRPC endpoints may still use cleartext.
 //

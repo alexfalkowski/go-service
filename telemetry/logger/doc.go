@@ -65,6 +65,8 @@
 // rejected to avoid sending credential-bearing headers over cleartext transport.
 // Use "https://" for external collectors. Local development collectors on
 // "localhost" or loopback IP addresses may use "http://".
+// [Config.HTTPTimeout] bounds OTLP/HTTP export requests. [Config.TLS] configures
+// TLS for OTLP/HTTPS and OTLP/gRPC exporters.
 // Header-bearing remote OTLP/gRPC endpoints require [Config.TLS]; loopback gRPC
 // endpoints may still use cleartext.
 //

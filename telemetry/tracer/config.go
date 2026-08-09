@@ -21,10 +21,11 @@ type Config struct {
 	// exporter (for example via header.Map.Secrets or header.Map.MustSecrets).
 	Headers header.Map `yaml:"headers,omitempty" json:"headers,omitempty" toml:"headers,omitempty"`
 
-	// TLS configures OTLP/gRPC client transport security.
+	// TLS configures OTLP client transport security.
 	//
-	// This only applies when Kind is "otlp" and Protocol is "grpc". A non-nil
-	// config enables TLS; Cert, Key, and CA values use go-service source strings.
+	// This applies when Kind is "otlp" and Protocol is "grpc", or when Protocol
+	// is "http" with an HTTPS URL. Cert, Key, and CA values use go-service source
+	// strings.
 	TLS *tls.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 
 	// Sampler configures trace head sampling.
@@ -52,6 +53,13 @@ type Config struct {
 	// Standard OpenTelemetry endpoint environment variables are not used as fallbacks;
 	// configure this value explicitly through go-service config.
 	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
+
+	// HTTPTimeout is the maximum duration allowed for one OTLP/HTTP export request.
+	//
+	// A zero value uses the OpenTelemetry HTTP exporter default of ten seconds.
+	// Negative values are invalid. This field only applies when Kind is "otlp"
+	// and Protocol is "http".
+	HTTPTimeout time.Duration `yaml:"http_timeout,omitempty" json:"http_timeout,omitempty" toml:"http_timeout,omitempty" validate:"gte=0"`
 
 	// BatchTimeout is the maximum delay between batched span exports.
 	//

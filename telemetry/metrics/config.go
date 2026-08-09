@@ -21,10 +21,11 @@ type Config struct {
 	// or header.Map.MustSecrets).
 	Headers header.Map `yaml:"headers,omitempty" json:"headers,omitempty" toml:"headers,omitempty"`
 
-	// TLS configures OTLP/gRPC client transport security.
+	// TLS configures OTLP client transport security.
 	//
-	// This only applies when Kind is "otlp" and Protocol is "grpc". A non-nil
-	// config enables TLS; Cert, Key, and CA values use go-service source strings.
+	// This applies when Kind is "otlp" and Protocol is "grpc", or when Protocol
+	// is "http" with an HTTPS URL. Cert, Key, and CA values use go-service source
+	// strings.
 	TLS *tls.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 
 	// Prometheus configures Prometheus exporter output shaping.
@@ -73,6 +74,13 @@ type Config struct {
 	// the matching instrument. A nil or empty list keeps the SDK default boundaries,
 	// so this field is a no-op unless configured.
 	Views []ViewConfig `yaml:"views,omitempty" json:"views,omitempty" toml:"views,omitempty" validate:"omitempty,dive"`
+
+	// HTTPTimeout is the maximum duration allowed for one OTLP/HTTP export request.
+	//
+	// A zero value uses the OpenTelemetry HTTP exporter default of ten seconds.
+	// Negative values are invalid. This field only applies when Kind is "otlp"
+	// and Protocol is "http".
+	HTTPTimeout time.Duration `yaml:"http_timeout,omitempty" json:"http_timeout,omitempty" toml:"http_timeout,omitempty" validate:"gte=0"`
 
 	// Interval is the OTLP periodic export interval.
 	//
