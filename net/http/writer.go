@@ -1,6 +1,8 @@
 package http
 
 import (
+	"maps"
+
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-sync"
 )
@@ -40,17 +42,10 @@ func (w *bufferedWriter) WriteHeader(code int) {
 
 func (w *bufferedWriter) Flush() {
 	header := w.response.Header()
-	for key, values := range w.header {
-		if len(values) == 0 {
-			header.Del(key)
-			continue
-		}
-
-		header.Set(key, values[0])
-		for _, value := range values[1:] {
-			header.Add(key, value)
-		}
+	for key := range header {
+		header.Del(key)
 	}
+	maps.Copy(header, w.header)
 
 	if w.code != 0 {
 		w.response.WriteHeader(w.code)

@@ -380,6 +380,12 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   deduplicate by request id when duplicate processing would be unsafe. Do not
   flag the default HTTP/gRPC retry policy merely because metadata injects
   request ids before retry.
+- gRPC user-agent is intentionally a connection-level protocol header managed
+  by grpc-go and configured with `grpc.WithUserAgent`. Do not introduce a
+  request-scoped or logical user-agent metadata header, or otherwise propagate
+  context/outgoing user-agent values across gRPC calls. Do not flag the
+  resulting difference between local client metadata and downstream gRPC
+  user-agent attribution as a code issue unless the supported contract changes.
 - HTTP retry intentionally does not apply `transport/retry.Config.Timeout` as a
   per-attempt timeout. HTTP response bodies are caller-owned after `RoundTrip`
   returns, and tying retry-owned attempt contexts to returned bodies requires
