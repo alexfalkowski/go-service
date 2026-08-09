@@ -280,6 +280,17 @@ func TestRejectsInvalidMalformedToken(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestRedactsMalformedToken(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	token := paseto.NewToken(cfg.Paseto, test.FS, uuid.NewGenerator())
+
+	_, err := token.Verify("secret-header.secret-claims.signature", "aud")
+
+	require.ErrorIs(t, err, errors.ErrInvalidMatch)
+	require.NotContains(t, err.Error(), "secret-header")
+	require.NotContains(t, err.Error(), "secret-claims")
+}
+
 func TestRejectsInvalidGenerateMalformedPrivateKey(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	badPrivate := cloneConfig(cfg.Paseto)

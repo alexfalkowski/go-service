@@ -351,6 +351,13 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   emits material that its own matching `Config` loader rejects, or where
   documented generation behavior is wrong.
 - Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
+- Casbin's string policy adapter can skip malformed policy rows without failing
+  startup. This is an accepted upstream limitation; the README tells operators
+  to validate policy files before deployment. Do not flag the absence of strict
+  repository-owned row validation or startup rejection solely because malformed
+  administrator-supplied policy can be skipped. Report only concrete bugs such
+  as valid rows being altered or dropped, ignored explicit validation, or a
+  public API promise of strict policy-row validation.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
 - `net/header.ForwardedIPs` is intentionally an exported mutable list, similar
   to standard-library package variables such as `os.Args`. Do not flag this

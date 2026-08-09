@@ -261,3 +261,15 @@ func TestRejectsInvalidMatchClassification(t *testing.T) {
 		require.ErrorIs(t, err, errors.ErrInvalidMatch)
 	})
 }
+
+func TestVerifyRedactsPasetoTokenError(t *testing.T) {
+	cfg := test.NewToken("paseto")
+	tkn := token.NewToken(cfg, test.FS, uuid.NewGenerator())
+
+	sub, err := tkn.Verify([]byte("secret-header.secret-claims.signature"), "hello")
+
+	require.Equal(t, strings.Empty, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidMatch)
+	require.NotContains(t, err.Error(), "secret-header")
+	require.NotContains(t, err.Error(), "secret-claims")
+}
