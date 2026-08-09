@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetMaxReceiveSize(t *testing.T) {
+func TestGetMaxReceiveSizeReturnsConfiguredOrDefaultValue(t *testing.T) {
 	tests := []struct {
 		cfg  *server.Config
 		name string
@@ -33,7 +33,7 @@ func TestGetMaxReceiveSize(t *testing.T) {
 	}
 }
 
-func TestGetTimeout(t *testing.T) {
+func TestGetTimeoutReturnsConfiguredOrDefaultValue(t *testing.T) {
 	tests := []struct {
 		cfg  *server.Config
 		name string
@@ -52,7 +52,7 @@ func TestGetTimeout(t *testing.T) {
 	}
 }
 
-func TestGetReadAndWriteTimeout(t *testing.T) {
+func TestGetReadAndWriteTimeoutUsesDirectionSpecificOptions(t *testing.T) {
 	getters := []struct {
 		get   func(*server.Config) time.Duration
 		key   string
@@ -96,12 +96,12 @@ func TestConfigRejectsNegativeTimeout(t *testing.T) {
 	require.Error(t, test.Validator.Struct(cfg))
 }
 
-func TestConfig(t *testing.T) {
+func TestConfigIsEnabledUnlessNil(t *testing.T) {
 	require.False(t, (*server.Config)(nil).IsEnabled())
 	require.True(t, (&server.Config{}).IsEnabled())
 }
 
-func TestNewConfig(t *testing.T) {
+func TestNewConfigLoadsMutuallyAuthenticatedTLS(t *testing.T) {
 	tlsConfig, err := server.NewConfig(test.FS, test.NewTLSServerConfig())
 	require.NoError(t, err)
 	require.NotNil(t, tlsConfig)
@@ -123,7 +123,7 @@ func TestNewConfig(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestNewConfigWithOptionalTLSMaterial(t *testing.T) {
+func TestNewConfigAcceptsOptionalTLSMaterial(t *testing.T) {
 	tests := []struct {
 		config       *config.Config
 		name         string
@@ -176,7 +176,7 @@ func TestNewConfigRejectsIncompleteKeyPair(t *testing.T) {
 	}
 }
 
-func TestNewConfigInvalidKeyPair(t *testing.T) {
+func TestNewConfigRejectsInvalidKeyPair(t *testing.T) {
 	_, err := server.NewConfig(test.FS, &config.Config{
 		Cert: test.FilePath("certs/cert.pem"),
 		Key:  test.FilePath("secrets/none"),
@@ -184,7 +184,7 @@ func TestNewConfigInvalidKeyPair(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestNewConfigInvalidCA(t *testing.T) {
+func TestNewConfigRejectsInvalidCA(t *testing.T) {
 	_, err := server.NewConfig(test.FS, &config.Config{
 		Cert: test.FilePath("certs/cert.pem"),
 		Key:  test.FilePath("certs/key.pem"),

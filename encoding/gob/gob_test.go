@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEncodeDecode(t *testing.T) {
+func TestEncoderRoundTripsValue(t *testing.T) {
 	t.Parallel()
 
 	encoder := gob.NewEncoder()
@@ -24,7 +24,7 @@ func TestEncodeDecode(t *testing.T) {
 	require.Equal(t, map[string]string{"test": "test"}, msg)
 }
 
-func TestMarshalUnmarshal(t *testing.T) {
+func TestMarshalAndUnmarshalRoundTripValue(t *testing.T) {
 	t.Parallel()
 
 	msg := map[string]string{"test": "test"}

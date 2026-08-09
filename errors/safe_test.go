@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSafeMessage(t *testing.T) {
+func TestSafeMessageReturnsSafeMessageOrFallback(t *testing.T) {
 	for _, tc := range []struct {
 		name string
 		err  error

@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerator(t *testing.T) {
+func TestGeneratorProducesConfiguredSizeKeyPair(t *testing.T) {
 	gen := rsa.NewGenerator(rand.NewGenerator(rand.NewReader()))
 	pub, pri, err := gen.Generate()
 	require.NoError(t, err)
@@ -31,7 +31,7 @@ func TestGenerator(t *testing.T) {
 	require.Equal(t, rsa.KeySize, privateKey.N.BitLen())
 }
 
-func TestValid(t *testing.T) {
+func TestEncryptorAndDecryptorEncryptAndDecryptOrDisableWhenUnconfigured(t *testing.T) {
 	gen := rand.NewGenerator(rand.NewReader())
 
 	enc, err := rsa.NewEncryptor(gen, test.PEM, test.NewRSA())
@@ -83,7 +83,7 @@ func TestValid(t *testing.T) {
 	require.Nil(t, dec)
 }
 
-func TestInvalidConfig(t *testing.T) {
+func TestEncryptorAndDecryptorRejectMissingKeyConfiguration(t *testing.T) {
 	t.Setenv("RSA_EMPTY", "")
 
 	t.Run("missing public key", func(t *testing.T) {
@@ -119,7 +119,7 @@ func TestInvalidConfig(t *testing.T) {
 	})
 }
 
-func TestInvalid(t *testing.T) {
+func TestDecryptorRejectsInvalidCiphertext(t *testing.T) {
 	t.Run("tampered ciphertext", func(t *testing.T) {
 		gen := rand.NewGenerator(rand.NewReader())
 		cfg := test.NewRSA()
@@ -179,7 +179,7 @@ func TestEncryptorAuthenticatesMetadata(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestInvalidKey(t *testing.T) {
+func TestEncryptorAndDecryptorRejectInvalidOrUndersizedKeys(t *testing.T) {
 	t.Run("invalid public key", func(t *testing.T) {
 		gen := rand.NewGenerator(rand.NewReader())
 
@@ -223,7 +223,7 @@ func TestInvalidKey(t *testing.T) {
 	})
 }
 
-func TestInvalidConfigParse(t *testing.T) {
+func TestConfigRejectsUnparseableKeys(t *testing.T) {
 	t.Run("public key", func(t *testing.T) {
 		_, err := (&rsa.Config{Public: test.FilePath("secrets/rsa_public_invalid")}).PublicKey(test.PEM)
 		require.Error(t, err)

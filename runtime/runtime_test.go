@@ -19,7 +19,7 @@ func TestCallerPreservesSkipSemantics(t *testing.T) {
 	require.Contains(t, file, "runtime_test.go")
 }
 
-func TestRecover(t *testing.T) {
+func TestConvertRecoverConvertsRecoveredValuesToErrors(t *testing.T) {
 	tests := []struct {
 		value   any
 		name    string

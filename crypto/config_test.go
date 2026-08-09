@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIsEnabled(t *testing.T) {
+func TestConfigIsEnabledUnlessNil(t *testing.T) {
 	require.False(t, (*crypto.Config)(nil).IsEnabled())
 	require.True(t, (&crypto.Config{}).IsEnabled())
 }

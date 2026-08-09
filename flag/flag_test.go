@@ -13,7 +13,7 @@ func TestGetConfigWithoutAddConfig(t *testing.T) {
 	require.Empty(t, set.GetConfig())
 }
 
-func TestAddConfig(t *testing.T) {
+func TestAddConfigParsesLongAndShortConfigFlags(t *testing.T) {
 	cases := []struct {
 		name string
 		want string

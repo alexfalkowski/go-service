@@ -67,7 +67,7 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 	require.NoError(t, test.Validator.Struct(valid))
 }
 
-func TestValid(t *testing.T) {
+func TestTokenGeneratesAndVerifiesValidToken(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	token := paseto.NewToken(cfg.Paseto, test.FS, uuid.NewGenerator())
 
@@ -125,7 +125,7 @@ func TestVerifyWithLeeway(t *testing.T) {
 	})
 }
 
-func TestInvalidEmptySubject(t *testing.T) {
+func TestRejectsInvalidEmptySubject(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	token := paseto.NewToken(cfg.Paseto, test.FS, uuid.NewGenerator())
 
@@ -138,7 +138,7 @@ func TestInvalidEmptySubject(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidSubject)
 }
 
-func TestInvalidKeyID(t *testing.T) {
+func TestTokenRejectsInvalidKeyID(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	gen := uuid.NewGenerator()
 	token := paseto.NewToken(cfg.Paseto, test.FS, gen)
@@ -158,7 +158,7 @@ func TestInvalidKeyID(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidKeyID)
 }
 
-func TestInvalidLifetimeExceedsConfig(t *testing.T) {
+func TestRejectsInvalidLifetimeExceedsConfig(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	gen := uuid.NewGenerator()
 	generatorCfg := cloneConfig(cfg.Paseto)
@@ -176,7 +176,7 @@ func TestInvalidLifetimeExceedsConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidTime)
 }
 
-func TestInvalidIssuer(t *testing.T) {
+func TestRejectsInvalidIssuer(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	gen := uuid.NewGenerator()
 	generatorCfg := cloneConfig(cfg.Paseto)
@@ -192,7 +192,7 @@ func TestInvalidIssuer(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestInvalidVerifyExpirationConfig(t *testing.T) {
+func TestRejectsInvalidVerifyExpirationConfig(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	gen := uuid.NewGenerator()
 	generator := paseto.NewToken(cfg.Paseto, test.FS, gen)
@@ -208,7 +208,7 @@ func TestInvalidVerifyExpirationConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 
-func TestInvalidGenerateExpirationConfig(t *testing.T) {
+func TestRejectsInvalidGenerateExpirationConfig(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	generateCfg := cloneConfig(cfg.Paseto)
 	generateCfg.Expiration = 0
@@ -219,7 +219,7 @@ func TestInvalidGenerateExpirationConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 
-func TestInvalidGenerateIssuerConfig(t *testing.T) {
+func TestRejectsInvalidGenerateIssuerConfig(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	generateCfg := cloneConfig(cfg.Paseto)
 	generateCfg.Issuer = strings.Empty
@@ -230,7 +230,7 @@ func TestInvalidGenerateIssuerConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 
-func TestInvalidVerifyIssuerConfig(t *testing.T) {
+func TestRejectsInvalidVerifyIssuerConfig(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	gen := uuid.NewGenerator()
 	generator := paseto.NewToken(cfg.Paseto, test.FS, gen)
@@ -246,7 +246,7 @@ func TestInvalidVerifyIssuerConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 
-func TestInvalidAudience(t *testing.T) {
+func TestRejectsInvalidAudience(t *testing.T) {
 	gen := uuid.NewGenerator()
 	cfg := test.NewToken("paseto")
 	token := paseto.NewToken(cfg.Paseto, test.FS, gen)
@@ -259,7 +259,7 @@ func TestInvalidAudience(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestValidMatchingIssuerAndAudience(t *testing.T) {
+func TestTokenAcceptsMatchingIssuerAndAudience(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	cfg.Paseto.Issuer = "test"
 	token := paseto.NewToken(cfg.Paseto, test.FS, uuid.NewGenerator())
@@ -272,7 +272,7 @@ func TestValidMatchingIssuerAndAudience(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestInvalidMalformedToken(t *testing.T) {
+func TestRejectsInvalidMalformedToken(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	token := paseto.NewToken(cfg.Paseto, test.FS, uuid.NewGenerator())
 
@@ -280,7 +280,7 @@ func TestInvalidMalformedToken(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestInvalidGenerateMalformedPrivateKey(t *testing.T) {
+func TestRejectsInvalidGenerateMalformedPrivateKey(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	badPrivate := cloneConfig(cfg.Paseto)
 	badPrivate.Keys = keys.Map{
@@ -295,7 +295,7 @@ func TestInvalidGenerateMalformedPrivateKey(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestInvalidVerifyMalformedPublicKey(t *testing.T) {
+func TestRejectsInvalidVerifyMalformedPublicKey(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	token := paseto.NewToken(cfg.Paseto, test.FS, uuid.NewGenerator())
 
@@ -303,7 +303,7 @@ func TestInvalidVerifyMalformedPublicKey(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestInvalidNilConfig(t *testing.T) {
+func TestRejectsInvalidNilConfig(t *testing.T) {
 	token := paseto.NewToken(nil, test.FS, uuid.NewGenerator())
 	require.Nil(t, token)
 }

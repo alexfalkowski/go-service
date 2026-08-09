@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValue(t *testing.T) {
+func TestValueFormatsVisibleIgnoredAndRedactedValues(t *testing.T) {
 	tests := []struct {
 		name       string
 		wantValue  string
@@ -33,7 +33,7 @@ func TestValue(t *testing.T) {
 	}
 }
 
-func TestError(t *testing.T) {
+func TestErrorReturnsVisibleErrorMessage(t *testing.T) {
 	value := meta.Error(&test.MessageError{Message: "boom"})
 
 	require.Equal(t, "boom", value.Value())
@@ -41,7 +41,7 @@ func TestError(t *testing.T) {
 	require.False(t, value.IsEmpty())
 }
 
-func TestErrorWithNil(t *testing.T) {
+func TestErrorReturnsBlankValueForNilErrors(t *testing.T) {
 	var typedNil error = (*test.MessageError)(nil)
 
 	for _, test := range []struct {
@@ -57,7 +57,7 @@ func TestErrorWithNil(t *testing.T) {
 	}
 }
 
-func TestStringerConversions(t *testing.T) {
+func TestValueConversionsUseConfiguredStringers(t *testing.T) {
 	tests := []struct {
 		name       string
 		wantValue  string
@@ -78,7 +78,7 @@ func TestStringerConversions(t *testing.T) {
 	}
 }
 
-func TestStringerConversionsWithNil(t *testing.T) {
+func TestValueConversionsHandleNilStringers(t *testing.T) {
 	var stringer fmt.Stringer = (*test.Stringer)(nil)
 
 	tests := []struct {
@@ -99,7 +99,7 @@ func TestStringerConversionsWithNil(t *testing.T) {
 	}
 }
 
-func TestRedactedWithMultiByteValue(t *testing.T) {
+func TestRedactedValuePreservesMultiByteCharacters(t *testing.T) {
 	tests := []struct {
 		name  string
 		value string

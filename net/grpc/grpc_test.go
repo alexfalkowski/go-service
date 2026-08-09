@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStatusText(t *testing.T) {
+func TestStatusTextMapsCodeToMessage(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, codes.Unauthenticated.String(), grpc.StatusText(codes.Unauthenticated))
@@ -42,7 +42,7 @@ func TestParseServiceMethod(t *testing.T) {
 	}
 }
 
-func TestSetTrailer(t *testing.T) {
+func TestSetTrailerAcceptsEmptyMetadata(t *testing.T) {
 	t.Parallel()
 
 	require.NoError(t, grpc.SetTrailer(t.Context(), nil))

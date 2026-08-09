@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewTokenWithoutTokenConfig(t *testing.T) {
+func TestNewTokenUsesDefaultConfiguration(t *testing.T) {
 	tkn := grpc.NewToken(test.NewGRPCTransportConfig(), nil, nil)
 	require.Nil(t, tkn)
 }

@@ -64,7 +64,7 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 	require.NoError(t, test.Validator.Struct(valid))
 }
 
-func TestValid(t *testing.T) {
+func TestTokenGeneratesAndVerifiesValidToken(t *testing.T) {
 	token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 
 	tkn, err := token.Generate(strings.Empty, strings.Empty)
@@ -79,7 +79,7 @@ func TestValid(t *testing.T) {
 	require.Nil(t, ssh)
 }
 
-func TestValidForAudience(t *testing.T) {
+func TestTokenAcceptsValidAudience(t *testing.T) {
 	token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 
 	tkn, err := token.Generate("/service.Method", strings.Empty)
@@ -143,7 +143,7 @@ func TestVerifyWithLeeway(t *testing.T) {
 	}
 }
 
-func TestInvalidAudience(t *testing.T) {
+func TestRejectsInvalidAudience(t *testing.T) {
 	token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 
 	tkn, err := token.Generate("/service.Method", strings.Empty)
@@ -155,7 +155,7 @@ func TestInvalidAudience(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidAudience)
 }
 
-func TestInvalidExpired(t *testing.T) {
+func TestRejectsInvalidExpired(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		cfg := test.NewToken("ssh").SSH
 		cfg.Expiration = time.Nanosecond
@@ -173,7 +173,7 @@ func TestInvalidExpired(t *testing.T) {
 	})
 }
 
-func TestInvalidLifetimeExceedsConfig(t *testing.T) {
+func TestRejectsInvalidLifetimeExceedsConfig(t *testing.T) {
 	genCfg := test.NewToken("ssh").SSH
 	genCfg.Expiration = time.Hour
 	generator := ssh.NewToken(genCfg, test.FS)
@@ -190,7 +190,7 @@ func TestInvalidLifetimeExceedsConfig(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidTime)
 }
 
-func TestInvalidMissingIssuedAt(t *testing.T) {
+func TestRejectsInvalidMissingIssuedAt(t *testing.T) {
 	cfg := test.NewToken("ssh").SSH
 	claims := map[string]any{
 		"ver": "v1",
@@ -208,7 +208,7 @@ func TestInvalidMissingIssuedAt(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidTime)
 }
 
-func TestInvalidSignedClaims(t *testing.T) {
+func TestRejectsInvalidSignedClaims(t *testing.T) {
 	cfg := test.NewToken("ssh").SSH
 	token := ssh.NewToken(cfg, test.FS)
 	now := time.Now()
@@ -267,7 +267,7 @@ func TestInvalidSignedClaims(t *testing.T) {
 	}
 }
 
-func TestInvalidSubjectDiffersFromKeyID(t *testing.T) {
+func TestRejectsInvalidSubjectDiffersFromKeyID(t *testing.T) {
 	cfg := test.NewToken("ssh").SSH
 	token := ssh.NewToken(cfg, test.FS)
 	now := time.Now()
@@ -287,7 +287,7 @@ func TestInvalidSubjectDiffersFromKeyID(t *testing.T) {
 	require.ErrorIs(t, err, crypto.ErrInvalidMatch)
 }
 
-func TestInvalidMalformedTokens(t *testing.T) {
+func TestRejectsInvalidMalformedTokens(t *testing.T) {
 	cfg := test.NewToken("ssh").SSH
 	token := ssh.NewToken(cfg, test.FS)
 	now := time.Now()
@@ -343,7 +343,7 @@ func TestInvalidMalformedTokens(t *testing.T) {
 	}
 }
 
-func TestValidNameWithDash(t *testing.T) {
+func TestTokenAcceptsKeyNameWithDash(t *testing.T) {
 	cfg := test.NewToken("ssh").SSH
 	cfg.Keys["test-user"] = cfg.Keys.Get(cfg.Key)
 	cfg.Key = "test-user"
@@ -359,7 +359,7 @@ func TestValidNameWithDash(t *testing.T) {
 	require.Equal(t, "test-user", sub)
 }
 
-func TestInvalidPrivateKey(t *testing.T) {
+func TestRejectsInvalidPrivateKey(t *testing.T) {
 	token := ssh.NewToken(&ssh.Config{
 		Expiration: time.Hour,
 		Key:        "test",
@@ -374,19 +374,29 @@ func TestInvalidPrivateKey(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestInvalidTokenShapes(t *testing.T) {
-	for _, tkn := range []string{strings.Empty, "none-", "test-", "test-bob"} {
-		t.Run(tkn, func(t *testing.T) {
+func TestRejectsInvalidTokenShapes(t *testing.T) {
+	tests := []struct {
+		name  string
+		token string
+	}{
+		{name: "empty token", token: strings.Empty},
+		{name: "malformed none dash", token: "none-"},
+		{name: "malformed test dash", token: "test-"},
+		{name: "malformed test dash bob", token: "test-bob"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 
-			sub, err := token.Verify(tkn, strings.Empty)
+			sub, err := token.Verify(tt.token, strings.Empty)
 			require.Error(t, err)
 			require.Empty(t, sub)
 		})
 	}
 }
 
-func TestInvalidPublicKey(t *testing.T) {
+func TestRejectsInvalidPublicKey(t *testing.T) {
 	valid := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 	tkn, err := valid.Generate(strings.Empty, strings.Empty)
 	require.NoError(t, err)
@@ -405,7 +415,7 @@ func TestInvalidPublicKey(t *testing.T) {
 	require.Empty(t, sub)
 }
 
-func TestInvalidUnknownKey(t *testing.T) {
+func TestRejectsInvalidUnknownKey(t *testing.T) {
 	valid := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 	tkn, err := valid.Generate(strings.Empty, strings.Empty)
 	require.NoError(t, err)
@@ -424,7 +434,7 @@ func TestInvalidUnknownKey(t *testing.T) {
 	require.ErrorIs(t, err, crypto.ErrInvalidMatch)
 }
 
-func TestInvalidSignature(t *testing.T) {
+func TestTokenRejectsInvalidSignature(t *testing.T) {
 	valid := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 	tkn, err := valid.Generate(strings.Empty, strings.Empty)
 	require.NoError(t, err)
@@ -437,7 +447,7 @@ func TestInvalidSignature(t *testing.T) {
 	require.ErrorIs(t, err, crypto.ErrInvalidMatch)
 }
 
-func TestInvalidConfig(t *testing.T) {
+func TestRejectsInvalidConfig(t *testing.T) {
 	token := ssh.NewToken(nil, test.FS)
 	require.Nil(t, token)
 }
@@ -553,7 +563,7 @@ func TestInvalidVerifyConfigDoesNotPanic(t *testing.T) {
 	})
 }
 
-func TestKeysGet(t *testing.T) {
+func TestKeysGetReturnsConfiguredKeyOrNil(t *testing.T) {
 	keys := ssh.Keys{
 		"other": nil,
 		"test":  &ssh.Key{Config: test.NewSSH("secrets/ssh_public", "secrets/ssh_private")},
@@ -567,7 +577,7 @@ func TestKeysGet(t *testing.T) {
 	require.Nil(t, ssh.Keys(nil).Get("missing"))
 }
 
-func TestKeyLoaders(t *testing.T) {
+func TestKeyLoadersCacheUsableSignerAndVerifier(t *testing.T) {
 	loaders := []struct {
 		load func(*ssh.Key, *os.FS) (any, error)
 		name string

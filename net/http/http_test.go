@@ -51,7 +51,7 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 	}
 }
 
-func TestProtocols(t *testing.T) {
+func TestProtocolsReturnsSupportedHTTPVersions(t *testing.T) {
 	t.Parallel()
 
 	protocols := http.Protocols()
@@ -61,7 +61,7 @@ func TestProtocols(t *testing.T) {
 	require.True(t, protocols.UnencryptedHTTP2())
 }
 
-func TestParseTime(t *testing.T) {
+func TestParseTimeParsesHTTPHeaderTime(t *testing.T) {
 	t.Parallel()
 
 	now := time.Now().UTC()
@@ -73,7 +73,7 @@ func TestParseTime(t *testing.T) {
 	require.Equal(t, now.Truncate(time.Second.Duration()), parsed)
 }
 
-func TestTransport(t *testing.T) {
+func TestTransportReturnsConfiguredRoundTripper(t *testing.T) {
 	t.Parallel()
 
 	cfg := &tls.Config{}
@@ -109,7 +109,7 @@ func TestNewServerSetsProtocols(t *testing.T) {
 	require.True(t, server.Protocols.UnencryptedHTTP2())
 }
 
-func TestSameOriginRedirect(t *testing.T) {
+func TestSameOriginRedirectMatchesSchemeHostAndPort(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -170,7 +170,7 @@ func TestSameOriginRedirectStopsAfterTenRedirects(t *testing.T) {
 	require.ErrorIs(t, http.SameOriginRedirect(crossOrigin, via), http.ErrUseLastResponse)
 }
 
-func TestSameOrigin(t *testing.T) {
+func TestSameOriginComparesSchemeHostAndPort(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

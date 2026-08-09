@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTrailingData(t *testing.T) {
+func TestTrailingDataAcceptsEOFAndRejectsExtraOrInvalidData(t *testing.T) {
 	parseErr := errors.New("parse failed")
 
 	t.Run("eof", func(t *testing.T) {

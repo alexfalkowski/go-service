@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewCertPool(t *testing.T) {
+func TestNewCertPoolLoadsTrustedCertificateAuthority(t *testing.T) {
 	pool, err := tls.NewCertPool(test.FS, test.NewTLSServerConfig())
 	require.NoError(t, err)
 	require.NotNil(t, pool)
@@ -28,7 +28,7 @@ func TestNewCertPool(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestNewCertPoolInvalid(t *testing.T) {
+func TestNewCertPoolRejectsMissingOrInvalidAuthority(t *testing.T) {
 	tests := []struct {
 		config *tls.Config
 		name   string
@@ -46,7 +46,7 @@ func TestNewCertPoolInvalid(t *testing.T) {
 	}
 }
 
-func TestNewCertPoolSourceError(t *testing.T) {
+func TestNewCertPoolPropagatesAuthoritySourceError(t *testing.T) {
 	_, err := tls.NewCertPool(test.FS, &tls.Config{CA: test.FilePath("certs/missing.pem")})
 	require.Error(t, err)
 	require.NotErrorIs(t, err, tls.ErrInvalidCA)

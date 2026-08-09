@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWithRequestResponse(t *testing.T) {
+func TestWithRequestResponseStoresPairedValues(t *testing.T) {
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
 	res := httptest.NewRecorder()

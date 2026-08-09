@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCaseConversion(t *testing.T) {
+func TestCaseConversionUsesRequestedStyle(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

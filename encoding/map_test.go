@@ -39,7 +39,7 @@ func TestNewMapRegistersDefaultEncoders(t *testing.T) {
 	}
 }
 
-func TestMapRegister(t *testing.T) {
+func TestMapRegisterReplacesExistingEncoder(t *testing.T) {
 	encoders := encoding.NewMap()
 	custom := test.NewEncoder(test.ErrFailed)
 	replacement := bytes.NewEncoder()

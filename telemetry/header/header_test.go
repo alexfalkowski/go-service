@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSecrets(t *testing.T) {
+func TestSecretsResolvesSourcesOrReturnsError(t *testing.T) {
 	headers := header.Map{
 		"file":    test.FilePath("secrets/hooks"),
 		"literal": "literal-token",
@@ -26,7 +26,7 @@ func TestSecrets(t *testing.T) {
 	require.Error(t, header.Map{"test": test.FilePath("none")}.Secrets(test.ErrFS))
 }
 
-func TestMustSecrets(t *testing.T) {
+func TestMustSecretsPanicsWhenSourceCannotBeResolved(t *testing.T) {
 	headers := header.Map{"test": test.FilePath("secrets/hooks")}
 
 	require.NotPanics(t, func() {

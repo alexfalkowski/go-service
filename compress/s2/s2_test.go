@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCompressor(t *testing.T) {
+func TestCompressorRoundTripsData(t *testing.T) {
 	t.Parallel()
 
 	cmp := s2.NewCompressor()

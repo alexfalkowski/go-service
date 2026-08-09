@@ -17,7 +17,7 @@ import (
 
 var compressorKinds = []string{"zstd", "s2", "snappy", "none"}
 
-func TestMap(t *testing.T) {
+func TestMapReturnsRegisteredCompressors(t *testing.T) {
 	for _, kind := range compressorKinds {
 		t.Run(kind, func(t *testing.T) {
 			cmp := test.Compressor.Get(kind)
@@ -33,7 +33,7 @@ func TestMap(t *testing.T) {
 	}
 
 	for _, key := range []string{"test", "bob"} {
-		t.Run(key, func(t *testing.T) {
+		t.Run("returns nil for "+key, func(t *testing.T) {
 			cmp := test.Compressor.Get(key)
 			require.Nil(t, cmp)
 		})
@@ -57,7 +57,7 @@ func TestNewMapRegistersDefaultCompressors(t *testing.T) {
 	}
 }
 
-func TestMapRegister(t *testing.T) {
+func TestMapRegisterReplacesExistingCompressor(t *testing.T) {
 	compressors := compress.NewMap()
 	custom := test.NewCompressor(test.ErrFailed)
 	replacement := none.NewCompressor()

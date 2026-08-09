@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidID(t *testing.T) {
+func TestNewGeneratorReturnsGeneratorForSupportedKinds(t *testing.T) {
 	kinds := []string{
 		"uuid",
 		"ksuid",
@@ -27,14 +27,14 @@ func TestValidID(t *testing.T) {
 	}
 }
 
-func TestDefaultID(t *testing.T) {
+func TestNewGeneratorReturnsDefaultGeneratorWithoutConfig(t *testing.T) {
 	gen, err := id.NewGenerator(nil, test.Generators)
 	require.NoError(t, err)
 	require.NotNil(t, gen)
 	require.NotEmpty(t, gen.Generate())
 }
 
-func TestInvalidID(t *testing.T) {
+func TestNewGeneratorRejectsUnsupportedKind(t *testing.T) {
 	_, err := id.NewGenerator(&id.Config{Kind: "invalid"}, test.Generators)
 	require.ErrorIs(t, err, id.ErrNotFound)
 }

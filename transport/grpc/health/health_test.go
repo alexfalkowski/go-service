@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCheck(t *testing.T) {
+func TestCheckReturnsServingStatus(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"),
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
@@ -69,7 +69,7 @@ func TestCheckBypassesServerLimiter(t *testing.T) {
 	require.Equal(t, health.Serving, resp.GetStatus())
 }
 
-func TestInvalidCheck(t *testing.T) {
+func TestCheckRejectsInvalidRequest(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
@@ -91,7 +91,7 @@ func TestInvalidCheck(t *testing.T) {
 	require.Equal(t, health.NotServing, resp.GetStatus())
 }
 
-func TestCheckDrains(t *testing.T) {
+func TestCheckReportsDrainingService(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
@@ -109,7 +109,7 @@ func TestCheckDrains(t *testing.T) {
 	require.Equal(t, health.NotServing, resp.GetStatus())
 }
 
-func TestOverallCheck(t *testing.T) {
+func TestOverallCheckReturnsAggregateServingStatus(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
@@ -126,7 +126,7 @@ func TestOverallCheck(t *testing.T) {
 	require.Equal(t, health.Serving, resp.GetStatus())
 }
 
-func TestInvalidOverallCheck(t *testing.T) {
+func TestRejectsInvalidOverallCheck(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
@@ -144,7 +144,7 @@ func TestInvalidOverallCheck(t *testing.T) {
 	require.Equal(t, health.NotServing, resp.GetStatus())
 }
 
-func TestInvalidOverallList(t *testing.T) {
+func TestRejectsInvalidOverallList(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
@@ -161,7 +161,7 @@ func TestInvalidOverallList(t *testing.T) {
 	require.Equal(t, health.NotServing, resp.GetStatuses()[""].GetStatus())
 }
 
-func TestUnknownOverallCheck(t *testing.T) {
+func TestCheckRejectsUnknownOverallService(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldGRPCHealth(test.Name.String(), test.StatusURL("200")),
 		test.WithWorldTelemetry("otlp"),
@@ -180,7 +180,7 @@ func TestUnknownOverallCheck(t *testing.T) {
 	require.Equal(t, codes.NotFound, status.Code(err))
 }
 
-func TestNotFoundCheck(t *testing.T) {
+func TestCheckReportsServiceNotFound(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
@@ -221,7 +221,7 @@ func TestIgnoreAuthCheck(t *testing.T) {
 	require.Equal(t, health.Serving, resp.GetStatus())
 }
 
-func TestList(t *testing.T) {
+func TestListReturnsRegisteredServices(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"),
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
@@ -251,7 +251,7 @@ func TestList(t *testing.T) {
 	require.Equal(t, expected, resp.GetStatuses())
 }
 
-func TestListDrains(t *testing.T) {
+func TestListReportsDrainingServices(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
@@ -271,7 +271,7 @@ func TestListDrains(t *testing.T) {
 	require.Equal(t, health.NotServing, resp.GetStatuses()[test.Name.String()].GetStatus())
 }
 
-func TestWatch(t *testing.T) {
+func TestWatchStreamsServiceStatus(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"),
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),
@@ -455,7 +455,7 @@ func TestWatchServerLimiterStatusSend(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
-func TestInvalidWatch(t *testing.T) {
+func TestWatchRejectsInvalidRequest(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
@@ -481,7 +481,7 @@ func TestInvalidWatch(t *testing.T) {
 	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
-func TestOverallWatch(t *testing.T) {
+func TestOverallWatchStreamsAggregateStatus(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
@@ -504,7 +504,7 @@ func TestOverallWatch(t *testing.T) {
 	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
-func TestInvalidOverallWatch(t *testing.T) {
+func TestRejectsInvalidOverallWatch(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 	requireUnhealthyObservedHealth(t, world.GRPCHealth, test.Name.String())
@@ -528,7 +528,7 @@ func TestInvalidOverallWatch(t *testing.T) {
 	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
-func TestUnknownOverallWatch(t *testing.T) {
+func TestWatchRejectsUnknownOverallService(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldGRPCHealth(test.Name.String(), test.StatusURL("200")),
 		test.WithWorldTelemetry("otlp"),
@@ -553,7 +553,7 @@ func TestUnknownOverallWatch(t *testing.T) {
 	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
-func TestNotFoundWatch(t *testing.T) {
+func TestWatchReportsServiceNotFound(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
@@ -577,7 +577,7 @@ func TestNotFoundWatch(t *testing.T) {
 	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
-func TestNotFoundWatchDrains(t *testing.T) {
+func TestWatchReportsServiceNotFoundWhenDraining(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
@@ -636,7 +636,7 @@ func TestIgnoreAuthWatch(t *testing.T) {
 	requireWatchStaysOpenUntilCancel(t, cancel, wc)
 }
 
-func TestWatchStatusChanges(t *testing.T) {
+func TestWatchStreamsStatusChanges(t *testing.T) {
 	var unhealthy sync.Bool
 	probe := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		if unhealthy.Load() {
@@ -685,7 +685,7 @@ func TestWatchStatusChanges(t *testing.T) {
 	}
 }
 
-func TestWatchDrains(t *testing.T) {
+func TestWatchReportsDrainingService(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("200"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 

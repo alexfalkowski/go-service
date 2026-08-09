@@ -158,7 +158,7 @@ type noBufferedDecoder struct{}
 func (noBufferedDecoder) Decode(any) error { return nil }
 func (noBufferedDecoder) Close() error     { return nil }
 
-func TestBufferedLenNoBufferedMethod(t *testing.T) {
+func TestBufferedLenReturnsZeroWithoutBufferedMethod(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, int64(0), budget.BufferedLen(noBufferedDecoder{}))
@@ -170,7 +170,7 @@ func (wrongBufferedDecoder) Decode(any) error    { return nil }
 func (wrongBufferedDecoder) Close() error        { return nil }
 func (wrongBufferedDecoder) Buffered() io.Reader { return strings.NewReader("") }
 
-func TestBufferedLenWrongBufferedType(t *testing.T) {
+func TestBufferedLenReturnsZeroForWrongBufferedType(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, int64(0), budget.BufferedLen(wrongBufferedDecoder{}))

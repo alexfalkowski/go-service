@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewServers(t *testing.T) {
+func TestNewServersReturnsConfiguredServicesInOrder(t *testing.T) {
 	httpService := newService("http")
 	grpcService := newService("grpc")
 	debugService := newService("debug")

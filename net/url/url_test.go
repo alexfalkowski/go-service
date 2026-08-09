@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSplitPath(t *testing.T) {
+func TestSplitPathSeparatesBaseAndTail(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

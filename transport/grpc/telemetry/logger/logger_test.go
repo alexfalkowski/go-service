@@ -96,7 +96,7 @@ func TestServerStreamInterceptorLogs(t *testing.T) {
 	require.Contains(t, logs.String(), `"error":"rpc error: code = NotFound desc = missing"`)
 }
 
-func TestClientUnaryInterceptorLogs(t *testing.T) {
+func TestClientUnaryInterceptorLogsRequests(t *testing.T) {
 	var logs bytes.Buffer
 	interceptor := grpclogger.NewClient(newLogger(&logs)).UnaryInterceptor()
 	conn, err := grpc.NewClient("passthrough:///backend", grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
@@ -198,7 +198,7 @@ func TestClientStreamInterceptorDoesNotLogRecvMsgEOF(t *testing.T) {
 	require.NotContains(t, logs.String(), `"error"`)
 }
 
-func TestCodeToLevel(t *testing.T) {
+func TestCodeToLevelMapsStatusCodeToLogLevel(t *testing.T) {
 	tests := []struct {
 		name  string
 		level logger.Level

@@ -11,7 +11,7 @@ import (
 // testBytesSink keeps conversion results observable for allocation assertions.
 var testBytesSink []byte
 
-func TestBytes(t *testing.T) {
+func TestBytesConvertsStringsToEqualBytes(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -47,7 +47,7 @@ func TestBytesDoesNotAllocate(t *testing.T) {
 	require.Zero(t, allocs)
 }
 
-func TestIsEmpty(t *testing.T) {
+func TestIsEmptyRecognizesOnlyEmptyStrings(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -69,7 +69,7 @@ func TestIsEmpty(t *testing.T) {
 	}
 }
 
-func TestIsAnyEmpty(t *testing.T) {
+func TestIsAnyEmptyRecognizesAnyEmptyString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -92,7 +92,7 @@ func TestIsAnyEmpty(t *testing.T) {
 	}
 }
 
-func TestJoin(t *testing.T) {
+func TestJoinJoinsStringsWithSeparator(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -115,7 +115,7 @@ func TestJoin(t *testing.T) {
 	}
 }
 
-func TestConcat(t *testing.T) {
+func TestConcatJoinsStringsWithoutSeparator(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -137,7 +137,7 @@ func TestConcat(t *testing.T) {
 	}
 }
 
-func TestCutColon(t *testing.T) {
+func TestCutColonSplitsAtFirstColon(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -167,7 +167,7 @@ func TestCutColon(t *testing.T) {
 	}
 }
 
-func TestCutAfter(t *testing.T) {
+func TestCutAfterReturnsSuffixAfterFirstSeparator(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -190,13 +190,13 @@ func TestCutAfter(t *testing.T) {
 	}
 }
 
-func TestSplitSeq(t *testing.T) {
+func TestSplitSeqSplitsStringIntoSequence(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, []string{"accept", "content-type"}, slices.Collect(strings.SplitSeq("accept,content-type", ",")))
 }
 
-func TestLastIndex(t *testing.T) {
+func TestLastIndexReturnsFinalSubstringPosition(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -219,7 +219,7 @@ func TestLastIndex(t *testing.T) {
 	}
 }
 
-func TestCount(t *testing.T) {
+func TestCountReturnsSubstringOccurrences(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -242,7 +242,7 @@ func TestCount(t *testing.T) {
 	}
 }
 
-func TestReplaceAll(t *testing.T) {
+func TestReplaceAllReplacesEveryMatch(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -266,7 +266,7 @@ func TestReplaceAll(t *testing.T) {
 	}
 }
 
-func TestTrim(t *testing.T) {
+func TestTrimRemovesLeadingAndTrailingCutset(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

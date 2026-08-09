@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSecure(t *testing.T) {
+func TestHTTPTransportServesSecureRequest(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("prometheus"), test.WithWorldHTTP(), test.WithWorldHello())
 
 	client, err := world.NewHTTP()

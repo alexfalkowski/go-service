@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTokenErrorAuthUnary(t *testing.T) {
+func TestUnaryHandlerPropagatesTokenError(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator("bob", test.ErrGenerate), test.NewVerifier("test")),
@@ -35,7 +35,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 }
 
-func TestEmptyAuthUnary(t *testing.T) {
+func TestUnaryHandlerRejectsEmptyAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")),
@@ -54,7 +54,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 }
 
-func TestMissingClientAuthUnary(t *testing.T) {
+func TestUnaryHandlerRejectsMissingClientAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 
 	conn := test.RequireGRPCConn(t, world)
@@ -69,7 +69,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 }
 
-func TestInvalidAuthUnary(t *testing.T) {
+func TestRejectsInvalidAuthUnary(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
@@ -130,7 +130,7 @@ func TestAuthStreamWithAppend(t *testing.T) {
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
 }
 
-func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
+func TestUnaryHandlerAcceptsLowercaseBearerScheme(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 
 	ctx := t.Context()
@@ -149,7 +149,7 @@ func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
-func TestValidAuthUnary(t *testing.T) {
+func TestUnaryHandlerAcceptsValidAuthentication(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "ssh"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
@@ -173,7 +173,7 @@ func TestValidAuthUnary(t *testing.T) {
 	}
 }
 
-func TestAccessDeniedUnary(t *testing.T) {
+func TestUnaryHandlerRejectsDeniedAccess(t *testing.T) {
 	controller, err := access.NewController(&access.Config{
 		Model:  test.FilePath("configs/rbac.conf"),
 		Policy: "p, " + test.UserID.String() + ", grpc:/greet.v1.GreeterService/Other, invoke",
@@ -199,7 +199,7 @@ func TestAccessDeniedUnary(t *testing.T) {
 	require.Equal(t, codes.PermissionDenied, status.Code(err))
 }
 
-func TestUnknownTokenKindAuthUnary(t *testing.T) {
+func TestUnaryHandlerRejectsUnknownTokenKind(t *testing.T) {
 	cfg := test.NewToken("none")
 	tkn := token.NewToken(cfg, test.FS, nil)
 
@@ -218,7 +218,7 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	require.Contains(t, err.Error(), grpc.StatusText(codes.Unauthenticated))
 }
 
-func TestValidAuthStream(t *testing.T) {
+func TestStreamHandlerAcceptsValidAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
@@ -241,7 +241,7 @@ func TestValidAuthStream(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
-func TestInvalidAuthStream(t *testing.T) {
+func TestRejectsInvalidAuthStream(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
@@ -280,7 +280,7 @@ func TestEmptyAuthStream(t *testing.T) {
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 }
 
-func TestMissingClientAuthStream(t *testing.T) {
+func TestStreamHandlerRejectsMissingClientAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(nil, test.NewVerifier("test")),

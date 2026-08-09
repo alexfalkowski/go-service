@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSigner(t *testing.T) {
+func TestSignerAuthenticatesCorrectPasswordOnly(t *testing.T) {
 	signer := bcrypt.NewSigner()
 
 	t.Run("sign and verify", func(t *testing.T) {

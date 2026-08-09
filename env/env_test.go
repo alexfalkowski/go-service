@@ -9,19 +9,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestName(t *testing.T) {
+func TestNewNameUsesEnvironmentOverrideOrDefault(t *testing.T) {
 	require.Equal(t, "env.test", env.NewName(test.FS).String())
 
 	t.Setenv("SERVICE_NAME", test.Name.String())
 	require.Equal(t, "test", env.NewName(test.FS).String())
 }
 
-func TestUserAgent(t *testing.T) {
+func TestNewUserAgentCombinesNameAndVersion(t *testing.T) {
 	require.Equal(t, "test/1.0.0", env.NewUserAgent(env.Name("test"), env.Version("v1.0.0")).String())
 	require.Equal(t, "test/test", env.NewUserAgent(env.Name("test"), env.Version("test")).String())
 }
 
-func TestID(t *testing.T) {
+func TestNewIDUsesEnvironmentOverrideOrGenerator(t *testing.T) {
 	t.Run("generated default", func(t *testing.T) {
 		generator := uuid.NewGenerator()
 

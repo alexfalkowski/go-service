@@ -119,7 +119,7 @@ func TestConfigGetStrategy(t *testing.T) {
 	}
 }
 
-func TestConfigAttempts(t *testing.T) {
+func TestConfigAttemptsReturnsConfiguredOrDefaultValue(t *testing.T) {
 	tests := []struct {
 		cfg          *retry.Config
 		name         string

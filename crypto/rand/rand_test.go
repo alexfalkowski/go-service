@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidRand(t *testing.T) {
+func TestGeneratorGeneratesRequestedBytesAndText(t *testing.T) {
 	gen := rand.NewGenerator(rand.NewReader())
 
 	c, err := gen.GenerateBytes(5)
@@ -48,7 +48,7 @@ func TestGenerateBytesReadsShortChunksFully(t *testing.T) {
 	require.Equal(t, []byte{0x00, 0x01, 0x7f, 0x80, 0xff}, data)
 }
 
-func TestInvalidRand(t *testing.T) {
+func TestGeneratorPropagatesEntropyErrors(t *testing.T) {
 	t.Run("bytes", func(t *testing.T) {
 		gen := rand.NewGenerator(&test.ErrReaderCloser{})
 
@@ -64,7 +64,7 @@ func TestInvalidRand(t *testing.T) {
 	})
 }
 
-func TestInvalidSize(t *testing.T) {
+func TestGeneratorRejectsNegativeSize(t *testing.T) {
 	t.Run("bytes", func(t *testing.T) {
 		gen := rand.NewGenerator(rand.NewReader())
 

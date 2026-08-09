@@ -22,12 +22,12 @@ func TestValidateEndpoint(t *testing.T) {
 		{name: "uppercase localhost HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://LOCALHOST:4318/v1/traces", Headers: headers}},
 		{name: "loopback IP HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://127.0.0.1:4318/v1/traces", Headers: headers}},
 		{name: "headerless HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://collector.example.com/v1/traces"}},
-		{name: "loopback gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "localhost:4317", Headers: headers}},
-		{name: "mixed case localhost gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "Localhost:4317", Headers: headers}},
-		{name: "headerless gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317"}},
-		{name: "TLS gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317", Headers: headers, TLS: &tls.Config{}}},
+		{name: "loopback grpc", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "localhost:4317", Headers: headers}},
+		{name: "mixed case localhost grpc", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "Localhost:4317", Headers: headers}},
+		{name: "headerless grpc", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317"}},
+		{name: "TLS grpc", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317", Headers: headers, TLS: &tls.Config{}}},
 		{name: "insecure HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://collector.example.com/v1/traces", Headers: headers}, wantErr: otlp.ErrInsecureEndpoint},
-		{name: "insecure gRPC", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317", Headers: headers}, wantErr: otlp.ErrInsecureEndpoint},
+		{name: "insecure grpc", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317", Headers: headers}, wantErr: otlp.ErrInsecureEndpoint},
 	}
 
 	for _, tt := range tests {

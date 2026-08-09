@@ -49,7 +49,7 @@ func TestDriverGetOrSave(t *testing.T) {
 	require.Equal(t, "first", value)
 }
 
-func TestDriverPings(t *testing.T) {
+func TestDriverPingsSuccessfully(t *testing.T) {
 	d := cachettl.NewDriver(config.DefaultMaxEntries)
 
 	require.NoError(t, d.Ping(t.Context()))

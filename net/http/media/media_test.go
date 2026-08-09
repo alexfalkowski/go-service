@@ -47,7 +47,7 @@ func TestParseStripsVendorSubtypePrefix(t *testing.T) {
 	require.Equal(t, "msgpack", mediaType.Subtype())
 }
 
-func TestTypeMajor(t *testing.T) {
+func TestTypeMajorReturnsMediaTypeMajorPart(t *testing.T) {
 	t.Parallel()
 
 	for _, tc := range []struct {
@@ -71,7 +71,7 @@ func TestTypeMajor(t *testing.T) {
 	}
 }
 
-func TestTypeWithUTF8(t *testing.T) {
+func TestTypeWithUTF8AddsUTF8Charset(t *testing.T) {
 	t.Parallel()
 
 	mediaType, err := media.Parse("TEXT/PLAIN; Charset=utf-8")
@@ -80,13 +80,13 @@ func TestTypeWithUTF8(t *testing.T) {
 	require.Equal(t, "TEXT/PLAIN; Charset=utf-8", mediaType.WithUTF8())
 }
 
-func TestTypeByExtension(t *testing.T) {
+func TestTypeByExtensionMapsKnownExtension(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, "image/svg+xml", media.TypeByExtension(".svg"))
 }
 
-func TestTypeWithUTF8Values(t *testing.T) {
+func TestTypeWithUTF8AddsCharsetWhenNeeded(t *testing.T) {
 	t.Parallel()
 
 	for _, tc := range []struct {

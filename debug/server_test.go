@@ -27,7 +27,7 @@ var debugPaths = []struct {
 	{name: "serves pprof trace", path: "debug/pprof/trace"},
 }
 
-func TestDebugEndpoints(t *testing.T) {
+func TestDebugServerExposesRegisteredEndpoints(t *testing.T) {
 	tests := []struct {
 		name    string
 		scheme  string
@@ -44,7 +44,7 @@ func TestDebugEndpoints(t *testing.T) {
 	}
 }
 
-func TestInvalidServer(t *testing.T) {
+func TestNewServerRejectsInvalidTLSConfiguration(t *testing.T) {
 	cfg := &debug.Config{
 		Config: &server.Config{
 			Timeout: 5 * time.Second,
@@ -61,7 +61,7 @@ func TestInvalidServer(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestMaxReceiveSize(t *testing.T) {
+func TestDebugServerRejectsBodiesOverMaxReceiveSize(t *testing.T) {
 	mux := debughttp.NewServeMux()
 	cfg := &debug.Config{
 		Config: &server.Config{

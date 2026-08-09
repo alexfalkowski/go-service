@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestServerClose(t *testing.T) {
+func TestServerCloseClassifiesExpectedShutdown(t *testing.T) {
 	require.NoError(t, errors.ServerError(http.ErrServerClosed))
 	require.Error(t, errors.ServerError(test.ErrFailed))
 }

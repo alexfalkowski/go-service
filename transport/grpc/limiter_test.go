@@ -111,7 +111,7 @@ func TestServerLimiterStreamHeaderNotDuplicated(t *testing.T) {
 	require.Len(t, header.Get("ratelimit-policy"), 1)
 }
 
-func TestClientLimiterUnary(t *testing.T) {
+func TestClientLimiterRejectsExcessUnaryRequests(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 
 	conn := test.RequireGRPCConn(t, world)
@@ -228,7 +228,7 @@ func TestServerLimiterUsesVerifiedUserIDStream(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
-func TestLimiterUnlimitedUnary(t *testing.T) {
+func TestLimiterAllowsUnlimitedUnaryRequests(t *testing.T) {
 	cfg := test.NewLimiterConfig("user-agent", "1s", 10)
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
@@ -249,7 +249,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestLimiterAuthUnary(t *testing.T) {
+func TestLimiterUsesAuthenticatedPrincipal(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),

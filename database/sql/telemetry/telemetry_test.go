@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestOpen(t *testing.T) {
+func TestOpenReportsUnknownDriver(t *testing.T) {
 	db, err := telemetry.Open("missing", "dsn")
 	require.Nil(t, db)
 	require.Error(t, err)

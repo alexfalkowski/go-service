@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFromError(t *testing.T) {
+func TestFromErrorConvertsStatusError(t *testing.T) {
 	err := status.Error(codes.NotFound, "missing")
 
 	s, ok := status.FromError(err)
@@ -20,7 +20,7 @@ func TestFromError(t *testing.T) {
 	require.Equal(t, "missing", s.Message())
 }
 
-func TestFromErrorWrapped(t *testing.T) {
+func TestFromErrorConvertsWrappedError(t *testing.T) {
 	err := fmt.Errorf("wrapped: %w", status.Error(codes.InvalidArgument, "invalid"))
 
 	s, ok := status.FromError(err)
@@ -29,7 +29,7 @@ func TestFromErrorWrapped(t *testing.T) {
 	require.Contains(t, s.Message(), "wrapped:")
 }
 
-func TestFromErrorUnknown(t *testing.T) {
+func TestFromErrorConvertsUnknownError(t *testing.T) {
 	s, ok := status.FromError(errors.New("plain error"))
 	require.False(t, ok)
 	require.Equal(t, codes.Unknown, s.Code())
@@ -49,7 +49,7 @@ func TestNewWithRetryInfo(t *testing.T) {
 	require.Equal(t, time.Second.Duration(), retryInfo.GetRetryDelay().AsDuration())
 }
 
-func TestErrorf(t *testing.T) {
+func TestErrorfFormatsStatusMessage(t *testing.T) {
 	err := status.Errorf(codes.InvalidArgument, "invalid %s", "name")
 
 	s, ok := status.FromError(err)
@@ -58,7 +58,7 @@ func TestErrorf(t *testing.T) {
 	require.Equal(t, "invalid name", s.Message())
 }
 
-func TestSafeError(t *testing.T) {
+func TestSafeErrorHidesCauseFromClient(t *testing.T) {
 	cause := errors.New("secret database failure")
 	err := status.SafeError(codes.Internal, cause)
 
@@ -85,7 +85,7 @@ func TestSafeErrorSurfacesCauseInErrorString(t *testing.T) {
 	require.Contains(t, plain.Error(), "widget missing")
 }
 
-func TestLocalError(t *testing.T) {
+func TestLocalErrorMarksStatusAsLocal(t *testing.T) {
 	cause := errors.New("local limiter rejection")
 	err := status.LocalError(status.SafeError(codes.ResourceExhausted, cause))
 
@@ -115,13 +115,13 @@ func TestLocalErrorAllowsNil(t *testing.T) {
 	require.NoError(t, status.LocalError(nil))
 }
 
-func TestSafeErrorOK(t *testing.T) {
+func TestSafeErrorPreservesOKStatus(t *testing.T) {
 	err := status.SafeError(codes.OK, errors.New("ignored"))
 
 	require.NoError(t, err)
 }
 
-func TestSafeErrorf(t *testing.T) {
+func TestSafeErrorfHidesFormattedCauseFromClient(t *testing.T) {
 	cause := errors.New("secret database failure")
 	err := status.SafeErrorf(codes.Internal, cause, "load tenant %s", "tenant-1")
 
@@ -166,7 +166,7 @@ func TestSafeErrorfWithoutFormat(t *testing.T) {
 	require.Same(t, cause, unwrapper.Unwrap())
 }
 
-func TestSafeErrorfOK(t *testing.T) {
+func TestSafeErrorfPreservesOKStatus(t *testing.T) {
 	err := status.SafeErrorf(codes.OK, errors.New("ignored"), "ignored")
 
 	require.NoError(t, err)
@@ -187,7 +187,7 @@ func TestSafeErrorWrapped(t *testing.T) {
 	require.Contains(t, s.Message(), "secret database failure")
 }
 
-func TestErrorIs(t *testing.T) {
+func TestErrorIsMatchesEquivalentStatusError(t *testing.T) {
 	err := status.Error(codes.NotFound, "missing")
 	target := status.Error(codes.NotFound, "missing")
 

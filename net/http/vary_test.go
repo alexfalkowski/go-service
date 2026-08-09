@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAddVary(t *testing.T) {
+func TestAddVaryAddsResponseVaryHeader(t *testing.T) {
 	tests := []struct {
 		name     string
 		existing []string

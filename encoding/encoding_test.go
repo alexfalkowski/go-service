@@ -10,7 +10,7 @@ import (
 	"go.uber.org/fx"
 )
 
-func TestEncoder(t *testing.T) {
+func TestMapReturnsRegisteredEncoders(t *testing.T) {
 	for _, k := range test.Encoder.Keys() {
 		t.Run(k, func(t *testing.T) {
 			require.NotNil(t, test.Encoder.Get(k))
@@ -18,7 +18,7 @@ func TestEncoder(t *testing.T) {
 	}
 
 	for _, k := range []string{"test", "bob"} {
-		t.Run(k, func(t *testing.T) {
+		t.Run("returns nil for "+k, func(t *testing.T) {
 			require.Nil(t, test.Encoder.Get(k))
 		})
 	}

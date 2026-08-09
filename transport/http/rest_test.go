@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRestNoContent(t *testing.T) {
+func TestRESTResponseWritesNoContent(t *testing.T) {
 	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
@@ -29,7 +29,7 @@ func TestRestNoContent(t *testing.T) {
 	}
 }
 
-func TestRestRequestNoContent(t *testing.T) {
+func TestRESTRequestWritesNoContent(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
@@ -48,7 +48,7 @@ func TestRestRequestNoContent(t *testing.T) {
 	}
 }
 
-func TestRestError(t *testing.T) {
+func TestRESTReturnsStatusError(t *testing.T) {
 	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP(), test.WithWorldLoggerConfig("tint"))
@@ -62,7 +62,7 @@ func TestRestError(t *testing.T) {
 	}
 }
 
-func TestRestNotFound(t *testing.T) {
+func TestRESTReturnsNotFound(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
 	header := http.Header{}
@@ -75,7 +75,7 @@ func TestRestNotFound(t *testing.T) {
 	require.Equal(t, "http: not found", body)
 }
 
-func TestRestRequestError(t *testing.T) {
+func TestRESTRequestWritesError(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
@@ -94,7 +94,7 @@ func TestRestRequestError(t *testing.T) {
 	}
 }
 
-func TestRestWithContent(t *testing.T) {
+func TestRESTResponseWritesContent(t *testing.T) {
 	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
@@ -113,7 +113,7 @@ func TestRestWithContent(t *testing.T) {
 	}
 }
 
-func TestRestRequestWithContent(t *testing.T) {
+func TestRESTRequestWritesContent(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
@@ -162,7 +162,7 @@ func TestRestRequestUsesAcceptForResponse(t *testing.T) {
 	require.Equal(t, "Hello Bob", response.Greeting)
 }
 
-func TestRestInvalidStatusCode(t *testing.T) {
+func TestRESTResponseRejectsInvalidStatusCode(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	test.RegisterHandlers("/hello", test.RestInvalidStatusCode)

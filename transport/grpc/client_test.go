@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient(t *testing.T) {
+func TestNewClientValidatesTLSConfig(t *testing.T) {
 	transportgrpc.Register(test.FS)
 
 	_, err := transportgrpc.NewClient("none", transportgrpc.WithClientTLS(&tls.Config{Cert: "bob", Key: "bob"}))

@@ -22,7 +22,7 @@ import (
 	"go.uber.org/fx"
 )
 
-func TestApplicationServerRun(t *testing.T) {
+func TestApplicationRunsServerCommand(t *testing.T) {
 	config := test.FilePath("configs/config.yaml")
 	test.SetupCLI("server", "-config", config)
 
@@ -123,13 +123,13 @@ func TestApplicationServerDrainsStreamingRoute(t *testing.T) {
 	requireServerExit(t, code)
 }
 
-func TestApplicationServerInvalidConfig(t *testing.T) {
+func TestApplicationServerRejectsInvalidConfiguration(t *testing.T) {
 	tests := []struct {
 		name   string
 		config string
 	}{
 		{name: "rejects invalid HTTP configuration", config: test.FilePath("configs/invalid_http.config.yaml")},
-		{name: "rejects invalid gRPC configuration", config: test.FilePath("configs/invalid_grpc.config.yaml")},
+		{name: "rejects invalid grpc configuration", config: test.FilePath("configs/invalid_grpc.config.yaml")},
 		{name: "rejects invalid debug configuration", config: test.FilePath("configs/invalid_debug.config.yaml")},
 	}
 
@@ -151,7 +151,7 @@ func TestApplicationServerInvalidConfig(t *testing.T) {
 	}
 }
 
-func TestApplicationServerDisabled(t *testing.T) {
+func TestApplicationRunsWhenServerIsDisabled(t *testing.T) {
 	test.SetupCLI("server", "-config", test.FilePath("configs/disabled.config.yaml"))
 
 	app := cli.NewApplication(

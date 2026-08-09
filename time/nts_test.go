@@ -6,13 +6,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-func TestValidNTS(t *testing.T) {
+func TestNetworkNowReturnsTimeFromReachableNTSServer(t *testing.T) {
 	requireAnyNetworkNow(t,
 		&time.Config{Kind: "nts", Address: "time.cloudflare.com", Timeout: 2 * time.Second},
 		&time.Config{Kind: "nts", Address: "nts.netnod.se", Timeout: 2 * time.Second},
 	)
 }
 
-func TestInvalidNTS(t *testing.T) {
+func TestNetworkNowReturnsErrorForIncompleteNTSConfig(t *testing.T) {
 	requireNetworkNowError(t, &time.Config{Kind: "nts"})
 }

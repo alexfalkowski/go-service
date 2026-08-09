@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewDriver(t *testing.T) {
+func TestNewDriverReturnsConfiguredDriverOrError(t *testing.T) {
 	tests := []struct {
 		config  *config.Config
 		err     error

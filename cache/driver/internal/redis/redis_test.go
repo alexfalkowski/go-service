@@ -32,7 +32,7 @@ func TestClientClosesOnStop(t *testing.T) {
 	require.ErrorIs(t, err, redis.ErrClosed)
 }
 
-func TestDriverPings(t *testing.T) {
+func TestDriverPingsRedis(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := redisConfig("redis://localhost:6379")
 

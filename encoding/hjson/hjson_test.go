@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEncode(t *testing.T) {
+func TestEncoderWritesEncodedValue(t *testing.T) {
 	t.Parallel()
 
 	encoder := hjson.NewEncoder()
@@ -20,7 +20,7 @@ func TestEncode(t *testing.T) {
 	require.Contains(t, buf.String(), "test")
 }
 
-func TestMarshalUnmarshal(t *testing.T) {
+func TestMarshalAndUnmarshalRoundTripValue(t *testing.T) {
 	t.Parallel()
 
 	data, err := hjson.Marshal(&message{Test: "test"})
@@ -57,7 +57,7 @@ func TestEncodeReturnsWriteError(t *testing.T) {
 	require.ErrorIs(t, encoder.Encode(test.ErrWriter{}, &message{Test: "test"}), test.ErrFailed)
 }
 
-func TestDecode(t *testing.T) {
+func TestDecoderReadsEncodedValue(t *testing.T) {
 	t.Parallel()
 
 	encoder := hjson.NewEncoder()

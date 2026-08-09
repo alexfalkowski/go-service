@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewKeyPair(t *testing.T) {
+func TestNewKeyPairLoadsCompletePairAndRejectsInvalidInput(t *testing.T) {
 	validTests := []struct {
 		config *tls.Config
 		name   string

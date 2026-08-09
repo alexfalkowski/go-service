@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHasKeyMaterial(t *testing.T) {
+func TestHasKeyMaterialRequiresCertificateOrKey(t *testing.T) {
 	tests := []struct {
 		config *tls.Config
 		name   string
@@ -29,7 +29,7 @@ func TestHasKeyMaterial(t *testing.T) {
 	}
 }
 
-func TestIsEnabled(t *testing.T) {
+func TestIsEnabledRequiresAnyTLSSetting(t *testing.T) {
 	tests := []struct {
 		config *tls.Config
 		name   string

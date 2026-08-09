@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHealth(t *testing.T) {
+func TestHealthRegistersHealthLivenessAndReadinessEndpoints(t *testing.T) {
 	checks := []struct {
 		name string
 		path string
@@ -118,7 +118,7 @@ func TestReadinessDrains(t *testing.T) {
 	require.Equal(t, http.StatusOK, healthStatus(mux, "livez"))
 }
 
-func TestInvalidHealth(t *testing.T) {
+func TestRejectsInvalidHealth(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("500"), test.HealthObserve("healthz", "http")),
@@ -135,7 +135,7 @@ func TestInvalidHealth(t *testing.T) {
 	require.Equal(t, "text/error; charset=utf-8", res.Header.Get(http.ContentTypeKey))
 }
 
-func TestMissingHealth(t *testing.T) {
+func TestHealthEndpointReportsMissingCheck(t *testing.T) {
 	checks := []struct {
 		name string
 		path string

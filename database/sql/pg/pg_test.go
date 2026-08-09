@@ -13,7 +13,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestConnect(t *testing.T) {
+func TestDriverConnectRejectsUnknownDriver(t *testing.T) {
 	cfg := test.NewPGConfig()
 
 	_, err := driver.Connect("missing", test.FS, cfg.Config)
@@ -38,7 +38,7 @@ func TestConfigIsEnabled(t *testing.T) {
 	}
 }
 
-func TestDisabledConfig(t *testing.T) {
+func TestConfigIsDisabledWhenNilOrEmpty(t *testing.T) {
 	tests := []struct {
 		config *pg.Config
 		name   string
@@ -62,7 +62,7 @@ func TestDisabledConfig(t *testing.T) {
 	}
 }
 
-func TestInvalidOpen(t *testing.T) {
+func TestOpenRejectsInvalidDSNConfiguration(t *testing.T) {
 	tests := []struct {
 		wantErr error
 		config  *pg.Config
@@ -119,7 +119,7 @@ func TestInvalidOpen(t *testing.T) {
 	}
 }
 
-func TestConfiguredSQLPings(t *testing.T) {
+func TestConfiguredSQLConnectionRespondsToPing(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil), test.WithWorldLoggerConfig("otlp"))
 
 	require.NoError(t, world.DB.Ping())
@@ -158,7 +158,7 @@ func TestOpenClosesDBsOnStop(t *testing.T) {
 	require.Error(t, db.Ping())
 }
 
-func TestDBQuery(t *testing.T) {
+func TestDatabaseExecutesReaderQuery(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
@@ -179,7 +179,7 @@ func TestDBQuery(t *testing.T) {
 	require.NoError(t, rows.Close())
 }
 
-func TestDBExec(t *testing.T) {
+func TestDatabaseExecutesWriterStatement(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
@@ -196,7 +196,7 @@ func TestDBExec(t *testing.T) {
 	require.Positive(t, num)
 }
 
-func TestDBCommitTransExec(t *testing.T) {
+func TestCommittedTransactionReportsAffectedRows(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
@@ -225,7 +225,7 @@ func TestDBCommitTransExec(t *testing.T) {
 	require.Positive(t, num)
 }
 
-func TestDBRollbackTransExec(t *testing.T) {
+func TestRolledBackTransactionReportsAffectedRows(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
@@ -251,7 +251,7 @@ func TestDBRollbackTransExec(t *testing.T) {
 	require.Positive(t, num)
 }
 
-func TestStatementQuery(t *testing.T) {
+func TestPreparedReaderStatementReturnsRows(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
@@ -277,7 +277,7 @@ func TestStatementQuery(t *testing.T) {
 	require.NoError(t, rows.Close())
 }
 
-func TestStatementExec(t *testing.T) {
+func TestPreparedWriterStatementReportsAffectedRows(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
@@ -302,7 +302,7 @@ func TestStatementExec(t *testing.T) {
 	require.Positive(t, num)
 }
 
-func TestTransStatementExec(t *testing.T) {
+func TestPreparedTransactionStatementCommitsAndReportsAffectedRows(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
@@ -336,7 +336,7 @@ func TestTransStatementExec(t *testing.T) {
 	require.Positive(t, num)
 }
 
-func TestInvalidStatementQuery(t *testing.T) {
+func TestRejectsInvalidStatementQuery(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil), test.WithWorldLoggerConfig("tint"))
 
 	ctx, cleanup := test.SetupAccounts(t, world.DB)
@@ -354,7 +354,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestInvalidSQLPort(t *testing.T) {
+func TestRejectsInvalidSQLPort(t *testing.T) {
 	cfg := &pg.Config{Config: &config.Config{
 		Reader: newPool(test.FilePath("secrets/pg_invalid")),
 		Writer: newPool(test.FilePath("secrets/pg_invalid")),
