@@ -44,7 +44,7 @@ type ServerParams struct {
 // Disabled behavior: if params.Config is nil/disabled, NewServer returns (nil, nil).
 //
 // Enabled behavior:
-//   - constructs an HTTP server using the configured timeout and debug mux,
+//   - constructs an HTTP server using the configured low-level options and debug mux,
 //   - wraps the mux with the configured maximum inbound request-body size,
 //   - builds the net/http server config (address and optional TLS), and
 //   - wraps it in a managed service ("debug") that integrates with DI lifecycle/shutdown.
@@ -63,7 +63,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	handler := body.NewHandler(params.Mux, params.Config.GetMaxReceiveSize().Bytes())
-	httpServer := http.NewServer(params.Config.Options, params.Config.GetTimeout(), handler)
+	httpServer := http.NewServer(params.Config.Options, handler)
 
 	cfg, err := newConfig(params.FS, params.Config)
 	if err != nil {

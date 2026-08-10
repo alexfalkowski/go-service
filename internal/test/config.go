@@ -216,15 +216,15 @@ func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
-				Timeout: timeout,
 				Address: RandomAddress(),
 			},
+			Timeout: timeout,
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
-				Timeout: timeout,
 				Address: RandomAddress(),
 			},
+			Timeout: timeout,
 		},
 	}
 }
@@ -246,17 +246,17 @@ func NewSecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
-				Timeout: timeout,
 				TLS:     config,
 				Address: RandomAddress(),
 			},
+			Timeout: timeout,
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
-				Timeout: timeout,
 				TLS:     config,
 				Address: RandomAddress(),
 			},
+			Timeout: timeout,
 		},
 	}
 }
@@ -360,7 +360,6 @@ func newSQLPool(dsns []sql.DSN) *sql.Pool {
 func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
-			Timeout: 5 * time.Second,
 			Address: RandomAddress(),
 		},
 	}
@@ -370,7 +369,6 @@ func NewInsecureDebugConfig() *debug.Config {
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
-			Timeout: 5 * time.Second,
 			TLS:     NewTLSServerConfig(),
 			Address: RandomAddress(),
 		},

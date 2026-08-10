@@ -4,6 +4,7 @@ import (
 	"cmp"
 
 	"github.com/alexfalkowski/go-service/v2/config/server"
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
@@ -18,6 +19,7 @@ import (
 	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/http/body"
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
@@ -142,6 +144,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	neg := NewChainedHandlers()
 	neg.Use(httpmeta.NewHandler(params.UserAgent, params.Version, params.ID, params.Mux, params.Limit))
+	neg.Use(&timeoutHandler{routePolicy: params.RoutePolicy, timeout: params.Config.GetTimeout()})
 
 	if params.Logger != nil {
 		neg.Use(logger.NewHandler(params.RoutePolicy, params.Logger))
@@ -171,7 +174,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	neg.UseHandler(compress.GzipHandler(handler))
 
 	handler = http.NewTelemetryHandler(neg, "http.server")
-	httpServer := http.NewServer(params.Config.Options, params.Config.GetTimeout(), handler)
+	httpServer := http.NewServer(params.Config.Options, handler)
 
 	cfg, err := newConfig(fs, params.Config)
 	if err != nil {
@@ -204,6 +207,23 @@ func (s *Server) GetService() *httpserver.Service {
 		return nil
 	}
 	return s.Service
+}
+
+type timeoutHandler struct {
+	routePolicy *http.RoutePolicy
+	timeout     time.Duration
+}
+
+func (h *timeoutHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+	if h.routePolicy != nil && (h.routePolicy.IsRequestStreaming(req) || h.routePolicy.IsResponseStreaming(req)) {
+		next(res, req)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(req.Context(), h.timeout)
+	defer cancel()
+
+	next(res, req.WithContext(ctx))
 }
 
 func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {

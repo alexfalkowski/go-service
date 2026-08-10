@@ -3,6 +3,7 @@ package http_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -240,6 +241,7 @@ func TestRestStreamPostRecvAndSendOverRealServer(t *testing.T) {
 func TestRestStreamPostRefreshesReadDeadlineOverH2C(t *testing.T) {
 	config := test.NewInsecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
+	config.HTTP.Options = options.Map{"read_timeout": "100ms", "write_timeout": "100ms"}
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 	rest.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
@@ -266,6 +268,7 @@ func TestRestStreamPostRefreshesReadDeadlineOverH2C(t *testing.T) {
 func TestRestStreamPostSurvivesReceiveOnlyActivePhase(t *testing.T) {
 	config := test.NewInsecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
+	config.HTTP.Options = options.Map{"read_timeout": "100ms", "write_timeout": "100ms"}
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 	rest.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
@@ -292,6 +295,7 @@ func TestRestStreamPostSurvivesReceiveOnlyActivePhase(t *testing.T) {
 func TestRestStreamPostSurvivesSendOnlyActivePhase(t *testing.T) {
 	config := test.NewInsecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
+	config.HTTP.Options = options.Map{"read_timeout": "100ms", "write_timeout": "100ms"}
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 	rest.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),

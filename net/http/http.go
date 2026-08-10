@@ -295,7 +295,7 @@ func ParseTime(value string) (time.Time, error) {
 
 // NewServer constructs an HTTP server with common timeout defaults and supported protocol settings.
 //
-// Timeouts are derived from options first (if present) and fall back to the provided timeout value:
+// Timeouts are derived from options first (if present) and fall back to [time.DefaultTimeout]:
 //   - read_timeout
 //   - write_timeout
 //   - idle_timeout
@@ -308,13 +308,13 @@ func ParseTime(value string) (time.Time, error) {
 //
 // Note: [opts.NonNegativeDuration] uses MustParseDuration under the hood; invalid or negative option
 // values will panic at server construction time.
-func NewServer(options config.Map, timeout time.Duration, handler Handler) *Server {
+func NewServer(options config.Map, handler Handler) *Server {
 	return &http.Server{
 		Handler:           handler,
-		ReadTimeout:       options.NonNegativeDuration("read_timeout", timeout).Duration(),
-		WriteTimeout:      options.NonNegativeDuration("write_timeout", timeout).Duration(),
-		IdleTimeout:       options.NonNegativeDuration("idle_timeout", timeout).Duration(),
-		ReadHeaderTimeout: options.NonNegativeDuration("read_header_timeout", timeout).Duration(),
+		ReadTimeout:       options.NonNegativeDuration("read_timeout", time.DefaultTimeout).Duration(),
+		WriteTimeout:      options.NonNegativeDuration("write_timeout", time.DefaultTimeout).Duration(),
+		IdleTimeout:       options.NonNegativeDuration("idle_timeout", time.DefaultTimeout).Duration(),
+		ReadHeaderTimeout: options.NonNegativeDuration("read_header_timeout", time.DefaultTimeout).Duration(),
 		MaxHeaderBytes:    options.IntSize("max_header_bytes", bytes.Size(DefaultMaxHeaderBytes)),
 		Protocols:         Protocols(),
 	}

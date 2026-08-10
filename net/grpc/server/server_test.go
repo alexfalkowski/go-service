@@ -14,7 +14,7 @@ import (
 )
 
 func TestNewServerWithRawAddress(t *testing.T) {
-	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions, time.Second), &config.Config{Address: ":0"})
+	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions), &config.Config{Address: ":0"})
 	require.NoError(t, err)
 	require.NotEmpty(t, srv.String())
 
@@ -32,7 +32,7 @@ func TestNewServerWithRawAddress(t *testing.T) {
 }
 
 func TestShutdownClosesUnservedListener(t *testing.T) {
-	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions, time.Second), &config.Config{Address: ":0"})
+	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions), &config.Config{Address: ":0"})
 	require.NoError(t, err)
 
 	addr := srv.String()
@@ -44,7 +44,7 @@ func TestShutdownClosesUnservedListener(t *testing.T) {
 }
 
 func TestServeReturnsNilAfterShutdownBeforeServe(t *testing.T) {
-	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions, time.Second), &config.Config{Address: ":0"})
+	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions), &config.Config{Address: ":0"})
 	require.NoError(t, err)
 
 	require.NoError(t, srv.Shutdown(context.Background()))
@@ -65,7 +65,7 @@ func TestShutdownStopsServerWhenContextCanceled(t *testing.T) {
 }
 
 func TestNewServerWithInvalidNetwork(t *testing.T) {
-	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions, time.Second), &config.Config{Address: "invalid://:0"})
+	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions), &config.Config{Address: "invalid://:0"})
 	require.Error(t, err)
 	require.Nil(t, srv)
 }
@@ -73,7 +73,7 @@ func TestNewServerWithInvalidNetwork(t *testing.T) {
 func newServerWithBlockingGreeter(t *testing.T) (*server.Server, *blockingService) {
 	t.Helper()
 
-	grpcServer := grpc.NewServer(test.ConfigOptions, time.Second)
+	grpcServer := grpc.NewServer(test.ConfigOptions)
 	blocking := newBlockingService()
 	v1.RegisterGreeterServiceServer(grpcServer, blocking)
 

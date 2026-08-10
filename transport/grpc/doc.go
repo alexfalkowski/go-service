@@ -18,6 +18,8 @@
 // [NewServer] constructs a *[Server] wrapper around a configured `*grpc.Server` and a `*server.Service` lifecycle
 // helper. When the transport is disabled via config, constructors in this package typically return nil so that
 // downstream wiring can treat the server as "not enabled".
+// The configured timeout applies only to unary RPC handlers; stream lifetimes remain governed by their
+// contexts and stream-specific controls.
 //
 // # Client wiring
 //

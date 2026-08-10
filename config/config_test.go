@@ -471,6 +471,7 @@ func verifyGRPCConfig(t *testing.T, cfg *config.Config) {
 			"keepalive_max_connection_age":               "10s",
 			"keepalive_max_connection_age_grace":         "10s",
 			"keepalive_ping_time":                        "10s",
+			"keepalive_ping_timeout":                     "10s",
 			"max_concurrent_streams":                     "64",
 			"connection_timeout":                         "3s",
 			"max_header_list_size":                       "16MB",
