@@ -7,98 +7,12 @@ import (
 	tlsconfig "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
 // ErrMissingKeyPair is returned when server TLS is configured without a complete certificate/key pair.
 var ErrMissingKeyPair = errors.New("server: missing tls key pair")
-
-// Config configures server-side behavior shared across transports.
-type Config struct {
-	// Limiter configures server-side request limiting.
-	Limiter *limiter.Config `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
-
-	// TLS configures server-side TLS (certificate and key material).
-	TLS *tlsconfig.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
-
-	// Token configures server-side token validation/handling.
-	Token *token.Config `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
-
-	// Options provides transport/server-specific options as key-value pairs.
-	Options options.Map `yaml:"options,omitempty" json:"options,omitempty" toml:"options,omitempty"`
-
-	// Address is the bind address for the server (for example ":8080").
-	Address string `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
-
-	// Timeout is the server request timeout duration.
-	//
-	// In config files it is encoded as a Go duration string (for example "30s", "5m").
-	//
-	// A zero value applies time.DefaultTimeout. Negative values are invalid.
-	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty" validate:"gte=0"`
-
-	// MaxReceiveSize limits inbound request payload size.
-	//
-	// In config files it is encoded as a human-readable SI size string (for example "64B", "2MB", "4GB").
-	//
-	// A zero value applies bytes.DefaultSize. Values must be between 0 and bytes.MaxConfigSize.
-	MaxReceiveSize bytes.Size `yaml:"max_receive_size,omitempty" json:"max_receive_size,omitempty" toml:"max_receive_size,omitempty" validate:"config_size"`
-}
-
-// IsEnabled reports whether server configuration is present.
-func (c *Config) IsEnabled() bool {
-	return c != nil
-}
-
-// GetMaxReceiveSize returns the configured inbound payload limit.
-//
-// A nil receiver or a zero value falls back to [bytes.DefaultSize].
-func (c *Config) GetMaxReceiveSize() bytes.Size {
-	if c == nil || c.MaxReceiveSize == 0 {
-		return bytes.DefaultSize
-	}
-
-	return c.MaxReceiveSize
-}
-
-// GetTimeout returns the configured server timeout.
-//
-// A nil receiver or a non-positive value falls back to [time.DefaultTimeout].
-func (c *Config) GetTimeout() time.Duration {
-	if c == nil || c.Timeout <= 0 {
-		return time.DefaultTimeout
-	}
-
-	return c.Timeout
-}
-
-// GetReadTimeout returns the configured read timeout, resolved from the "read_timeout" [Config.Options]
-// key and falling back to [Config.GetTimeout] — the same options-aware precedence
-// [github.com/alexfalkowski/go-service/v2/net/http.NewServer] uses for the server's own ReadTimeout.
-//
-// A nil receiver falls back to [time.DefaultTimeout] (through GetTimeout).
-func (c *Config) GetReadTimeout() time.Duration {
-	if c == nil {
-		return time.DefaultTimeout
-	}
-
-	return c.Options.NonNegativeDuration("read_timeout", c.GetTimeout())
-}
-
-// GetWriteTimeout returns the configured write timeout, resolved from the "write_timeout"
-// [Config.Options] key and falling back to [Config.GetTimeout] — the same options-aware precedence
-// [github.com/alexfalkowski/go-service/v2/net/http.NewServer] uses for the server's own WriteTimeout.
-//
-// A nil receiver falls back to [time.DefaultTimeout] (through GetTimeout).
-func (c *Config) GetWriteTimeout() time.Duration {
-	if c == nil {
-		return time.DefaultTimeout
-	}
-
-	return c.Options.NonNegativeDuration("write_timeout", c.GetTimeout())
-}
 
 // NewConfig constructs a server-side runtime TLS config from cfg.
 //
@@ -142,4 +56,45 @@ func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
 	}
 
 	return tlsConfig, nil
+}
+
+// Config configures server-side behavior shared across transports.
+type Config struct {
+	// Limiter configures server-side request limiting.
+	Limiter *limiter.Config `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
+
+	// TLS configures server-side TLS (certificate and key material).
+	TLS *tlsconfig.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
+
+	// Token configures server-side token validation/handling.
+	Token *token.Config `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
+
+	// Options provides transport/server-specific options as key-value pairs.
+	Options options.Map `yaml:"options,omitempty" json:"options,omitempty" toml:"options,omitempty"`
+
+	// Address is the bind address for the server (for example ":8080").
+	Address string `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
+
+	// MaxReceiveSize limits inbound request payload size.
+	//
+	// In config files it is encoded as a human-readable SI size string (for example "64B", "2MB", "4GB").
+	//
+	// A zero value applies bytes.DefaultSize. Values must be between 0 and bytes.MaxConfigSize.
+	MaxReceiveSize bytes.Size `yaml:"max_receive_size,omitempty" json:"max_receive_size,omitempty" toml:"max_receive_size,omitempty" validate:"config_size"`
+}
+
+// IsEnabled reports whether server configuration is present.
+func (c *Config) IsEnabled() bool {
+	return c != nil
+}
+
+// GetMaxReceiveSize returns the configured inbound payload limit.
+//
+// A nil receiver or a zero value falls back to [bytes.DefaultSize].
+func (c *Config) GetMaxReceiveSize() bytes.Size {
+	if c == nil || c.MaxReceiveSize == 0 {
+		return bytes.DefaultSize
+	}
+
+	return c.MaxReceiveSize
 }

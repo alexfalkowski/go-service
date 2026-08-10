@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
@@ -249,6 +250,7 @@ func TestRejectsInvalidRPCResponse(t *testing.T) {
 func TestRPCStreamRouteRefreshesReadDeadlineOverHTTP2(t *testing.T) {
 	config := test.NewSecureTransportConfig()
 	config.HTTP.Timeout = 100 * time.Millisecond
+	config.HTTP.Options = options.Map{"read_timeout": "100ms", "write_timeout": "100ms"}
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 	rpc.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),

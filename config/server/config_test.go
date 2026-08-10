@@ -7,11 +7,9 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,69 +29,6 @@ func TestGetMaxReceiveSizeReturnsConfiguredOrDefaultValue(t *testing.T) {
 			require.Equal(t, tt.want, tt.cfg.GetMaxReceiveSize())
 		})
 	}
-}
-
-func TestGetTimeoutReturnsConfiguredOrDefaultValue(t *testing.T) {
-	tests := []struct {
-		cfg  *server.Config
-		name string
-		want time.Duration
-	}{
-		{name: "nil", want: time.DefaultTimeout},
-		{name: "zero", cfg: &server.Config{}, want: time.DefaultTimeout},
-		{name: "negative", cfg: &server.Config{Timeout: -time.Second}, want: time.DefaultTimeout},
-		{name: "explicit", cfg: &server.Config{Timeout: 5 * time.Second}, want: 5 * time.Second},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.want, tt.cfg.GetTimeout())
-		})
-	}
-}
-
-func TestGetReadAndWriteTimeoutUsesDirectionSpecificOptions(t *testing.T) {
-	getters := []struct {
-		get   func(*server.Config) time.Duration
-		key   string
-		other string
-	}{
-		{key: "read_timeout", other: "write_timeout", get: (*server.Config).GetReadTimeout},
-		{key: "write_timeout", other: "read_timeout", get: (*server.Config).GetWriteTimeout},
-	}
-
-	for _, g := range getters {
-		tests := []struct {
-			cfg  *server.Config
-			name string
-			want time.Duration
-		}{
-			{name: "nil", want: time.DefaultTimeout},
-			{name: "zero", cfg: &server.Config{}, want: time.DefaultTimeout},
-			{name: "falls back to timeout", cfg: &server.Config{Timeout: 5 * time.Second}, want: 5 * time.Second},
-			{
-				name: "diverges from timeout via option",
-				cfg:  &server.Config{Timeout: 5 * time.Second, Options: options.Map{g.key: "10s"}},
-				want: 10 * time.Second,
-			},
-			{
-				name: "unaffected by the other direction's option",
-				cfg:  &server.Config{Timeout: 5 * time.Second, Options: options.Map{g.other: "10s"}},
-				want: 5 * time.Second,
-			},
-		}
-
-		for _, tt := range tests {
-			t.Run(g.key+" "+tt.name, func(t *testing.T) {
-				require.Equal(t, tt.want, g.get(tt.cfg))
-			})
-		}
-	}
-}
-
-func TestConfigRejectsNegativeTimeout(t *testing.T) {
-	cfg := &server.Config{Timeout: -time.Second}
-	require.Error(t, test.Validator.Struct(cfg))
 }
 
 func TestConfigIsEnabledUnlessNil(t *testing.T) {

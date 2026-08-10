@@ -178,7 +178,7 @@ func TestRegisterImmediateGRPCStopDoesNotRequestShutdown(t *testing.T) {
 		sh := test.NewShutdowner()
 		service, err := grpcserver.NewService(
 			"grpc",
-			grpc.NewServer(test.ConfigOptions, time.Second),
+			grpc.NewServer(test.ConfigOptions),
 			&config.Config{Address: "tcp://127.0.0.1:0"},
 			nil,
 			sh,

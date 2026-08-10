@@ -402,14 +402,13 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 // Keepalive enforcement, connection establishment timeout, and server parameters are
 // populated from options using the following duration keys:
 //
-//   - keepalive_enforcement_policy_ping_min_time (falls back to timeout)
-//   - keepalive_max_connection_idle (falls back to timeout)
+//   - keepalive_enforcement_policy_ping_min_time (falls back to [time.DefaultTimeout])
+//   - keepalive_max_connection_idle (falls back to [time.DefaultTimeout])
 //   - keepalive_max_connection_age (falls back to the gRPC default)
 //   - keepalive_max_connection_age_grace (falls back to the gRPC default)
-//   - keepalive_ping_time (falls back to timeout)
-//   - connection_timeout (falls back to timeout)
-//
-// In addition, the provided timeout is used as the keepalive ping Timeout.
+//   - keepalive_ping_time (falls back to [time.DefaultTimeout])
+//   - keepalive_ping_timeout (falls back to [time.DefaultTimeout])
+//   - connection_timeout (falls back to [time.DefaultTimeout])
 //
 // Additional low-level server tuning may be provided through options using:
 //
@@ -426,20 +425,20 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 //
 // Any additional opts are appended after the keepalive options and may further
 // customize server behavior (for example interceptors, credentials, or stats handlers).
-func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption) *Server {
+func NewServer(options options.Map, opts ...ServerOption) *Server {
 	serverOptions := make([]ServerOption, 0, 8+len(opts))
 	serverOptions = append(serverOptions, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-		MinTime:             options.NonNegativeDuration("keepalive_enforcement_policy_ping_min_time", timeout).Duration(),
+		MinTime:             options.NonNegativeDuration("keepalive_enforcement_policy_ping_min_time", time.DefaultTimeout).Duration(),
 		PermitWithoutStream: true,
 	}))
 	serverOptions = append(serverOptions, grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     options.NonNegativeDuration("keepalive_max_connection_idle", timeout).Duration(),
+		MaxConnectionIdle:     options.NonNegativeDuration("keepalive_max_connection_idle", time.DefaultTimeout).Duration(),
 		MaxConnectionAge:      options.NonNegativeDuration("keepalive_max_connection_age", 0).Duration(),
 		MaxConnectionAgeGrace: options.NonNegativeDuration("keepalive_max_connection_age_grace", 0).Duration(),
-		Time:                  options.NonNegativeDuration("keepalive_ping_time", timeout).Duration(),
-		Timeout:               timeout.Duration(),
+		Time:                  options.NonNegativeDuration("keepalive_ping_time", time.DefaultTimeout).Duration(),
+		Timeout:               options.NonNegativeDuration("keepalive_ping_timeout", time.DefaultTimeout).Duration(),
 	}))
-	serverOptions = append(serverOptions, grpc.ConnectionTimeout(options.NonNegativeDuration("connection_timeout", timeout).Duration()))
+	serverOptions = append(serverOptions, grpc.ConnectionTimeout(options.NonNegativeDuration("connection_timeout", time.DefaultTimeout).Duration()))
 	serverOptions = append(serverOptions, grpc.MaxConcurrentStreams(options.Uint32("max_concurrent_streams", 64)))
 
 	if _, ok := options["max_header_list_size"]; ok {

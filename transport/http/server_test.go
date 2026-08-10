@@ -26,9 +26,9 @@ func TestRejectsInvalidServer(t *testing.T) {
 
 	cfg := &transporthttp.Config{
 		Config: &server.Config{
-			Timeout: 5 * time.Second,
-			TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
+			TLS: test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 		},
+		Timeout: 5 * time.Second,
 	}
 	params := transporthttp.ServerParams{
 		Shutdowner: test.NewShutdowner(),
@@ -44,9 +44,9 @@ func TestServerRejectsCAOnlyTLS(t *testing.T) {
 
 	cfg := &transporthttp.Config{
 		Config: &server.Config{
-			Timeout: 5 * time.Second,
-			TLS:     &tls.Config{CA: test.FilePath("certs/rootCA.pem")},
+			TLS: &tls.Config{CA: test.FilePath("certs/rootCA.pem")},
 		},
+		Timeout: 5 * time.Second,
 	}
 	params := transporthttp.ServerParams{
 		Shutdowner: test.NewShutdowner(),
@@ -79,6 +79,48 @@ func TestServerMaxReceiveSize(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
 	require.Equal(t, "http: request entity too large", body)
+}
+
+func TestServerCancelsUnaryRequestContextAtConfiguredTimeout(t *testing.T) {
+	cfg := test.NewInsecureTransportConfig()
+	cfg.HTTP.Timeout = 10 * time.Millisecond
+
+	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
+	errch := make(chan error, 1)
+	world.HandleRoute("GET /timeout", http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
+		select {
+		case <-req.Context().Done():
+			errch <- req.Context().Err()
+		case <-time.After(50 * time.Millisecond):
+			errch <- nil
+		}
+	}))
+	world.Start()
+
+	_, _ = world.GetNoBody(t.Context(), world.PathServerURL("http", "timeout"), http.Header{})
+
+	require.ErrorIs(t, <-errch, context.DeadlineExceeded)
+}
+
+func TestServerDoesNotCancelStreamingRequestContextAtConfiguredTimeout(t *testing.T) {
+	cfg := test.NewInsecureTransportConfig()
+	cfg.HTTP.Timeout = 10 * time.Millisecond
+
+	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
+	errch := make(chan error, 1)
+	world.HandleRoute("GET /stream", http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
+		select {
+		case <-req.Context().Done():
+			errch <- req.Context().Err()
+		case <-time.After(50 * time.Millisecond):
+			errch <- nil
+		}
+	}), http.WithRouteStreaming())
+	world.Start()
+
+	_, _ = world.GetNoBody(t.Context(), world.PathServerURL("http", "stream"), http.Header{})
+
+	require.NoError(t, <-errch)
 }
 
 func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {

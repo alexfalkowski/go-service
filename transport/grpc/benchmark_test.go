@@ -78,7 +78,7 @@ func benchmarkStdGRPC(b *testing.B) {
 	listener, err := net.Listen(b.Context(), "tcp", "localhost:0")
 	require.NoError(b, err)
 
-	grpcServer := grpc.NewServer(test.ConfigOptions, test.DefaultTimeout)
+	grpcServer := grpc.NewServer(test.ConfigOptions)
 	defer grpcServer.GracefulStop()
 
 	v1.RegisterGreeterServiceServer(grpcServer, test.NewService())

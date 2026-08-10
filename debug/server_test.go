@@ -47,8 +47,7 @@ func TestDebugServerExposesRegisteredEndpoints(t *testing.T) {
 func TestNewServerRejectsInvalidTLSConfiguration(t *testing.T) {
 	cfg := &debug.Config{
 		Config: &server.Config{
-			Timeout: 5 * time.Second,
-			TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
+			TLS: test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 		},
 	}
 	params := debug.ServerParams{
@@ -66,7 +65,6 @@ func TestDebugServerRejectsBodiesOverMaxReceiveSize(t *testing.T) {
 	cfg := &debug.Config{
 		Config: &server.Config{
 			Address:        test.RandomAddress(),
-			Timeout:        5 * time.Second,
 			MaxReceiveSize: 1,
 		},
 	}

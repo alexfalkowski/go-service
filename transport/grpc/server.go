@@ -138,7 +138,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 	options = append(options, params.Options...)
 
-	grpcServer := grpc.NewServer(params.Config.Options, params.Config.GetTimeout(), options...)
+	grpcServer := grpc.NewServer(params.Config.Options, options...)
 	cfg := &config.Config{Address: cmp.Or(params.Config.Address, net.DefaultAddress("9090"))}
 
 	service, err := grpcserver.NewService("grpc", grpcServer, cfg, params.Logger, params.Shutdowner)

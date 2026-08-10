@@ -13,7 +13,8 @@
 //   - AcceptItems, FirstAcceptItem, IsAcceptZeroQuality, and IsAcceptWildcard, which support Accept header handling.
 //
 // Server construction reads timeout keys from options.Map (`read_timeout`, `write_timeout`,
-// `idle_timeout`, `read_header_timeout`) and also supports `max_header_bytes` as an SI size string.
+// `idle_timeout`, `read_header_timeout`), each defaulting independently to 30 seconds, and also
+// supports `max_header_bytes` as an SI size string.
 //
 // Start with [NewClient] and [NewServer].
 package http

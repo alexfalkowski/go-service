@@ -45,7 +45,7 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 			t.Parallel()
 
 			require.Panics(t, func() {
-				http.NewServer(options.Map{key: "-1s"}, time.Second, handler)
+				http.NewServer(options.Map{key: "-1s"}, handler)
 			})
 		})
 	}
@@ -101,7 +101,7 @@ func TestNewServerSetsProtocols(t *testing.T) {
 
 	handler := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
 
-	server := http.NewServer(options.Map{}, time.Second, handler)
+	server := http.NewServer(options.Map{}, handler)
 
 	require.NotNil(t, server.Protocols)
 	require.True(t, server.Protocols.HTTP1())

@@ -57,9 +57,9 @@ func TestNilServerReturnsNilRegistrars(t *testing.T) {
 func TestRejectsInvalidServer(t *testing.T) {
 	cfg := &grpc.Config{
 		Config: &server.Config{
-			Timeout: 5 * time.Second,
-			TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
+			TLS: test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 		},
+		Timeout: 5 * time.Second,
 	}
 	params := grpc.ServerParams{
 		Shutdowner:   test.NewShutdowner(),
@@ -74,9 +74,9 @@ func TestRejectsInvalidServer(t *testing.T) {
 func TestServerRejectsCAOnlyTLS(t *testing.T) {
 	cfg := &grpc.Config{
 		Config: &server.Config{
-			Timeout: 5 * time.Second,
-			TLS:     &tls.Config{CA: test.FilePath("certs/rootCA.pem")},
+			TLS: &tls.Config{CA: test.FilePath("certs/rootCA.pem")},
 		},
+		Timeout: 5 * time.Second,
 	}
 	params := grpc.ServerParams{
 		Shutdowner:   test.NewShutdowner(),

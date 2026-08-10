@@ -19,15 +19,17 @@
 //
 // NewServer builds a *grpc.Server with keepalive enforcement and server
 // parameters. Configuration values are sourced from an options.Map using the
-// following duration keys. When a duration key is absent, NewServer falls back
-// to the timeout argument:
+// following duration keys. When a duration key is absent,
+// [github.com/alexfalkowski/go-service/v2/time.DefaultTimeout] applies to:
 //
 //   - keepalive_enforcement_policy_ping_min_time
 //   - keepalive_max_connection_idle
-//   - keepalive_max_connection_age
-//   - keepalive_max_connection_age_grace
 //   - keepalive_ping_time
+//   - keepalive_ping_timeout
 //   - connection_timeout
+//
+// keepalive_max_connection_age and keepalive_max_connection_age_grace instead
+// retain their upstream gRPC defaults when absent.
 //
 // NewServer also supports the following low-level server tuning keys:
 //
@@ -38,8 +40,7 @@
 //   - max_send_msg_size: SI size string such as 16MB
 //
 // The `max_concurrent_streams` default bounds live streams per client connection.
-// Set it to `0` to explicitly retain the upstream unbounded behavior. The timeout
-// argument is also used as the keepalive ping Timeout. Request
+// Set it to `0` to explicitly retain the upstream unbounded behavior. Request
 // handler timeouts are applied by higher-level transport wiring, not by
 // NewServer itself.
 //

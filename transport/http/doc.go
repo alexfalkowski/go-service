@@ -33,6 +33,8 @@
 // registered operation routes such as health and metrics do not require auth and do not consume limiter
 // capacity by default, while registered unauthenticated routes bypass token verification and access control
 // only.
+// Non-streaming routes also receive the configured unary request timeout; streaming routes retain their
+// stream-specific lifecycle controls.
 //
 // # Client wiring
 //

@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -61,7 +60,7 @@ func TestNewServerWithAdvancedOptions(t *testing.T) {
 	}
 
 	require.NotPanics(t, func() {
-		server := grpc.NewServer(opts, time.Second)
+		server := grpc.NewServer(opts)
 		require.NotNil(t, server)
 	})
 }
@@ -75,6 +74,7 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 		"keepalive_max_connection_age",
 		"keepalive_max_connection_age_grace",
 		"keepalive_ping_time",
+		"keepalive_ping_timeout",
 		"connection_timeout",
 	}
 
@@ -83,7 +83,7 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 			t.Parallel()
 
 			require.Panics(t, func() {
-				grpc.NewServer(options.Map{key: "-1s"}, time.Second)
+				grpc.NewServer(options.Map{key: "-1s"})
 			})
 		})
 	}
@@ -93,10 +93,10 @@ func TestNewServerWithOverflowingAdvancedOptions(t *testing.T) {
 	t.Parallel()
 
 	require.Panics(t, func() {
-		grpc.NewServer(options.Map{"initial_window_size": "3GB"}, time.Second)
+		grpc.NewServer(options.Map{"initial_window_size": "3GB"})
 	})
 
 	require.Panics(t, func() {
-		grpc.NewServer(options.Map{"max_header_list_size": "5GB"}, time.Second)
+		grpc.NewServer(options.Map{"max_header_list_size": "5GB"})
 	})
 }

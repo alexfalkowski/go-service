@@ -1238,7 +1238,7 @@ back to JSON, unlike single-value negotiation.
 >   client-side streaming call with the request context instead of the client's overall request timeout.
 > - The per-message read/write timeouts follow the same `options.read_timeout`/`options.write_timeout`
 >   precedence as the server's own timeouts (see [Transport configuration (servers)](#transport-configuration-servers)),
->   falling back to `timeout` when the corresponding option is unset.
+>   falling back to `30s` when the corresponding option is unset.
 > - Streaming requests are never retried by the client's retry middleware.
 > - A stream failure after the response has committed is recorded as a trace error and in the access log, then
 >   aborts the response so clients do not receive a clean but truncated stream. The upstream HTTP server RED
@@ -1268,8 +1268,7 @@ The raw error string remains available to templates as `mvcModelError` metadata 
 
 Transport config root is `transport.Config`:
 
-- `transport.http` embeds `config/server.Config`
-- `transport.grpc` embeds `config/server.Config`
+- `transport.http` and `transport.grpc` embed `config/server.Config` and own their unary `timeout` fields.
 
 Minimal example:
 
@@ -1286,7 +1285,9 @@ transport:
 > [!NOTE]
 > - Address may use `<network>://<address>` (for example `tcp://:8000`) or a raw listen address such as `:8000`, which defaults to the `tcp` network.
 > - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
-> - `transport.grpc.timeout` bounds unary RPC handlers and feeds gRPC server keepalive/connection defaults; it does not cap stream lifetime. Long-lived streams remain open until client cancellation or stream-specific controls apply.
+> - `transport.http.timeout` bounds non-streaming handler contexts and `transport.grpc.timeout` bounds unary RPC handlers. Both default to `30s` and do not cap stream lifetime; long-lived HTTP and gRPC streams remain governed by client cancellation and their stream-specific controls.
+> - HTTP socket deadlines and streaming read/write inactivity budgets are controlled by `transport.http.options.read_timeout`, `write_timeout`, `idle_timeout`, and `read_header_timeout`, each of which defaults independently to `30s`. gRPC connection and keepalive lifetimes are controlled by `transport.grpc.options` and retain their documented lower-level defaults when unset.
+> - For gRPC keepalives, `keepalive_ping_time` is the interval between heartbeats and `keepalive_ping_timeout` is the maximum wait for a heartbeat acknowledgement.
 > - gRPC limits each client connection to 64 concurrent streams by default. Set `transport.grpc.options.max_concurrent_streams` to a positive base-10 integer to override it, or to `"0"` to explicitly retain upstream's unbounded behavior.
 > - `max_receive_size` limits inbound payload size. A zero value uses the default `4MB`.
 > - For HTTP, `max_receive_size` applies per request body, except for bidirectional streaming routes (see [HTTP streaming (NDJSON)](#http-streaming-ndjson)), where it applies per decoded value instead, with no cumulative total. For gRPC, it applies per inbound unary request and per inbound stream message.
@@ -1323,6 +1324,7 @@ transport:
       keepalive_max_connection_age: 10s
       keepalive_max_connection_age_grace: 10s
       keepalive_ping_time: 10s
+      keepalive_ping_timeout: 10s
 ```
 
 ### TLS for transports
@@ -1577,7 +1579,6 @@ Debug server config:
 ```yaml
 debug:
   address: tcp://localhost:6060
-  timeout: 10s
 ```
 
 Enable TLS:

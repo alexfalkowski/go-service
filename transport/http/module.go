@@ -70,9 +70,9 @@ var Module = di.Module(
 // not. net/http/rest and net/http/rpc must not import this package (see AGENTS.md), so cfg's values are
 // computed here and passed in, mirroring how NewServer already derives its own
 // ReadTimeout/WriteTimeout/max receive size from the same *Config: the read/write timeouts resolve
-// through the same options-aware precedence (options key, falling back to cfg.GetTimeout()) NewServer
-// uses for its own ReadTimeout/WriteTimeout, so a service that diverges options.read_timeout/
-// write_timeout from timeout gets a matching streaming budget instead of a silently different one.
+// through the same options-aware precedence (options key, falling back to the lower-level default)
+// NewServer uses for its own ReadTimeout/WriteTimeout, so a service that sets explicit streaming
+// budgets gets a matching server deadline instead of a silently different one.
 func registerRoutes(cfg *Config, router *http.Router, uc *unary.Content, sc *stream.Content, pool *sync.BufferPool, drain *server.Drain) {
 	var so stream.Options
 

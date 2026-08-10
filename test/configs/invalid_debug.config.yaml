@@ -3,4 +3,3 @@ id:
   kind: uuid
 debug:
   address: "tcp://localhost:invalid"
-  timeout: 10s
