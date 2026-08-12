@@ -37,6 +37,63 @@ func TestRoundTripperDoesNotOpenOnCallerCancellation(t *testing.T) {
 	require.NotErrorIs(t, err, breaker.ErrOpenState)
 }
 
+func TestRoundTripperDoesNotOpenOnExpiredCallerDeadline(t *testing.T) {
+	calls := 0
+	rt := breaker.NewRoundTripper(
+		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			calls++
+			if err := req.Context().Err(); err != nil {
+				return nil, err
+			}
+
+			return test.ResponseWithStatus(http.StatusOK), nil
+		}),
+		breaker.WithSettings(breaker.Settings{
+			ReadyToTrip: func(counts breaker.Counts) bool {
+				return counts.ConsecutiveFailures >= 1
+			},
+		}),
+	)
+	expired, cancel := context.WithTimeout(t.Context(), 0)
+	t.Cleanup(cancel)
+	<-expired.Done()
+	expiredRequest, err := http.NewRequestWithContext(expired, http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(expiredRequest)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+
+	liveRequest, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+	res, err = rt.RoundTrip(liveRequest)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.NoError(t, res.Body.Close())
+	require.Equal(t, 2, calls)
+}
+
+func TestRoundTripperOpensOnDeadlineAfterTransportStarts(t *testing.T) {
+	rt := breaker.NewRoundTripper(
+		&test.ErrorRoundTripper{Err: context.DeadlineExceeded},
+		breaker.WithSettings(breaker.Settings{
+			ReadyToTrip: func(counts breaker.Counts) bool {
+				return counts.ConsecutiveFailures >= 1
+			},
+		}),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+
+	res, err = rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, breaker.ErrOpenState)
+}
+
 func TestRoundTripperOpensOnTransportError(t *testing.T) {
 	transportErr := errors.New("transport unavailable")
 	rt := breaker.NewRoundTripper(

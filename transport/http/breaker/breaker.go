@@ -50,6 +50,8 @@ type Settings = breaker.Settings
 //
 // The breaker executes the underlying transport call and classifies the outcome for breaker accounting:
 //
+//   - Requests whose contexts have already deadline-exceeded bypass breaker accounting because they provide no
+//     upstream-health signal.
 //   - Transport errors (i.e., the underlying RoundTripper returns a non-nil error) are counted as failures.
 //   - HTTP responses whose `StatusCode` matches the configured failure-status predicate are also counted as failures.
 //
@@ -88,7 +90,8 @@ type RoundTripper struct {
 // the call and return an error (for example [breaker.ErrOpenState] or [breaker.ErrTooManyRequests]).
 //
 // Failure accounting:
-//   - Transport errors are counted as failures.
+//   - Transport errors are counted as failures, except when the request context has already deadline-exceeded
+//     before the underlying transport call starts.
 //   - Responses that match the configured failure-status predicate are counted as failures for breaker
 //     accounting, but the response is still returned to the caller with a nil error.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -96,6 +99,11 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool) {
+	if errors.Is(req.Context().Err(), context.DeadlineExceeded) {
+		resp, err := r.RoundTripper.RoundTrip(req)
+		return resp, err, false
+	}
+
 	cb := r.get(req)
 	result, err := cb.Execute(func() (any, error) {
 		resp, err := r.RoundTripper.RoundTrip(req)
