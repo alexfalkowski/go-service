@@ -12,6 +12,8 @@
 // # Failure accounting vs caller behavior
 //
 // The wrapped [RoundTripper] classifies outcomes for breaker accounting:
+//   - Requests whose contexts have already deadline-exceeded bypass breaker accounting because they provide no
+//     upstream-health signal.
 //   - Transport errors (a non-nil error returned by the underlying [RoundTripper]) are counted as failures.
 //   - HTTP responses with status codes classified as failures (see [WithFailureStatusFunc] / [WithFailureStatuses])
 //     are also counted as failures.

@@ -1386,6 +1386,7 @@ The transport client wrappers include optional circuit breakers:
 - HTTP breaker (`transport/http/breaker`):
   - Scope is per `"<METHOD> <HOST>"`.
   - Default failure statuses are `>=500` and `429`.
+  - Requests with an already deadline-exceeded context bypass breaker accounting.
   - Transport errors are counted as failures.
   - Failure status responses are still returned to callers (while breaker accounting records a failure).
 
