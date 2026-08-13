@@ -613,6 +613,48 @@ func TestFallbackRendersFallbackTemplate(t *testing.T) {
 	}
 }
 
+func TestNotFoundHandlerAddsVary(t *testing.T) {
+	tests := []struct {
+		name    string
+		accept  string
+		handled bool
+	}{
+		{name: "accepts html", accept: media.HTML, handled: true},
+		{name: "ignores api", accept: media.JSON},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mux := http.NewServeMux()
+			mvc.Register(mvc.RegisterParams{
+				Router:      newTestRouter(mux),
+				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+				FileSystem: fstest.MapFS{
+					"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
+					"views/partial.tmpl": &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
+					"views/error.tmpl":   &fstest.MapFile{Data: []byte(`{{ define "content" }}{{ .Model.Code }} {{ .Model.Message }}{{ end }}`)},
+				},
+				Pool:   test.Pool,
+				Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
+			})
+
+			require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+				return mvc.NewFullView("views/error.tmpl"), &mvc.Error{
+					Code:    http.StatusNotFound,
+					Message: http.StatusText(http.StatusNotFound),
+				}
+			}))
+
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", http.NoBody)
+			req.Header.Set("Accept", tt.accept)
+			res := httptest.NewRecorder()
+
+			require.Equal(t, tt.handled, mvc.NotFoundHandler()(res, req))
+			require.Equal(t, []string{"Accept", "Hx-Request"}, res.Header().Values(http.VaryKey))
+		})
+	}
+}
+
 func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{

@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/budget"
 	"github.com/alexfalkowski/go-service/v2/net/http/compress"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
@@ -57,7 +58,7 @@ func NewHandler[Res any](cont *Content, opts Options, handler Handler[Res]) http
 		}
 
 		ctx = meta.WithRequestResponse(ctx, req, res)
-		res.Header().Set(http.ContentTypeKey, resMedia.WithUTF8())
+		res.Header().Set(http.ContentTypeKey, media.MustParse(resMedia.String()).WithUTF8())
 		res.Header().Set(compress.HeaderNoCompression, "1")
 
 		buffer := cont.pool.Get()
@@ -164,7 +165,7 @@ func NewRequestHandler[Req any, Res any](cont *Content, opts Options, handler Re
 		}
 
 		ctx = meta.WithRequestResponse(ctx, req, res)
-		res.Header().Set(http.ContentTypeKey, resMedia.WithUTF8())
+		res.Header().Set(http.ContentTypeKey, media.MustParse(resMedia.String()).WithUTF8())
 		res.Header().Set(compress.HeaderNoCompression, "1")
 
 		buffer := cont.pool.Get()

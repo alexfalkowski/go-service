@@ -17,6 +17,8 @@ func NotFoundHandler() http.NotFoundHandler {
 			return false
 		}
 
+		http.AddVary(res.Header(), http.AcceptKey, "Hx-Request")
+
 		acceptsHTML := strings.Contains(req.Header.Get("Accept"), media.HTML)
 		isHTMX := req.Header.Get("Hx-Request") == "true"
 		if !acceptsHTML && !isHTMX {

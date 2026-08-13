@@ -23,6 +23,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNewRequestHandlerNormalizesResponseContentType(t *testing.T) {
+	handler := contentstream.NewRequestHandler(
+		test.StreamContent,
+		contentstream.Options{}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			return stream.Send(&test.Response{Greeting: "Hello Bob"})
+		},
+	)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
+	req.ProtoMajor = 2
+	req.Header.Set(http.ContentTypeKey, "Application/X-NDJSON; charset=utf-7; profile=v2")
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, media.NDJSON, res.Header().Get(http.ContentTypeKey))
+}
+
 func TestNewRequestHandlerClosesCodecsBeforeAbortAfterCommitOnDrain(t *testing.T) {
 	encoder := &closeTracker{}
 	decoder := &closeTracker{}
