@@ -3,6 +3,7 @@ package driver_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
@@ -10,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -32,7 +34,7 @@ func TestOpenUnregistersDBStatsMetrics(t *testing.T) {
 	lc.RequireStop()
 
 	test.RequireNoDBStatsMetrics(t, reader)
-	require.Error(t, db.Ping())
+	require.Error(t, db.Ping(t.Context()))
 }
 
 func TestOpenReturnsConnectError(t *testing.T) {
@@ -173,6 +175,60 @@ func TestConnectWritersReadersReturnsErrors(t *testing.T) {
 
 	require.Nil(t, db)
 	require.Error(t, errors.Join(errs...))
+}
+
+func TestDBsPingReturnsDeadlineWhenWaitingForConnection(t *testing.T) {
+	tests := []struct {
+		name    string
+		writers []string
+		readers []string
+		ping    func(*sql.DBs, context.Context) error
+	}{
+		{
+			name:    "all pools",
+			writers: []string{"benchmark"},
+			ping:    func(db *sql.DBs, ctx context.Context) error { return db.Ping(ctx) },
+		},
+		{
+			name:    "writers",
+			writers: []string{"benchmark"},
+			ping:    func(db *sql.DBs, ctx context.Context) error { return db.PingWriter(ctx) },
+		},
+		{
+			name:    "readers",
+			readers: []string{"benchmark"},
+			ping:    func(db *sql.DBs, ctx context.Context) error { return db.PingReader(ctx) },
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			driverName := test.RegisterBenchmarkSQLDriver(t, "test-sql-")
+			db, errs := sql.ConnectWritersReaders(driverName, tt.writers, tt.readers)
+			require.Empty(t, errs)
+			t.Cleanup(func() {
+				require.NoError(t, db.Destroy())
+			})
+
+			pool, err := db.Writer()
+			if len(tt.readers) > 0 {
+				pool, err = db.Reader()
+			}
+			require.NoError(t, err)
+			pool.SetMaxOpenConns(1)
+
+			conn, err := pool.Conn(t.Context())
+			require.NoError(t, err)
+			defer func() {
+				require.NoError(t, conn.Close())
+			}()
+
+			ctx, cancel := context.WithTimeout(t.Context(), time.Millisecond)
+			defer cancel()
+
+			require.ErrorIs(t, tt.ping(db, ctx), context.DeadlineExceeded)
+		})
+	}
 }
 
 func newPool(maxOpenConns int) *config.Pool {

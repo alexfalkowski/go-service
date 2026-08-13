@@ -22,9 +22,9 @@ import (
 // then applies each role's pool settings.
 //
 // Like [database/sql.Open], this creates pool handles but does not ping the
-// database or verify network reachability. Call [DBs.Ping], [DBs.PingWriter],
-// [DBs.PingReader], or a health checker when startup/readiness must prove
-// connectivity.
+// database or verify network reachability. Call [DBs.Ping],
+// [DBs.PingWriter], [DBs.PingReader] with a deadline, or a health
+// checker when startup/readiness must prove connectivity.
 //
 // Preconditions:
 //   - cfg must be non-nil and already treated as enabled/validated by the caller.
