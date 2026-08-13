@@ -1,0 +1,636 @@
+# Accepted Design
+
+These entries are mandatory, not advisory. They record accepted designs,
+intentional tradeoffs, and support boundaries that agents repeatedly re-flag as
+bugs. Before recording a finding, review candidate, audit entry, or proposed
+change, agents MUST check this file, and MUST NOT report a finding in these
+areas without accounting for the entry that covers it.
+
+- Manual transport TLS setup must call the HTTP and gRPC transport register functions; `transport.Module` does this on the normal path.
+- Runtime TLS material, like other resolved configuration, is intentionally
+  materialized once at startup; the leaf certificate and CA pools are pinned for
+  the process lifetime. This framework targets container platforms where
+  certificate rotation and other configuration changes are rolled out by
+  restarting or recreating the workload (cert-manager renewal plus rolling
+  restart, mounted-secret refresh plus pod recreation), so there is no
+  `GetCertificate`/`GetClientCertificate` callback, fsnotify watch, or SIGHUP
+  reload. Do not flag the absence of TLS certificate hot-reload as a reliability
+  or operability gap; report only concrete bugs such as certs not being resolved
+  at startup, ignored explicit TLS config, or a public API promise of in-process
+  certificate rotation.
+- Manual server lifecycle wiring should use `net/server.Register(...)`.
+- `transport.Module` is normally consumed through `module.Server`, which also
+  wires `debug.Module`; do not flag `transport.NewServers` requiring
+  `*debug.Server`. Mentions that `transport.Module` handles transport
+  registration, TLS filesystem registration, or lifecycle registration do not
+  promise a complete standalone server bundle without `module.Server`. Report
+  this only if a public API explicitly promises standalone `transport.Module`
+  composition without the standard `module.Server` bundle.
+- Module-related behavior is tested through CLI/server application wiring. Do
+  not flag missing direct package tests for Fx module provider inventory,
+  module composition, or `transport.Module` lifecycle registration solely
+  because they are not asserted in the package that declares the module. Report
+  only concrete broken behavior through the CLI or supported `module.Server`
+  path, or an explicit public promise of lower-level standalone module use.
+- Server defaults that use `net.DefaultAddress`, including the debug server's
+  `tcp://:6060` fallback, intentionally bind all interfaces so containerized
+  workloads remain reachable through Kubernetes Services, probes, ingress
+  controllers, and sidecars. Do not flag this solely because debug endpoints can
+  be reached remotely when the debug server is enabled; restrict exposure with
+  explicit addresses, TLS/mTLS, NetworkPolicy, ingress/firewall, or
+  service-mesh policy. Only report concrete bugs such as accidental listener
+  changes, ignored explicit addresses, missing documented protections, or a
+  public API promise of localhost-only debug binding.
+- Debug profiling endpoints are administrator/operator diagnostics. Do not flag
+  `net/http/pprof` or `fgprof` duration parameters solely because an authorized
+  debug caller can request a long profile. Long captures are an intentional
+  diagnostic capability; restrict debug exposure with bind addresses, TLS/mTLS,
+  ingress/firewall, NetworkPolicy, or service-mesh policy. Report only concrete
+  bugs such as ignored explicit debug server limits, accidental public exposure,
+  missing documented protections, or repository-owned profiling wrapper logic
+  that violates its own duration/admission contract.
+- `debug/internal/fgprof` intentionally delegates request handling to upstream
+  `github.com/felixge/fgprof.Handler`. Treat its cancellation behavior and
+  zero-sample profile export edge cases as upstream behavior, not local debug
+  findings, unless this repository adds local fgprof handler logic or promises
+  cancellation-aware profiling semantics.
+- Build and version provenance is intentionally owned by the container image and
+  deployment platform, not a service endpoint. Services built with this framework
+  learn their version from the image tag/metadata supplied at build/deploy time,
+  surfaced through `service.version`/`deployment.environment.name` telemetry
+  resource attributes and static log attributes, and the platform already tracks
+  which image a pod runs. Do not flag the absence of a build-info/version debug
+  endpoint (for example `runtime/debug.ReadBuildInfo`, `expvar`, or
+  `/debug/vars`) as a feature or operability gap; report only concrete bugs where
+  configured version/environment attributes are dropped from telemetry or logs.
+- `cli.RunCode` returns `os.ExitCodeSuccess` on success, preserves non-zero
+  shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
+  returns `os.ExitCodeFailure`.
+- `cli.Application.AddClient` intentionally models short-lived client command
+  work as DI/Fx startup work. Client commands perform their main action from a
+  lifecycle `OnStart` hook, then stop the graph immediately after startup
+  completes. Constructors and invocations only wire dependencies and register
+  lifecycle hooks; they do not perform the command action while the graph is
+  being built. Do not flag the absence of a separate post-DI command-task API
+  solely because command work lives in `OnStart`; this is the supported pattern,
+  as used by downstream client templates. Report only concrete broken behavior
+  such as incorrect error propagation, ignored shutdown exit codes, lifecycle
+  ordering bugs, or a documented command contract that cannot be expressed with
+  the DI lifecycle.
+- `cli.Application.Run` intentionally sanitizes Go test harness `-test.*`
+  arguments before handing `os.Args` to the command runner because this
+  repository commonly exercises CLI applications through Go test binaries. Do
+  not flag this solely because a hypothetical downstream command could define a
+  user-facing flag with the reserved `test.` prefix; report only concrete
+  breakage in a supported CLI contract or an explicit public promise to
+  preserve `-test.*` command flags.
+- `config.NewConfig[T]` intentionally decodes and validates configuration on the
+  normal startup path, so a service started with bad configuration fails fast at
+  run time. There is no separate config validate/preflight subcommand (for
+  example an `AddCheck` command or `svc check`), and its absence is not a feature
+  gap: running the service is the check. Do not flag the missing side-effect-free
+  config-only command solely because CI or pre-deploy config linting would prefer
+  not to start subsystems; report only concrete bugs where documented config
+  validation is skipped, invalid config is accepted, or the decode/validate path
+  does not run at startup.
+- `net/server.Service` intentionally logs asynchronous `Server.Serve` errors
+  and requests shutdown with `di.ExitCode(os.ExitCodeServeFailure)`; it does not
+  return the raw serve error from `Stop`.
+- gRPC `Server.Serve` returns `nil` when `Stop` or `GracefulStop` is called
+  after serving has started. `grpc.ErrServerStopped` is only returned when
+  `Serve` is called after the server was already stopped. Do not flag normal
+  DI-managed gRPC shutdown as a serve-failure bug based solely on
+  `ErrServerStopped` speculation; report only a concrete supported lifecycle
+  path that demonstrates `Serve` is invoked after `Stop`/`GracefulStop` and
+  causes an incorrect exit code.
+- `telemetry.Register()` installs the global OpenTelemetry propagator.
+- OTLP exporter endpoints intentionally come from explicit go-service config
+  fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and
+  `telemetry.tracer.url`. Standard OpenTelemetry endpoint environment variables
+  such as `OTEL_EXPORTER_OTLP_ENDPOINT` are not fallback sources and should not
+  be projected into config by default. Operators that want env-managed endpoints
+  should set the go-service config values through their deployment/config
+  source; do not flag missing automatic `OTEL_*` endpoint projection as a
+  feature gap unless the documented support boundary changes.
+- OTLP header maps are intentionally passed to the selected exporter after
+  source resolution without repository-owned HTTP or gRPC syntax validation.
+  Missing `env:` values and unreadable `file:` values still fail startup, but
+  malformed administrator-supplied names or resolved values may be rejected by
+  the exporter only when it attempts an export. Do not flag that upstream
+  protocol rejection as a local code issue. Report only concrete local bugs such
+  as valid headers being altered or dropped, explicit headers being ignored,
+  secret values being exposed, or a public promise of local syntax validation.
+- Prometheus pull metrics are intentionally exposed through the service HTTP
+  transport at `/<name>/metrics` when HTTP transport and Prometheus metrics are
+  enabled. Do not flag the absence of a Prometheus scrape endpoint on the debug
+  server, or the absence of a built-in scrape endpoint for gRPC-only/non-HTTP
+  services, as a feature, reliability, or operator gap. Services that want
+  Prometheus pull metrics should enable the HTTP transport endpoint, expose a
+  service-owned scrape route, or use OTLP push metrics. Report only concrete
+  bugs such as the documented HTTP metrics route not being registered, ignored
+  explicit metrics config, or a changed public support boundary.
+- Telemetry logger, metrics, and tracer setup installs process-global
+  OpenTelemetry providers. Do not flag provider globals leaking after DI startup
+  failure solely because lifecycle `OnStop` does not run; supported service
+  startup failure exits the process. Report only concrete same-process reuse bugs
+  in supported tests/tools, ignored successful shutdown cleanup, or an API
+  promise that failed startup is recoverable in the same process.
+- Process-global telemetry logger state, including the OpenTelemetry logger
+  provider and the process-wide `slog` default installed by the OTLP logger, is
+  intentionally not reset during normal process shutdown. Do not flag stale
+  logger/provider globals after a clean lifecycle stop solely because a
+  hypothetical same-process app instance could be started after shutdown.
+  Supported service shutdown exits the process; report only concrete reuse bugs
+  in supported tests/tools that actually continue running after shutdown and
+  require isolated global logger state.
+- Telemetry logger, metrics, and tracer shutdown hooks intentionally ignore
+  provider/exporter shutdown errors so one telemetry flush failure does not stop
+  later lifecycle shutdown hooks. Do not flag swallowed telemetry shutdown
+  export errors as reliability gaps solely because operators will not see those
+  final flush failures; report only concrete bugs such as shutdown hooks not
+  running, globals not resetting after successful shutdown, or a public API
+  promise to surface telemetry shutdown errors.
+- The effective log level is intentionally resolved once from
+  `telemetry.logger.level` at startup and installed as the process-wide `slog`
+  default; there is no runtime log-level mutation endpoint or `slog.LevelVar`
+  toggle. The debug server is off by default and not run in production, so any
+  workflow that could reach such an endpoint is already a configuration change
+  where `telemetry.logger.level` can be set directly. Do not flag the absence of
+  a runtime/debug log-level control endpoint or dynamic level toggle as a feature
+  or operability gap; operators change verbosity through `telemetry.logger.level`
+  config. Report only concrete bugs where the configured level is ignored or a
+  public API promises runtime level mutation.
+- `cache.Register(...)` sets the package-level cache used by generic cache helpers.
+  It is intentionally called by the supported wiring path during startup/test
+  setup, not as a concurrent runtime reconfiguration API. Do not flag
+  unsynchronized global-state or nil-pointer issues based solely on hypothetical
+  concurrent manual `cache.Register`, `cache.Get`, or `cache.Persist` calls
+  unless a concrete public API path starts promising concurrent manual
+  re-registration or the repository adds such a runtime path.
+- `encoding/base64.EncodedLen` intentionally follows the standard library's
+  `EncodedLen(int)` contract. Do not flag hypothetical integer overflow from
+  passing absurd configured `bytes.Size` values directly to it; callers that
+  compare configuration-sized limits, such as cache decode size guards, must
+  guard those limits before calling it.
+- Configured byte-size limits that drive buffering paths are capped by
+  `bytes.MaxConfigSize` at the supported config validation boundary, including
+  cache value sizes and server receive sizes used by HTTP and gRPC transports.
+  Do not flag `MaxInt`, allocator, or `limit+1` overflow speculation from
+  absurd configured sizes unless a supported config/DI path bypasses that
+  validation or the public API starts promising safe arbitrary direct
+  constructor limits.
+- `bytes.ParseSize` intentionally delegates human-readable size parsing to
+  `github.com/docker/go-units` for compatibility with existing configuration
+  values. Do not flag upstream float-to-int range behavior from absurdly large
+  size strings as a local issue unless this repository adds a public promise to
+  reject every representability edge case or a concrete supported path shows an
+  unsafe limit being applied from such a value. Do not flag accepted suffix
+  spellings such as `MiB` merely because `go-units.FromHumanSize` treats them
+  as decimal multipliers; that compatibility is documented local behavior. Do
+  not flag `bytes.Size` marshal/unmarshal round-trip failures for exabyte-scale
+  values solely because `go-units.HumanSize` can format suffixes that
+  `go-units.FromHumanSize` does not parse; that is accepted upstream behavior
+  unless this repository adds a strict round-trip promise for those values.
+- Redis cache config intentionally expects `cache.options.url` to exist and be a string.
+- Redis cache isolation should use Redis URL database selection, such as
+  `/0` through `/15`, a dedicated endpoint, or deployment-level isolation. Do
+  not flag missing service-name key namespacing or prefix-scoped Redis
+  `Cache.Flush`; implementing that cleanup requires client-side key iteration,
+  while the supported Redis flush behavior is `FLUSHDB` against the selected
+  database.
+- PostgreSQL DSN security options, including TLS/`sslmode`, are intentionally
+  part of the DSN supplied by the service configuration. `database/sql/pg`
+  passes resolved DSNs through to pgx and does not impose repository-level DSN
+  construction policy. Do not flag pass-through DSN handling merely because an
+  insecure DSN could be supplied; only report concrete bugs such as accidental
+  DSN rewriting, secret leakage, or a public API promise to enforce secure DSN
+  policy.
+- SQL OpenTelemetry query text capture is disabled by the supported
+  `database/sql/pg` DI wiring, and ping spans are disabled by the upstream
+  zero-value `otelsql.SpanOptions`. Do not flag lower-level manual
+  `database/sql/telemetry.WithSpanOptions` use solely because a caller could
+  replace those defaults unless a supported config/DI path exposes that option,
+  raw SQL text is emitted by repository code, or the public API starts promising
+  safe merging of arbitrary span options.
+- SQL OpenTelemetry error recording intentionally preserves upstream `otelsql`
+  error events and span status. Those events use `err.Error()` as
+  `exception.message`, and PostgreSQL may echo bound parameter values in error
+  text even while raw query capture is disabled. Trace telemetry is privileged
+  operator diagnostic data and should be protected by backend access controls.
+  Do not flag upstream SQL error messages solely because they may contain bound
+  values; report only concrete local bugs such as raw query text, credentials,
+  or DSNs emitted independently by repository code, ignored explicit telemetry
+  options, or a public API promise of sanitized SQL span errors.
+- RSA public-key loading intentionally validates the repository's key-size
+  policy and delegates deeper RSA parameter checks, such as public exponent
+  usability, to the standard library operations that consume the key. Do not
+  flag `crypto/rsa.Config.PublicKey` merely because `Encrypt` can later return a
+  standard-library error for an unusual parsed key parameter; only report
+  concrete bugs such as panics, accepted weak key sizes, secret leakage, or a
+  public API promise to fully validate every RSA parameter at load time.
+- RSA key loading intentionally supports the PKCS#1 PEM formats generated by
+  this repository's RSA generator: `RSA PUBLIC KEY` and `RSA PRIVATE KEY`.
+  Do not flag missing support for generic PKIX `PUBLIC KEY` or PKCS#8
+  `PRIVATE KEY` RSA PEM blocks as a feature gap solely for external-tool
+  compatibility. Report only concrete bugs where repository-generated RSA keys
+  fail to load, weak keys are accepted, secrets leak, or the documented support
+  boundary changes.
+- Crypto key generation is intentionally not a `crypto`-package product surface.
+  The `crypto/{aes,hmac,ed25519,rsa,ssh}` `Generator` types exist to produce
+  config-compatible key material, but a runnable, user-facing generation entry
+  point (CLI command, aggregating facade, make target, or shipped example) is
+  intentionally out of scope for this repository; key generation lives in a
+  dedicated CLI. Do not flag the absence of a runnable crypto key-generation
+  command/facade/recipe, or the fact that the `Generator` types have only test
+  callers, as a feature or DX gap. Report only concrete bugs where a generator
+  emits material that its own matching `Config` loader rejects, or where
+  documented generation behavior is wrong.
+- Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
+- Casbin's string policy adapter can skip malformed policy rows without failing
+  startup. This is an accepted upstream limitation; the README tells operators
+  to validate policy files before deployment. Do not flag the absence of strict
+  repository-owned row validation or startup rejection solely because malformed
+  administrator-supplied policy can be skipped. Report only concrete bugs such
+  as valid rows being altered or dropped, ignored explicit validation, or a
+  public API promise of strict policy-row validation.
+- IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
+- `net/header.ForwardedIPs` is intentionally an exported mutable list, similar
+  to standard-library package variables such as `os.Args`. Do not flag this
+  solely because importing packages could mutate it; only report concrete bugs
+  with evidence of accidental mutation, concurrent mutation, or an API promise
+  of immutability.
+- `Request-Id`/`request-id` is intentionally a logical request identifier, not
+  a per-wire-attempt identifier. Client metadata runs before retry middleware,
+  so all retry attempts for one logical HTTP/gRPC request share the same value.
+  Retry policies intentionally treat a present request id as the idempotency
+  key/contract for retryable writes; services that accept retried writes should
+  deduplicate by request id when duplicate processing would be unsafe. Do not
+  flag the default HTTP/gRPC retry policy merely because metadata injects
+  request ids before retry.
+- gRPC user-agent is intentionally a connection-level protocol header managed
+  by grpc-go and configured with `grpc.WithUserAgent`. Do not introduce a
+  request-scoped or logical user-agent metadata header, or otherwise propagate
+  context/outgoing user-agent values across gRPC calls. Do not flag the
+  resulting difference between local client metadata and downstream gRPC
+  user-agent attribution as a code issue unless the supported contract changes.
+- HTTP retry intentionally does not apply `transport/retry.Config.Timeout` as a
+  per-attempt timeout. HTTP response bodies are caller-owned after `RoundTrip`
+  returns, and tying retry-owned attempt contexts to returned bodies requires
+  response body wrapping that can hide optional body interfaces. Bound outbound
+  HTTP calls with the request context or `http.Client.Timeout`; do not flag the
+  absence of HTTP retry per-attempt timeout unless a public API starts promising
+  that timeout or the retry layer reintroduces owned response-body lifecycle
+  handling.
+- HTTP retry intentionally runs the first attempt directly after its initial
+  request-context cancellation check, then uses the retry/backoff helper only
+  for later attempts. This keeps request-body ownership simple: an already
+  canceled request is closed locally, while any non-canceled request body is
+  handed to the inner `RoundTripper` on the first attempt. Do not reintroduce
+  per-attempt ownership flags or synthetic tests for the tiny cancellation
+  window before the first attempt unless the retry architecture changes. Local
+  redirect sentinels such as `net/http.ErrUseLastResponse` are terminal retry
+  outcomes, not transport failures to retry.
+- HTTP and gRPC client retry/load-control ordering intentionally match at the
+  supported transport stack level: metadata is outside retry so `Request-Id`
+  stays logical-request scoped, retry wraps the client limiter and breaker so
+  each attempt consumes local quota and breaker capacity, and token generation
+  remains inside retry so each wire attempt gets a fresh token. HTTP local
+  limiter and breaker rejections are marked with `net/http/status.LocalError`
+  and are terminal, not retried as upstream 429/503 responses. Do not flag
+  retry/load-control ordering unless a supported stack regresses from this
+  contract, local load-control rejections become retryable, or a public API
+  starts promising a different composition.
+- `net/http/status.Code(err)` usually returns a valid HTTP status code because
+  repository code should construct HTTP status errors with the constants exposed
+  by `net/http` (for example `http.StatusBadRequest`) or intentionally supported
+  valid custom codes such as `499`. Do not flag hypothetical invalid
+  `WriteHeader` panics from manually constructed bogus codes unless a concrete
+  public API path accepts untrusted status codes or starts promising validation.
+- HTTP operation route patterns registered through
+  `net/http.Router.HandleRoute` with `net/http.WithRouteOperation` are expected
+  to include an HTTP method prefix, such as `"GET /<name>/metrics"`, matching
+  the supported callers in `transport/http/health` and
+  `transport/http/telemetry/metrics`. `HandleRoute` stores only the path portion
+  for operations, so a bare method-less
+  pattern registers under the empty key and never matches; operation matching is
+  intentionally path-only so method mismatches still reach the mux for normal
+  method handling. Do not flag method-less operation patterns failing to match,
+  or the `WithRouteOperation`-versus-`WithRouteUnauthenticated` handling asymmetry, as a bug;
+  method-prefixing is the supported registration form. Report only concrete bugs
+  where a method-prefixed operation pattern fails to match or the supported
+  callers stop prefixing.
+- HTTP `net/http/client.Options.ContentType` is expected to be a real encodable
+  request media type. Error media types (`text/error` and other `*/error`
+  subtypes) are internal error-response media with no encoder, so `Client.Do`
+  panics if one is supplied together with a request body. This is intentional:
+  error media are not valid request content types and callers control
+  `ContentType`. Do not flag the missing nil-encoder guard in `Client.Do` as a
+  bug based on supplying an error media type as a request content type; report
+  only concrete bugs where a valid request media type panics or fails to encode.
+- gRPC client constructor options use the package's last-wins functional option
+  convention. `WithClientDialOption`, `WithClientUnaryInterceptors`, and
+  `WithClientStreamInterceptors` expect all custom values for one client
+  construction to be passed in a single call; repeated calls intentionally
+  replace earlier values. Do not flag this as dropped configuration unless a
+  public API starts promising accumulation across repeated option helpers.
+- Transport limiter keys are `"user-id"`, `"transport-service-method"`,
+  `"service-method"`, `"ip"`, and `"user-agent"`; `"token"` is
+  intentionally not a limiter key. Server limiters run after metadata
+  extraction and token verification, so `"user-id"` is the verified principal
+  (JWT/PASETO subject or SSH key name), and missing, malformed, or invalid auth
+  is rejected before the limiter by design. Do not flag that bypass; use an
+  external edge, gateway, ingress, load balancer, or service mesh limiter when
+  those attempts need quota enforcement.
+- The built-in transport limiter is intentionally in-memory and per-process. Treat it as a last-resort local safeguard; prefer external edge/gateway/ingress/load-balancer/service-mesh limiting for production abuse protection.
+- The built-in transport limiter's memory store returns an error from `Take`
+  only after the store has been closed by its lifecycle hook. Do not report
+  error classification, retry, or status behavior demonstrated solely by
+  explicitly closing a limiter and then reusing it. Before recording such a
+  finding, prove either a non-shutdown `Take` error or a concrete supported
+  request path that can reach the limiter after or concurrently with its
+  lifecycle close; exported `Close`/`Take` methods alone do not establish that
+  post-close reuse is supported.
+- go-service is a microservices framework; browser-facing concerns such as
+  CORS are expected to live at a BFF, API gateway, ingress, CDN, or other edge
+  layer. Do not flag missing built-in CORS/preflight support solely because
+  browser clients cannot call authenticated service endpoints cross-origin
+  through the standard HTTP stack. Report only concrete bugs where a public API
+  promises browser-direct support, an existing edge/BFF integration is broken,
+  or the repo adds first-class CORS/pre-auth middleware semantics and violates
+  them.
+- Transport limiter `max_keys` intentionally caps the number of
+  caller-derived keys that get independent in-memory buckets. Additional
+  distinct keys share one overflow bucket; do not flag this as accidental key
+  collision unless explicit limiter config is ignored, the overflow bucket is
+  bypassed, or documented status/header behavior is wrong.
+- gRPC stream limiters intentionally consume one token when a stream opens and
+  one token for each `RecvMsg` and `SendMsg` operation. Do not flag this as
+  accidental double-counting; report only concrete bugs such as missing message
+  limiting, ignored explicit limiter config, or incorrect status/header
+  behavior.
+- HTTP streaming routes (`net/http/content/stream.Stream`/`RequestStream`) mirror the
+  gRPC stream limiter behavior above: `transport/http/limiter.Handler` still
+  charges one token when the request/stream opens (its existing single
+  `TakeDecision` call, unchanged for every route), and on top of that it stores
+  the underlying `*transport/limiter.Limiter` on the request context via
+  `net/http/meta.WithLimiter` when the request is allowed. `Stream.Send` and
+  `RequestStream.Recv` retrieve it via `net/http/meta.Limiter` and each charge
+  one additional token per message, so a streaming route pays the same
+  stream-open-plus-per-message cost gRPC streams do; non-streaming routes never
+  read that context value, so it is harmless overhead for them. A denial
+  discovered by `Send`/`Recv` before the first successful `Send` is an ordinary
+  pre-commit `429` through `status.Error`, matching the middleware's own
+  rejection; a denial discovered after the response is committed cannot be a
+  `429` (headers are already sent), so it aborts the response like any other
+  post-commit streaming error. The
+  `RateLimit`/`RateLimit-Policy` response headers are set once, from the
+  stream-open decision only, and are not re-emitted per message, since HTTP
+  headers cannot change after a streaming response is committed — unlike
+  gRPC, which can fall back to trailers. Do not flag the missing per-message
+  header updates or the context-value plumbing as bugs; report only concrete
+  issues such as a streaming route never being charged, a charge applied
+  without a captured limiter, or a mid-stream denial incorrectly writing a
+  status after commit.
+- HTTP streaming responses (`net/http/content/stream.NewHandler`,
+  `NewRequestHandler`) intentionally opt out of gzip by setting
+  `gzhttp.HeaderNoCompression` before the first byte is written. This is a
+  deliberate cost/interop decision, not an oversight: per-value flush emits a
+  separate gzip flush block per message (poor value for small NDJSON records),
+  and `gzhttp`'s deferred `Close` on an aborted stream can still emit a
+  complete, valid gzip footer, which is a residual interop risk for a client
+  whose gzip reader stops at that footer rather than reading ahead into the
+  truncated chunked stream (Go's own client does read ahead and still observes
+  the abort). Do not flag the missing compression for streaming responses as a
+  performance regression; report only concrete bugs such as the header not
+  being set before commit, or a streaming route that is compressed despite it.
+- Bidirectional HTTP streaming routes (`net/http/content/stream.NewRequestHandler`,
+  and the route helpers that use it: `net/http/rest`'s `StreamRouteRequest`,
+  `StreamPost`, `StreamPut`, `StreamPatch`, and `net/http/rpc.StreamRoute`)
+  require HTTP/2 (including h2c). `NewRequestHandler` rejects a request
+  with `req.ProtoMajor < 2` with `505 HTTP Version Not Supported` before the
+  handler runs. This is intentional and measured, not a missing feature: an
+  HTTP/1.x request body is buffered ahead of the handler by intermediaries and
+  the Go transport, so a bidi handler that both reads the request stream and
+  writes the response stream hangs rather than failing outright over h1 — the
+  pre-handler rejection is what turns that hang into an immediate, diagnosable
+  error. Send-only streaming routes (`net/http/content/stream.NewHandler`, and
+  `net/http/rest`'s `StreamRoute`/`StreamGet`, `net/http/rpc` has no send-only
+  helper) have no such requirement and stay fully supported on HTTP/1.1
+  chunked responses, since only the bidi handle interleaves reads and writes.
+  Do not flag the 505 rejection, or the asymmetry between the bidi and
+  send-only helpers, as a bug; report only concrete issues such as the gate
+  firing for a send-only route, failing to fire for a bidi route, or an h2/h2c
+  deployment still hanging instead of failing.
+- HTTP telemetry logger service/method derivation may include request URL path
+  segments for non-canonical HTTP routes. This is intentional for client and
+  server debugging because HTTP clients can call arbitrary paths and route
+  patterns are not always available at the logging layer. Do not flag this as a
+  query/header/body leakage issue unless the logger starts recording
+  `RawQuery`, `RequestURI`, headers, cookies, or bodies, or a specific route
+  places secrets in path segments contrary to service policy.
+- OpenTelemetry HTTP client instrumentation is delegated to upstream
+  `otelhttp.NewTransport`, which currently records semantic-convention URL
+  attributes from the request URL and may include `RawQuery` in `url.full`.
+  Treat this as a documented third-party instrumentation behavior, not a local
+  `net/http` finding. Do not flag it unless this repository adds local URL
+  attribute construction, logging/export code that records queries directly, or
+  a supported upstream option that can sanitize this behavior without mutating
+  the outbound request.
+- HTTP client `RoundTripper` implementations that can return locally before
+  delegating to another `RoundTripper` must make request-body ownership explicit
+  with `net/http.ClosingRoundTripper`. Return the closing adapter's close-body
+  flag as true only for local rejection paths, and false after delegating
+  because the delegated transport owns `req.Body` closure.
+- gRPC telemetry logging intentionally records raw error values for operator
+  diagnostics. Client-facing safety is handled by gRPC status/error rendering;
+  logs are backend observability data and should be protected by deployment log
+  access controls. Do not flag raw gRPC error logging as a data leak unless a
+  concrete code path places secrets, credentials, request bodies, or other
+  prohibited sensitive values into those errors contrary to service policy.
+- gRPC client telemetry intentionally includes the raw `conn.Target()` in client
+  log messages to identify the configured downstream endpoint. Targets are
+  expected to be configuration-controlled service addresses and must not contain
+  credentials, tokens, request data, or other secrets. Do not flag raw target
+  logging unless a concrete configuration or call path allows sensitive data in
+  the target string.
+- Before flagging a nil-pointer panic on embedded pointer configuration types,
+  inspect the called method. Go permits calling pointer-receiver methods on nil
+  pointers, and methods such as `(*config/server.Config).IsEnabled` are
+  intentionally nil-safe.
+- gRPC server reflection is intentionally always registered by `net/grpc.NewServer`; restrict public exposure at the bind address, TLS/auth, ingress, firewall, or service-mesh boundary.
+- gRPC service and method names are generated from Buf-managed proto files such
+  as `internal/test/greet/v1/service.proto`, which require package-qualified
+  service names and valid RPC method names. Do not flag
+  `net/grpc.ParseServiceMethod` merely because a hypothetical manually
+  constructed method string like `/pkg.Service/` or `/svc/Get.Name` could split
+  or fall back to `root`. Only report a concrete issue if untrusted,
+  non-generated method strings are used for a security decision, or a public API
+  promises strict validation of arbitrary method strings.
+- MVC controller errors render a client-safe `mvc.Error` model; `mvcModelError` metadata intentionally remains the raw error string for compatibility and must not be rendered unless diagnostic detail exposure is acceptable.
+- MVC views should be constructed during startup or route registration so
+  missing, unreadable, or malformed templates fail fast before serving traffic.
+  Do not flag `mvc.NewFullView`, `mvc.NewPartialView`, or `mvc.NewViewPair`
+  panics as request-path reliability gaps solely because those constructors
+  panic; report only concrete supported paths that construct views per request
+  contrary to the documented lifecycle.
+- Terminal writes and closes after a buffered HTTP response has already been
+  produced are best-effort transport and cleanup signals, not delivery
+  acknowledgements. Go may accept a `ResponseWriter.Write` into internal
+  buffers without proving that the client received it, and the standard
+  library itself discards equivalent terminal response-copy errors. Do not flag
+  ignored final `ResponseWriter.Write`, `bytes.Buffer.WriteTo`, response/body or
+  codec `Close` errors solely to observe client disconnects, write-deadline
+  expiry, or cleanup failure. Report only a concrete repository-owned contract
+  that requires the error to change control flow, preserve data, or feed an
+  actionable required diagnostic. This does not apply to active streaming
+  `Send`/`Recv`/`Flush` errors, which participate in the documented stream
+  abort, limiting, and truncation contracts.
+- MVC static files are expected to be served from embedded or otherwise stable
+  application assets. Do not flag ignored mid-stream `io.Copy` errors in
+  `mvc.writeStaticFile` as reliability gaps solely because an artificial
+  `fs.FS` can return partial data after successful `Open`/`Stat`; report only
+  concrete supported filesystem paths where static reads can fail mid-stream
+  and operators need different behavior.
+- `mvc.StaticPathValue` intentionally treats the decoded
+  `Request.PathValue` as an `fs.FS` path beneath the configured prefix. Go's
+  `ServeMux` can decode `%2F` inside a single wildcard to `/`, so a pattern such
+  as `/{file}` can resolve descendants under that prefix. Do not flag this
+  solely as path traversal; report only a concrete prefix escape, a supported
+  top-level-only contract, or unintended exposure of a non-public asset.
+- MVC static serving intentionally does not generate `ETag`, `Last-Modified`,
+  or conditional 304 responses. The supported embedded filesystem path has no
+  reliable content identity, so do not propose reintroducing validators unless
+  the supported Go toolchain provides a trustworthy constant-time content hash
+  or MVC gains explicit, reliable build metadata.
+- MVC not-found handling intentionally uses a simple `Accept` header check for
+  `text/html` and does not fully evaluate quality weights such as
+  `text/html;q=0`. Do not flag this unless there is concrete evidence of a
+  real client, route, or deployment contract that depends on strict weighted
+  `Accept` negotiation for MVC 404 responses.
+- JWT verification requires both the expected algorithm and a `kid` header.
+- JWT, PASETO, and SSH token key material is intentionally loaded and checked
+  by the runtime `Generate` and `Verify` paths. Do not flag missing startup
+  warmup/validation for token key sources solely because bad, missing,
+  unreadable, or malformed administrator-supplied key material can surface
+  during token issuance or verification. Do not recommend duplicating runtime
+  token checks at startup merely to reject an empty or incomplete trusted key
+  set, including SSH `keys`, unless a supported config contract explicitly
+  promises that structural key usability is validated before runtime token
+  operations. Report only concrete bugs such as panics, accepted weak or wrong
+  key types/sizes, secret leakage, ignored documented token config validation,
+  or a public API promise that token key material is fully resolved before
+  runtime token operations.
+- Token tests should focus on repository-owned wrapper behavior. Do not flag or
+  add tests that require hand-crafting upstream JWT/PASETO internals solely to
+  prove library-owned parsing, signature, expiration, not-before, or
+  missing-claim behavior. Prefer tests through this repository's
+  `Generate`/`Verify` APIs. Only test crafted tokens when the repository adds
+  local validation logic or a public contract beyond upstream library behavior.
+- `telemetry/header.Map.MustSecrets` can panic if secret resolution fails during config projection.
+- Health registration helpers require `*net/http.ServeMux`.
+- Health checks intentionally use go-health registration and observer mapping
+  directly. Service code may colocate `server.Register` and `server.Observe`
+  calls in one DI function for `healthz`, `livez`, `readyz`, and `grpc`
+  observers. Do not flag the absence of a standard health probe composition
+  helper solely because observer names are hand-mapped; report only concrete
+  broken behavior such as missing documented endpoints, ignored observer
+  errors, wrong probe names, or a public API promise that standard probes are
+  auto-composed.
+- The `healthz`/`livez`/`readyz` probes intentionally return only the plain-text
+  `SERVING`/`503` probe contract, not a per-check status breakdown. This
+  framework targets container platforms where per-dependency health aggregation,
+  rollout gating, and outage attribution live at the orchestration and
+  observability layer (Kubernetes probes plus events, service mesh, dashboards),
+  and a service owner who wants a structured per-check detail route can register
+  one. Do not flag the absence of an aggregated health-detail endpoint (per-check
+  JSON from the go-health `Observer.Errors()` map) as a feature or operability
+  gap; report only concrete bugs such as a documented probe endpoint missing,
+  ignored observer errors, or wrong probe names/status codes.
+- Shared metadata, header, and string helpers live under `net/...`, not `transport/...`.
+- `vendor/` is gitignored and regenerated via `make dep`.
+- HTTP webhook verification buffers `req.Body` intentionally for signature checks.
+  Under supported server wiring, `transport/http.NewServer` installs the body
+  limiter before mux handlers, so inbound webhook bodies are capped by
+  `Config.MaxReceiveSize` before verification. Do not flag this as an
+  unbounded-read issue unless the code path bypasses the transport server chain
+  without an equivalent request-size cap.
+- HTTP webhook verification intentionally does not maintain replay state.
+  Receivers must deduplicate or process idempotently using `Webhook-Id` or the
+  event id, preferably with durable shared storage when duplicate valid
+  deliveries would be unsafe. Do not flag missing transport-level replay
+  storage unless the code starts promising replay protection.
+- HTTP webhook signing intentionally ignores the Standard Webhooks `Sign` error
+  because the current vendored implementation always returns nil. Do not flag
+  this unless the dependency behavior changes.
+- HTTP CloudEvents receiver registration intentionally ignores the current
+  CloudEvents constructor errors because supported wiring passes no protocol
+  options and uses the typed `ReceiverFunc`, which matches the SDK receive
+  handler shape. Do not flag this unless dependency behavior or call arguments
+  change.
+- A wire format is admissible for decoding untrusted input only when its decoder
+  is both ratio-bounded, meaning it never allocates from a declared count
+  without validating that count against bytes actually received, and
+  depth-bounded. This is a decoder rule and applies per direction: encoding a
+  response is not gated by it, because the encoder's input is a service-owned
+  domain object rather than caller-controlled bytes. `max_receive_size`,
+  `net/http/body.NewHandler`, and the streaming per-value `capReader` bound
+  input bytes only, so they do not mitigate amplification and are not a
+  substitute for these bounds. `json`, `yaml`, and protobuf are admissible:
+  stdlib `encoding/json` has `maxNestingDepth` plus incremental append,
+  `yaml.v3` has `max_flow_level`/`max_indents` plus `allowedAliasRatio`
+  alias-bomb protection, and protobuf validates every declared length against
+  the remaining buffer in `protowire.ConsumeBytes` and applies
+  `proto.UnmarshalOptions.RecursionLimit`.
+- `msgpack` and `gob` fail the decoder-bounds rule above, so they are
+  intentionally rejected for request-body decoding by
+  `net/http/content/unary.Media.CanDecodeRequest` with HTTP 415 and intentionally
+  absent from `net/http/content/stream`'s `streamKinds`. Both remain fully supported
+  for response encoding, which is why they still resolve as media types.
+  `encoding/gob`'s own `Decoder` documents that it does only basic sanity
+  checking on decoded input sizes and that its limits are not configurable, so
+  there is no hook to add one. The vendored `Basekick-Labs/msgpack/v6` has
+  default allocation limits (`bytesAllocLimit`, `sliceAllocLimit`,
+  `maxMapSize`) but they are per-container constants rather than ratio bounds,
+  and the package has no depth limit or option for one: `decodeSlice` recurses
+  through `decodeInterfaceCond` while holding a clamped `[]interface{}`, so
+  nested container headers decoded into an `any` or `map[string]any` target
+  amplify per level and can exhaust the goroutine stack, which is a fatal
+  runtime error rather than a recoverable panic. Do not propose exposing
+  `msgpack` or `gob` for request-body decoding or streaming negotiation, do not
+  generalize this into a "binary formats are internal" or "unsupported over
+  HTTP" policy, and do not recommend `GOMEMLIMIT`, watchdog goroutines, or
+  lower input-size caps as mitigations. Report only concrete bugs such as a
+  rejected media type being decoded anyway, an admissible format being
+  rejected, or new evidence that a listed decoder's bounds changed upstream.
+- JSON decoding intentionally keeps the standard library's duplicate object key
+  behavior, where later values replace earlier values. Do not flag this as a
+  finding unless a public API starts promising duplicate-key rejection or this
+  repository adds a strict JSON decoder mode.
+- HJSON duplicate-key errors intentionally preserve upstream diagnostic detail,
+  including duplicate decoded values, to keep bad configuration files
+  debuggable. Configuration files are not expected to contain raw passwords or
+  credentials; they should contain source references such as `env:NAME` or
+  `file:/path`. Do not flag this as a secret leak unless a concrete code path
+  starts placing raw secrets into HJSON configuration contrary to that policy.
+- OpenFeature trace event attributes are produced by the upstream
+  `hooks.NewTracesHook` implementation and may include semantic-convention
+  fields such as the evaluation context targeting key and evaluated flag value.
+  Treat this as documented upstream instrumentation behavior; protect telemetry
+  exporter and backend access controls. Do not flag it as a local `feature`
+  issue unless this repository adds local feature trace attribute construction,
+  logs/exports those values independently, or starts promising sanitized feature
+  trace events by default.
+- OpenFeature registration uses process-global SDK state. Do not flag hooks or
+  provider globals leaking after DI startup failure solely because `OnStop` does
+  not run; supported service startup failure exits the process. Report only
+  concrete same-process reuse bugs in supported tests/tools, ignored successful
+  shutdown cleanup, or an API promise that failed startup is recoverable in the
+  same process.
+- The UUIDv7 generator intentionally calls `google/uuid.EnableRandPool` at
+  package init time. UUID is the default ID generator and sits on request
+  metadata hot paths; the process-wide heap-backed random pool tradeoff is
+  accepted for these operational identifiers, which are not secrets or bearer
+  tokens. Do not flag this as a global-state or security issue unless the
+  generator starts being used for secret material, the upstream pool semantics
+  change materially, or a public API starts promising no `google/uuid` global
+  mutation.
