@@ -2,6 +2,8 @@ package unary
 
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
+	encodingerrors "github.com/alexfalkowski/go-service/v2/encoding/errors"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
@@ -30,6 +32,9 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // Errors:
 // If request decoding fails, NewRequestHandler converts the decode error into a 400 Bad Request using
 // net/http/status, allowing the response to be rendered consistently by [status.WriteError].
+// If response encoding fails because the response value does not satisfy the negotiated encoder's
+// required type (see [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType]), the encode
+// error becomes a 406 Not Acceptable; any other encode failure keeps its default status.
 //
 // Successful responses are encoded into a pooled in-memory buffer before being written to the live
 // response writer, so encode failures do not leak partial success bodies.
@@ -61,7 +66,8 @@ type Handler[Res any] func(ctx context.Context) (*Res, error)
 
 // NewHandler builds a handler that encodes the response and writes errors using status helpers.
 //
-// Context population and response content negotiation are the same as NewRequestHandler (see its documentation).
+// Context population, response content negotiation, and encode-error handling are the same as
+// NewRequestHandler (see its documentation).
 //
 // Successful responses are encoded into a pooled in-memory buffer before being written to the live
 // response writer, so encode failures do not leak partial success bodies.
@@ -97,6 +103,10 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 		defer cont.pool.Put(buffer)
 
 		if err := mediaType.Encoder.Encode(buffer, data); err != nil {
+			if errors.Is(err, encodingerrors.ErrInvalidType) {
+				err = status.SafeError(http.StatusNotAcceptable, err)
+			}
+
 			_ = status.WriteError(ctx, res, err)
 
 			return
