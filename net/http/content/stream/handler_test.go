@@ -51,6 +51,21 @@ func TestNewHandlerSendsValuesAndOptsOutOfGzip(t *testing.T) {
 	require.False(t, scanner.Scan())
 }
 
+func TestNewHandlerNormalizesResponseContentType(t *testing.T) {
+	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+		return stream.Send(&test.Response{Greeting: "Hello Bob"})
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.ContentTypeKey, "Application/X-NDJSON; charset=utf-7; profile=v2")
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, media.NDJSON, res.Header().Get(http.ContentTypeKey))
+}
+
 func TestNewHandlerGzipHandlerPassesThroughUncompressed(t *testing.T) {
 	inner := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
 		return stream.Send(&test.Response{Greeting: "Hello Bob"})
