@@ -472,9 +472,10 @@ Postgres config embeds common pool + DSN config (`database/sql/config.Config`), 
 Enablement is presence-based: a nil `sql` block or a nil `sql.pg` block disables SQL wiring. When enabled, the pgx stdlib driver is registered under the name `pg`, and reader/writer DSNs are resolved using the source-string rules described above. Enabled PostgreSQL config must provide at least one non-empty `reader.dsns[].url` or `writer.dsns[].url`. Driver instrumentation is installed when tracing or metrics are enabled, OpenTelemetry `database/sql` stats metrics are registered when metrics are enabled, and the resulting pools are closed on lifecycle stop.
 
 SQL wiring creates `database/sql` pool handles and applies pool settings, but it
-does not ping PostgreSQL during construction. Call `DBs.Ping`,
-`DBs.PingWriter`, `DBs.PingReader`, or register `health/checker.NewDBChecker`
-when startup or readiness should verify database reachability.
+does not ping PostgreSQL during construction. Call `DBs.Ping`, `DBs.PingWriter`,
+or `DBs.PingReader` with an SLO-appropriate
+deadline, or register `health/checker.NewDBChecker`, when startup or readiness
+should verify database reachability.
 
 Example (with source strings for DSNs):
 

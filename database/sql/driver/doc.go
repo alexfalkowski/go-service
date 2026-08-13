@@ -12,7 +12,7 @@
 // Pool creation follows the [database/sql.Open] contract: it may not establish a
 // network connection immediately. Use [github.com/alexfalkowski/go-service/v2/database/sql/driver.DBs.Ping],
 // [github.com/alexfalkowski/go-service/v2/database/sql/driver.DBs.PingWriter],
-// [github.com/alexfalkowski/go-service/v2/database/sql/driver.DBs.PingReader], or a
+// [github.com/alexfalkowski/go-service/v2/database/sql/driver.DBs.PingReader] with a deadline, or a
 // health checker when startup/readiness must verify database reachability.
 //
 // Most applications use this package indirectly through a driver package such as

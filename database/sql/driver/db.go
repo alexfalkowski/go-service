@@ -36,19 +36,19 @@ func (d *DBs) Readers() []*sql.DB {
 	return d.readers
 }
 
-// Ping pings all writer and reader pools.
-func (d *DBs) Ping() error {
-	return ping(d.databases())
+// Ping pings all writer and reader pools with ctx.
+func (d *DBs) Ping(ctx context.Context) error {
+	return ping(ctx, d.databases())
 }
 
-// PingWriter pings all writer pools.
-func (d *DBs) PingWriter() error {
-	return ping(d.writers)
+// PingWriter pings all writer pools with ctx.
+func (d *DBs) PingWriter(ctx context.Context) error {
+	return ping(ctx, d.writers)
 }
 
-// PingReader pings all reader pools.
-func (d *DBs) PingReader() error {
-	return ping(d.readers)
+// PingReader pings all reader pools with ctx.
+func (d *DBs) PingReader(ctx context.Context) error {
+	return ping(ctx, d.readers)
 }
 
 // Reader returns a database pool suitable for read queries.
@@ -98,11 +98,11 @@ func pick(databases []*sql.DB) *sql.DB {
 	return databases[rand.IntN(len(databases))]
 }
 
-func ping(databases []*sql.DB) error {
+func ping(ctx context.Context, databases []*sql.DB) error {
 	errs := make([]error, len(databases))
 	for i, db := range databases {
 		if db != nil {
-			errs[i] = db.PingContext(context.Background())
+			errs[i] = db.PingContext(ctx)
 		}
 	}
 

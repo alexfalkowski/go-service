@@ -122,7 +122,7 @@ func TestOpenRejectsInvalidDSNConfiguration(t *testing.T) {
 func TestConfiguredSQLConnectionRespondsToPing(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil), test.WithWorldLoggerConfig("otlp"))
 
-	require.NoError(t, world.DB.Ping())
+	require.NoError(t, world.DB.Ping(t.Context()))
 }
 
 func TestConnectUsesPostgreSQLTelemetryOptions(t *testing.T) {
@@ -152,10 +152,10 @@ func TestOpenClosesDBsOnStop(t *testing.T) {
 	require.NotNil(t, db)
 
 	lc.RequireStart()
-	require.NoError(t, db.Ping())
+	require.NoError(t, db.Ping(t.Context()))
 
 	lc.RequireStop()
-	require.Error(t, db.Ping())
+	require.Error(t, db.Ping(t.Context()))
 }
 
 func TestDatabaseExecutesReaderQuery(t *testing.T) {
@@ -372,7 +372,7 @@ func TestRejectsInvalidSQLPort(t *testing.T) {
 	require.NoError(t, err)
 
 	lc.RequireStart()
-	require.Error(t, db.Ping())
+	require.Error(t, db.Ping(t.Context()))
 	lc.RequireStop()
 }
 
