@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"google.golang.org/grpc"
@@ -74,13 +75,39 @@ func clientMetadata(ctx context.Context, userAgent env.UserAgent, generator id.G
 	md, ok := FromOutgoingContext(ctx)
 	ua := clientUserAgent(ctx, md, userAgent)
 	requestID := clientRequestID(ctx, generator, md)
+	wireUA := wireUserAgent(ua.Value(), userAgent.String())
+	wireID := wireRequestID(requestID.Value(), generator)
 	if !ok {
-		return clientOutgoingHeaders(ua.Value(), requestID.Value()), ua, requestID
+		return clientOutgoingHeaders(wireUA, wireID), ua, requestID
 	}
 
-	setClientOutgoingHeaders(md, ua.Value(), requestID.Value())
+	setClientOutgoingHeaders(md, wireUA, wireID)
 
 	return md, ua, requestID
+}
+
+// wireUserAgent returns userAgent if it satisfies gRPC's printable-ASCII metadata value contract, otherwise the
+// configured fallback, so a caller-supplied value outside that contract cannot fail the whole outgoing call. The
+// context attribute keeps the original resolved value; only the value written to outgoing metadata is
+// constrained.
+func wireUserAgent(userAgent, fallback string) string {
+	if header.ValidMetadataValue(userAgent) {
+		return userAgent
+	}
+
+	return fallback
+}
+
+// wireRequestID returns requestID if it satisfies gRPC's printable-ASCII metadata value contract, otherwise a
+// freshly generated id, so a caller-supplied value outside that contract cannot fail the whole outgoing call.
+// The context attribute keeps the original resolved value; only the value written to outgoing metadata is
+// constrained.
+func wireRequestID(requestID string, generator id.Generator) string {
+	if header.ValidMetadataValue(requestID) {
+		return requestID
+	}
+
+	return generator.Generate()
 }
 
 func clientOutgoingHeaders(userAgent, requestID string) Map {

@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -54,17 +55,40 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if clonedReq.Header == nil {
 		clonedReq.Header = http.Header{}
 	}
-	clientSetRequestHeaders(clonedReq.Header, userAgent.Value(), requestID.Value())
+	clientSetRequestHeaders(clonedReq.Header, wireUserAgent(userAgent.Value(), r.userAgent.String()), wireRequestID(requestID.Value(), r.generator))
 
 	return r.RoundTripper.RoundTrip(clonedReq)
 }
 
-func clientSetRequestHeaders(header http.Header, userAgent, requestID string) {
+func clientSetRequestHeaders(reqHeader http.Header, userAgent, requestID string) {
 	// Clip caps each header at one element so later appends allocate instead of
 	// overwriting the neighboring value in this backing array.
 	values := [...]string{userAgent, requestID}
-	header["User-Agent"] = slices.Clip(values[0:1])
-	header["Request-Id"] = slices.Clip(values[1:2])
+	reqHeader["User-Agent"] = slices.Clip(values[0:1])
+	reqHeader["Request-Id"] = slices.Clip(values[1:2])
+}
+
+// wireRequestID returns requestID if it satisfies the HTTP header field value contract, otherwise a freshly
+// generated id, so a caller-supplied value outside that contract cannot fail the outbound call. The context
+// attribute keeps the original resolved value; only the value written to the request header is constrained.
+func wireRequestID(requestID string, generator id.Generator) string {
+	if header.ValidFieldValue(requestID) {
+		return requestID
+	}
+
+	return generator.Generate()
+}
+
+// wireUserAgent returns userAgent if it satisfies the HTTP header field value contract, otherwise the configured
+// fallback, so a caller-supplied value outside that contract does not corrupt or get silently dropped from the
+// outbound header. The context attribute keeps the original resolved value; only the value written to the
+// request header is constrained.
+func wireUserAgent(userAgent, fallback string) string {
+	if header.ValidFieldValue(userAgent) {
+		return userAgent
+	}
+
+	return fallback
 }
 
 func clientUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Value {
