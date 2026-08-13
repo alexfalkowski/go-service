@@ -51,5 +51,13 @@
 // it as the idempotency key for retryable write operations. It is not a per-wire
 // attempt id.
 //
+// [RoundTripper] writes a fresh generated id to the outgoing Request-Id header
+// instead of a resolved value that fails the HTTP header field value contract,
+// so an invalid value cannot corrupt or drop the header. The context attribute
+// keeps the original resolved value, so the wire value can diverge from
+// [meta.RequestID] when the resolved value was invalid. The same substitution
+// applies to the outgoing User-Agent header, falling back to the configured
+// default user agent instead of a generated id.
+//
 // This package also provides HTTP metadata middleware via [NewHandler] and [NewRoundTripper].
 package meta

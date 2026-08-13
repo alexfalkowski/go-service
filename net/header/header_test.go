@@ -75,6 +75,32 @@ func TestFieldValueAcceptsValidValue(t *testing.T) {
 	}
 }
 
+func TestMetadataValueAcceptsValidValue(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		value string
+		valid bool
+	}{
+		{name: "plain", value: "request-id", valid: true},
+		{name: "empty", value: strings.Empty, valid: true},
+		{name: "space", value: "current id", valid: true},
+		{name: "tab", value: "a\tb"},
+		{name: "newline", value: "a\nb"},
+		{name: "nul", value: "a\x00b"},
+		{name: "unicode", value: "aaé"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, tt.valid, header.ValidMetadataValue(tt.value))
+		})
+	}
+}
+
 func TestParseBearerAcceptsLowercaseScheme(t *testing.T) {
 	t.Parallel()
 

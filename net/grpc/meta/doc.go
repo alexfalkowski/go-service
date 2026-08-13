@@ -33,6 +33,15 @@
 // use it as the idempotency key for retryable write operations. It is not a
 // per-wire attempt id.
 //
+// Client interceptors write a fresh generated id to outgoing "request-id"
+// metadata instead of a resolved value that fails gRPC's printable-ASCII
+// metadata value contract, because gRPC rejects an entire outgoing call when
+// any metadata value contains a non-printable byte. The context attribute
+// keeps the original resolved value, so the wire value can diverge from
+// [meta.RequestID] when the resolved value was invalid. The same substitution
+// applies to outgoing "user-agent" metadata, falling back to the configured
+// default user agent instead of a generated id.
+//
 // # Forwarded IP trust boundary
 //
 // Server metadata extraction intentionally treats common forwarding metadata,

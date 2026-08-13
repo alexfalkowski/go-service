@@ -28,18 +28,16 @@ var ForwardedIPs = [...]ForwardedIP{
 	{HTTP: "X-Forwarded-For", GRPC: "x-forwarded-for"},
 }
 
-var (
-	// ErrInvalidAuthorization is returned when an Authorization header cannot be parsed.
-	//
-	// This is returned when the header does not contain a scheme and value separated by a single ASCII space
-	// (i.e. it cannot be split as "<scheme> <value>").
-	ErrInvalidAuthorization = errors.New("header: authorization is invalid")
+// ErrInvalidAuthorization is returned when an Authorization header cannot be parsed.
+//
+// This is returned when the header does not contain a scheme and value separated by a single ASCII space
+// (i.e. it cannot be split as "<scheme> <value>").
+var ErrInvalidAuthorization = errors.New("header: authorization is invalid")
 
-	// ErrNotSupportedAuthorization is returned when the Authorization scheme is not supported.
-	//
-	// This is returned when the parsed scheme is not Bearer.
-	ErrNotSupportedAuthorization = errors.New("header: authorization is not supported")
-)
+// ErrNotSupportedAuthorization is returned when the Authorization scheme is not supported.
+//
+// This is returned when the parsed scheme is not Bearer.
+var ErrNotSupportedAuthorization = errors.New("header: authorization is not supported")
 
 // ForwardedIP describes one forwarding header used to derive a client IP address.
 type ForwardedIP struct {
@@ -63,6 +61,20 @@ func ValidFieldName(name string) bool {
 // ValidFieldValue reports whether value is a valid HTTP header field value.
 func ValidFieldValue(value string) bool {
 	return httpguts.ValidHeaderFieldValue(value)
+}
+
+// ValidMetadataValue reports whether value is a valid gRPC metadata value.
+//
+// gRPC rejects the entire outgoing metadata set if any value contains a byte outside printable ASCII
+// (%x20-%x7E); see hasNotPrintable in vendor/google.golang.org/grpc/internal/metadata/metadata.go.
+func ValidMetadataValue(value string) bool {
+	for i := range len(value) {
+		if value[i] < 0x20 || value[i] > 0x7E {
+			return false
+		}
+	}
+
+	return true
 }
 
 // ParseBearer parses an HTTP Authorization header and returns its bearer token value.

@@ -71,6 +71,50 @@ func TestRoundTripperAppendDoesNotOverwriteRequestID(t *testing.T) {
 	require.Empty(t, req.Header.Values("Request-Id"))
 }
 
+func TestRoundTripperSanitizesInvalidMetadata(t *testing.T) {
+	roundTripper := httpmeta.NewRoundTripper(
+		env.UserAgent("fallback-agent"),
+		test.StaticIDGenerator("generated-id"),
+		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			require.Equal(t, "fallback-agent", req.Header.Get("User-Agent"))
+			require.Equal(t, "generated-id", req.Header.Get("Request-Id"))
+			require.Equal(t, "aa\x01bb", meta.UserAgent(req.Context()).Value())
+			require.Equal(t, "aa\x01bb", meta.RequestID(req.Context()).Value())
+
+			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
+		}),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+	req.Header.Set("User-Agent", "aa\x01bb")
+	req.Header.Set("Request-Id", "aa\x01bb")
+
+	res, err := roundTripper.RoundTrip(req)
+	require.NoError(t, err)
+	require.NoError(t, res.Body.Close())
+}
+
+func TestRoundTripperKeepsHighByteMetadata(t *testing.T) {
+	roundTripper := httpmeta.NewRoundTripper(
+		env.UserAgent("fallback-agent"),
+		test.StaticIDGenerator("generated-id"),
+		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			require.Equal(t, "aaé", req.Header.Get("User-Agent"))
+			require.Equal(t, "aaé", req.Header.Get("Request-Id"))
+
+			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
+		}),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+	req.Header.Set("User-Agent", "aaé")
+	req.Header.Set("Request-Id", "aaé")
+
+	res, err := roundTripper.RoundTrip(req)
+	require.NoError(t, err)
+	require.NoError(t, res.Body.Close())
+}
+
 func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 	roundTripper := httpmeta.NewRoundTripper(
 		env.UserAgent("agent"),
