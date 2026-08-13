@@ -165,6 +165,32 @@ func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 	test.RequireResponseBodyNotContains(t, res, "partial")
 }
 
+func TestNewHandlerRejectsUnencodableAcceptAsNotAcceptable(t *testing.T) {
+	for _, mediaType := range []string{
+		media.Text, "application/octet-stream", media.Protobuf, media.ProtobufText, media.ProtobufJSON,
+	} {
+		t.Run(mediaType, func(t *testing.T) {
+			called := false
+			handler := unary.NewHandler(test.UnaryContent, func(_ context.Context) (*test.Response, error) {
+				called = true
+
+				return &test.Response{Greeting: "Hello Bob"}, nil
+			})
+
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+			req.Header.Set(http.AcceptKey, mediaType)
+			res := httptest.NewRecorder()
+
+			handler.ServeHTTP(res, req)
+
+			require.True(t, called)
+			require.Equal(t, http.StatusNotAcceptable, res.Code)
+			require.Equal(t, "text/error; charset=utf-8", res.Header().Get(http.ContentTypeKey))
+			test.RequireTrimmedResponseBody(t, res, "http: not acceptable")
+		})
+	}
+}
+
 func TestNewHandlerRejectsUnavailableResponseCodec(t *testing.T) {
 	enc := encoding.NewMap()
 	enc.Register("json", nil)
