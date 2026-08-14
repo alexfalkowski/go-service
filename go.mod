@@ -33,7 +33,7 @@ require (
 	github.com/lmittmann/tint v1.2.0
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/oklog/ulid v1.3.1
-	github.com/open-feature/go-sdk v1.17.2
+	github.com/open-feature/go-sdk v1.18.0
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.7
 	github.com/prometheus/client_golang v1.24.1
 	github.com/redis/go-redis/extra/redisotel/v9 v9.22.0
@@ -70,7 +70,7 @@ require (
 	go.uber.org/fx v1.24.0
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/crypto v0.55.0
-	golang.org/x/net v0.57.0
+	golang.org/x/net v0.58.0
 	google.golang.org/grpc v1.83.0
 	google.golang.org/protobuf v1.36.12
 )
