@@ -158,7 +158,7 @@ func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
 
-func TestOTLPGRPCReader(t *testing.T) {
+func TestOTLPOverGRPCReader(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind:     "otlp",
@@ -172,7 +172,7 @@ func TestOTLPGRPCReader(t *testing.T) {
 	require.NoError(t, reader.Shutdown(t.Context()))
 }
 
-func TestRejectsInvalidOTLPGRPCEndpoint(t *testing.T) {
+func TestRejectsInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind:     "otlp",
@@ -187,7 +187,7 @@ func TestRejectsInvalidOTLPGRPCEndpoint(t *testing.T) {
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
 
-func TestOTLPGRPCReaderWithTLSHeaders(t *testing.T) {
+func TestOTLPOverGRPCReaderWithTLSHeaders(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind:     "otlp",

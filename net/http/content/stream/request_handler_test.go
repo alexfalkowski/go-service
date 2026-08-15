@@ -602,6 +602,33 @@ func TestNewRequestHandlerRecvRejectsBufferedValueOverCap(t *testing.T) {
 	require.Equal(t, int64(16), maxBytesErr.Limit)
 }
 
+func TestNewRequestHandlerRecvReturnsDecodeErrorForBufferedValueWithinCap(t *testing.T) {
+	var secondErr error
+
+	handler := contentstream.NewRequestHandler(
+		test.StreamContent,
+		contentstream.Options{MaxReceiveSize: 16}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+			_, err := stream.Recv()
+			require.NoError(t, err)
+
+			_, secondErr = stream.Recv()
+			return secondErr
+		})
+
+	body := "{\"Name\":\"A\"}\n{\"Name\":\"B\",\"Unknown\":true}\n"
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(body))
+	req.ProtoMajor = 2
+	req.Header.Set(http.ContentTypeKey, media.NDJSON)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Error(t, secondErr)
+	require.NotEqual(t, http.StatusRequestEntityTooLarge, status.Code(secondErr))
+	require.NotEqual(t, http.StatusRequestEntityTooLarge, res.Code)
+}
+
 func TestNewRequestHandlerRecvRejectsValueOverCapRegardlessOfDecoderBehavior(t *testing.T) {
 	tests := []struct {
 		name    string

@@ -173,6 +173,7 @@ func serverIPAddr(ctx context.Context) (meta.Value, meta.Value) {
 		k := h.GRPC
 		if f := serverValue(ctx, k); !strings.IsEmpty(f) {
 			ip, _, _ := strings.Cut(f, ",")
+			ip = strings.TrimSpace(ip)
 
 			return meta.String(k), meta.String(ip)
 		}

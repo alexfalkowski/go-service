@@ -218,6 +218,8 @@ func TestNewFromAcceptRejectsConcreteOnlyUnsatisfiableAccept(t *testing.T) {
 		{name: "zero quality exact match overrides a co-present bare wildcard, reversed", accept: "*/*, " + media.NDJSON + ";q=0"},
 		{name: "zero quality subtype wildcard overrides a co-present bare wildcard", accept: "application/*;q=0, */*"},
 		{name: "zero quality subtype wildcard overrides a co-present bare wildcard, reversed", accept: "*/*, application/*;q=0"},
+		{name: "zero quality exact match wins equal specificity tie", accept: media.NDJSON + ", " + media.NDJSON + ";q=0"},
+		{name: "zero quality exact match wins equal specificity tie, reversed", accept: media.NDJSON + ";q=0, " + media.NDJSON},
 	}
 
 	for _, tt := range tests {

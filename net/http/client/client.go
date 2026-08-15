@@ -237,6 +237,7 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 //   - Otherwise, if the status code is in the 4xx/5xx range, a generic status error is returned.
 //   - Otherwise, if opts.Response is non-nil, the response body is decoded into it using the encoder
 //     selected by the response Content-Type (falling back to opts.ContentType).
+//   - An empty successful response body is not decoded, leaving opts.Response unchanged.
 //
 // Notes:
 //   - Callers may pass the zero Options value when no request/response bodies are needed.
@@ -281,6 +282,10 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 		// an inbound request body); see the decoder-bounds rule in net/http/content/unary's documentation.
 		if responseMedia.Encoder == nil {
 			return errors.Prefix("http: decode", unary.ErrUnsupportedMedia)
+		}
+
+		if responseBody.Len() == 0 {
+			return nil
 		}
 
 		if err := responseMedia.Encoder.Decode(responseBody, opts.Response); err != nil {

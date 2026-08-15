@@ -403,7 +403,7 @@ func (s *RequestResponseStream) Send(v any) error {
 }
 
 // finish closes the request-side pipe according to handlerErr, then always resolves and closes the
-// response. A response status error replaces only handlerErr when it is the stream's own closed-pipe
+// response. A resolved response error replaces only handlerErr when it is the stream's own closed-pipe
 // Send failure; all other handler and encoder errors retain priority.
 func (s *RequestResponseStream) finish(handlerErr error) error {
 	if handlerErr != nil {
@@ -416,7 +416,7 @@ func (s *RequestResponseStream) finish(handlerErr error) error {
 	}
 
 	closeErr := s.close()
-	if errors.Is(handlerErr, s.sendErr) && errors.Is(s.sendErr, io.ErrClosedPipe) && status.IsError(closeErr) {
+	if errors.Is(handlerErr, s.sendErr) && errors.Is(s.sendErr, io.ErrClosedPipe) && closeErr != nil {
 		return closeErr
 	}
 

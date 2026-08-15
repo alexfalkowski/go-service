@@ -32,6 +32,22 @@ func TestDoAllowsResponseAtMaxResponseSize(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDoAllowsEmptyResponseBody(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.Header().Set(http.ContentTypeKey, media.JSON)
+		res.WriteHeader(http.StatusNoContent)
+	}))
+	t.Cleanup(server.Close)
+
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
+	response := test.Response{Greeting: "unchanged"}
+
+	err := c.Get(t.Context(), server.URL, client.Options{Response: &response})
+
+	require.NoError(t, err)
+	require.Equal(t, "unchanged", response.Greeting)
+}
+
 func TestDoUsesConfiguredTimeout(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set(http.ContentTypeKey, media.Text)

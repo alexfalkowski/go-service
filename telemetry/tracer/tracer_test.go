@@ -272,7 +272,7 @@ func TestRegisterInvalidOTLPEndpoint(t *testing.T) {
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
 
-func TestRegisterOTLPHTTPExporterDoesNotFollowRedirects(t *testing.T) {
+func TestRegisterOTLPOverHTTPExporterDoesNotFollowRedirects(t *testing.T) {
 	trustedHeaders := make(chan string, 1)
 	attackerHeaders := make(chan string, 1)
 	attacker := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
@@ -325,7 +325,7 @@ func TestRegisterOTLPHTTPExporterDoesNotFollowRedirects(t *testing.T) {
 	}
 }
 
-func TestRegisterOTLPGRPCExporter(t *testing.T) {
+func TestRegisterOTLPOverGRPCExporter(t *testing.T) {
 	t.Cleanup(func() {
 		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	})
@@ -347,7 +347,7 @@ func TestRegisterOTLPGRPCExporter(t *testing.T) {
 	require.True(t, tracer.IsEnabled())
 }
 
-func TestRegisterInvalidOTLPGRPCEndpoint(t *testing.T) {
+func TestRegisterInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 	err := tracer.Register(tracer.TracerParams{
 		Lifecycle: fxtest.NewLifecycle(t),
 		Config: &tracer.Config{
@@ -363,7 +363,7 @@ func TestRegisterInvalidOTLPGRPCEndpoint(t *testing.T) {
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
 
-func TestRegisterOTLPGRPCExporterWithTLSHeaders(t *testing.T) {
+func TestRegisterOTLPOverGRPCExporterWithTLSHeaders(t *testing.T) {
 	t.Cleanup(func() {
 		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	})
@@ -390,16 +390,16 @@ func TestRegisterOTLPGRPCExporterWithTLSHeaders(t *testing.T) {
 	require.True(t, tracer.IsEnabled())
 }
 
-func TestRegisterOTLPEndpointLoopbackIPs(t *testing.T) {
+func TestRegisterOTLPEndpointAddressSecurity(t *testing.T) {
 	headers := header.Map{"Authorization": "Bearer token"}
 	tests := []struct {
 		wantErr error
 		name    string
 		url     string
 	}{
-		{name: "IPv6 loopback", url: "http://[::1]:4318/v1/traces"},
-		{name: "private IPv4", url: "http://10.0.0.10:4318/v1/traces", wantErr: otlp.ErrInsecureEndpoint},
-		{name: "unique local IPv6", url: "http://[fd00::1]:4318/v1/traces", wantErr: otlp.ErrInsecureEndpoint},
+		{name: "IPV6 loopback", url: "http://[::1]:4318/v1/traces"},
+		{name: "private IPV4", url: "http://10.0.0.10:4318/v1/traces", wantErr: otlp.ErrInsecureEndpoint},
+		{name: "unique local IPV6", url: "http://[fd00::1]:4318/v1/traces", wantErr: otlp.ErrInsecureEndpoint},
 	}
 
 	for _, tt := range tests {
@@ -477,7 +477,7 @@ func requireSamplerRecording(t *testing.T, sampler *tracer.SamplerConfig, ctx co
 	require.Equal(t, want, span.IsRecording())
 }
 
-func TestRegisterOTLPGRPCExporterWithBatchTuning(t *testing.T) {
+func TestRegisterOTLPOverGRPCExporterWithBatchTuning(t *testing.T) {
 	t.Cleanup(func() {
 		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	})

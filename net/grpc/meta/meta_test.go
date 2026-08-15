@@ -334,7 +334,7 @@ func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
 
 func TestUnaryServerInterceptorPrefersForwardedIPAddr(t *testing.T) {
 	interceptor := grpcmeta.NewServer(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"), 0).UnaryInterceptor()
-	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("x-forwarded-for", "203.0.113.10, 10.0.0.1"))
+	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("x-forwarded-for", " 203.0.113.10 , 10.0.0.1"))
 	ctx = peer.NewContext(ctx, &peer.Peer{Addr: &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: 8080}})
 
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {

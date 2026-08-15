@@ -303,11 +303,22 @@ func TestEveryEncoderKindIsClassified(t *testing.T) {
 		"msgpack": false, "gob": false,
 	}
 
+	content := unary.NewContent(encoding.NewMap(), test.Pool)
+
 	for _, kind := range encoding.NewMap().Keys() {
 		expected, ok := classified[kind]
 		require.True(t, ok, "kind %q needs an explicit request-decode classification", kind)
-		content := unary.NewContent(encoding.NewMap(), test.Pool)
 		require.Equal(t, expected, content.NewFromMedia("application/"+kind).CanDecodeRequest(), "kind %q", kind)
+	}
+
+	for alias, kind := range map[string]string{
+		"pb": "protobuf", "pbbin": "protobuf", "proto": "protobuf", "protobin": "protobuf",
+		"pbtxt": "prototext", "prototxt": "prototext", "pbjson": "protojson",
+		"octet-stream": "bytes", "plain": "bytes",
+	} {
+		expected, ok := classified[kind]
+		require.True(t, ok, "alias %q resolves to unclassified kind %q", alias, kind)
+		require.Equal(t, expected, content.NewFromMedia("application/"+alias).CanDecodeRequest(), "alias %q", alias)
 	}
 }
 

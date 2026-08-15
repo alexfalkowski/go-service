@@ -25,9 +25,26 @@ import (
 func AcceptItems(header string) []string {
 	var items []string
 
+	for start := 0; ; {
+		end := acceptItemEnd(header[start:])
+		items = append(items, strings.TrimSpace(header[start:start+end]))
+
+		if start+end == len(header) {
+			return items
+		}
+
+		start += end + 1
+	}
+}
+
+// FirstAcceptItem returns the first item of header; see [AcceptItems] for the splitting rules.
+func FirstAcceptItem(header string) string {
+	return strings.TrimSpace(header[:acceptItemEnd(header)])
+}
+
+func acceptItemEnd(header string) int {
 	quoted := false
 	escaped := false
-	start := 0
 
 	for index := range header {
 		if escaped {
@@ -50,18 +67,12 @@ func AcceptItems(header string) []string {
 
 		if header[index] == ',' && !quoted {
 			// An HTTP list comma ends an item only outside a quoted string.
-			items = append(items, strings.TrimSpace(header[start:index]))
-			start = index + 1
+			return index
 		}
 	}
 
 	// Leave a single or malformed trailing item intact so the caller can accept or reject it.
-	return append(items, strings.TrimSpace(header[start:]))
-}
-
-// FirstAcceptItem returns the first item of header; see [AcceptItems] for the splitting rules.
-func FirstAcceptItem(header string) string {
-	return AcceptItems(header)[0]
+	return len(header)
 }
 
 // IsAcceptZeroQuality reports whether item's q parameter is present and exactly zero — the RFC 9110 §12.4.2

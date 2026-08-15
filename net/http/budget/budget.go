@@ -66,6 +66,7 @@ type Reader struct {
 	r    io.Reader
 	max  int64
 	read int64
+	seed int64
 }
 
 // Reset rearms the byte counter for the next decoded value. bufferedAhead has already been read from the
@@ -73,14 +74,15 @@ type Reader struct {
 // accounting rather than being discarded when the counter resets.
 func (r *Reader) Reset(bufferedAhead int64) {
 	r.read = bufferedAhead
+	r.seed = bufferedAhead
 }
 
 // Exceeds reports whether the bytes read since the last [Reader.Reset], minus bufferedAhead, exceed the
 // configured budget. bufferedAhead is the decoder's own read-ahead for a later value; subtracting it
 // corrects for a decoder that pulled more than one value's worth of bytes out of the reader in a single
 // underlying Read. The corrected count is clamped to zero, and this always reports false when the budget
-// is disabled (max <= 0). This is the post-decode check; [Reader.Read] applies its own uncorrected, live
-// check to bound a single pathological value across repeated Read calls.
+// is disabled (max <= 0). This is the post-decode check; [Reader.Read] applies its own seed-relative,
+// live check to bound a single pathological value across repeated Read calls.
 func (r *Reader) Exceeds(bufferedAhead int64) bool {
 	if r.max <= 0 {
 		return false
@@ -92,9 +94,9 @@ func (r *Reader) Exceeds(bufferedAhead int64) bool {
 }
 
 // Read implements [io.Reader]. Once the bytes read since the last [Reader.Reset] already exceed the
-// configured budget, Read refuses to read more and returns [ErrExceeded], and every subsequent call
-// returns that same error until Reset is called. Read never refuses to read when the budget is disabled
-// (max <= 0).
+// configured budget, excluding decoder read-ahead that [Reader.Reset] attributed to the previous value,
+// Read refuses to read more and returns [ErrExceeded], and every subsequent call returns that same error
+// until Reset is called. Read never refuses to read when the budget is disabled (max <= 0).
 func (r *Reader) Read(p []byte) (int, error) {
 	if r.exceededLive() {
 		return 0, ErrExceeded
@@ -116,11 +118,13 @@ func (r *Reader) Err() error {
 	return nil
 }
 
-// exceededLive reports the same live, uncorrected condition [Reader.Read] and [Reader.Err] both answer:
-// the budget is enabled and the raw count since the last [Reader.Reset] already exceeds it. This needs
-// no cached "latched" state of its own — r.read only advances when Read actually reads more from r,
-// which it refuses to do once this already reports true, so re-evaluating it on every call is exactly as
-// sticky as caching its first result would be, without an extra field to keep in sync with Reset.
+// exceededLive reports the same live condition [Reader.Read] and [Reader.Err] both answer: the budget is
+// enabled and reads made after the last [Reader.Reset] exceed it. Read-ahead is already buffered by the
+// decoder before Reset, so it belongs to the previous read and cannot spend the current value's live
+// budget. This needs no cached "latched" state of its own — r.read only advances when Read actually
+// reads more from r, which it refuses to do once this already reports true, so re-evaluating it on every
+// call is exactly as sticky as caching its first result would be, without an extra field to keep in sync
+// with Reset.
 func (r *Reader) exceededLive() bool {
-	return r.max > 0 && r.read > r.max
+	return r.max > 0 && r.read-r.seed > r.max
 }
