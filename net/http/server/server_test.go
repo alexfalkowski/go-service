@@ -52,10 +52,14 @@ func TestShutdownClosesUnservedListener(t *testing.T) {
 
 func TestShutdownClosesActiveConnectionsWhenContextCanceled(t *testing.T) {
 	started := make(chan struct{})
+
+	// Bind loopback rather than the wildcard address: [net/http.ProxyFromEnvironment] bypasses a configured
+	// proxy only for localhost and loopback hosts, and a proxy between this client and the server answers
+	// the severed connection with its own 502 instead of the transport error asserted below.
 	srv, err := server.NewServer(&http.Server{Handler: http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
 		close(started)
 		<-req.Context().Done()
-	})}, &config.Config{Address: ":0"})
+	})}, &config.Config{Address: test.RandomHost()})
 	require.NoError(t, err)
 
 	serveErr := make(chan error, 1)

@@ -40,7 +40,7 @@ func NewService(name string, http *http.Server, cfg *config.Config, logger *logg
 //
 // Address parsing:
 // The cfg.Address is expected to use the go-service network address convention "<network>://<address>"
-// (for example "tcp://:8080"). It is split using [net.SplitNetworkAddress] and then passed to [net.Listen].
+// (for example "tcp://:8080"). It is resolved using [net.ListenNetworkAddress] and then passed to [net.Listen].
 //
 // Listener lifecycle:
 // NewServer creates and stores the listener immediately. The listener is used by Serve/ServeTLS. If listener

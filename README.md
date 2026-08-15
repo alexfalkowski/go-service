@@ -1199,6 +1199,14 @@ router.HandleRoute(
 )
 ```
 
+> [!WARNING]
+> `http.WithRouteOperation` is for service-owned infrastructure paths, such as the health and metrics routes.
+> Operation matching is path-only, so it marks the pattern's path for **every** method — marking `GET /feed`
+> also marks a separately registered `POST /feed` — and supported middleware treats an operation route as
+> exempt from token verification, access control, and rate limiting, and omits its per-request outcome log
+> line. `http.WithRouteUnauthenticated` instead bypasses transport token verification and access control while
+> retaining rate limiting and normal outcome logging; use it only when another boundary protects the route.
+
 REST and RPC route helpers accept HTTP route options. Streaming helpers add their inherent stream direction,
 and supplied streaming options are additive. MVC accepts only `mvc.WithRouteUnauthenticated` for its view routes.
 MVC static helpers keep their `StaticOption` signature; use

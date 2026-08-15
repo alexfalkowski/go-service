@@ -33,6 +33,11 @@ func Close(body io.ReadCloser) {
 // requests, it replaces req.Body with a fresh buffered body so downstream
 // handlers can read it normally, and closes the original body after handler
 // returns.
+//
+// Closing the original body is arranged only once buffering has been attempted, so the two rejections
+// that return before that — the Content-Length short-circuit and a buffering read error — leave it open.
+// The standard library server closes the request body itself once its handler returns, so this is
+// observable only to a non-stdlib embedder that serves this handler directly.
 func NewHandler(handler http.Handler, limit int64) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		if req.ContentLength > limit {

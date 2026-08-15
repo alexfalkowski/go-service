@@ -153,7 +153,9 @@ type Options struct {
 	Response any
 
 	// ContentType is the request Content-Type used for encoding and the fallback decoder selection
-	// when Accept and the response Content-Type header are not set.
+	// when the response carries no Content-Type header. Accept never selects the response decoder
+	// itself; it is only sent on the request, so it acts on decoding indirectly, through the
+	// Content-Type the server chooses to answer with.
 	ContentType string
 
 	// Accept is the response Accept media type sent on the request.

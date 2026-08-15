@@ -53,6 +53,11 @@ func NewClient(httpClient http.Client) Client {
 // This wrapper supports the repository's standard receiver path: it uses the
 // default CloudEvents HTTP protocol with a typed ReceiverFunc and does not
 // expose CloudEvents constructor errors to callers.
+//
+// ctx is passed through for the upstream constructor's signature and does not
+// bound the returned handler: the CloudEvents receive handler retains no
+// construction-time context and serves every request with that request's own
+// context. Cancel the server, not this ctx, to stop receiving.
 func NewReceiveHandler(ctx context.Context, receiver ReceiverFunc) http.Handler {
 	protocol, _ := cloudevents.NewHTTP()
 
