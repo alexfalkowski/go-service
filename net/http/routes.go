@@ -12,16 +12,26 @@ type routeOptions struct {
 	responseStreaming bool
 }
 
-// WithRouteOperation marks a route as a service-owned operation path.
+// WithRouteOperation marks a route as a service-owned operation path, for infrastructure endpoints such
+// as the health and metrics routes registered by transport/http/health and transport/http/telemetry/metrics.
 //
 // Operation matching is path-only so method mismatches can reach the mux and receive normal method handling.
+// Registration therefore marks the pattern's path for every method: registering "GET /admin" as an operation
+// also marks a "POST /admin" registered by a separate HandleRoute call without this option.
+//
+// Supported middleware treats an operation route as exempt from transport token verification, access control,
+// and rate limiting, and omits its per-request outcome log line (a recovered panic is still logged).
+// WithRouteUnauthenticated instead bypasses transport token verification and access control while retaining
+// rate limiting and normal outcome logging; use it only when another boundary protects the route.
 func WithRouteOperation() RouteOption {
 	return func(options *routeOptions) {
 		options.operation = true
 	}
 }
 
-// WithRouteUnauthenticated marks a route as not requiring transport token authentication.
+// WithRouteUnauthenticated marks a route to bypass transport token verification and access control.
+//
+// It retains rate limiting and normal outcome logging, so use it only when another boundary protects the route.
 func WithRouteUnauthenticated() RouteOption {
 	return func(options *routeOptions) {
 		options.unauthenticated = true

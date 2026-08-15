@@ -321,12 +321,14 @@ areas without accounting for the entry that covers it.
   callers stop prefixing.
 - HTTP `net/http/client.Options.ContentType` is expected to be a real encodable
   request media type. Error media types (`text/error` and other `*/error`
-  subtypes) are internal error-response media with no encoder, so `Client.Do`
-  panics if one is supplied together with a request body. This is intentional:
-  error media are not valid request content types and callers control
-  `ContentType`. Do not flag the missing nil-encoder guard in `Client.Do` as a
-  bug based on supplying an error media type as a request content type; report
-  only concrete bugs where a valid request media type panics or fails to encode.
+  subtypes) are internal error-response media with no encoder, so supplying one
+  together with a request body is rejected rather than encoded: `Client.Do`
+  returns `http: encode: unary: unsupported media` from `newRequest`'s
+  nil-encoder guard and sends no request. This is intentional: error media are
+  not valid request content types and callers control `ContentType`. Do not flag
+  that rejection, or the matching nil-encoder guard on `Client.Do`'s
+  response-decode path, as a bug based on supplying an error media type; report
+  only concrete bugs where a valid request media type fails to encode.
 - gRPC client constructor options use the package's last-wins functional option
   convention. `WithClientDialOption`, `WithClientUnaryInterceptors`, and
   `WithClientStreamInterceptors` expect all custom values for one client
