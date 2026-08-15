@@ -81,7 +81,7 @@ func (t Media) IsError() bool {
 // fallback therefore reports JSON's answer, because JSON is genuinely what it holds; only
 // Content.NewFromRequestBody resolves a request Content-Type strictly.
 func (t Media) CanDecodeRequest() bool {
-	return t.Encoder != nil && policy.CanDecode(t.Subtype())
+	return t.Encoder != nil && policy.CanDecode(unaryKind(t.Subtype()))
 }
 
 func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {

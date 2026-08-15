@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	httpmeta "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/stretchr/testify/require"
 )
@@ -92,6 +93,43 @@ func TestRoundTripperSanitizesInvalidMetadata(t *testing.T) {
 	res, err := roundTripper.RoundTrip(req)
 	require.NoError(t, err)
 	require.NoError(t, res.Body.Close())
+}
+
+func TestRoundTripperOmitsInvalidUserAgentFallback(t *testing.T) {
+	roundTripper := httpmeta.NewRoundTripper(
+		env.UserAgent("fallback-\x01agent"),
+		test.StaticIDGenerator("generated-id"),
+		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			require.Equal(t, []string{strings.Empty}, req.Header.Values("User-Agent"))
+
+			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
+		}),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+	req.Header.Set("User-Agent", "aa\x01bb")
+
+	res, err := roundTripper.RoundTrip(req)
+	require.NoError(t, err)
+	require.NoError(t, res.Body.Close())
+}
+
+func TestRoundTripperOmitsInvalidUserAgentFallbackOnWire(t *testing.T) {
+	userAgent := make(chan string, 1)
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		userAgent <- req.Header.Get("User-Agent")
+		res.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	roundTripper := httpmeta.NewRoundTripper(env.UserAgent("fallback-\x01agent"), test.StaticIDGenerator("generated-id"), http.DefaultTransport)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, server.URL, http.NoBody)
+	require.NoError(t, err)
+
+	res, err := roundTripper.RoundTrip(req)
+	require.NoError(t, err)
+	require.NoError(t, res.Body.Close())
+	require.Empty(t, <-userAgent)
 }
 
 func TestRoundTripperKeepsHighByteMetadata(t *testing.T) {
@@ -247,6 +285,19 @@ func TestHandlerStoresServiceMethodFromPattern(t *testing.T) {
 		require.Equal(t, meta.Ignored("GET /users/{id}"), meta.ServiceMethod(req.Context()))
 		require.Equal(t, "GET /users/{id}", req.Pattern)
 		require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
+	})
+}
+
+func TestHandlerTrimsForwardedIPAddr(t *testing.T) {
+	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil, 1024)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
+	require.NoError(t, err)
+	req.Header.Set("X-Forwarded-For", " 203.0.113.7 , 70.41.3.18")
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
+		require.Equal(t, meta.String("x-forwarded-for"), meta.Attribute(req.Context(), meta.IPAddrKindKey))
+		require.Equal(t, meta.String("203.0.113.7"), meta.IPAddr(req.Context()))
 	})
 }
 

@@ -80,15 +80,18 @@ func wireRequestID(requestID string, generator id.Generator) string {
 }
 
 // wireUserAgent returns userAgent if it satisfies the HTTP header field value contract, otherwise the configured
-// fallback, so a caller-supplied value outside that contract does not corrupt or get silently dropped from the
-// outbound header. The context attribute keeps the original resolved value; only the value written to the
-// request header is constrained.
+// fallback when it also satisfies the contract, otherwise an empty value that omits the header. The context
+// attribute keeps the original resolved value; only the value written to the request header is constrained.
 func wireUserAgent(userAgent, fallback string) string {
 	if header.ValidFieldValue(userAgent) {
 		return userAgent
 	}
 
-	return fallback
+	if header.ValidFieldValue(fallback) {
+		return fallback
+	}
+
+	return strings.Empty
 }
 
 func clientUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Value {

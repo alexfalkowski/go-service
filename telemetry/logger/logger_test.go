@@ -328,7 +328,7 @@ func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
 
-func TestOTLPGRPCLogger(t *testing.T) {
+func TestOTLPOverGRPCLogger(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:     "otlp",
@@ -350,7 +350,7 @@ func TestOTLPGRPCLogger(t *testing.T) {
 	require.NoError(t, lc.Stop(t.Context()))
 }
 
-func TestRejectsInvalidOTLPGRPCEndpoint(t *testing.T) {
+func TestRejectsInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:     "otlp",
@@ -373,7 +373,7 @@ func TestRejectsInvalidOTLPGRPCEndpoint(t *testing.T) {
 	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
 
-func TestOTLPGRPCLoggerWithTLSHeaders(t *testing.T) {
+func TestOTLPOverGRPCLoggerWithTLSHeaders(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:     "otlp",
@@ -424,7 +424,7 @@ func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
 }
 
-func TestOTLPGRPCLoggerWithBatchTuning(t *testing.T) {
+func TestOTLPOverGRPCLoggerWithBatchTuning(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:               "otlp",

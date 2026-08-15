@@ -149,6 +149,7 @@ func serverIP(req *http.Request) (meta.Value, meta.Value) {
 	for _, h := range header.ForwardedIPs {
 		if ip := req.Header.Get(h.HTTP); !strings.IsEmpty(ip) {
 			ip, _, _ := strings.Cut(ip, ",")
+			ip = strings.TrimSpace(ip)
 
 			return meta.String(h.GRPC), meta.String(ip)
 		}

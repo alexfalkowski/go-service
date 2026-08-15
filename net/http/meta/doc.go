@@ -57,7 +57,8 @@
 // keeps the original resolved value, so the wire value can diverge from
 // [meta.RequestID] when the resolved value was invalid. The same substitution
 // applies to the outgoing User-Agent header, falling back to the configured
-// default user agent instead of a generated id.
+// default user agent only when it satisfies the same contract; otherwise the
+// header is omitted.
 //
 // This package also provides HTTP metadata middleware via [NewHandler] and [NewRoundTripper].
 package meta

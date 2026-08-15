@@ -85,6 +85,22 @@ func TestReaderResetClearsLatchedError(t *testing.T) {
 	require.ErrorIs(t, err, io.EOF)
 }
 
+func TestReaderResetExcludesReadAheadFromLiveCheck(t *testing.T) {
+	t.Parallel()
+
+	r := budget.NewReader(strings.NewReader("a"), 2)
+	r.Reset(3)
+
+	// The decoder read these bytes for the next value while handling the previous one. They must not
+	// spend the next value's live budget before it reads anything itself.
+	require.NoError(t, r.Err())
+
+	n, err := r.Read(make([]byte, 1))
+	require.NoError(t, err)
+	require.Equal(t, 1, n)
+	require.NoError(t, r.Err())
+}
+
 func TestReaderErrReturnsNilBeforeAnyRefusal(t *testing.T) {
 	t.Parallel()
 

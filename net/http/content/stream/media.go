@@ -89,8 +89,10 @@ type streamAcceptMatch struct {
 // reports as satisfied by [ndjsonType] without non-quality parameters ("text/*" does not satisfy an
 // "application/x-ndjson" route the way "*/*" or "application/*" does), else the bare "*/*" wildcard —
 // and returns satisfiable only if that one reference is not [http.IsAcceptZeroQuality]; a less specific
-// reference's own quality, zero or not, is irrelevant once a more specific reference is found. This matches
-// RFC 9110 §12.5.1's "most specific reference" rule regardless of list order. When satisfiable, it returns
+// reference's own quality, zero or not, is irrelevant once a more specific reference is found. When two
+// references tie on specificity, the zero-quality one controls, so an explicit exclusion is not masked by
+// a duplicate positive entry for the same range. This matches RFC 9110 §12.5.1's "most specific reference"
+// rule regardless of list order. When satisfiable, it returns
 // the exact match's media type if the controlling reference was one, otherwise [media.NDJSON]. An
 // unparsable item is skipped rather than rejecting the whole list, the same way an unparsable single Accept
 // value already falls through to [Content.NewFromMedia]'s own rejection when nothing else in the list matches.
@@ -99,7 +101,7 @@ func matchStreamAccept(header string) (string, bool) {
 
 	for _, item := range http.AcceptItems(header) {
 		candidate := matchStreamRange(item)
-		if candidate.specificity > best.specificity {
+		if candidate.specificity > best.specificity || (candidate.specificity == best.specificity && candidate.zeroQuality) {
 			best = candidate
 		}
 	}

@@ -353,6 +353,27 @@ func TestRequestStreamReturnsEarlyRejectionAfterSendFailure(t *testing.T) {
 	}
 }
 
+func TestRequestStreamReturnsTransportErrorAfterSendFailure(t *testing.T) {
+	rt := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		if err := req.Body.Close(); err != nil {
+			return nil, err
+		}
+
+		return nil, test.ErrFailed
+	})
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(rt))
+
+	var sendErr error
+	err := c.RequestStream(t.Context(), http.MethodPost, "http://example.com", client.Options{ContentType: media.NDJSON},
+		func(_ context.Context, stream *client.RequestResponseStream) error {
+			sendErr = stream.Send(&test.Request{Name: strings.Repeat("x", int(bytes.MB))})
+			return sendErr
+		})
+
+	require.ErrorIs(t, sendErr, io.ErrClosedPipe)
+	require.ErrorIs(t, err, test.ErrFailed)
+}
+
 func TestRequestStreamSendIsSticky(t *testing.T) {
 	handler := contentstream.NewRequestHandler(
 		test.StreamContent,
@@ -559,26 +580,50 @@ func TestStreamRecvDoesNotFalsePositiveOnCoalescedReads(t *testing.T) {
 	require.Equal(t, []string{"Hello Bob", "Hello Alice"}, greetings)
 }
 
-func TestStreamRecvRejectsBufferedValueOverCap(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
-		res.Header().Set(http.ContentTypeKey, media.NDJSON)
-		_, _ = res.Write([]byte("{\"Greeting\":\"A\"}\n{\"Greeting\":\"a greeting far longer than the configured cap\"}\n"))
-	}))
-	t.Cleanup(server.Close)
+func TestStreamRecvHandlesBufferedValuesAtCap(t *testing.T) {
+	tests := []struct {
+		name       string
+		body       string
+		exceedsCap bool
+	}{
+		{
+			name:       "over cap",
+			body:       "{\"Greeting\":\"A\"}\n{\"Greeting\":\"a greeting far longer than the configured cap\"}\n",
+			exceedsCap: true,
+		},
+		{
+			name: "within cap decode error",
+			body: "{\"Greeting\":\"A\"}\n{\"Greeting\":\"B\",\"Unknown\":true}\n",
+		},
+	}
 
-	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithMaxResponseSize(20))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+				res.Header().Set(http.ContentTypeKey, media.NDJSON)
+				_, _ = res.Write([]byte(tt.body))
+			}))
+			t.Cleanup(server.Close)
 
-	err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
-		func(_ context.Context, stream *client.ResponseStream) error {
-			var first test.Response
-			require.NoError(t, stream.Recv(&first))
+			c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithMaxResponseSize(20))
 
-			var second test.Response
-			return stream.Recv(&second)
+			err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
+				func(_ context.Context, stream *client.ResponseStream) error {
+					var first test.Response
+					require.NoError(t, stream.Recv(&first))
+
+					var second test.Response
+					return stream.Recv(&second)
+				})
+
+			require.Error(t, err)
+			if tt.exceedsCap {
+				require.Equal(t, http.StatusRequestEntityTooLarge, status.Code(err))
+			} else {
+				require.NotEqual(t, http.StatusRequestEntityTooLarge, status.Code(err))
+			}
 		})
-
-	require.Error(t, err)
-	require.Equal(t, http.StatusRequestEntityTooLarge, status.Code(err))
+	}
 }
 
 func TestStreamClosesResponseBodyOnHandlerPanic(t *testing.T) {
