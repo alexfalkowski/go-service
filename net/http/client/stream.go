@@ -6,8 +6,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/budget"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/quota"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -432,7 +432,7 @@ func (s *RequestResponseStream) finish(handlerErr error) error {
 // size-capped reader over the response body.
 type responseDecoder struct {
 	decoder encodingstream.Decoder
-	capped  *budget.Reader
+	capped  *quota.Reader
 }
 
 func newResponseDecoder(c *Client, response *http.Response, opts Options) (*responseDecoder, error) {
@@ -445,7 +445,7 @@ func newResponseDecoder(c *Client, response *http.Response, opts Options) (*resp
 		return nil, errors.Prefix("http: stream media", err)
 	}
 
-	capped := budget.NewReader(response.Body, c.maxResponseSize)
+	capped := quota.NewReader(response.Body, c.maxResponseSize)
 
 	return &responseDecoder{decoder: resMedia.NewDecoder(capped), capped: capped}, nil
 }
@@ -455,7 +455,7 @@ func newResponseDecoder(c *Client, response *http.Response, opts Options) (*resp
 // truncating capped's reads, because truncating mid-read would silently drop bytes the decoder never
 // asked to give back — those bytes belong to the underlying response body, not to this one value, and
 // dropping them would desynchronize every later value in the stream. See
-// [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader] for the read-time half of the guard,
+// [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader] for the read-time half of the guard,
 // which still bounds a single pathological value across repeated Read calls.
 //
 // A decoder is not guaranteed to return capped's Read-time error unwrapped: it may fold it into its own
@@ -464,7 +464,7 @@ func newResponseDecoder(c *Client, response *http.Response, opts Options) (*resp
 // capped's own latched error directly once Decode fails, rather than trusting Decode's returned error
 // to still be classifiable as the size-limit error.
 func (d *responseDecoder) recv(v any) error {
-	d.capped.Reset(budget.BufferedLen(d.decoder))
+	d.capped.Reset(quota.BufferedLen(d.decoder))
 
 	if err := d.decoder.Decode(v); err != nil {
 		if d.capped.Err() != nil {
@@ -474,7 +474,7 @@ func (d *responseDecoder) recv(v any) error {
 		return err
 	}
 
-	if d.capped.Exceeds(budget.BufferedLen(d.decoder)) {
+	if d.capped.Exceeds(quota.BufferedLen(d.decoder)) {
 		return status.SafeError(http.StatusRequestEntityTooLarge, nil)
 	}
 

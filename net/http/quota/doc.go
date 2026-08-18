@@ -1,4 +1,4 @@
-// Package budget provides a per-value byte budget for a stream decoder, shared by the HTTP server's
+// Package quota provides a per-value byte quota for a stream decoder, shared by the HTTP server's
 // bidirectional streaming request path
 // ([github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv]) and the HTTP client's
 // streaming response path ([github.com/alexfalkowski/go-service/v2/net/http/client.ResponseStream.Recv]).
@@ -15,4 +15,4 @@
 // ErrExceeded, instead of asking this package to build that error itself.
 //
 // Start with [NewReader].
-package budget
+package quota

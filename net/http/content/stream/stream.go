@@ -6,8 +6,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/budget"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/quota"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/ptr"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -172,7 +172,7 @@ func (s *Stream[Res]) close() error {
 // streaming convention, is one goroutine calling Recv and one goroutine calling Send.
 type RequestStream[Req any, Res any] struct {
 	decoder stream.Decoder
-	capped  *budget.Reader
+	capped  *quota.Reader
 	Stream[Res]
 	maxReceiveSize int64
 }
@@ -184,7 +184,7 @@ type RequestStream[Req any, Res any] struct {
 //
 // Recv is bounded independently by the per-value cap configured on [NewRequestHandler]: the cap
 // resets before every Recv rather than accumulating across the whole request stream (see
-// [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]). A value over the cap surfaces as a
+// [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader]). A value over the cap surfaces as a
 // [http.MaxBytesError], the same error type
 // [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s buffered path already produces,
 // so it maps to the same 413 through [github.com/alexfalkowski/go-service/v2/net/http/status.Code].
@@ -247,7 +247,7 @@ func (s *RequestStream[Req, Res]) decode() (*Req, error) {
 		return nil, err
 	}
 
-	s.capped.Reset(budget.BufferedLen(s.decoder))
+	s.capped.Reset(quota.BufferedLen(s.decoder))
 
 	req := ptr.Zero[Req]()
 	if err := s.decoder.Decode(req); err != nil {
@@ -262,7 +262,7 @@ func (s *RequestStream[Req, Res]) decode() (*Req, error) {
 		return nil, err
 	}
 
-	if s.capped.Exceeds(budget.BufferedLen(s.decoder)) {
+	if s.capped.Exceeds(quota.BufferedLen(s.decoder)) {
 		return nil, &http.MaxBytesError{Limit: s.maxReceiveSize}
 	}
 
