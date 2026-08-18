@@ -43,12 +43,12 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // NewRequestHandler does not enforce request body size caps itself. In supported wiring, inbound request bodies
 // are capped by the transport HTTP server before content handlers run. Direct users should wrap the handler with
 // an equivalent request-size limit.
-func NewRequestHandler[Req any, Res any](cont *Content, handler RequestHandler[Req, Res]) http.HandlerFunc {
-	return newHandler(cont, func(ctx context.Context) (*Res, error) {
+func NewRequestHandler[Req any, Res any](content *Content, handler RequestHandler[Req, Res]) http.HandlerFunc {
+	return newHandler(content, func(ctx context.Context) (*Res, error) {
 		req := ptr.Zero[Req]()
 
 		request := meta.Request(ctx)
-		mediaType, err := cont.NewFromRequestBody(request)
+		mediaType, err := content.NewFromRequestBody(request)
 		if err != nil {
 			return nil, status.SafeError(http.StatusUnsupportedMediaType, err)
 		}
@@ -71,18 +71,18 @@ type Handler[Res any] func(ctx context.Context) (*Res, error)
 //
 // Successful responses are encoded into a pooled in-memory buffer before being written to the live
 // response writer, so encode failures do not leak partial success bodies.
-func NewHandler[Res any](cont *Content, handler Handler[Res]) http.HandlerFunc {
-	return newHandler(cont, func(ctx context.Context) (*Res, error) {
+func NewHandler[Res any](content *Content, handler Handler[Res]) http.HandlerFunc {
+	return newHandler(content, func(ctx context.Context) (*Res, error) {
 		return handler(ctx)
 	})
 }
 
-func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res, error)) http.HandlerFunc {
+func newHandler[Res any](content *Content, handler func(ctx context.Context) (*Res, error)) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		http.AddVary(res.Header(), http.AcceptKey, http.ContentTypeKey)
 
-		mediaType := cont.NewFromAccept(req)
+		mediaType := content.NewFromAccept(req)
 		ctx = meta.WithRequestResponse(ctx, req, res)
 		res.Header().Set(http.ContentTypeKey, media.MustParse(mediaType.String()).WithUTF8())
 
@@ -99,8 +99,8 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 			return
 		}
 
-		buffer := cont.pool.Get()
-		defer cont.pool.Put(buffer)
+		buffer := content.pool.Get()
+		defer content.pool.Put(buffer)
 
 		if err := mediaType.Encoder.Encode(buffer, data); err != nil {
 			if errors.Is(err, encodingerrors.ErrInvalidType) {

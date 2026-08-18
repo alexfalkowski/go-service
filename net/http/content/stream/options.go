@@ -23,7 +23,7 @@ type Options struct {
 	WriteTimeout time.Duration
 
 	// MaxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a
-	// whole (see [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]). Zero disables the
+	// whole (see [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader]). Zero disables the
 	// per-value cap. Unused by [NewHandler]'s send-only stream.
 	MaxReceiveSize bytes.Size
 }

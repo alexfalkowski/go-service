@@ -4,16 +4,16 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/budget"
 	"github.com/alexfalkowski/go-service/v2/net/http/compress"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/quota"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 )
 
-// NewHandler builds a handler for a send-only streaming response using cont to resolve streaming codecs and buffer
-// the initial response.
+// NewHandler builds a handler for a send-only streaming response using content to resolve streaming codecs and
+// buffer the initial response.
 //
 // Content negotiation:
 // The response encoder is resolved from the request Accept header, falling back to Content-Type,
@@ -42,7 +42,7 @@ import (
 // allowed to open the stream), every Send charges one additional token against that same limiter — see
 // [Stream.Send]. A route reached without that middleware, or with no limiter configured, sees no
 // per-message charging.
-func NewHandler[Res any](cont *Content, opts Options, handler Handler[Res]) http.HandlerFunc {
+func NewHandler[Res any](content *Content, opts Options, handler Handler[Res]) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		if isDraining(opts.Drain) {
@@ -51,7 +51,7 @@ func NewHandler[Res any](cont *Content, opts Options, handler Handler[Res]) http
 		}
 		http.AddVary(res.Header(), http.AcceptKey, http.ContentTypeKey)
 
-		resMedia, err := cont.NewFromAccept(req)
+		resMedia, err := content.NewFromAccept(req)
 		if err != nil {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusNotAcceptable, err))
 			return
@@ -61,8 +61,8 @@ func NewHandler[Res any](cont *Content, opts Options, handler Handler[Res]) http
 		res.Header().Set(http.ContentTypeKey, media.MustParse(resMedia.String()).WithUTF8())
 		res.Header().Set(compress.HeaderNoCompression, "1")
 
-		buffer := cont.pool.Get()
-		defer cont.pool.Put(buffer)
+		buffer := content.pool.Get()
+		defer content.pool.Put(buffer)
 
 		ctx, cancel := context.WithCancelCause(ctx)
 		defer cancel(nil)
@@ -104,8 +104,8 @@ func NewHandler[Res any](cont *Content, opts Options, handler Handler[Res]) http
 // return its error so the framework can finish the response.
 type Handler[Res any] func(ctx context.Context, stream *Stream[Res]) error
 
-// NewRequestHandler builds a handler for a bidirectional stream using cont to resolve streaming codecs and buffer
-// the initial response.
+// NewRequestHandler builds a handler for a bidirectional stream using content to resolve streaming codecs and
+// buffer the initial response.
 //
 // HTTP/2 requirement:
 // Bidirectional streaming requires HTTP/2 (including h2c): an HTTP/1.x request body is buffered ahead
@@ -121,7 +121,7 @@ type Handler[Res any] func(ctx context.Context, stream *Stream[Res]) error
 //
 // Inbound size limiting:
 // opts.MaxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a
-// whole (see [github.com/alexfalkowski/go-service/v2/net/http/budget.Reader]): a request with many small
+// whole (see [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader]): a request with many small
 // values is never rejected for its cumulative size, only
 // for a single value that exceeds opts.MaxReceiveSize. A value at or under the limit is a normal terminal
 // [http.MaxBytesError] surfaced from Recv; the deviation is that no total byte ceiling exists for a
@@ -138,7 +138,7 @@ type Handler[Res any] func(ctx context.Context, stream *Stream[Res]) error
 // decoded, in-cap value, the same way Send does, against the same request-scoped limiter. Its drain
 // contract also applies: drain cancels the handler context and closes the request body to unblock an
 // active Recv. A client can need to reconnect if an HTTP/2 peer observes that body close as a stream reset.
-func NewRequestHandler[Req any, Res any](cont *Content, opts Options, handler RequestHandler[Req, Res]) http.HandlerFunc {
+func NewRequestHandler[Req any, Res any](content *Content, opts Options, handler RequestHandler[Req, Res]) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		if isDraining(opts.Drain) {
@@ -152,13 +152,13 @@ func NewRequestHandler[Req any, Res any](cont *Content, opts Options, handler Re
 		}
 		http.AddVary(res.Header(), http.AcceptKey, http.ContentTypeKey)
 
-		reqMedia, err := cont.NewFromContentType(req)
+		reqMedia, err := content.NewFromContentType(req)
 		if err != nil {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusUnsupportedMediaType, err))
 			return
 		}
 
-		resMedia, err := cont.NewFromAccept(req)
+		resMedia, err := content.NewFromAccept(req)
 		if err != nil {
 			_ = status.WriteError(ctx, res, status.SafeError(http.StatusNotAcceptable, err))
 			return
@@ -168,8 +168,8 @@ func NewRequestHandler[Req any, Res any](cont *Content, opts Options, handler Re
 		res.Header().Set(http.ContentTypeKey, media.MustParse(resMedia.String()).WithUTF8())
 		res.Header().Set(compress.HeaderNoCompression, "1")
 
-		buffer := cont.pool.Get()
-		defer cont.pool.Put(buffer)
+		buffer := content.pool.Get()
+		defer content.pool.Put(buffer)
 
 		ctx, cancel := context.WithCancelCause(ctx)
 		defer cancel(nil)
@@ -186,7 +186,7 @@ func NewRequestHandler[Req any, Res any](cont *Content, opts Options, handler Re
 		}
 
 		writer := &commitWriter{res: res, buffer: buffer}
-		capped := budget.NewReader(req.Body, opts.MaxReceiveSize.Bytes())
+		capped := quota.NewReader(req.Body, opts.MaxReceiveSize.Bytes())
 		decoder := reqMedia.NewDecoder(capped)
 		stream := &RequestStream[Req, Res]{
 			Stream: Stream[Res]{
