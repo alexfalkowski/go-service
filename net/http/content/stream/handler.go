@@ -246,13 +246,21 @@ func handleResponse[Res any](ctx context.Context, res http.ResponseWriter, s *St
 
 func drainResponse[Res any](ctx context.Context, res http.ResponseWriter, s *Stream[Res], err error) {
 	if !s.committed() {
+		if isUnrelatedDrainError(ctx, err) {
+			status.RecordError(ctx, err)
+		}
+
 		_ = status.WriteError(ctx, res, status.SafeError(http.StatusServiceUnavailable, ErrDraining))
 		return
 	}
 
-	if err != nil && !errors.Is(err, ErrDraining) && !errors.Is(err, ctx.Err()) {
+	if isUnrelatedDrainError(ctx, err) {
 		abortResponse(ctx, err)
 	}
+}
+
+func isUnrelatedDrainError(ctx context.Context, err error) bool {
+	return err != nil && !errors.Is(err, ErrDraining) && !errors.Is(err, ctx.Err())
 }
 
 func abortResponse(ctx context.Context, err error) {

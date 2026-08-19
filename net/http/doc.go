@@ -14,7 +14,9 @@
 //
 // Server construction reads timeout keys from options.Map (`read_timeout`, `write_timeout`,
 // `idle_timeout`, `read_header_timeout`), each defaulting independently to 30 seconds, and also
-// supports `max_header_bytes` as an SI size string.
+// supports `max_header_bytes` as an SI size string. HTTP/2 tuning is opt-in through
+// `http2_max_concurrent_streams`, `http2_max_receive_buffer_per_connection`, and
+// `http2_max_receive_buffer_per_stream`; unset options preserve the Go HTTP/2 defaults.
 //
 // Start with [NewClient] and [NewServer].
 package http
