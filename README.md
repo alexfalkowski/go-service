@@ -1298,6 +1298,7 @@ transport:
 > - HTTP socket deadlines and streaming read/write inactivity budgets are controlled by `transport.http.options.read_timeout`, `write_timeout`, `idle_timeout`, and `read_header_timeout`, each of which defaults independently to `30s`. gRPC connection and keepalive lifetimes are controlled by `transport.grpc.options` and retain their documented lower-level defaults when unset.
 > - For gRPC keepalives, `keepalive_ping_time` is the interval between heartbeats and `keepalive_ping_timeout` is the maximum wait for a heartbeat acknowledgement.
 > - gRPC limits each client connection to 64 concurrent streams by default. Set `transport.grpc.options.max_concurrent_streams` to a positive base-10 integer to override it, or to `"0"` to explicitly retain upstream's unbounded behavior.
+> - HTTP/2 tuning is opt-in through `transport.http.options`: `http2_max_concurrent_streams` is a base-10 `uint32` count (with `"0"` retaining the Go default), while `http2_max_receive_buffer_per_connection` and `http2_max_receive_buffer_per_stream` are size strings. The connection buffer must be at least `65536B` and less than `4194304B`; the stream buffer must be less than `4194304B`. Zero or out-of-range buffer values retain Go's HTTP/2 defaults.
 > - `max_receive_size` limits inbound payload size. A zero value uses the default `4MB`.
 > - For HTTP, `max_receive_size` applies per request body, except for bidirectional streaming routes (see [HTTP streaming (NDJSON)](#http-streaming-ndjson)), where it applies per decoded value instead, with no cumulative total. For gRPC, it applies per inbound unary request and per inbound stream message.
 > - MVC does not enforce its own body-size caps; supported HTTP server wiring applies `max_receive_size` before MVC handlers run, and go-service HTTP clients apply their configured response-size cap when reading responses.
@@ -1324,6 +1325,9 @@ transport:
       write_timeout: 10s
       idle_timeout: 10s
       read_header_timeout: 10s
+      http2_max_concurrent_streams: "128"
+      http2_max_receive_buffer_per_connection: 1MB
+      http2_max_receive_buffer_per_stream: 512KB
   grpc:
     address: tcp://localhost:9000
     timeout: 10s

@@ -197,6 +197,30 @@ func TestNewHandlerClosesEncoderBeforeFirstSendOnDrain(t *testing.T) {
 	require.Equal(t, 1, encoder.closes)
 }
 
+func TestNewHandlerRecordsUnrelatedErrorBeforeFirstSendOnDrain(t *testing.T) {
+	drain := make(chan struct{})
+	handler := contentstream.NewHandler(
+		test.StreamContent,
+		contentstream.Options{Drain: drain}, func(ctx context.Context, _ *contentstream.Stream[test.Response]) error {
+			close(drain)
+			<-ctx.Done()
+
+			return test.ErrFailed
+		},
+	)
+
+	ctx := status.WithRequestError(t.Context())
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusServiceUnavailable, res.Code)
+	require.ErrorIs(t, status.RequestError(ctx), test.ErrFailed)
+	require.NotErrorIs(t, status.RequestError(ctx), contentstream.ErrDraining)
+}
+
 func TestNewHandlerFirstSendEncodeFailureDoesNotCommit(t *testing.T) {
 	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Unencodable]) error {
 		return stream.Send(&test.Unencodable{})
