@@ -9,7 +9,7 @@ import (
 	"github.com/go-sprout/sprout/registry/conversion"
 	"github.com/go-sprout/sprout/registry/maps"
 	"github.com/go-sprout/sprout/registry/numeric"
-	"github.com/go-sprout/sprout/registry/regexp"
+	"github.com/go-sprout/sprout/registry/regex"
 	"github.com/go-sprout/sprout/registry/slices"
 	"github.com/go-sprout/sprout/registry/std"
 	"github.com/go-sprout/sprout/registry/strings"
@@ -39,7 +39,7 @@ func NewFunctionMap(params FunctionMapParams) sprout.FunctionMap {
 	runtime.Must(handler.AddRegistry(std.NewRegistry()))
 	runtime.Must(handler.AddRegistry(maps.NewRegistry()))
 	runtime.Must(handler.AddRegistry(numeric.NewRegistry()))
-	runtime.Must(handler.AddRegistry(regexp.NewRegistry()))
+	runtime.Must(handler.AddRegistry(regex.NewRegistry()))
 	runtime.Must(handler.AddRegistry(slices.NewRegistry()))
 	runtime.Must(handler.AddRegistry(strings.NewRegistry()))
 	runtime.Must(handler.AddRegistry(time.NewRegistry()))
