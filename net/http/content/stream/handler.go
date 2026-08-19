@@ -256,6 +256,11 @@ func drainResponse[Res any](ctx context.Context, res http.ResponseWriter, s *Str
 
 	if isUnrelatedDrainError(ctx, err) {
 		abortResponse(ctx, err)
+		return
+	}
+
+	if err != nil {
+		status.RecordError(ctx, err)
 	}
 }
 

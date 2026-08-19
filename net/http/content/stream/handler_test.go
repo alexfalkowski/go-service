@@ -363,7 +363,8 @@ func TestNewHandlerEndsCleanlyAfterCommitOnDrain(t *testing.T) {
 			return ctx.Err()
 		})
 
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	ctx := status.WithRequestError(t.Context())
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
@@ -373,6 +374,7 @@ func TestNewHandlerEndsCleanlyAfterCommitOnDrain(t *testing.T) {
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
 	require.False(t, scanner.Scan())
+	require.ErrorIs(t, status.RequestError(ctx), context.Canceled)
 }
 
 func TestNewHandlerAbortsAfterCommitOnDrainForUnrelatedError(t *testing.T) {
@@ -425,7 +427,8 @@ func TestNewHandlerEndsCleanlyAfterCommitOnDrainForCombinedError(t *testing.T) {
 			return errors.Join(test.ErrFailed, ctx.Err())
 		})
 
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	ctx := status.WithRequestError(t.Context())
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
 
@@ -435,6 +438,8 @@ func TestNewHandlerEndsCleanlyAfterCommitOnDrainForCombinedError(t *testing.T) {
 	scanner := bufio.NewScanner(res.Body)
 	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, scanner))
 	require.False(t, scanner.Scan())
+	require.ErrorIs(t, status.RequestError(ctx), test.ErrFailed)
+	require.ErrorIs(t, status.RequestError(ctx), context.Canceled)
 }
 
 func TestNewHandlerDoesNotSendAfterDrain(t *testing.T) {
