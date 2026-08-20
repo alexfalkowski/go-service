@@ -44,9 +44,11 @@ func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 // [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
 // supplied. It always rejects additional documents in the same stream.
 func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
-	decoder := yaml.NewDecoder(r)
 	resolved := codec.Apply(opts...)
+
+	decoder := yaml.NewDecoder(r)
 	decoder.KnownFields(!resolved.DiscardUnknown())
+
 	if err := decoder.Decode(v); err != nil {
 		return err
 	}

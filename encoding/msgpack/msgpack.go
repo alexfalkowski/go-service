@@ -31,8 +31,9 @@ func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 // [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
 // supplied. It also rejects trailing encoded values or malformed trailing data.
 func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
-	decoder := msgpack.NewDecoder(r)
 	resolved := codec.Apply(opts...)
+
+	decoder := msgpack.NewDecoder(r)
 	decoder.DisallowUnknownFields(!resolved.DiscardUnknown())
 
 	if err := decoder.Decode(v); err != nil {
