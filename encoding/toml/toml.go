@@ -5,6 +5,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
 
@@ -13,7 +14,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs a TOML encoder.
 //
 // This encoder is a thin adapter around [github.com/BurntSushi/toml] that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
@@ -34,14 +35,16 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
 //
-// This method rejects keys that do not decode into v.
-func (e *Encoder) Decode(r io.Reader, v any) error {
+// This method rejects keys that do not decode into v unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// supplied.
+func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	meta, err := toml.NewDecoder(r).Decode(v)
 	if err != nil {
 		return err
 	}
 
-	if undecoded := meta.Undecoded(); len(undecoded) > 0 {
+	if undecoded := meta.Undecoded(); !codec.Apply(opts...).DiscardUnknown() && len(undecoded) > 0 {
 		return fmt.Errorf("toml: undecoded key %s", undecoded[0])
 	}
 

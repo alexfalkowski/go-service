@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
@@ -23,7 +24,7 @@ var UnaryContent = unary.NewContent(Encoder, Pool)
 var StreamContent = contentstream.NewContent(StreamEncoder, Pool)
 
 // NewEncoder returns an encoder test double whose Encode and Decode methods fail with the supplied error.
-func NewEncoder(err error) encoding.Encoder {
+func NewEncoder(err error) codec.Encoder {
 	return &enc{err: err}
 }
 
@@ -31,13 +32,13 @@ type enc struct {
 	err error
 }
 
-// Encode implements [encoding.Encoder] and returns the configured error.
+// Encode implements [codec.Encoder] and returns the configured error.
 func (e *enc) Encode(_ io.Writer, _ any) error {
 	return e.err
 }
 
-// Decode implements [encoding.Encoder] and returns the configured error.
-func (e *enc) Decode(_ io.Reader, _ any) error {
+// Decode implements [codec.Encoder] and returns the configured error.
+func (e *enc) Decode(_ io.Reader, _ any, _ ...codec.Option) error {
 	return e.err
 }
 
@@ -50,8 +51,8 @@ func (PartialEncoder) Encode(w io.Writer, _ any) error {
 	return ErrFailed
 }
 
-// Decode implements [encoding.Encoder] and always succeeds.
-func (PartialEncoder) Decode(io.Reader, any) error {
+// Decode implements [codec.Encoder] and always succeeds.
+func (PartialEncoder) Decode(io.Reader, any, ...codec.Option) error {
 	return nil
 }
 

@@ -61,14 +61,14 @@ type Settings = breaker.Settings
 //   - Your application logic continues to be driven by the HTTP response status/body, and
 //   - The breaker still "learns" that the upstream is unhealthy and may open accordingly.
 //
-// Defaults: HTTP status codes >= 500 or 429 are treated as failures (see `defaultOpts` and [WithFailureStatusFunc]).
+// Defaults: HTTP status codes >= 500 or 429 are treated as failures (see `defaultOptions` and [WithFailureStatusFunc]).
 func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
-	o := defaultOpts()
+	o := defaultOptions()
 	for _, option := range options {
 		option.apply(o)
 	}
 
-	return &RoundTripper{opts: o, RoundTripper: hrt, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
+	return &RoundTripper{options: o, RoundTripper: hrt, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
 }
 
 // RoundTripper wraps an underlying [http.RoundTripper] and applies circuit breaking.
@@ -80,7 +80,7 @@ func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
 // Use [NewRoundTripper] to construct instances with the desired settings and failure classification behavior.
 type RoundTripper struct {
 	http.RoundTripper
-	opts     *opts
+	options  *options
 	breakers *sync.Map[string, *breaker.CircuitBreaker]
 }
 
@@ -111,7 +111,7 @@ func (r *RoundTripper) roundTrip(req *http.Request) (*http.Response, error, bool
 			return nil, err
 		}
 
-		if r.opts.failureStatus(resp.StatusCode) {
+		if r.options.failureStatus(resp.StatusCode) {
 			return nil, responseError{resp: resp}
 		}
 
@@ -145,7 +145,7 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 		return cb
 	}
 
-	settings := r.opts.settings
+	settings := r.options.settings
 	settings.Name = key
 	isSuccessful := settings.IsSuccessful
 	settings.IsSuccessful = func(err error) bool {

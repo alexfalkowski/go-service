@@ -2,6 +2,7 @@ package hjson
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/io"
 	hjson "github.com/hjson/hjson-go/v4"
 )
@@ -11,7 +12,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs an HJSON encoder.
 //
 // This encoder is a thin adapter around [github.com/hjson/hjson-go] that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
@@ -33,10 +34,12 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode reads HJSON from r and decodes it into v.
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
-// Decode rejects duplicate object keys and unknown destination fields.
+// Decode rejects duplicate object keys and unknown destination fields unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// supplied.
 // Decode buffers all remaining input from r before decoding; callers should bound
 // untrusted or potentially large readers before calling it.
-func (e *Encoder) Decode(r io.Reader, v any) error {
+func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	data, _, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -44,7 +47,7 @@ func (e *Encoder) Decode(r io.Reader, v any) error {
 
 	options := hjson.DefaultDecoderOptions()
 	options.DisallowDuplicateKeys = true
-	options.DisallowUnknownFields = true
+	options.DisallowUnknownFields = !codec.Apply(opts...).DiscardUnknown()
 
 	return hjson.UnmarshalWithOptions(data, v, options)
 }

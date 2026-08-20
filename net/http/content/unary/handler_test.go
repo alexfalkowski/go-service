@@ -46,6 +46,23 @@ func TestNewRequestHandlerUsesAcceptForResponse(t *testing.T) {
 	}
 }
 
+func TestNewRequestHandlerDiscardsUnknownRequestFields(t *testing.T) {
+	handler := unary.NewRequestHandler(test.UnaryContent, func(_ context.Context, req *test.Request) (*test.Response, error) {
+		return &test.Response{Greeting: "Hello " + req.Name}, nil
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(`{"name":"Bob","future":"ignored"}`))
+	req.Header.Set(http.ContentTypeKey, media.JSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusOK, res.Code)
+	var response test.Response
+	require.NoError(t, test.Encoder.Get("json").Decode(res.Body, &response))
+	require.Equal(t, "Hello Bob", response.Greeting)
+}
+
 func TestNewRequestHandlerRejectsUnsafeRequestBody(t *testing.T) {
 	for _, tc := range []struct {
 		mediaType string

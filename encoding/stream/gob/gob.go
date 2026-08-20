@@ -3,6 +3,7 @@ package gob
 import (
 	"encoding/gob"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
 
@@ -48,7 +49,7 @@ type Decoder struct {
 // Unlike [github.com/alexfalkowski/go-service/v2/encoding/gob.Encoder]'s Decode, the returned decoder
 // allows additional gob values after the first: it does not enforce single-value trailing-data
 // rejection, since a stream is expected to carry many values.
-func NewDecoder(r io.Reader) *Decoder {
+func NewDecoder(r io.Reader, _ ...codec.Option) *Decoder {
 	return &Decoder{Decoder: gob.NewDecoder(r)}
 }
 

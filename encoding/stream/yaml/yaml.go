@@ -1,6 +1,7 @@
 package yaml
 
 import (
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/io"
 	yaml "go.yaml.in/yaml/v3"
 )
@@ -37,11 +38,11 @@ type Decoder struct {
 //
 // Unlike [github.com/alexfalkowski/go-service/v2/encoding/yaml.Encoder]'s Decode, the returned
 // decoder allows additional YAML documents after the first: it does not enforce single-value
-// trailing-data rejection, since a stream is expected to carry many documents. Unknown fields remain
-// rejected.
-func NewDecoder(r io.Reader) *Decoder {
+// trailing-data rejection, since a stream is expected to carry many documents. Unknown fields are
+// rejected unless [codec.WithDiscardUnknown] is supplied.
+func NewDecoder(r io.Reader, opts ...codec.Option) *Decoder {
 	decoder := yaml.NewDecoder(r)
-	decoder.KnownFields(true)
+	decoder.KnownFields(!codec.Apply(opts...).DiscardUnknown())
 
 	return &Decoder{Decoder: decoder}
 }

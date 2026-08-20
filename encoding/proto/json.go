@@ -1,6 +1,7 @@
 package proto
 
 import (
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -8,7 +9,7 @@ import (
 // NewJSON constructs a protobuf JSON encoder.
 //
 // This encoder is a thin adapter around google.golang.org/protobuf/encoding/protojson Marshal/Unmarshal that
-// satisfies [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
+// satisfies [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
 func NewJSON() *JSON {
 	return &JSON{}
 }
@@ -45,19 +46,16 @@ func (e *JSON) Encode(w io.Writer, v any) error {
 // [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType] without reading from r.
 //
 // Decode otherwise reads all remaining bytes from r (via [io.ReadAll]) before
-// unmarshaling. Unknown protobuf JSON fields are discarded during unmarshal.
+// unmarshaling. Unknown protobuf JSON fields are rejected unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// supplied.
 //
 // Any read error from [io.ReadAll] and any unmarshal error from [protojson.UnmarshalOptions.Unmarshal] is returned.
-func (e *JSON) Decode(r io.Reader, v any) error {
-	msg, err := message(v)
+func (e *JSON) Decode(r io.Reader, v any, opts ...codec.Option) error {
+	msg, bytes, err := readMessage(r, v)
 	if err != nil {
 		return err
 	}
 
-	bytes, _, err := io.ReadAll(r)
-	if err != nil {
-		return err
-	}
-
-	return protojson.UnmarshalOptions{DiscardUnknown: true}.Unmarshal(bytes, msg)
+	return protojson.UnmarshalOptions{DiscardUnknown: codec.Apply(opts...).DiscardUnknown()}.Unmarshal(bytes, msg)
 }

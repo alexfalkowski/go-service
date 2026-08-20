@@ -76,7 +76,7 @@ func (w *World) registerTelemetry() {
 	errors.Register(errors.NewHandler(nil))
 }
 
-func createLogger(lc di.Lifecycle, os *worldOpts) (*logger.Logger, error) {
+func createLogger(lc di.Lifecycle, os *options) (*logger.Logger, error) {
 	if os.logger != nil {
 		return os.logger, nil
 	}

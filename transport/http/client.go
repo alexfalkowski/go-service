@@ -25,10 +25,10 @@ import (
 // Most options are orthogonal and can be combined. Some options enable behavior by providing a non-nil
 // dependency (for example, retries are enabled when [WithClientRetry] provides a non-nil config).
 type ClientOption interface {
-	apply(opts *clientOpts)
+	apply(opts *clientOptions)
 }
 
-type clientOpts struct {
+type clientOptions struct {
 	gen           token.Generator
 	generator     id.Generator
 	roundTripper  http.RoundTripper
@@ -44,9 +44,9 @@ type clientOpts struct {
 	compression   bool
 }
 
-type clientOptionFunc func(*clientOpts)
+type clientOptionFunc func(*clientOptions)
 
-func (f clientOptionFunc) apply(o *clientOpts) {
+func (f clientOptionFunc) apply(o *clientOptions) {
 	f(o)
 }
 
@@ -57,7 +57,7 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 //
 // This option uses [github.com/alexfalkowski/go-service/v2/net/http/compress] and wraps the underlying transport.
 func WithClientCompression() ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.compression = true
 	})
 }
@@ -72,7 +72,7 @@ func WithClientCompression() ClientOption {
 // Token-enabled clients use [http.SameOriginRedirect] so credentials are not forwarded to cross-origin
 // redirect targets. Cross-origin redirects are returned to the caller as [http.ErrUseLastResponse].
 func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.id = id
 		o.gen = gen
 	})
@@ -85,7 +85,7 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 //
 // If unset or negative, a default timeout is applied (see `options()` defaults).
 func WithClientTimeout(timeout time.Duration) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.timeout = timeout
 	})
 }
@@ -98,7 +98,7 @@ func WithClientTimeout(timeout time.Duration) ClientOption {
 // If set, this round tripper is used as-is and the package will not perform default transport selection
 // based on TLS configuration (i.e. TLS config construction and `http.Transport(...)` selection are skipped).
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.roundTripper = rt
 	})
 }
@@ -115,7 +115,7 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 //
 // If cfg is nil, retries are not enabled.
 func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.retry = cfg
 		o.retryPolicies = policies
 	})
@@ -127,7 +127,7 @@ func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {
 // (by method + host) so that failures are isolated by downstream destination.
 // Failure classification is controlled by cfg.
 func WithClientBreaker(cfg *breaker.Config) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.breaker = cfg
 	})
 }
@@ -136,7 +136,7 @@ func WithClientBreaker(cfg *breaker.Config) ClientOption {
 //
 // When configured, the composed RoundTripper logs request outcomes (duration and status classification).
 func WithClientLogger(logger *logger.Logger) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.logger = logger
 	})
 }
@@ -145,7 +145,7 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 //
 // The value is injected into outbound requests by the metadata RoundTripper ([github.com/alexfalkowski/go-service/v2/net/http/meta]).
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.userAgent = userAgent
 	})
 }
@@ -158,7 +158,7 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 // If TLS is enabled and no base round tripper is provided, TLS config is constructed using the package-
 // registered filesystem dependency (see [Register] in this package) to resolve TLS source strings.
 func WithClientTLS(sec *tls.Config) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.tls = sec
 	})
 }
@@ -168,7 +168,7 @@ func WithClientTLS(sec *tls.Config) ClientOption {
 // The generator is used to create a request id when one is not already present on the outgoing context
 // (as propagated by the meta package) and/or request headers.
 func WithClientID(generator id.Generator) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.generator = generator
 	})
 }
@@ -178,7 +178,7 @@ func WithClientID(generator id.Generator) ClientOption {
 // When configured, outbound requests are rate-limited before being sent. If limiter is nil, rate limiting
 // is not enabled.
 func WithClientLimiter(limiter *limiter.Client) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.limiter = limiter
 	})
 }
@@ -277,7 +277,7 @@ func NewClient(opts ...ClientOption) (*http.Client, error) {
 	return client, nil
 }
 
-func roundTripper(resolved *clientOpts) (http.RoundTripper, error) {
+func roundTripper(resolved *clientOptions) (http.RoundTripper, error) {
 	hrt := resolved.roundTripper
 	if hrt != nil {
 		return hrt, nil
@@ -295,8 +295,8 @@ func roundTripper(resolved *clientOpts) (http.RoundTripper, error) {
 	return http.Transport(conf), nil
 }
 
-func options(opts ...ClientOption) *clientOpts {
-	resolved := &clientOpts{}
+func options(opts ...ClientOption) *clientOptions {
+	resolved := &clientOptions{}
 	for _, o := range opts {
 		o.apply(resolved)
 	}

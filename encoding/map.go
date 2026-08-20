@@ -4,6 +4,7 @@ import (
 	"maps"
 
 	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/gob"
 	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
@@ -27,7 +28,7 @@ import (
 // Callers can add additional kinds or override existing kinds via [Map.Register].
 func NewMap() *Map {
 	return &Map{
-		encoders: map[string]Encoder{
+		encoders: map[string]codec.Encoder{
 			"json":      json.NewEncoder(),
 			"hjson":     hjson.NewEncoder(),
 			"yaml":      yaml.NewEncoder(),
@@ -49,13 +50,13 @@ func NewMap() *Map {
 //
 // Map is not concurrency-safe. If you mutate it via Register, do so during initialization.
 type Map struct {
-	encoders map[string]Encoder
+	encoders map[string]codec.Encoder
 }
 
 // Register associates kind with enc, overwriting any existing encoder.
 //
 // If kind already exists, the previous encoder is replaced.
-func (f *Map) Register(kind string, enc Encoder) {
+func (f *Map) Register(kind string, enc codec.Encoder) {
 	f.encoders[kind] = enc
 }
 
@@ -63,7 +64,7 @@ func (f *Map) Register(kind string, enc Encoder) {
 //
 // If no encoder is registered for kind, or if kind was registered with a nil encoder, Get returns nil.
 // Callers typically treat nil as "unknown or unavailable kind" and fall back to a default encoder elsewhere.
-func (f *Map) Get(kind string) Encoder {
+func (f *Map) Get(kind string) codec.Encoder {
 	return f.encoders[kind]
 }
 

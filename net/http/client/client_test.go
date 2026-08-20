@@ -217,6 +217,22 @@ func TestDoSendsAccept(t *testing.T) {
 	require.Equal(t, "Hello Bob", response.Greeting)
 }
 
+func TestDoDiscardsUnknownResponseFields(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.Header().Set(http.ContentTypeKey, media.JSON)
+		_, _ = io.WriteString(res, `{"greeting":"Hello Bob","future":"ignored"}`)
+	}))
+	t.Cleanup(server.Close)
+
+	var response test.Response
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
+
+	err := c.Get(t.Context(), server.URL, client.Options{Response: &response})
+
+	require.NoError(t, err)
+	require.Equal(t, "Hello Bob", response.Greeting)
+}
+
 func TestDoDetachesRequestBodyFromResponseBuffer(t *testing.T) {
 	var body io.ReadCloser
 	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithRoundTripper(test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {

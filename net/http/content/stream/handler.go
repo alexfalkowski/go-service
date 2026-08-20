@@ -2,6 +2,7 @@ package stream
 
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/compress"
@@ -117,7 +118,8 @@ type Handler[Res any] func(ctx context.Context, stream *Stream[Res]) error
 // an unregistered or unparseable media type with 415. The response encoder is resolved from Accept
 // (falling back to Content-Type) via [Content.NewFromAccept], rejecting an Accept that cannot be
 // satisfied with 406 instead: Accept negotiates the response representation, not the request payload,
-// so a failure there is answered as RFC 9110 §15.5.7 rather than §15.5.16.
+// so a failure there is answered as RFC 9110 §15.5.7 rather than §15.5.16. Each request value discards
+// unknown members so a new field does not break an older stream consumer.
 //
 // Inbound size limiting:
 // opts.MaxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a
@@ -187,7 +189,7 @@ func NewRequestHandler[Req any, Res any](content *Content, opts Options, handler
 
 		writer := &commitWriter{res: res, buffer: buffer}
 		capped := quota.NewReader(req.Body, opts.MaxReceiveSize.Bytes())
-		decoder := reqMedia.NewDecoder(capped)
+		decoder := reqMedia.NewDecoder(capped, codec.WithDiscardUnknown())
 		stream := &RequestStream[Req, Res]{
 			Stream: Stream[Res]{
 				ctx:          ctx,

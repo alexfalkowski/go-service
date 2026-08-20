@@ -3,6 +3,7 @@ package client
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -19,7 +20,7 @@ import (
 // Options are applied in the order provided to NewClient. If multiple options configure the same
 // field, the last one wins.
 type ClientOption interface {
-	apply(opts *clientOpts)
+	apply(opts *clientOptions)
 }
 
 // Redirect configures how Client handles HTTP redirects.
@@ -36,16 +37,16 @@ const (
 	RedirectSameOrigin
 )
 
-type clientOpts struct {
+type clientOptions struct {
 	roundTripper    http.RoundTripper
 	timeout         time.Duration
 	maxResponseSize bytes.Size
 	redirect        Redirect
 }
 
-type clientOptionFunc func(*clientOpts)
+type clientOptionFunc func(*clientOptions)
 
-func (f clientOptionFunc) apply(o *clientOpts) {
+func (f clientOptionFunc) apply(o *clientOptions) {
 	f(o)
 }
 
@@ -56,7 +57,7 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 //
 // If not provided, NewClient uses [http.Transport](nil) (go-service's tuned default transport).
 func WithRoundTripper(rt http.RoundTripper) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.roundTripper = rt
 	})
 }
@@ -69,7 +70,7 @@ func WithRoundTripper(rt http.RoundTripper) ClientOption {
 //
 // If not provided, NewClient defaults to [time.DefaultTimeout].
 func WithTimeout(timeout time.Duration) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.timeout = timeout
 	})
 }
@@ -85,7 +86,7 @@ func WithTimeout(timeout time.Duration) ClientOption {
 //
 // If not provided, NewClient defaults to [bytes.DefaultSize].
 func WithMaxResponseSize(size bytes.Size) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.maxResponseSize = size
 	})
 }
@@ -97,7 +98,7 @@ func WithMaxResponseSize(size bytes.Size) ClientOption {
 // origin by an upstream redirect. Use RedirectFollow to opt into standard
 // library cross-origin redirect behavior.
 func WithRedirect(redirect Redirect) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.redirect = redirect
 	})
 }
@@ -237,6 +238,7 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 //   - Otherwise, if the status code is in the 4xx/5xx range, a generic status error is returned.
 //   - Otherwise, if opts.Response is non-nil, the response body is decoded into it using the encoder
 //     selected by the response Content-Type (falling back to opts.ContentType).
+//     Unknown response members are discarded so newer servers remain compatible with older clients.
 //   - An empty successful response body is not decoded, leaving opts.Response unchanged.
 //
 // Notes:
@@ -288,7 +290,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 			return nil
 		}
 
-		if err := responseMedia.Encoder.Decode(responseBody, opts.Response); err != nil {
+		if err := responseMedia.Encoder.Decode(responseBody, opts.Response, codec.WithDiscardUnknown()); err != nil {
 			return errors.Prefix("http: decode", err)
 		}
 	}
@@ -417,8 +419,8 @@ func responseContentType(header http.Header, opts Options) string {
 	return opts.ContentType
 }
 
-func options(opts ...ClientOption) *clientOpts {
-	clientOptions := &clientOpts{redirect: RedirectSameOrigin}
+func options(opts ...ClientOption) *clientOptions {
+	clientOptions := &clientOptions{redirect: RedirectSameOrigin}
 	for _, o := range opts {
 		o.apply(clientOptions)
 	}

@@ -3,6 +3,7 @@ package stream
 import (
 	"maps"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream/gob"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream/json"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream/msgpack"
@@ -27,10 +28,22 @@ import (
 func NewMap() *Map {
 	return &Map{
 		codecs: map[string]Codec{
-			"json":    {Encoder: func(w io.Writer) Encoder { return json.NewEncoder(w) }, Decoder: func(r io.Reader) Decoder { return json.NewDecoder(r) }},
-			"msgpack": {Encoder: func(w io.Writer) Encoder { return msgpack.NewEncoder(w) }, Decoder: func(r io.Reader) Decoder { return msgpack.NewDecoder(r) }},
-			"gob":     {Encoder: func(w io.Writer) Encoder { return gob.NewEncoder(w) }, Decoder: func(r io.Reader) Decoder { return gob.NewDecoder(r) }},
-			"yaml":    {Encoder: func(w io.Writer) Encoder { return yaml.NewEncoder(w) }, Decoder: func(r io.Reader) Decoder { return yaml.NewDecoder(r) }},
+			"json": {
+				Encoder: func(w io.Writer) Encoder { return json.NewEncoder(w) },
+				Decoder: func(r io.Reader, opts ...codec.Option) Decoder { return json.NewDecoder(r, opts...) },
+			},
+			"msgpack": {
+				Encoder: func(w io.Writer) Encoder { return msgpack.NewEncoder(w) },
+				Decoder: func(r io.Reader, opts ...codec.Option) Decoder { return msgpack.NewDecoder(r, opts...) },
+			},
+			"gob": {
+				Encoder: func(w io.Writer) Encoder { return gob.NewEncoder(w) },
+				Decoder: func(r io.Reader, opts ...codec.Option) Decoder { return gob.NewDecoder(r, opts...) },
+			},
+			"yaml": {
+				Encoder: func(w io.Writer) Encoder { return yaml.NewEncoder(w) },
+				Decoder: func(r io.Reader, opts ...codec.Option) Decoder { return yaml.NewDecoder(r, opts...) },
+			},
 		},
 	}
 }

@@ -2,6 +2,7 @@ package unary
 
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	encodingerrors "github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -25,7 +26,8 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // Request-body decoding uses the request Content-Type, falling back to JSON when Content-Type is absent.
 // An unparseable, unregistered, or intentionally undecodable Content-Type (see the decoder-bounds rule in
 // the package documentation) is rejected with [ErrUnsupportedRequestMedia] rather than falling back to
-// JSON; see [Content.NewFromRequestBody]. Response encoding uses the request Accept header, falling back
+// JSON; see [Content.NewFromRequestBody]. Unknown request members are discarded so API additions remain
+// forward-compatible. Response encoding uses the request Accept header, falling back
 // to Content-Type when Accept is absent. The response Content-Type header is set to the negotiated
 // response media type. The selected response encoder remains internal to the handler.
 //
@@ -53,7 +55,7 @@ func NewRequestHandler[Req any, Res any](content *Content, handler RequestHandle
 			return nil, status.SafeError(http.StatusUnsupportedMediaType, err)
 		}
 
-		if err := mediaType.Encoder.Decode(request.Body, req); err != nil {
+		if err := mediaType.Encoder.Decode(request.Body, req, codec.WithDiscardUnknown()); err != nil {
 			return nil, status.BadRequestError(err)
 		}
 

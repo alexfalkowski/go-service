@@ -151,7 +151,7 @@ func redisCache(lc di.Lifecycle) (*cache.Cache, cache.Pinger, error) {
 	return cache.NewCache(params), cache.NewPinger(drv), nil
 }
 
-func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldOpts) (*cache.Cache, cache.Pinger) {
+func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *options) (*cache.Cache, cache.Pinger) {
 	tb.Helper()
 
 	var kind *cache.Cache
@@ -174,7 +174,7 @@ func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldOpts) (*cache.Cach
 	return kind, pinger
 }
 
-func createWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldCacheOpts) (*cache.Cache, cache.Pinger) {
+func createWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldCacheOptions) (*cache.Cache, cache.Pinger) {
 	tb.Helper()
 
 	drv := opts.driver

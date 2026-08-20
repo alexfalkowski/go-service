@@ -1,6 +1,7 @@
 package proto
 
 import (
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"google.golang.org/protobuf/proto"
 )
@@ -8,7 +9,7 @@ import (
 // NewBinary constructs a protobuf binary encoder.
 //
 // This encoder is a thin adapter around google.golang.org/protobuf/proto Marshal/Unmarshal that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
 func NewBinary() *Binary {
 	return &Binary{}
 }
@@ -48,13 +49,8 @@ func (e *Binary) Encode(w io.Writer, v any) error {
 // unmarshaling.
 //
 // Any read error from [io.ReadAll] and any unmarshal error from [proto.Unmarshal] is returned.
-func (e *Binary) Decode(r io.Reader, v any) error {
-	msg, err := message(v)
-	if err != nil {
-		return err
-	}
-
-	bytes, _, err := io.ReadAll(r)
+func (e *Binary) Decode(r io.Reader, v any, _ ...codec.Option) error {
+	msg, bytes, err := readMessage(r, v)
 	if err != nil {
 		return err
 	}

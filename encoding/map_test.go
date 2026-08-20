@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/gob"
 	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
@@ -19,7 +20,7 @@ import (
 func TestNewMapRegistersDefaultEncoders(t *testing.T) {
 	encoders := encoding.NewMap()
 
-	expected := map[string]encoding.Encoder{
+	expected := map[string]codec.Encoder{
 		"json":      json.NewEncoder(),
 		"hjson":     hjson.NewEncoder(),
 		"yaml":      yaml.NewEncoder(),

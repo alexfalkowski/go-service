@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -74,6 +75,16 @@ func TestDecodeRejectsUnknownFields(t *testing.T) {
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "extra")
+}
+
+func TestDecodeDiscardsUnknownFields(t *testing.T) {
+	t.Parallel()
+
+	encoder := yaml.NewEncoder()
+	msg := &message{}
+
+	require.NoError(t, encoder.Decode(bytes.NewBufferString("test: test\nextra: ignored"), msg, codec.WithDiscardUnknown()))
+	require.Equal(t, "test", msg.Test)
 }
 
 func TestDecodeRejectsTrailingDocument(t *testing.T) {

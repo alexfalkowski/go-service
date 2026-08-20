@@ -91,7 +91,7 @@ func registerRest(router *http.Router) {
 	rest.Register(router, UnaryContent, StreamContent, Pool, stream.Options{})
 }
 
-func restClient(client *http.Client, os *worldOpts) *rest.Client {
+func restClient(client *http.Client, os *options) *rest.Client {
 	if os.rest {
 		return rest.NewClient(
 			rest.WithClientRoundTripper(client.Transport),

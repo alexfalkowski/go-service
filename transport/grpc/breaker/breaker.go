@@ -18,12 +18,12 @@ type Settings = breaker.Settings
 
 // NewClient returns a gRPC client guarded by circuit breakers.
 func NewClient(options ...Option) *Client {
-	o := defaultOpts()
+	o := defaultOptions()
 	for _, option := range options {
 		option.apply(o)
 	}
 
-	return &Client{registry: &registry{opts: o, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}}
+	return &Client{registry: &registry{options: o, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}}
 }
 
 // Client provides gRPC client circuit-breaking interceptors.
@@ -45,7 +45,7 @@ type Client struct {
 // # Failure classification
 //
 // The interceptor counts failures based on gRPC status codes. By default it treats a subset of transient/server
-// codes as failures (see [WithFailureCodes] and the defaults in `defaultOpts`). Calls that return other codes
+// codes as failures (see [WithFailureCodes] and the defaults in `defaultOptions`). Calls that return other codes
 // do not contribute to opening the breaker. A context that is already deadline-exceeded before the invocation
 // bypasses breaker accounting, because it provides no downstream-health signal.
 //

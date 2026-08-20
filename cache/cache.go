@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -282,7 +283,7 @@ func (c *Cache) compressorKind() string {
 	return "none"
 }
 
-func (c *Cache) readEncoder(value any) encoding.Encoder {
+func (c *Cache) readEncoder(value any) codec.Encoder {
 	switch value.(type) {
 	case io.ReaderFrom:
 		return c.encoding.Get("bytes")
@@ -293,7 +294,7 @@ func (c *Cache) readEncoder(value any) encoding.Encoder {
 	}
 }
 
-func (c *Cache) writeEncoder(value any) encoding.Encoder {
+func (c *Cache) writeEncoder(value any) codec.Encoder {
 	switch value.(type) {
 	case io.WriterTo:
 		return c.encoding.Get("bytes")
@@ -304,7 +305,7 @@ func (c *Cache) writeEncoder(value any) encoding.Encoder {
 	}
 }
 
-func (c *Cache) configuredEncoder() encoding.Encoder {
+func (c *Cache) configuredEncoder() codec.Encoder {
 	return c.encoding.Get(c.encoderKind())
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding"
+	encodingcodec "github.com/alexfalkowski/go-service/v2/encoding/codec"
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -441,7 +442,9 @@ func TestStreamRejectsValueOverCapWhenDecodeSucceedsInOneRead(t *testing.T) {
 
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
-	codec.Decoder = func(r io.Reader) encodingstream.Decoder { return &test.SingleReadDecoder{R: r} }
+	codec.Decoder = func(r io.Reader, _ ...encodingcodec.Option) encodingstream.Decoder {
+		return &test.SingleReadDecoder{R: r}
+	}
 	sm.Register("json", codec)
 	unaryContent := unary.NewContent(test.Encoder, test.Pool)
 
@@ -462,19 +465,23 @@ func TestStreamRecvRecoversCapReaderErrorDespiteDecoder(t *testing.T) {
 		name     string
 		greeting string
 		maxSize  bytes.Size
-		decoder  func(io.Reader) encodingstream.Decoder
+		decoder  func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder
 	}{
 		{
 			name:     "decoder discards the error's type",
 			greeting: "a greeting far longer than the configured cap",
 			maxSize:  8,
-			decoder:  func(r io.Reader) encodingstream.Decoder { return &test.OpaqueErrorDecoder{R: r} },
+			decoder: func(r io.Reader, _ ...encodingcodec.Option) encodingstream.Decoder {
+				return &test.OpaqueErrorDecoder{R: r}
+			},
 		},
 		{
 			name:     "decoder calls Read again after quota.Reader already latched an error",
 			greeting: "ab",
 			maxSize:  1,
-			decoder:  func(r io.Reader) encodingstream.Decoder { return &test.TripleReadDecoder{R: r} },
+			decoder: func(r io.Reader, _ ...encodingcodec.Option) encodingstream.Decoder {
+				return &test.TripleReadDecoder{R: r}
+			},
 		},
 	}
 
@@ -585,15 +592,18 @@ func TestStreamRecvHandlesBufferedValuesAtCap(t *testing.T) {
 		name       string
 		body       string
 		exceedsCap bool
+		maxSize    bytes.Size
 	}{
 		{
 			name:       "over cap",
 			body:       "{\"Greeting\":\"A\"}\n{\"Greeting\":\"a greeting far longer than the configured cap\"}\n",
 			exceedsCap: true,
+			maxSize:    20,
 		},
 		{
-			name: "within cap decode error",
-			body: "{\"Greeting\":\"A\"}\n{\"Greeting\":\"B\",\"Unknown\":true}\n",
+			name:    "within cap discards unknown fields",
+			body:    "{\"Greeting\":\"A\"}\n{\"Greeting\":\"B\",\"Unknown\":true}\n",
+			maxSize: 64,
 		},
 	}
 
@@ -605,7 +615,7 @@ func TestStreamRecvHandlesBufferedValuesAtCap(t *testing.T) {
 			}))
 			t.Cleanup(server.Close)
 
-			c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithMaxResponseSize(20))
+			c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool, client.WithMaxResponseSize(tt.maxSize))
 
 			err := c.Stream(t.Context(), http.MethodGet, server.URL, client.Options{Accept: media.NDJSON},
 				func(_ context.Context, stream *client.ResponseStream) error {
@@ -616,11 +626,11 @@ func TestStreamRecvHandlesBufferedValuesAtCap(t *testing.T) {
 					return stream.Recv(&second)
 				})
 
-			require.Error(t, err)
 			if tt.exceedsCap {
+				require.Error(t, err)
 				require.Equal(t, http.StatusRequestEntityTooLarge, status.Code(err))
 			} else {
-				require.NotEqual(t, http.StatusRequestEntityTooLarge, status.Code(err))
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -837,7 +847,7 @@ func TestStreamRecvBufferedLenFallback(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sm := encodingstream.NewMap()
 			codec := sm.Get("json")
-			codec.Decoder = func(io.Reader) encodingstream.Decoder { return tt.decoder }
+			codec.Decoder = func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder { return tt.decoder }
 			sm.Register("json", codec)
 			unaryContent := unary.NewContent(test.Encoder, test.Pool)
 

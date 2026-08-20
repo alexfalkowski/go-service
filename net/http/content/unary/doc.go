@@ -33,6 +33,12 @@
 // since the caller asserted nothing, but an unparseable or unregistered Content-Type is rejected
 // instead of silently decoded as a different format the caller did not send.
 //
+// # Forward-compatible payloads
+//
+// HTTP request handlers decode with [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown],
+// so a newly added field does not break an older service during a rolling deployment. Message framing,
+// syntax, types, and request-size limits remain enforced.
+//
 // # The decoder-bounds rule
 //
 // A wire format is admissible for decoding untrusted input — a server request body, or a streaming

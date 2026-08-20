@@ -22,19 +22,19 @@ var (
 // Options are applied in the order provided to NewClient. If multiple options configure the same
 // field, the last one wins.
 type ClientOption interface {
-	apply(opts *clientOpts)
+	apply(opts *clientOptions)
 }
 
-type clientOpts struct {
+type clientOptions struct {
 	roundTripper http.RoundTripper
 	contentType  string
 	accept       string
 	timeout      time.Duration
 }
 
-type clientOptionFunc func(*clientOpts)
+type clientOptionFunc func(*clientOptions)
 
-func (f clientOptionFunc) apply(o *clientOpts) {
+func (f clientOptionFunc) apply(o *clientOptions) {
 	f(o)
 }
 
@@ -43,7 +43,7 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 // This is typically used to inject a transport that includes middleware such as retries, circuit
 // breakers, authentication, or custom TLS.
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.roundTripper = rt
 	})
 }
@@ -54,7 +54,7 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 // request encoder. Typical values include "application/json", "application/hjson", or go-service
 // protobuf media types.
 func WithClientContentType(ct string) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.contentType = ct
 	})
 }
@@ -64,7 +64,7 @@ func WithClientContentType(ct string) ClientOption {
 // This value is passed through to the underlying content-aware HTTP client and sent as the request
 // Accept header.
 func WithClientAccept(accept string) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.accept = accept
 	})
 }
@@ -74,7 +74,7 @@ func WithClientAccept(accept string) ClientOption {
 //
 // The duration string is parsed using [time.MustParseDuration] and panics if it cannot be parsed.
 func WithClientTimeout(timeout string) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.timeout = time.MustParseDuration(timeout)
 	})
 }
@@ -130,8 +130,8 @@ func (c *Client) Post(ctx context.Context, path string, req, res any) error {
 	return c.client.Post(ctx, c.url+path, opts)
 }
 
-func options(opts ...ClientOption) *clientOpts {
-	os := &clientOpts{}
+func options(opts ...ClientOption) *clientOptions {
+	os := &clientOptions{}
 	for _, o := range opts {
 		o.apply(os)
 	}

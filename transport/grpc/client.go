@@ -27,10 +27,10 @@ import (
 // Most options are orthogonal and can be combined. Some options enable behavior by providing a non-nil
 // dependency (for example, retries are enabled when [WithClientRetry] provides a non-nil config).
 type ClientOption interface {
-	apply(opts *clientOpts)
+	apply(opts *clientOptions)
 }
 
-type clientOpts struct {
+type clientOptions struct {
 	gen              token.Generator
 	generator        id.Generator
 	breaker          *breaker.Config
@@ -50,9 +50,9 @@ type clientOpts struct {
 	compression      bool
 }
 
-type clientOptionFunc func(*clientOpts)
+type clientOptionFunc func(*clientOptions)
 
-func (f clientOptionFunc) apply(o *clientOpts) {
+func (f clientOptionFunc) apply(o *clientOptions) {
 	f(o)
 }
 
@@ -61,7 +61,7 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 // This option appends a default call option that requests the "gzip" compressor. The server must also be
 // configured to accept gzip-compressed requests for this to have any effect.
 func WithClientCompression() ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.compression = true
 	})
 }
@@ -76,7 +76,7 @@ func WithClientCompression() ClientOption {
 // token per attempt. Streaming calls are not retried by the standard client chain and generate one token
 // when the stream is opened.
 func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.id = id
 		o.gen = gen
 	})
@@ -92,7 +92,7 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 // parent deadline. Streaming callers should use explicit context deadlines or
 // a custom stream interceptor.
 func WithClientTimeout(timeout time.Duration) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.timeout = timeout
 	})
 }
@@ -103,7 +103,7 @@ func WithClientTimeout(timeout time.Duration) ClientOption {
 //
 // If either value is unset (0), it defaults to the resolved client timeout (see [NewDialOptions]).
 func WithClientKeepalive(ping, timeout time.Duration) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.keepalivePing = ping
 		o.keepaliveTimeout = timeout
 	})
@@ -121,7 +121,7 @@ func WithClientKeepalive(ping, timeout time.Duration) ClientOption {
 //
 // If cfg is nil, retries are not enabled.
 func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.retry = cfg
 		o.retryPolicies = policies
 	})
@@ -132,7 +132,7 @@ func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {
 // Circuit breakers are keyed per RPC full method name. Failure accounting is controlled by cfg.
 // Streaming callers should use a custom stream interceptor for stream-specific breaker behavior.
 func WithClientBreaker(cfg *breaker.Config) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.breaker = cfg
 	})
 }
@@ -143,7 +143,7 @@ func WithClientBreaker(cfg *breaker.Config) ClientOption {
 // empty config that relies on system roots and the target host name. Source strings may be resolved via the
 // package-registered filesystem (see the package [Register] function).
 func WithClientTLS(sec *tls.Config) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.security = sec
 	})
 }
@@ -157,7 +157,7 @@ func WithClientTLS(sec *tls.Config) ClientOption {
 // Pass all custom dial options for a client construction in one call. Repeating this option follows the
 // package's last-wins functional option convention and replaces earlier raw dial options.
 func WithClientDialOption(opts ...grpc.DialOption) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.opts = opts
 	})
 }
@@ -171,7 +171,7 @@ func WithClientDialOption(opts ...grpc.DialOption) ClientOption {
 // Pass all custom unary interceptors for a client construction in one call. Repeating this option follows
 // the package's last-wins functional option convention and replaces earlier custom unary interceptors.
 func WithClientUnaryInterceptors(unary ...grpc.UnaryClientInterceptor) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.unary = unary
 	})
 }
@@ -185,7 +185,7 @@ func WithClientUnaryInterceptors(unary ...grpc.UnaryClientInterceptor) ClientOpt
 // Pass all custom stream interceptors for a client construction in one call. Repeating this option follows
 // the package's last-wins functional option convention and replaces earlier custom stream interceptors.
 func WithClientStreamInterceptors(stream ...grpc.StreamClientInterceptor) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.stream = stream
 	})
 }
@@ -194,7 +194,7 @@ func WithClientStreamInterceptors(stream ...grpc.StreamClientInterceptor) Client
 //
 // When configured, both unary and stream client interceptors may emit logs about RPC outcomes.
 func WithClientLogger(logger *logger.Logger) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.logger = logger
 	})
 }
@@ -205,7 +205,7 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 //   - as the gRPC dial user agent ([grpc.WithUserAgent])
 //   - for metadata propagation via the [github.com/alexfalkowski/go-service/v2/net/grpc/meta] interceptors
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.userAgent = userAgent
 	})
 }
@@ -215,7 +215,7 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 // The generator is used to create a request id when one is not already present on the outgoing context
 // or outgoing metadata.
 func WithClientID(generator id.Generator) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.generator = generator
 	})
 }
@@ -225,7 +225,7 @@ func WithClientID(generator id.Generator) ClientOption {
 // When configured, unary client calls are rate-limited before being sent. Client streams are rate-limited
 // when opened and while sending or receiving messages. If limiter is nil, rate limiting is not enabled.
 func WithClientLimiter(limiter *limiter.Client) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
+	return clientOptionFunc(func(o *clientOptions) {
 		o.limiter = limiter
 	})
 }
@@ -363,7 +363,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	return unary
 }
 
-func streamDialOption(opts *clientOpts) grpc.DialOption {
+func streamDialOption(opts *clientOptions) grpc.DialOption {
 	stream := []grpc.StreamClientInterceptor{}
 	stream = append(stream, meta.NewClient(opts.userAgent, opts.generator).StreamInterceptor())
 	stream = append(stream, opts.stream...)
@@ -385,8 +385,8 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 	return grpc.WithChainStreamInterceptor(stream...)
 }
 
-func options(opts ...ClientOption) *clientOpts {
-	resolved := &clientOpts{}
+func options(opts ...ClientOption) *clientOptions {
+	resolved := &clientOptions{}
 	for _, o := range opts {
 		o.apply(resolved)
 	}

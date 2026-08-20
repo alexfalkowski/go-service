@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
+	encodingcodec "github.com/alexfalkowski/go-service/v2/encoding/codec"
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
@@ -48,7 +49,9 @@ func TestNewRequestHandlerClosesCodecsBeforeAbortAfterCommitOnDrain(t *testing.T
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
 	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
-	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	codec.Decoder = func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder {
+		return &trackedDecoder{tracker: decoder}
+	}
 	sm.Register("json", codec)
 	drain := make(chan struct{})
 	handler := contentstream.NewRequestHandler(
@@ -85,7 +88,9 @@ func TestNewRequestHandlerClosesCodecsBeforeAbortAfterCommit(t *testing.T) {
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
 	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
-	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	codec.Decoder = func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder {
+		return &trackedDecoder{tracker: decoder}
+	}
 	sm.Register("json", codec)
 	handler := contentstream.NewRequestHandler(
 		contentstream.NewContent(sm, test.Pool),
@@ -118,7 +123,9 @@ func TestNewRequestHandlerClosesCodecsAfterCommitPanic(t *testing.T) {
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
 	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
-	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	codec.Decoder = func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder {
+		return &trackedDecoder{tracker: decoder}
+	}
 	sm.Register("json", codec)
 	handler := contentstream.NewRequestHandler(
 		contentstream.NewContent(sm, test.Pool),
@@ -151,7 +158,9 @@ func TestNewRequestHandlerClosesCodecsAfterReceiveOnlyHandler(t *testing.T) {
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
 	codec.Encoder = func(io.Writer) encodingstream.Encoder { return &trackedEncoder{tracker: encoder} }
-	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	codec.Decoder = func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder {
+		return &trackedDecoder{tracker: decoder}
+	}
 	sm.Register("json", codec)
 	handler := contentstream.NewRequestHandler(
 		contentstream.NewContent(sm, test.Pool),
@@ -183,7 +192,9 @@ func TestNewRequestHandlerIgnoresCodecCloseErrors(t *testing.T) {
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
 	codec.Encoder = func(io.Writer) encodingstream.Encoder { return test.CloseErrEncoder{} }
-	codec.Decoder = func(io.Reader) encodingstream.Decoder { return &trackedDecoder{tracker: decoder} }
+	codec.Decoder = func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder {
+		return &trackedDecoder{tracker: decoder}
+	}
 	sm.Register("json", codec)
 	handler := contentstream.NewRequestHandler(
 		contentstream.NewContent(sm, test.Pool),
@@ -287,7 +298,7 @@ func TestNewRequestHandlerRecvRejectsValueWhenDrainStartsAfterDecode(t *testing.
 	body := &drainBody{closed: make(chan struct{})}
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
-	codec.Decoder = func(io.Reader) encodingstream.Decoder {
+	codec.Decoder = func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder {
 		return &drainAfterDecode{drain: drain, closed: body.closed}
 	}
 	sm.Register("json", codec)
@@ -602,17 +613,17 @@ func TestNewRequestHandlerRecvRejectsBufferedValueOverCap(t *testing.T) {
 	require.Equal(t, int64(16), maxBytesErr.Limit)
 }
 
-func TestNewRequestHandlerRecvReturnsDecodeErrorForBufferedValueWithinCap(t *testing.T) {
-	var secondErr error
+func TestNewRequestHandlerRecvDiscardsUnknownFieldsWithinCap(t *testing.T) {
+	var second *test.Request
 
 	handler := contentstream.NewRequestHandler(
 		test.StreamContent,
-		contentstream.Options{MaxReceiveSize: 16}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
+		contentstream.Options{MaxReceiveSize: 64}, func(_ context.Context, stream *contentstream.RequestStream[test.Request, test.Response]) error {
 			_, err := stream.Recv()
 			require.NoError(t, err)
 
-			_, secondErr = stream.Recv()
-			return secondErr
+			second, err = stream.Recv()
+			return err
 		})
 
 	body := "{\"Name\":\"A\"}\n{\"Name\":\"B\",\"Unknown\":true}\n"
@@ -624,9 +635,8 @@ func TestNewRequestHandlerRecvReturnsDecodeErrorForBufferedValueWithinCap(t *tes
 
 	handler.ServeHTTP(res, req)
 
-	require.Error(t, secondErr)
-	require.NotEqual(t, http.StatusRequestEntityTooLarge, status.Code(secondErr))
-	require.NotEqual(t, http.StatusRequestEntityTooLarge, res.Code)
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, "B", second.Name)
 }
 
 func TestNewRequestHandlerRecvRejectsValueOverCapRegardlessOfDecoderBehavior(t *testing.T) {
@@ -634,19 +644,23 @@ func TestNewRequestHandlerRecvRejectsValueOverCapRegardlessOfDecoderBehavior(t *
 		name    string
 		body    string
 		maxSize bytes.Size
-		decoder func(io.Reader) encodingstream.Decoder
+		decoder func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder
 	}{
 		{
 			name:    "decode succeeds in one read",
 			body:    "a value with far more than eight bytes",
 			maxSize: 8,
-			decoder: func(r io.Reader) encodingstream.Decoder { return &test.SingleReadDecoder{R: r} },
+			decoder: func(r io.Reader, _ ...encodingcodec.Option) encodingstream.Decoder {
+				return &test.SingleReadDecoder{R: r}
+			},
 		},
 		{
 			name:    "decoder discards the error's type",
 			body:    "{\"Name\":\"a value with a name far longer than the configured cap\"}\n",
 			maxSize: 16,
-			decoder: func(r io.Reader) encodingstream.Decoder { return &test.OpaqueErrorDecoder{R: r} },
+			decoder: func(r io.Reader, _ ...encodingcodec.Option) encodingstream.Decoder {
+				return &test.OpaqueErrorDecoder{R: r}
+			},
 		},
 	}
 
@@ -1010,7 +1024,7 @@ func TestNewRequestHandlerRecvBufferedLenFallback(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sm := encodingstream.NewMap()
 			codec := sm.Get("json")
-			codec.Decoder = func(io.Reader) encodingstream.Decoder { return tt.decoder }
+			codec.Decoder = func(io.Reader, ...encodingcodec.Option) encodingstream.Decoder { return tt.decoder }
 			sm.Register("json", codec)
 			handler := contentstream.NewRequestHandler(
 				contentstream.NewContent(sm, test.Pool),
@@ -1037,7 +1051,9 @@ func TestNewRequestHandlerRecvBufferedLenFallback(t *testing.T) {
 func TestNewRequestHandlerRecvRecoversStickyCapReaderError(t *testing.T) {
 	sm := encodingstream.NewMap()
 	codec := sm.Get("json")
-	codec.Decoder = func(r io.Reader) encodingstream.Decoder { return &test.TripleReadDecoder{R: r} }
+	codec.Decoder = func(r io.Reader, _ ...encodingcodec.Option) encodingstream.Decoder {
+		return &test.TripleReadDecoder{R: r}
+	}
 	sm.Register("json", codec)
 	opts := contentstream.Options{MaxReceiveSize: bytes.Size(1)}
 	content := contentstream.NewContent(sm, test.Pool)

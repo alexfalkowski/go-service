@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/toml"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -76,6 +77,16 @@ func TestDecodeRejectsUndecodedMetadata(t *testing.T) {
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "extra")
+}
+
+func TestDecodeDiscardsUndecodedMetadata(t *testing.T) {
+	t.Parallel()
+
+	encoder := toml.NewEncoder()
+	msg := &message{}
+
+	require.NoError(t, encoder.Decode(bytes.NewBufferString("test = \"test\"\nextra = \"ignored\""), msg, codec.WithDiscardUnknown()))
+	require.Equal(t, "test", msg.Test)
 }
 
 type message struct {

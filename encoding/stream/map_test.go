@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	encodingcodec "github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream/gob"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream/json"
@@ -74,7 +75,7 @@ func TestMapKeysIncludesPartiallyRegisteredKinds(t *testing.T) {
 
 	m := stream.NewMap()
 	m.Register("encode-only", stream.Codec{Encoder: func(w io.Writer) stream.Encoder { return json.NewEncoder(w) }})
-	m.Register("decode-only", stream.Codec{Decoder: func(r io.Reader) stream.Decoder { return json.NewDecoder(r) }})
+	m.Register("decode-only", stream.Codec{Decoder: func(r io.Reader, _ ...encodingcodec.Option) stream.Decoder { return json.NewDecoder(r) }})
 
 	require.ElementsMatch(t, []string{"json", "msgpack", "gob", "yaml", "encode-only", "decode-only"}, m.Keys())
 }
@@ -84,7 +85,7 @@ func TestMapRegisterReplacesExistingCodec(t *testing.T) {
 
 	m := stream.NewMap()
 	encoder := func(w io.Writer) stream.Encoder { return json.NewEncoder(w) }
-	decoder := func(r io.Reader) stream.Decoder { return json.NewDecoder(r) }
+	decoder := func(r io.Reader, _ ...encodingcodec.Option) stream.Decoder { return json.NewDecoder(r) }
 
 	m.Register("custom", stream.Codec{Encoder: encoder, Decoder: decoder})
 	codec := m.Get("custom")
@@ -92,7 +93,7 @@ func TestMapRegisterReplacesExistingCodec(t *testing.T) {
 	require.Equal(t, reflect.ValueOf(decoder).Pointer(), reflect.ValueOf(codec.Decoder).Pointer())
 
 	replacementEncoder := func(w io.Writer) stream.Encoder { return msgpack.NewEncoder(w) }
-	replacementDecoder := func(r io.Reader) stream.Decoder { return yaml.NewDecoder(r) }
+	replacementDecoder := func(r io.Reader, _ ...encodingcodec.Option) stream.Decoder { return yaml.NewDecoder(r) }
 
 	m.Register("custom", stream.Codec{Encoder: replacementEncoder, Decoder: replacementDecoder})
 	codec = m.Get("custom")

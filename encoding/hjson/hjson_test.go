@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -77,6 +78,16 @@ func TestDecodeRejectsUnknownFields(t *testing.T) {
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "extra")
+}
+
+func TestDecodeDiscardsUnknownFields(t *testing.T) {
+	t.Parallel()
+
+	encoder := hjson.NewEncoder()
+	msg := &message{}
+
+	require.NoError(t, encoder.Decode(bytes.NewBufferString("{\n  test: test\n  extra: ignored\n}\n"), msg, codec.WithDiscardUnknown()))
+	require.Equal(t, "test", msg.Test)
 }
 
 func TestDecodeReturnsReadError(t *testing.T) {

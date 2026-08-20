@@ -3,7 +3,7 @@ package test
 import (
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/config"
-	"github.com/alexfalkowski/go-service/v2/config/options"
+	configoptions "github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
@@ -54,7 +54,7 @@ var FastRetryConfig = &retry.Config{
 
 // ConfigOptions contains long-lived server timeout defaults used in tests that
 // decode server configs from option maps.
-var ConfigOptions = options.Map{
+var ConfigOptions = configoptions.Map{
 	"read_timeout":        "10m",
 	"write_timeout":       "10m",
 	"idle_timeout":        "10m",
