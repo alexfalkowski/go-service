@@ -3,6 +3,7 @@ package msgpack_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/msgpack"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -147,4 +148,38 @@ func TestUnmarshalRejectsMalformedTrailingData(t *testing.T) {
 	err = msgpack.Unmarshal(data, &actual)
 
 	require.ErrorIs(t, err, errors.ErrTrailingData)
+}
+
+func TestDecodeRejectsUnknownFields(t *testing.T) {
+	t.Parallel()
+
+	buffer := test.Pool.Get()
+	defer test.Pool.Put(buffer)
+
+	encoder := msgpack.NewEncoder()
+	require.NoError(t, encoder.Encode(buffer, map[string]string{"test": "test", "extra": "ignored"}))
+
+	msg := &message{}
+	err := encoder.Decode(buffer, msg)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "extra")
+}
+
+func TestDecodeDiscardsUnknownFields(t *testing.T) {
+	t.Parallel()
+
+	buffer := test.Pool.Get()
+	defer test.Pool.Put(buffer)
+
+	encoder := msgpack.NewEncoder()
+	require.NoError(t, encoder.Encode(buffer, map[string]string{"test": "test", "extra": "ignored"}))
+
+	msg := &message{}
+	require.NoError(t, encoder.Decode(buffer, msg, codec.WithDiscardUnknown()))
+	require.Equal(t, "test", msg.Test)
+}
+
+type message struct {
+	Test string `msgpack:"test"`
 }

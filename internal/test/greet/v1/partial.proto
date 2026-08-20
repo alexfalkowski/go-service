@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package greet.v1;
+
+option go_package = "github.com/alexfalkowski/go-service/v2/test/greet/v1";
+
+// PartialMessage is a proto2 fixture with a required field, used to exercise
+// codec.WithAllowPartial on proto Encode.
+message PartialMessage {
+  required string name = 1;
+}

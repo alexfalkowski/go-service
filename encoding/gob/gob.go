@@ -26,8 +26,9 @@ type Encoder struct{}
 
 // Encode writes v to w as gob.
 //
-// This is a thin wrapper around `gob.NewEncoder(w).Encode(v)`.
-func (e *Encoder) Encode(w io.Writer, v any) error {
+// This is a thin wrapper around `gob.NewEncoder(w).Encode(v)`. gob has no required-field
+// concept, so [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	return gob.NewEncoder(w).Encode(v)
 }
 

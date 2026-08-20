@@ -18,16 +18,23 @@ func NewEncoder() *Encoder {
 // Encoder implements MessagePack encoding and decoding.
 type Encoder struct{}
 
-// Encode writes v to w as MessagePack.
-func (e *Encoder) Encode(w io.Writer, v any) error {
+// Encode writes v to w as MessagePack. MessagePack has no required-field concept, so
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	return msgpack.NewEncoder(w).Encode(v)
 }
 
 // Decode reads one MessagePack value from r and decodes it into v.
 //
-// It rejects trailing encoded values or malformed trailing data.
-func (e *Encoder) Decode(r io.Reader, v any, _ ...codec.Option) error {
+// In most cases v should be a pointer to the destination value (for example *MyStruct).
+// Decode rejects unknown destination fields unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// supplied. It also rejects trailing encoded values or malformed trailing data.
+func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	decoder := msgpack.NewDecoder(r)
+	resolved := codec.Apply(opts...)
+	decoder.DisallowUnknownFields(!resolved.DiscardUnknown())
+
 	if err := decoder.Decode(v); err != nil {
 		return err
 	}

@@ -26,8 +26,9 @@ type Encoder struct{}
 // Encode writes v to w as YAML.
 //
 // Encode closes the upstream YAML encoder after writing so final buffered data and
-// finalization errors are handled.
-func (e *Encoder) Encode(w io.Writer, v any) error {
+// finalization errors are handled. YAML has no required-field concept, so
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	encoder := yaml.NewEncoder(w)
 	if err := encoder.Encode(v); err != nil {
 		return err
@@ -44,7 +45,8 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // supplied. It always rejects additional documents in the same stream.
 func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	decoder := yaml.NewDecoder(r)
-	decoder.KnownFields(!codec.Apply(opts...).DiscardUnknown())
+	resolved := codec.Apply(opts...)
+	decoder.KnownFields(!resolved.DiscardUnknown())
 	if err := decoder.Decode(v); err != nil {
 		return err
 	}

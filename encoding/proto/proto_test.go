@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -141,6 +142,56 @@ func TestDecodeDiscardsUnknownFields(t *testing.T) {
 		require.NoError(t, encoder.Decode(bytes.NewBufferString("status: SERVING\nfuture_field: \"ignored\""), &decode, codec.WithDiscardUnknown()))
 		require.Equal(t, health.Serving, decode.GetStatus())
 	})
+}
+
+func TestEncodeRejectsMissingRequiredFields(t *testing.T) {
+	for _, tt := range protoEncoders() {
+		t.Run(tt.name, func(t *testing.T) {
+			buffer := test.Pool.Get()
+			defer test.Pool.Put(buffer)
+
+			require.Error(t, tt.encoder.Encode(buffer, &v1.PartialMessage{}))
+		})
+	}
+}
+
+func TestEncodeAllowsPartialWithOption(t *testing.T) {
+	for _, tt := range protoEncoders() {
+		t.Run(tt.name, func(t *testing.T) {
+			buffer := test.Pool.Get()
+			defer test.Pool.Put(buffer)
+
+			require.NoError(t, tt.encoder.Encode(buffer, &v1.PartialMessage{}, codec.WithAllowPartial()))
+		})
+	}
+}
+
+func TestDecodeRejectsMissingRequiredFields(t *testing.T) {
+	for _, tt := range protoEncoders() {
+		t.Run(tt.name, func(t *testing.T) {
+			buffer := test.Pool.Get()
+			defer test.Pool.Put(buffer)
+
+			require.NoError(t, tt.encoder.Encode(buffer, &v1.PartialMessage{}, codec.WithAllowPartial()))
+
+			var decode v1.PartialMessage
+			require.Error(t, tt.encoder.Decode(buffer, &decode))
+		})
+	}
+}
+
+func TestDecodeAllowsPartialWithOption(t *testing.T) {
+	for _, tt := range protoEncoders() {
+		t.Run(tt.name, func(t *testing.T) {
+			buffer := test.Pool.Get()
+			defer test.Pool.Put(buffer)
+
+			require.NoError(t, tt.encoder.Encode(buffer, &v1.PartialMessage{}, codec.WithAllowPartial()))
+
+			var decode v1.PartialMessage
+			require.NoError(t, tt.encoder.Decode(buffer, &decode, codec.WithAllowPartial()))
+		})
+	}
 }
 
 func TestEncodeReturnsWriteError(t *testing.T) {

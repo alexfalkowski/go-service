@@ -32,3 +32,27 @@ func readMessage(r io.Reader, v any) (Message, []byte, error) {
 
 	return msg, bytes, nil
 }
+
+func marshalMessage(w io.Writer, v any, marshal func(Message) ([]byte, error)) error {
+	msg, err := message(v)
+	if err != nil {
+		return err
+	}
+
+	bytes, err := marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(bytes)
+	return err
+}
+
+func unmarshalMessage(r io.Reader, v any, unmarshal func([]byte, Message) error) error {
+	msg, bytes, err := readMessage(r, v)
+	if err != nil {
+		return err
+	}
+
+	return unmarshal(bytes, msg)
+}

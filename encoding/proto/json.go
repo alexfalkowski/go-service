@@ -24,20 +24,13 @@ type JSON struct{}
 // Encode writes v as protobuf JSON to w.
 //
 // If v does not implement proto.Message, Encode returns [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType].
-// Any marshaling error from [protojson.Marshal] and any write error from w.Write is returned.
-func (e *JSON) Encode(w io.Writer, v any) error {
-	msg, err := message(v)
-	if err != nil {
-		return err
-	}
+// A message with missing required fields fails to marshal unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] is supplied.
+// Any marshaling error from [protojson.MarshalOptions.Marshal] and any write error from w.Write is returned.
+func (e *JSON) Encode(w io.Writer, v any, opts ...codec.Option) error {
+	resolved := codec.Apply(opts...)
 
-	bytes, err := protojson.Marshal(msg)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(bytes)
-	return err
+	return marshalMessage(w, v, protojson.MarshalOptions{AllowPartial: resolved.AllowPartial()}.Marshal)
 }
 
 // Decode reads protobuf JSON from r and unmarshals it into v.
@@ -48,14 +41,12 @@ func (e *JSON) Encode(w io.Writer, v any) error {
 // Decode otherwise reads all remaining bytes from r (via [io.ReadAll]) before
 // unmarshaling. Unknown protobuf JSON fields are rejected unless
 // [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
-// supplied.
+// supplied. A message with missing required fields fails to unmarshal unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] is supplied.
 //
 // Any read error from [io.ReadAll] and any unmarshal error from [protojson.UnmarshalOptions.Unmarshal] is returned.
 func (e *JSON) Decode(r io.Reader, v any, opts ...codec.Option) error {
-	msg, bytes, err := readMessage(r, v)
-	if err != nil {
-		return err
-	}
+	resolved := codec.Apply(opts...)
 
-	return protojson.UnmarshalOptions{DiscardUnknown: codec.Apply(opts...).DiscardUnknown()}.Unmarshal(bytes, msg)
+	return unmarshalMessage(r, v, protojson.UnmarshalOptions{DiscardUnknown: resolved.DiscardUnknown(), AllowPartial: resolved.AllowPartial()}.Unmarshal)
 }

@@ -24,20 +24,13 @@ type Binary struct{}
 // Encode writes v as protobuf binary (wire format) to w.
 //
 // If v does not implement [proto.Message], Encode returns [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType].
-// Any marshaling error from [proto.Marshal] and any write error from w.Write is returned.
-func (e *Binary) Encode(w io.Writer, v any) error {
-	msg, err := message(v)
-	if err != nil {
-		return err
-	}
+// A message with missing required fields fails to marshal unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] is supplied.
+// Any marshaling error from [proto.MarshalOptions.Marshal] and any write error from w.Write is returned.
+func (e *Binary) Encode(w io.Writer, v any, opts ...codec.Option) error {
+	resolved := codec.Apply(opts...)
 
-	bytes, err := proto.Marshal(msg)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(bytes)
-	return err
+	return marshalMessage(w, v, proto.MarshalOptions{AllowPartial: resolved.AllowPartial()}.Marshal)
 }
 
 // Decode reads protobuf binary (wire format) from r and unmarshals it into v.
@@ -46,14 +39,12 @@ func (e *Binary) Encode(w io.Writer, v any) error {
 // [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType] without reading from r.
 //
 // Decode otherwise reads all remaining bytes from r (via [io.ReadAll]) before
-// unmarshaling.
+// unmarshaling. A message with missing required fields fails to unmarshal unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] is supplied.
 //
-// Any read error from [io.ReadAll] and any unmarshal error from [proto.Unmarshal] is returned.
-func (e *Binary) Decode(r io.Reader, v any, _ ...codec.Option) error {
-	msg, bytes, err := readMessage(r, v)
-	if err != nil {
-		return err
-	}
+// Any read error from [io.ReadAll] and any unmarshal error from [proto.UnmarshalOptions.Unmarshal] is returned.
+func (e *Binary) Decode(r io.Reader, v any, opts ...codec.Option) error {
+	resolved := codec.Apply(opts...)
 
-	return proto.Unmarshal(bytes, msg)
+	return unmarshalMessage(r, v, proto.UnmarshalOptions{AllowPartial: resolved.AllowPartial()}.Unmarshal)
 }
