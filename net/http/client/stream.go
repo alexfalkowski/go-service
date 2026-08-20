@@ -2,6 +2,7 @@ package client
 
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
@@ -447,7 +448,7 @@ func newResponseDecoder(c *Client, response *http.Response, opts Options) (*resp
 
 	capped := quota.NewReader(response.Body, c.maxResponseSize)
 
-	return &responseDecoder{decoder: resMedia.NewDecoder(capped), capped: capped}, nil
+	return &responseDecoder{decoder: resMedia.NewDecoder(capped, codec.WithDiscardUnknown()), capped: capped}, nil
 }
 
 // recv decodes the next value into v and, on success, checks it against the per-value cap. The check

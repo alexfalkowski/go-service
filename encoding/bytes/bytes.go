@@ -1,6 +1,7 @@
 package bytes
 
 import (
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/reflect"
@@ -16,7 +17,7 @@ import (
 //   - [io.ReaderFrom] for Decode
 //
 // It is useful when you want to treat a value as its own codec (for example when caching or transporting
-// pre-serialized payloads) while still satisfying the go-service [encoding.Encoder] interface.
+// pre-serialized payloads) while still satisfying the go-service [codec.Encoder] interface.
 func NewEncoder() *Encoder {
 	return &Encoder{}
 }
@@ -47,7 +48,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // If v also implements [io.Resetter], Decode resets it before reading so the
 // destination is repopulated rather than appended to.
 // Any error returned by ReadFrom is returned.
-func (e *Encoder) Decode(r io.Reader, v any) error {
+func (e *Encoder) Decode(r io.Reader, v any, _ ...codec.Option) error {
 	from, err := readerFrom(v)
 	if err != nil {
 		return err

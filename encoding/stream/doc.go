@@ -12,8 +12,9 @@
 // exporting NewEncoder(io.Writer) [Encoder] and NewDecoder(io.Reader) [Decoder]. They wrap the same
 // underlying libraries as the sibling encoding/<kind> packages, carrying over the same policy with two
 // exceptions needed for multi-value streams: no output indentation (which would break newline-delimited
-// framing) and no trailing-data rejection (a stream is expected to contain many values). Strict/unknown-
-// field decoding is preserved.
+// framing) and no trailing-data rejection (a stream is expected to contain many values). Unknown
+// fields are rejected by default and can be discarded at construction with
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown].
 //
 // Start with [Encoder] and [Decoder].
 package stream

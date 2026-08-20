@@ -1,7 +1,7 @@
 package test
 
 import (
-	cacheconfig "github.com/alexfalkowski/go-service/v2/cache/config"
+	cache "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
@@ -17,10 +17,10 @@ import (
 
 // WorldOption configures optional features on a World before it is created.
 type WorldOption interface {
-	apply(opts *worldOpts)
+	apply(opts *options)
 }
 
-type worldOpts struct {
+type options struct {
 	verifier      token.Verifier
 	access        access.Controller
 	rt            http.RoundTripper
@@ -30,9 +30,9 @@ type worldOpts struct {
 	clientLimiter *limiter.Config
 	serverLimiter *limiter.Config
 	pg            *pg.Config
-	cache         *worldCacheOpts
-	httpHealth    *worldHealthOpts
-	grpcHealth    *worldHealthOpts
+	cache         *worldCacheOptions
+	httpHealth    *worldHealthOptions
+	grpcHealth    *worldHealthOptions
 	transport     *transport.Config
 	telemetry     string
 	loggerConfig  string
@@ -46,26 +46,26 @@ type worldOpts struct {
 	registerCache bool
 }
 
-type worldOptionFunc func(*worldOpts)
+type worldOptionFunc func(*options)
 
-func (f worldOptionFunc) apply(o *worldOpts) {
+func (f worldOptionFunc) apply(o *options) {
 	f(o)
 }
 
-type worldCacheOpts struct {
-	config *cacheconfig.Config
+type worldCacheOptions struct {
+	config *cache.Config
 	driver driver.Driver
 }
 
-func (o *worldOpts) cacheOptions() *worldCacheOpts {
+func (o *options) cacheOptions() *worldCacheOptions {
 	if o.cache == nil {
-		o.cache = &worldCacheOpts{}
+		o.cache = &worldCacheOptions{}
 	}
 
 	return o.cache
 }
 
-type worldHealthOpts struct {
+type worldHealthOptions struct {
 	name         string
 	url          string
 	observations []HealthObservation
@@ -87,7 +87,7 @@ func HealthObserve(kind string, names ...string) HealthObservation {
 
 // WithWorldSecure enables TLS for the transport and debug servers in the test world.
 func WithWorldSecure() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.secure = true
 	})
 }
@@ -97,35 +97,35 @@ func WithWorldSecure() WorldOption {
 // The current helpers recognize "otlp" for OTLP metrics and fall back to the
 // Prometheus test setup for any other value.
 func WithWorldTelemetry(kind string) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.telemetry = kind
 	})
 }
 
 // WithWorldClientLimiter installs the provided client-side rate limiter config.
 func WithWorldClientLimiter(config *limiter.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.clientLimiter = config
 	})
 }
 
 // WithWorldBreaker installs the provided client-side circuit breaker config.
 func WithWorldBreaker(config *breaker.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.breaker = config
 	})
 }
 
 // WithWorldServerLimiter installs the provided server-side rate limiter config.
 func WithWorldServerLimiter(config *limiter.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.serverLimiter = config
 	})
 }
 
 // WithWorldCompression enables transport compression for clients created by the world.
 func WithWorldCompression() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.compression = true
 	})
 }
@@ -135,30 +135,30 @@ func WithWorldCompression() WorldOption {
 // Pair this with [WithWorldHTTP] or [WithWorldGRPC] when the test needs the corresponding transport
 // server registered.
 func WithWorldTransportConfig(config *transport.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.transport = config
 	})
 }
 
 // WithWorldRoundTripper overrides the HTTP round tripper used by world clients and event senders.
 func WithWorldRoundTripper(rt http.RoundTripper) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.rt = rt
 	})
 }
 
 // WithWorldHTTP enables registration of the HTTP transport server.
 func WithWorldHTTP() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.http = true
 	})
 }
 
 // WithWorldHTTPHealth registers the HTTP health routes on the world before it starts.
 func WithWorldHTTPHealth(name, url string, observations ...HealthObservation) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.http = true
-		o.httpHealth = &worldHealthOpts{
+		o.httpHealth = &worldHealthOptions{
 			name:         name,
 			url:          url,
 			observations: append([]HealthObservation(nil), observations...),
@@ -168,16 +168,16 @@ func WithWorldHTTPHealth(name, url string, observations ...HealthObservation) Wo
 
 // WithWorldGRPC enables registration of the gRPC transport server.
 func WithWorldGRPC() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.grpc = true
 	})
 }
 
 // WithWorldGRPCHealth registers the gRPC health service on the world before it starts.
 func WithWorldGRPCHealth(name, url string, observations ...HealthObservation) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.grpc = true
-		o.grpcHealth = &worldHealthOpts{
+		o.grpcHealth = &worldHealthOptions{
 			name:         name,
 			url:          url,
 			observations: append([]HealthObservation(nil), observations...),
@@ -187,14 +187,14 @@ func WithWorldGRPCHealth(name, url string, observations ...HealthObservation) Wo
 
 // WithWorldDebug enables registration of the debug server.
 func WithWorldDebug() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.debug = true
 	})
 }
 
 // WithWorldHello registers the default GET /hello test handler on the world's mux.
 func WithWorldHello() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.hello = true
 	})
 }
@@ -203,8 +203,8 @@ func WithWorldHello() WorldOption {
 //
 // When config is nil, the world cache is disabled instead of using the default
 // Redis-backed test cache.
-func WithWorldCacheConfig(config *cacheconfig.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+func WithWorldCacheConfig(config *cache.Config) WorldOption {
+	return worldOptionFunc(func(o *options) {
 		o.cacheOptions().config = config
 	})
 }
@@ -214,7 +214,7 @@ func WithWorldCacheConfig(config *cacheconfig.Config) WorldOption {
 // If no custom cache driver is provided, the driver is built from the selected
 // cache config.
 func WithWorldCacheDriver(driver driver.Driver) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.cacheOptions().driver = driver
 	})
 }
@@ -226,7 +226,7 @@ func WithWorldCacheDriver(driver driver.Driver) WorldOption {
 // option is intended for tests that specifically exercise the generic cache
 // helpers.
 func WithWorldRegisterCache() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.registerCache = true
 	})
 }
@@ -234,7 +234,7 @@ func WithWorldRegisterCache() WorldOption {
 // WithWorldPGConfig enables Postgres for the world using config or the default
 // test config when config is nil.
 func WithWorldPGConfig(config *pg.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		if config != nil {
 			o.pg = config
 		} else {
@@ -245,7 +245,7 @@ func WithWorldPGConfig(config *pg.Config) WorldOption {
 
 // WithWorldLogger injects a prebuilt logger into the world instead of constructing one from config.
 func WithWorldLogger(logger *logger.Logger) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.logger = logger
 	})
 }
@@ -255,21 +255,21 @@ func WithWorldLogger(logger *logger.Logger) WorldOption {
 // Recognized values are "json", "text", "tint", and "otlp". Empty or
 // unrecognized values use the OTLP logger config.
 func WithWorldLoggerConfig(config string) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.loggerConfig = config
 	})
 }
 
 // WithWorldRest configures NewWorld to create a REST client backed by the world's HTTP transport.
 func WithWorldRest() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.rest = true
 	})
 }
 
 // WithWorldToken overrides the token generator and verifier used by world clients and servers.
 func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.generator = generator
 		o.verifier = verifier
 	})
@@ -277,13 +277,13 @@ func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOpt
 
 // WithWorldAccessController overrides the access controller used by world servers.
 func WithWorldAccessController(controller access.Controller) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
+	return worldOptionFunc(func(o *options) {
 		o.access = controller
 	})
 }
 
-func worldOptions(opts ...WorldOption) *worldOpts {
-	os := &worldOpts{}
+func worldOptions(opts ...WorldOption) *options {
+	os := &options{}
 	for _, o := range opts {
 		o.apply(os)
 	}
@@ -291,7 +291,7 @@ func worldOptions(opts ...WorldOption) *worldOpts {
 	return os
 }
 
-func (w *World) registerOptions(opts *worldOpts) {
+func (w *World) registerOptions(opts *options) {
 	if opts.hello {
 		w.HandleHello()
 	}
@@ -303,7 +303,7 @@ func (w *World) registerOptions(opts *worldOpts) {
 	}
 }
 
-func transportConfig(opts *worldOpts) *transport.Config {
+func transportConfig(opts *options) *transport.Config {
 	if opts.transport != nil {
 		return opts.transport
 	}
@@ -315,7 +315,7 @@ func transportConfig(opts *worldOpts) *transport.Config {
 	return NewInsecureTransportConfig()
 }
 
-func debugConfig(opts *worldOpts) *debug.Config {
+func debugConfig(opts *options) *debug.Config {
 	if opts.secure {
 		return NewSecureDebugConfig()
 	}
@@ -323,7 +323,7 @@ func debugConfig(opts *worldOpts) *debug.Config {
 	return NewInsecureDebugConfig()
 }
 
-func tlsConfig(opts *worldOpts) *tls.Config {
+func tlsConfig(opts *options) *tls.Config {
 	if opts.secure {
 		return NewTLSClientConfig()
 	}

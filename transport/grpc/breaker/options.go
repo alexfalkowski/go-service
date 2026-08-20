@@ -10,17 +10,17 @@ import (
 // Options are applied in the order provided to [NewClient]. If multiple options configure
 // the same field, the last one wins.
 type Option interface {
-	apply(opts *opts)
+	apply(options *options)
 }
 
-type opts struct {
+type options struct {
 	settings     Settings
 	failureCodes map[codes.Code]struct{}
 }
 
-type optionFunc func(*opts)
+type optionFunc func(*options)
 
-func (f optionFunc) apply(o *opts) {
+func (f optionFunc) apply(o *options) {
 	f(o)
 }
 
@@ -34,7 +34,7 @@ func (f optionFunc) apply(o *opts) {
 // Note: because settings are copied, if your [Settings] contains function fields that close over
 // mutable state, ensure that state is safe for concurrent use.
 func WithSettings(s Settings) Option {
-	return optionFunc(func(o *opts) {
+	return optionFunc(func(o *options) {
 		o.settings = s
 	})
 }
@@ -47,7 +47,7 @@ func WithSettings(s Settings) Option {
 // breaker: a caller aborting an in-flight call should not trip the breaker against a healthy upstream. An
 // already-expired caller deadline bypasses breaker accounting before invocation for the same reason.
 func WithFailureCodes(cs ...codes.Code) Option {
-	return optionFunc(func(o *opts) {
+	return optionFunc(func(o *options) {
 		o.failureCodes = make(map[codes.Code]struct{}, len(cs))
 		for _, c := range cs {
 			o.failureCodes[c] = struct{}{}
@@ -55,7 +55,7 @@ func WithFailureCodes(cs ...codes.Code) Option {
 	})
 }
 
-func defaultOpts() *opts {
+func defaultOptions() *options {
 	failureCodes := map[codes.Code]struct{}{
 		codes.Unavailable:       {},
 		codes.DeadlineExceeded:  {},
@@ -63,7 +63,7 @@ func defaultOpts() *opts {
 		codes.Internal:          {},
 	}
 
-	return &opts{
+	return &options{
 		failureCodes: failureCodes,
 		settings:     breaker.DefaultSettings,
 	}

@@ -3,6 +3,7 @@ package json_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream/json"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
@@ -70,6 +71,22 @@ func TestDecodeRejectsUnknownFields(t *testing.T) {
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "extra")
+}
+
+func TestDecodeDiscardsUnknownFields(t *testing.T) {
+	t.Parallel()
+
+	buffer := test.Pool.Get()
+	defer test.Pool.Put(buffer)
+
+	_, err := buffer.WriteString(`{"test":"test","extra":"ignored"}`)
+	require.NoError(t, err)
+
+	decoder := json.NewDecoder(buffer, codec.WithDiscardUnknown())
+	msg := &message{}
+
+	require.NoError(t, decoder.Decode(msg))
+	require.Equal(t, "test", msg.Test)
 }
 
 func TestDecodeAllowsTrailingValues(t *testing.T) {

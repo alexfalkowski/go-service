@@ -1,11 +1,11 @@
 // Package encoding provides value encoding/decoding helpers and DI wiring used by go-service.
 //
-// This package defines a small [Encoder] interface (encode to an [io.Writer], decode from an [io.Reader])
-// and a registry ([Map]) used to select an encoder by kind at runtime.
+// This package provides a registry ([Map]) that selects
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder] implementations by kind at runtime.
 //
 // # Registry
 //
-// Map is a kind-to-Encoder lookup. It is commonly used by configuration loading and transport layers to
+// Map is a kind-to-[github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder] lookup. It is commonly used by configuration loading and transport layers to
 // choose a decoder/encoder based on either:
 //   - a file extension (for example "yaml", "toml", "json"), or
 //   - a content kind / media subtype (for example "protobuf", "bytes").
@@ -16,6 +16,14 @@
 //
 // Callers typically obtain a *[Map] via DI and then use [Map.Get] to select an encoder, often
 // falling back to a default when the requested kind is not registered.
+//
+// # Decode options
+//
+// Decoding rejects unknown members by default where the format supports that distinction. Callers at
+// a forward-compatible API boundary can pass
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] to
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder.Decode]; framing,
+// syntax, and type validation remain unchanged.
 //
 // # Wiring
 //
@@ -28,5 +36,6 @@
 //
 // Module provides the default *[Map] for Fx applications.
 //
-// Start with [Encoder], [Map], [NewMap], and [Module].
+// Start with [Map], [NewMap], [Module], and
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
 package encoding

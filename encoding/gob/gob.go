@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
@@ -13,7 +14,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs a gob encoder.
 //
 // This encoder is a thin adapter around the standard library [encoding/gob] package that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
@@ -34,7 +35,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
 // Decode reads one gob value and rejects additional values in the same stream.
-func (e *Encoder) Decode(r io.Reader, v any) error {
+func (e *Encoder) Decode(r io.Reader, v any, _ ...codec.Option) error {
 	decoder := gob.NewDecoder(r)
 	if err := decoder.Decode(v); err != nil {
 		return err

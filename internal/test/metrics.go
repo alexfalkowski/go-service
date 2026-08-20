@@ -166,7 +166,7 @@ func EnableMetricsReader(tb testing.TB) metrics.Reader {
 	return reader
 }
 
-func meter(lc di.Lifecycle, router *http.Router, os *worldOpts) (metrics.Meter, error) {
+func meter(lc di.Lifecycle, router *http.Router, os *options) (metrics.Meter, error) {
 	if os.telemetry == "otlp" {
 		return NewMeter(lc, NewOTLPMetricsConfig())
 	}

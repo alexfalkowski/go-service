@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -38,7 +39,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs a JSON encoder.
 //
 // NewEncoder returns an [Encoder] that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding.Encoder] while delegating to
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder] while delegating to
 // the standard library's [encoding/json] implementation with readable indented
 // encoding and strict decoding.
 func NewEncoder() *Encoder {
@@ -67,13 +68,16 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 //
 // In most cases v should be a pointer to the destination value, such as
 // `*MyStruct` or `*map[string]any`. Decode is equivalent to calling
-// `json.NewDecoder(r).Decode(v)` with unknown fields rejected, then requiring
-// the stream to contain no additional JSON values.
+// `json.NewDecoder(r).Decode(v)` with unknown fields rejected unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// supplied, then requiring the stream to contain no additional JSON values.
 //
 // Duplicate JSON object keys keep the standard library's last-wins behavior.
-func (e *Encoder) Decode(r io.Reader, v any) error {
+func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	decoder := json.NewDecoder(r)
-	decoder.DisallowUnknownFields()
+	if !codec.Apply(opts...).DiscardUnknown() {
+		decoder.DisallowUnknownFields()
+	}
 	if err := decoder.Decode(v); err != nil {
 		return err
 	}

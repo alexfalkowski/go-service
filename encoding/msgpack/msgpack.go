@@ -3,6 +3,7 @@ package msgpack
 import (
 	"github.com/Basekick-Labs/msgpack/v6"
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
@@ -25,7 +26,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode reads one MessagePack value from r and decodes it into v.
 //
 // It rejects trailing encoded values or malformed trailing data.
-func (e *Encoder) Decode(r io.Reader, v any) error {
+func (e *Encoder) Decode(r io.Reader, v any, _ ...codec.Option) error {
 	decoder := msgpack.NewDecoder(r)
 	if err := decoder.Decode(v); err != nil {
 		return err

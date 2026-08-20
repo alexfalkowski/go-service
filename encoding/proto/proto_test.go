@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -109,12 +109,28 @@ func TestEncodersUseExpectedWireFormats(t *testing.T) {
 	})
 }
 
+func TestDecodeRejectsUnknownFields(t *testing.T) {
+	t.Run("json", func(t *testing.T) {
+		encoder := proto.NewJSON()
+
+		var decode health.Response
+		require.Error(t, encoder.Decode(bytes.NewBufferString(`{"status":"SERVING","futureField":"ignored"}`), &decode))
+	})
+
+	t.Run("text", func(t *testing.T) {
+		encoder := proto.NewText()
+
+		var decode health.Response
+		require.Error(t, encoder.Decode(bytes.NewBufferString("status: SERVING\nfuture_field: \"ignored\""), &decode))
+	})
+}
+
 func TestDecodeDiscardsUnknownFields(t *testing.T) {
 	t.Run("json", func(t *testing.T) {
 		encoder := proto.NewJSON()
 
 		var decode health.Response
-		require.NoError(t, encoder.Decode(bytes.NewBufferString(`{"status":"SERVING","futureField":"ignored"}`), &decode))
+		require.NoError(t, encoder.Decode(bytes.NewBufferString(`{"status":"SERVING","futureField":"ignored"}`), &decode, codec.WithDiscardUnknown()))
 		require.Equal(t, health.Serving, decode.GetStatus())
 	})
 
@@ -122,7 +138,7 @@ func TestDecodeDiscardsUnknownFields(t *testing.T) {
 		encoder := proto.NewText()
 
 		var decode health.Response
-		require.NoError(t, encoder.Decode(bytes.NewBufferString("status: SERVING\nfuture_field: \"ignored\""), &decode))
+		require.NoError(t, encoder.Decode(bytes.NewBufferString("status: SERVING\nfuture_field: \"ignored\""), &decode, codec.WithDiscardUnknown()))
 		require.Equal(t, health.Serving, decode.GetStatus())
 	})
 }
@@ -169,11 +185,11 @@ func TestInvalidTypedNilDecodeDoesNotRead(t *testing.T) {
 }
 
 func protoEncoders() []struct {
-	encoder encoding.Encoder
+	encoder codec.Encoder
 	name    string
 } {
 	return []struct {
-		encoder encoding.Encoder
+		encoder codec.Encoder
 		name    string
 	}{
 		{encoder: proto.NewBinary(), name: "binary"},

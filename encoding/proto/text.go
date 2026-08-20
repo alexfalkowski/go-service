@@ -1,6 +1,7 @@
 package proto
 
 import (
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"google.golang.org/protobuf/encoding/prototext"
 )
@@ -8,7 +9,7 @@ import (
 // NewText constructs a protobuf text encoder.
 //
 // This encoder is a thin adapter around google.golang.org/protobuf/encoding/prototext Marshal/Unmarshal that
-// satisfies [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
+// satisfies [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
 func NewText() *Text {
 	return &Text{}
 }
@@ -45,19 +46,16 @@ func (e *Text) Encode(w io.Writer, v any) error {
 // [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType] without reading from r.
 //
 // Decode otherwise reads all remaining bytes from r (via [io.ReadAll]) before
-// unmarshaling. Unknown protobuf text fields are discarded during unmarshal.
+// unmarshaling. Unknown protobuf text fields are rejected unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// supplied.
 //
 // Any read error from [io.ReadAll] and any unmarshal error from [prototext.UnmarshalOptions.Unmarshal] is returned.
-func (e *Text) Decode(r io.Reader, v any) error {
-	msg, err := message(v)
+func (e *Text) Decode(r io.Reader, v any, opts ...codec.Option) error {
+	msg, bytes, err := readMessage(r, v)
 	if err != nil {
 		return err
 	}
 
-	bytes, _, err := io.ReadAll(r)
-	if err != nil {
-		return err
-	}
-
-	return prototext.UnmarshalOptions{DiscardUnknown: true}.Unmarshal(bytes, msg)
+	return prototext.UnmarshalOptions{DiscardUnknown: codec.Apply(opts...).DiscardUnknown()}.Unmarshal(bytes, msg)
 }

@@ -3,6 +3,7 @@ package yaml_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/stream/yaml"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -74,6 +75,22 @@ func TestDecodeRejectsUnknownFields(t *testing.T) {
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "extra")
+}
+
+func TestDecodeDiscardsUnknownFields(t *testing.T) {
+	t.Parallel()
+
+	buffer := test.Pool.Get()
+	defer test.Pool.Put(buffer)
+
+	_, err := buffer.WriteString("test: test\nextra: ignored")
+	require.NoError(t, err)
+
+	decoder := yaml.NewDecoder(buffer, codec.WithDiscardUnknown())
+	msg := &message{}
+
+	require.NoError(t, decoder.Decode(msg))
+	require.Equal(t, "test", msg.Test)
 }
 
 func TestDecodeAllowsTrailingDocuments(t *testing.T) {

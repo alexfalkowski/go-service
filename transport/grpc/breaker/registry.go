@@ -8,7 +8,7 @@ import (
 )
 
 type registry struct {
-	opts     *opts
+	options  *options
 	breakers *sync.Map[string, *breaker.CircuitBreaker]
 }
 
@@ -17,11 +17,11 @@ func (r *registry) get(fullMethod string) *breaker.CircuitBreaker {
 		return cb
 	}
 
-	s := r.opts.settings
+	s := r.options.settings
 	s.Name = fullMethod
 
 	isSuccessful := s.IsSuccessful
-	failureCodes := r.opts.failureCodes
+	failureCodes := r.options.failureCodes
 	s.IsSuccessful = func(err error) bool {
 		if err == nil {
 			return true

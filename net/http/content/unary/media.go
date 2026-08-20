@@ -2,6 +2,7 @@ package unary
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/policy"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 )
@@ -61,7 +62,7 @@ func unaryKind(subtype string) string {
 // Type is the parsed media type. Encoder may be nil when Subtype is "error".
 type Media struct {
 	// Encoder is the encoder/decoder associated with the media subtype.
-	Encoder encoding.Encoder
+	Encoder codec.Encoder
 
 	// Type is the parsed media type.
 	media.Type

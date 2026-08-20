@@ -2,6 +2,7 @@ package yaml
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/io"
 	yaml "go.yaml.in/yaml/v3"
@@ -12,7 +13,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs a YAML encoder.
 //
 // This encoder is a thin adapter around go-yaml v3 (imported as [go.yaml.in/yaml/v3]) that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding.Encoder].
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
@@ -38,11 +39,12 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode reads YAML from r and decodes it into v.
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
-// Decode reads one YAML document and rejects unknown fields and additional
-// documents in the same stream.
-func (e *Encoder) Decode(r io.Reader, v any) error {
+// Decode reads one YAML document and rejects unknown fields unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// supplied. It always rejects additional documents in the same stream.
+func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	decoder := yaml.NewDecoder(r)
-	decoder.KnownFields(true)
+	decoder.KnownFields(!codec.Apply(opts...).DiscardUnknown())
 	if err := decoder.Decode(v); err != nil {
 		return err
 	}

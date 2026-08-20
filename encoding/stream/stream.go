@@ -1,10 +1,13 @@
 package stream
 
-import "github.com/alexfalkowski/go-service/v2/io"
+import (
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
+	"github.com/alexfalkowski/go-service/v2/io"
+)
 
 // Encoder encodes a sequence of values to a writer bound at construction.
 //
-// Encoder differs from [github.com/alexfalkowski/go-service/v2/encoding.Encoder] in two ways: it is
+// Encoder differs from [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder] in two ways: it is
 // bound to one writer for its entire lifetime (constructed with the writer rather than given one per
 // call), and it is expected to serve many Encode calls rather than exactly one.
 //
@@ -32,7 +35,7 @@ type Encoder interface {
 
 // Decoder decodes a sequence of values from a reader bound at construction.
 //
-// Decoder differs from [github.com/alexfalkowski/go-service/v2/encoding.Encoder]'s Decode in two
+// Decoder differs from [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder]'s Decode in two
 // ways: it is bound to one reader for its entire lifetime (constructed with the reader rather than
 // given one per call), and it is expected to serve many Decode calls rather than exactly one.
 //
@@ -64,4 +67,7 @@ type EncoderFunc func(w io.Writer) Encoder
 
 // DecoderFunc constructs a [Decoder] bound to r. Registered in a [Map] by kind as part of a [Codec]
 // via [Map.Register], and returned by [Map.Get].
-type DecoderFunc func(r io.Reader) Decoder
+//
+// With [codec.WithDiscardUnknown], the decoder ignores source members that
+// do not map to its destination.
+type DecoderFunc func(r io.Reader, opts ...codec.Option) Decoder

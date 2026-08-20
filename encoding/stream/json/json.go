@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/codec"
 	"github.com/alexfalkowski/go-service/v2/io"
 )
 
@@ -46,11 +47,13 @@ type Decoder struct {
 //
 // Unlike [github.com/alexfalkowski/go-service/v2/encoding/json.Encoder]'s Decode, the returned
 // decoder allows additional JSON values after the first: it does not enforce single-value
-// trailing-data rejection, since a stream is expected to carry many values. Unknown fields remain
-// rejected.
-func NewDecoder(r io.Reader) *Decoder {
+// trailing-data rejection, since a stream is expected to carry many values. Unknown fields are
+// rejected unless [codec.WithDiscardUnknown] is supplied.
+func NewDecoder(r io.Reader, opts ...codec.Option) *Decoder {
 	decoder := json.NewDecoder(r)
-	decoder.DisallowUnknownFields()
+	if !codec.Apply(opts...).DiscardUnknown() {
+		decoder.DisallowUnknownFields()
+	}
 
 	return &Decoder{Decoder: decoder}
 }

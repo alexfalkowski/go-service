@@ -10,17 +10,17 @@ import (
 // Options are applied in the order provided to [NewRoundTripper]. If multiple options configure
 // the same field, the last one wins.
 type Option interface {
-	apply(opts *opts)
+	apply(options *options)
 }
 
-type opts struct {
+type options struct {
 	settings      Settings
 	failureStatus FailureFunc
 }
 
-type optionFunc func(*opts)
+type optionFunc func(*options)
 
-func (f optionFunc) apply(o *opts) { f(o) }
+func (f optionFunc) apply(o *options) { f(o) }
 
 // FailureFunc classifies an HTTP response status code as a breaker failure.
 type FailureFunc func(code int) bool
@@ -36,7 +36,7 @@ type FailureFunc func(code int) bool
 // Note: because settings are copied, if your [Settings] contains function fields that close over
 // mutable state, ensure that state is safe for concurrent use.
 func WithSettings(s Settings) Option {
-	return optionFunc(func(o *opts) { o.settings = s })
+	return optionFunc(func(o *options) { o.settings = s })
 }
 
 // WithFailureStatusFunc configures the predicate that classifies an HTTP response status code as a failure
@@ -46,7 +46,7 @@ func WithSettings(s Settings) Option {
 // but the [RoundTripper] still returns the original *[http.Response] to the caller with a nil error.
 // This decouples breaker health tracking from application-level HTTP response handling.
 func WithFailureStatusFunc(f FailureFunc) Option {
-	return optionFunc(func(o *opts) {
+	return optionFunc(func(o *options) {
 		var failureStatus FailureFunc
 		if f == nil {
 			failureStatus = defaultFailureStatus
@@ -79,8 +79,8 @@ func WithFailureStatuses(statuses ...int) Option {
 	})
 }
 
-func defaultOpts() *opts {
-	return &opts{
+func defaultOptions() *options {
+	return &options{
 		failureStatus: defaultFailureStatus,
 		settings:      breaker.DefaultSettings,
 	}

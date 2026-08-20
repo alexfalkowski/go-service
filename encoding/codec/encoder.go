@@ -1,4 +1,5 @@
-package encoding
+// Package codec defines the common contract implemented by supported encodings.
+package codec
 
 import "github.com/alexfalkowski/go-service/v2/io"
 
@@ -33,6 +34,8 @@ type Encoder interface {
 	// Encode writes a serialized representation of v to w.
 	Encode(w io.Writer, v any) error
 
-	// Decode reads from r and decodes into v.
-	Decode(r io.Reader, v any) error
+	// Decode reads from r and decodes into v. WithDiscardUnknown makes codecs
+	// ignore source members that do not map to v; without it, codecs reject
+	// unknown members when their format supports that distinction.
+	Decode(r io.Reader, v any, opts ...Option) error
 }

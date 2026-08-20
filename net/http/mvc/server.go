@@ -75,7 +75,7 @@ func Route[Model any](pattern string, controller Controller[Model], options ...R
 
 	routeOptions := &routeOptions{}
 	for _, option := range options {
-		option(routeOptions)
+		option.apply(routeOptions)
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
