@@ -56,8 +56,9 @@ type Encoder struct{}
 //
 // Encode is equivalent to calling `json.NewEncoder(w).SetIndent("", "  ")`
 // before encoding v. As with the standard library, the encoded output is
-// terminated with a trailing newline.
-func (e *Encoder) Encode(w io.Writer, v any) error {
+// terminated with a trailing newline. JSON has no required-field concept, so
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent(strings.Empty, "  ")
 
@@ -75,7 +76,8 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Duplicate JSON object keys keep the standard library's last-wins behavior.
 func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	decoder := json.NewDecoder(r)
-	if !codec.Apply(opts...).DiscardUnknown() {
+	resolved := codec.Apply(opts...)
+	if !resolved.DiscardUnknown() {
 		decoder.DisallowUnknownFields()
 	}
 	if err := decoder.Decode(v); err != nil {

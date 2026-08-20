@@ -42,7 +42,8 @@ type Decoder struct {
 // rejected unless [codec.WithDiscardUnknown] is supplied.
 func NewDecoder(r io.Reader, opts ...codec.Option) *Decoder {
 	decoder := yaml.NewDecoder(r)
-	decoder.KnownFields(!codec.Apply(opts...).DiscardUnknown())
+	resolved := codec.Apply(opts...)
+	decoder.KnownFields(!resolved.DiscardUnknown())
 
 	return &Decoder{Decoder: decoder}
 }

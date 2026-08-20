@@ -12,7 +12,8 @@ import "github.com/alexfalkowski/go-service/v2/io"
 //
 // Encode must serialize v to w. Implementations may require that v satisfies additional interfaces
 // or is of a particular shape (for example a protobuf encoder may require v to implement
-// google.golang.org/protobuf/proto.Message).
+// google.golang.org/protobuf/proto.Message). Implementations should reject a value with missing
+// required fields when their format supports that distinction, unless WithAllowPartial is supplied.
 //
 // # Decode contract
 //
@@ -31,11 +32,16 @@ import "github.com/alexfalkowski/go-service/v2/io"
 // Implementations should return any underlying I/O errors and any parse/unmarshal errors produced by
 // their respective codecs.
 type Encoder interface {
-	// Encode writes a serialized representation of v to w.
-	Encode(w io.Writer, v any) error
+	// Encode writes a serialized representation of v to w. WithAllowPartial lets codecs that
+	// validate required fields (for example protobuf) encode a message with missing required
+	// fields instead of returning an error; codecs without that concept ignore it.
+	Encode(w io.Writer, v any, opts ...Option) error
 
 	// Decode reads from r and decodes into v. WithDiscardUnknown makes codecs
 	// ignore source members that do not map to v; without it, codecs reject
-	// unknown members when their format supports that distinction.
+	// unknown members when their format supports that distinction. WithAllowPartial
+	// makes codecs that validate required fields (for example protobuf) decode a
+	// value with missing required fields instead of returning an error; codecs
+	// without that concept ignore it. Both may be supplied together.
 	Decode(r io.Reader, v any, opts ...Option) error
 }

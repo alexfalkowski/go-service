@@ -33,7 +33,7 @@ type enc struct {
 }
 
 // Encode implements [codec.Encoder] and returns the configured error.
-func (e *enc) Encode(_ io.Writer, _ any) error {
+func (e *enc) Encode(_ io.Writer, _ any, _ ...codec.Option) error {
 	return e.err
 }
 
@@ -46,7 +46,7 @@ func (e *enc) Decode(_ io.Reader, _ any, _ ...codec.Option) error {
 type PartialEncoder struct{}
 
 // Encode writes a partial payload and returns ErrFailed.
-func (PartialEncoder) Encode(w io.Writer, _ any) error {
+func (PartialEncoder) Encode(w io.Writer, _ any, _ ...codec.Option) error {
 	_, _ = io.WriteString(w, "partial")
 	return ErrFailed
 }

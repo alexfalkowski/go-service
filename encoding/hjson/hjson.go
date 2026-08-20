@@ -20,8 +20,9 @@ func NewEncoder() *Encoder {
 // Encoder implements HJSON encoding and decoding.
 type Encoder struct{}
 
-// Encode writes v to w as HJSON.
-func (e *Encoder) Encode(w io.Writer, v any) error {
+// Encode writes v to w as HJSON. HJSON has no required-field concept, so
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	data, err := hjson.Marshal(v)
 	if err != nil {
 		return err
@@ -45,9 +46,11 @@ func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 		return err
 	}
 
+	resolved := codec.Apply(opts...)
+
 	options := hjson.DefaultDecoderOptions()
 	options.DisallowDuplicateKeys = true
-	options.DisallowUnknownFields = !codec.Apply(opts...).DiscardUnknown()
+	options.DisallowUnknownFields = !resolved.DiscardUnknown()
 
 	return hjson.UnmarshalWithOptions(data, v, options)
 }

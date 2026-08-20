@@ -42,9 +42,15 @@ type Decoder struct {
 //
 // Unlike [github.com/alexfalkowski/go-service/v2/encoding/msgpack.Encoder]'s Decode, the returned
 // decoder allows additional MessagePack values after the first: it does not enforce single-value
-// trailing-data rejection, since a stream is expected to carry many values.
-func NewDecoder(r io.Reader, _ ...codec.Option) *Decoder {
-	return &Decoder{Decoder: msgpack.NewDecoder(r)}
+// trailing-data rejection, since a stream is expected to carry many values. Decode rejects unknown
+// destination fields unless
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is supplied.
+func NewDecoder(r io.Reader, opts ...codec.Option) *Decoder {
+	decoder := msgpack.NewDecoder(r)
+	resolved := codec.Apply(opts...)
+	decoder.DisallowUnknownFields(!resolved.DiscardUnknown())
+
+	return &Decoder{Decoder: decoder}
 }
 
 // Close is a no-op: the underlying MessagePack decoder has no finalization state to flush.

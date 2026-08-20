@@ -25,6 +25,15 @@
 // [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder.Decode]; framing,
 // syntax, and type validation remain unchanged.
 //
+// # Partial options
+//
+// Encoding and decoding both reject messages with missing required fields by default where the
+// format supports that distinction (currently the protobuf variants). Callers can pass
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] to
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder.Encode] or
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder.Decode] to encode or decode such a
+// message instead of returning an error. It may be combined with WithDiscardUnknown.
+//
 // # Wiring
 //
 // NewMap constructs a *[Map] that registers default encoders under common kinds used throughout

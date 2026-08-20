@@ -31,8 +31,9 @@ type Encoder struct{}
 // Encode writes v to w when v implements [io.WriterTo].
 //
 // If v does not implement [io.WriterTo], Encode returns [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType].
-// Any error returned by WriteTo is returned.
-func (e *Encoder) Encode(w io.Writer, v any) error {
+// Any error returned by WriteTo is returned. This encoder has no required-field concept, so
+// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	to, err := writerTo(v)
 	if err != nil {
 		return err

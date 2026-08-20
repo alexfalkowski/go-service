@@ -51,7 +51,8 @@ type Decoder struct {
 // rejected unless [codec.WithDiscardUnknown] is supplied.
 func NewDecoder(r io.Reader, opts ...codec.Option) *Decoder {
 	decoder := json.NewDecoder(r)
-	if !codec.Apply(opts...).DiscardUnknown() {
+	resolved := codec.Apply(opts...)
+	if !resolved.DiscardUnknown() {
 		decoder.DisallowUnknownFields()
 	}
 

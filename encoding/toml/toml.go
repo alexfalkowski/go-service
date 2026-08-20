@@ -26,8 +26,9 @@ type Encoder struct{}
 
 // Encode writes v to w as TOML.
 //
-// This is a thin wrapper around `toml.NewEncoder(w).Encode(v)`.
-func (e *Encoder) Encode(w io.Writer, v any) error {
+// This is a thin wrapper around `toml.NewEncoder(w).Encode(v)`. TOML has no required-field
+// concept, so [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	return toml.NewEncoder(w).Encode(v)
 }
 
@@ -44,7 +45,8 @@ func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 		return err
 	}
 
-	if undecoded := meta.Undecoded(); !codec.Apply(opts...).DiscardUnknown() && len(undecoded) > 0 {
+	resolved := codec.Apply(opts...)
+	if undecoded := meta.Undecoded(); !resolved.DiscardUnknown() && len(undecoded) > 0 {
 		return fmt.Errorf("toml: undecoded key %s", undecoded[0])
 	}
 
