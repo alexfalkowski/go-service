@@ -41,8 +41,9 @@ type Decoder struct {
 // trailing-data rejection, since a stream is expected to carry many documents. Unknown fields are
 // rejected unless [codec.WithDiscardUnknown] is supplied.
 func NewDecoder(r io.Reader, opts ...codec.Option) *Decoder {
-	decoder := yaml.NewDecoder(r)
 	resolved := codec.Apply(opts...)
+
+	decoder := yaml.NewDecoder(r)
 	decoder.KnownFields(!resolved.DiscardUnknown())
 
 	return &Decoder{Decoder: decoder}

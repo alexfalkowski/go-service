@@ -46,8 +46,9 @@ type Decoder struct {
 // destination fields unless
 // [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is supplied.
 func NewDecoder(r io.Reader, opts ...codec.Option) *Decoder {
-	decoder := msgpack.NewDecoder(r)
 	resolved := codec.Apply(opts...)
+
+	decoder := msgpack.NewDecoder(r)
 	decoder.DisallowUnknownFields(!resolved.DiscardUnknown())
 
 	return &Decoder{Decoder: decoder}
