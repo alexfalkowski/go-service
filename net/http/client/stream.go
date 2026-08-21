@@ -220,9 +220,9 @@ func (c *Client) RequestStream(ctx context.Context, method, url string, opts Opt
 	}()
 
 	stream := &RequestResponseStream{
-		ResponseStream: ResponseStream{c: c, opts: opts, ready: ready},
-		encoder:        reqMedia.NewEncoder(writer),
-		writer:         writer,
+		c: c, opts: opts, ready: ready,
+		encoder: reqMedia.NewEncoder(writer),
+		writer:  writer,
 	}
 
 	panicValue, handlerErr := callHandler(func() error { return handler(ctx, stream) })
