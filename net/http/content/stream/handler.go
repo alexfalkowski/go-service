@@ -191,16 +191,14 @@ func NewRequestHandler[Req any, Res any](content *Content, opts Options, handler
 		capped := quota.NewReader(req.Body, opts.MaxReceiveSize.Bytes())
 		decoder := reqMedia.NewDecoder(capped, codec.WithDiscardUnknown())
 		stream := &RequestStream[Req, Res]{
-			Stream: Stream[Res]{
-				ctx:          ctx,
-				writer:       writer,
-				encoder:      &requestEncoder{Encoder: resMedia.NewEncoder(writer), decoder: decoder},
-				controller:   http.NewResponseController(res),
-				readTimeout:  opts.ReadTimeout,
-				writeTimeout: opts.WriteTimeout,
-				limiter:      meta.Limiter(ctx),
-				drain:        opts.Drain,
-			},
+			ctx:            ctx,
+			writer:         writer,
+			encoder:        &requestEncoder{Encoder: resMedia.NewEncoder(writer), decoder: decoder},
+			controller:     http.NewResponseController(res),
+			readTimeout:    opts.ReadTimeout,
+			writeTimeout:   opts.WriteTimeout,
+			limiter:        meta.Limiter(ctx),
+			drain:          opts.Drain,
 			decoder:        decoder,
 			capped:         capped,
 			maxReceiveSize: opts.MaxReceiveSize.Bytes(),
