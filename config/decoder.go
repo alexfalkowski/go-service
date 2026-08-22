@@ -48,14 +48,16 @@ type DecoderParams struct {
 func NewDecoder(params DecoderParams) Decoder {
 	kind, location, found := strings.CutColon(params.Flags.GetConfig())
 	if !found {
-		return NewDefault(params.Name, params.Encoder, params.FS)
+		return &searchDecoder{name: params.Name, enc: params.Encoder, fs: params.FS}
 	}
 
 	switch kind {
 	case "file":
-		return NewFile(location, params.Encoder, params.FS)
+		return &fileDecoder{location: location, enc: params.Encoder, fs: params.FS}
 	case "env":
-		return NewENV(location, params.Encoder)
+		kind, data, _ := strings.CutColon(os.Getenv(location))
+
+		return &envDecoder{location: location, kind: kind, data: data, enc: params.Encoder}
 	default:
 		return invalidSourceDecoder{source: params.Flags.GetConfig()}
 	}

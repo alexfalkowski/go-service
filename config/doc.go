@@ -1,8 +1,7 @@
 // Package config provides configuration decoding, validation, and DI wiring for go-service.
 //
-// This package exposes a [Decoder] abstraction and multiple decoder implementations that load
-// configuration from different sources. The source is selected by the "-config" / "-c" flag (see [NewDecoder] and
-// `flag.FlagSet.GetConfig`).
+// This package exposes a [Decoder] abstraction. [NewDecoder] selects its source from the "-config" / "-c" flag
+// (see `flag.FlagSet.GetConfig`).
 //
 // # Config routing (-config / -c flag)
 //
