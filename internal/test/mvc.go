@@ -2,9 +2,7 @@ package test
 
 import (
 	"embed"
-	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 )
 
@@ -39,14 +37,4 @@ var Model = Page{
 		{Title: "Task 2", Done: true},
 		{Title: "Task 3", Done: true},
 	},
-}
-
-func registerMVC(router *http.Router, logger *slog.Logger) {
-	mvc.Register(mvc.RegisterParams{
-		Router:      router,
-		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: logger}),
-		FileSystem:  FileSystem,
-		Pool:        Pool,
-		Layout:      Layout,
-	})
 }

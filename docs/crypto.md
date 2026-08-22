@@ -24,6 +24,7 @@ crypto:
 ```
 
 > [!NOTE]
+>
 > - AES keys must be 16/24/32 bytes after resolving the source string.
 > - HMAC keys should be high-entropy secrets and must remain private.
 > - RSA keys expect PKCS#1 PEM blocks (`RSA PUBLIC KEY` / `RSA PRIVATE KEY`) and must be at least 4096 bits.

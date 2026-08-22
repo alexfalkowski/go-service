@@ -94,7 +94,7 @@ func TestApplicationServerRunWithConfigFlag(t *testing.T) {
 func TestApplicationServerDrainsStreamingRoute(t *testing.T) {
 	cancel, code := startDrainingApplication(t)
 
-	restClient := rest.NewClient(rest.WithClientRoundTripper(http.DefaultTransport))
+	restClient := rest.NewClient(test.NewContentClient(client.WithRoundTripper(http.DefaultTransport)))
 	received := make(chan string, 1)
 	streamErr := make(chan error, 1)
 	go func() {
@@ -317,8 +317,8 @@ func startDrainingApplication(t *testing.T) (context.CancelFunc, <-chan int) {
 	started := make(chan struct{})
 	opts := []di.Option{
 		module.Server,
-		di.Register(func() {
-			rest.StreamGet("/drain", func(ctx context.Context, stream *stream.Stream[test.Response]) error {
+		di.Register(func(s *rest.Server) {
+			s.StreamGet("/drain", func(ctx context.Context, stream *stream.Stream[test.Response]) error {
 				if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 					return err
 				}

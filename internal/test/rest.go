@@ -6,23 +6,23 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/client"
 	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 )
 
 // RegisterHandlers registers DELETE and GET REST handlers for the service-prefixed path.
-func RegisterHandlers[Res any](path string, h unary.Handler[Res]) {
-	rest.Delete(http.Pattern(Name, path), h)
-	rest.Get(http.Pattern(Name, path), h)
+func (w *World) RegisterHandlers[Res any](path string, h unary.Handler[Res]) {
+	w.RestServer.Delete(http.Pattern(Name, path), h)
+	w.RestServer.Get(http.Pattern(Name, path), h)
 }
 
 // RegisterRequestHandlers registers POST, PUT, and PATCH REST handlers for the service-prefixed path.
-func RegisterRequestHandlers[Req any, Res any](path string, h unary.RequestHandler[Req, Res]) {
-	rest.Post(http.Pattern(Name, path), h)
-	rest.Put(http.Pattern(Name, path), h)
-	rest.Patch(http.Pattern(Name, path), h)
+func (w *World) RegisterRequestHandlers[Req any, Res any](path string, h unary.RequestHandler[Req, Res]) {
+	w.RestServer.Post(http.Pattern(Name, path), h)
+	w.RestServer.Put(http.Pattern(Name, path), h)
+	w.RestServer.Patch(http.Pattern(Name, path), h)
 }
 
 // RestInvalidStatusCode writes an internal server error directly to the response and returns no payload.
@@ -87,16 +87,11 @@ func RestRequestError(_ context.Context, _ *Request) (*Response, error) {
 	return nil, ErrInvalid
 }
 
-func registerRest(router *http.Router) {
-	rest.Register(router, UnaryContent, StreamContent, Pool, stream.Options{})
-}
-
-func restClient(client *http.Client, os *options) *rest.Client {
+func restClient(httpClient *http.Client, os *options) *rest.Client {
+	opts := []client.ClientOption{client.WithRedirect(client.RedirectIgnore)}
 	if os.rest {
-		return rest.NewClient(
-			rest.WithClientRoundTripper(client.Transport),
-		)
+		opts = append(opts, client.WithRoundTripper(httpClient.Transport))
 	}
 
-	return rest.NewClient()
+	return rest.NewClient(client.NewClient(UnaryContent, StreamContent, Pool, opts...))
 }

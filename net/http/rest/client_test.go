@@ -7,15 +7,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/client"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewClientUsesTimeout(t *testing.T) {
-	rest.Register(nil, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
-
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set(http.ContentTypeKey, media.Text)
 		res.WriteHeader(http.StatusOK)
@@ -24,9 +23,9 @@ func TestNewClientUsesTimeout(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	client := rest.NewClient(rest.WithClientTimeout("10ms"))
+	restClient := rest.NewClient(test.NewContentClient(client.WithTimeout(time.MustParseDuration("10ms"))))
 
-	err := client.Get(t.Context(), server.URL, rest.Options{})
+	err := restClient.Get(t.Context(), server.URL, rest.Options{})
 
 	require.ErrorIs(t, err, context.DeadlineExceeded)
 }

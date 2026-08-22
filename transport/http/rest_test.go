@@ -21,7 +21,7 @@ func TestRESTResponseWritesNoContent(t *testing.T) {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
-			test.RegisterHandlers("/hello", test.RestNoContent)
+			world.RegisterHandlers("/hello", test.RestNoContent)
 
 			url := world.NamedServerURL("http", "hello")
 			err := world.Rest.Do(t.Context(), method, url, rest.Options{})
@@ -35,7 +35,7 @@ func TestRESTRequestWritesNoContent(t *testing.T) {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
-			test.RegisterRequestHandlers("/hello", test.RestRequestNoContent)
+			world.RegisterRequestHandlers("/hello", test.RestRequestNoContent)
 
 			url := world.NamedServerURL("http", "hello")
 			req := &test.Request{Name: "test"}
@@ -54,7 +54,7 @@ func TestRESTReturnsStatusError(t *testing.T) {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP(), test.WithWorldLoggerConfig("tint"))
 
-			test.RegisterHandlers("/hello", test.RestError)
+			world.RegisterHandlers("/hello", test.RestError)
 
 			url := world.NamedServerURL("http", "hello")
 			err := world.Rest.Do(t.Context(), method, url, rest.Options{})
@@ -81,7 +81,7 @@ func TestRESTRequestWritesError(t *testing.T) {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
-			test.RegisterRequestHandlers("/hello", test.RestRequestError)
+			world.RegisterRequestHandlers("/hello", test.RestRequestError)
 
 			url := world.NamedServerURL("http", "hello")
 			req := &test.Request{Name: "test"}
@@ -100,7 +100,7 @@ func TestRESTResponseWritesContent(t *testing.T) {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-			test.RegisterHandlers("/hello", test.RestContent)
+			world.RegisterHandlers("/hello", test.RestContent)
 
 			url := world.NamedServerURL("http", "hello")
 			resp := &test.Response{}
@@ -119,7 +119,7 @@ func TestRESTRequestWritesContent(t *testing.T) {
 		t.Run(method, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-			test.RegisterRequestHandlers("/hello", test.RestRequestContent)
+			world.RegisterRequestHandlers("/hello", test.RestRequestContent)
 
 			url := world.NamedServerURL("http", "hello")
 			req := &test.Request{Name: "test"}
@@ -139,7 +139,7 @@ func TestRESTRequestWritesContent(t *testing.T) {
 func TestRestRequestUsesAcceptForResponse(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	test.RegisterRequestHandlers("/hello", test.RestRequestContent)
+	world.RegisterRequestHandlers("/hello", test.RestRequestContent)
 
 	body := test.Pool.Get()
 	defer test.Pool.Put(body)
@@ -166,7 +166,7 @@ func TestRestRequestUsesAcceptForResponse(t *testing.T) {
 func TestRESTResponseRejectsInvalidStatusCode(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	test.RegisterHandlers("/hello", test.RestInvalidStatusCode)
+	world.RegisterHandlers("/hello", test.RestInvalidStatusCode)
 
 	url := world.NamedServerURL("http", "hello")
 	err := world.Rest.Get(t.Context(), url, rest.Options{})
@@ -175,7 +175,7 @@ func TestRESTResponseRejectsInvalidStatusCode(t *testing.T) {
 	err = world.Rest.Delete(t.Context(), url, rest.Options{})
 	require.Error(t, err)
 
-	test.RegisterRequestHandlers("/hello", test.RestRequestInvalidStatusCode)
+	world.RegisterRequestHandlers("/hello", test.RestRequestInvalidStatusCode)
 
 	url = world.NamedServerURL("http", "hello")
 	req := &test.Request{}
@@ -194,7 +194,7 @@ func TestRESTResponseRejectsInvalidStatusCode(t *testing.T) {
 func TestRestStreamPostRecvAndSendOverRealServer(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
-	rest.StreamPost("/hello", func(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
+	world.RestServer.StreamPost("/hello", func(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 		for {
 			req, err := stream.Recv()
 			if err != nil {
@@ -243,10 +243,10 @@ func TestRestStreamPostRefreshesReadDeadlineOverH2C(t *testing.T) {
 	config.HTTP.Timeout = 100 * time.Millisecond
 	config.HTTP.Options = options.Map{"read_timeout": "100ms", "write_timeout": "100ms"}
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
+	restServer := rest.NewServer(world.Router, test.UnaryContent, test.StreamContent, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
-	rest.StreamPost("/hello", echoStreamServer)
+	restServer.StreamPost("/hello", echoStreamServer)
 	world.Start()
 
 	transport := http.Transport(nil)
@@ -270,10 +270,10 @@ func TestRestStreamPostSurvivesReceiveOnlyActivePhase(t *testing.T) {
 	config.HTTP.Timeout = 100 * time.Millisecond
 	config.HTTP.Options = options.Map{"read_timeout": "100ms", "write_timeout": "100ms"}
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
+	restServer := rest.NewServer(world.Router, test.UnaryContent, test.StreamContent, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
-	rest.StreamPost("/hello", receiveOnlyActivePhaseServer)
+	restServer.StreamPost("/hello", receiveOnlyActivePhaseServer)
 	world.Start()
 
 	transport := http.Transport(nil)
@@ -297,10 +297,10 @@ func TestRestStreamPostSurvivesSendOnlyActivePhase(t *testing.T) {
 	config.HTTP.Timeout = 100 * time.Millisecond
 	config.HTTP.Options = options.Map{"read_timeout": "100ms", "write_timeout": "100ms"}
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
+	restServer := rest.NewServer(world.Router, test.UnaryContent, test.StreamContent, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
-	rest.StreamPost("/hello", sendOnlyActivePhaseServer)
+	restServer.StreamPost("/hello", sendOnlyActivePhaseServer)
 	world.Start()
 
 	transport := http.Transport(nil)

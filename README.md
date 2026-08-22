@@ -237,7 +237,7 @@ Most sub-configs are optional pointers. Conventionally, `nil` means **disabled**
 
 ## 🔐 Source strings (secrets, DSNs, paths)
 
-Many fields accept a *source string* rather than only a literal:
+Many fields accept a _source string_ rather than only a literal:
 
 - `env:NAME` → read from environment variable `NAME` (fails if `NAME` is unset; resolves to an empty value if `NAME` is explicitly set to `""`)
 - `file:/path/to/thing` → read from filesystem after path cleaning; returned bytes are trimmed of leading and trailing whitespace
@@ -298,6 +298,7 @@ exactly one canonical kind (no aliases):
 - `bytes`
 
 > [!NOTE]
+>
 > - `bytes` is the passthrough encoder for `io.ReaderFrom`/`io.WriterTo` payloads.
 > - HTTP media-type aliases such as `pb`, `proto`, `protobin`, `pbbin`, `pbtxt`, `prototxt`,
 >   `pbjson`, `octet-stream`, `plain`, and `yml` are resolved to the canonical kinds above by

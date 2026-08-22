@@ -12,10 +12,10 @@ import (
 	sync "github.com/alexfalkowski/go-sync"
 )
 
-func ExampleGet() {
+func ExampleServer_Get() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      router,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  exampleFileSystem(),
@@ -23,8 +23,8 @@ func ExampleGet() {
 		Layout:      mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	view := mvc.NewFullView("views/page.tmpl")
-	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *examplePage, error) {
+	view := server.NewFullView("views/page.tmpl")
+	server.Get("/hello", func(_ context.Context) (*mvc.View, *examplePage, error) {
 		return view, &examplePage{Title: "Hello"}, nil
 	})
 
@@ -40,10 +40,10 @@ func ExampleGet() {
 	// Hello
 }
 
-func ExampleNotFound() {
+func ExampleServer_NotFound() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      router,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  exampleFileSystem(),
@@ -51,15 +51,15 @@ func ExampleNotFound() {
 		Layout:      mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	view := mvc.NewFullView("views/page.tmpl")
-	mvc.NotFound(func(_ context.Context) (*mvc.View, *examplePage) {
+	view := server.NewFullView("views/page.tmpl")
+	server.NotFound(func(_ context.Context) (*mvc.View, *examplePage) {
 		return view, &examplePage{Title: "Not Found"}
 	})
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/missing", http.NoBody)
 	res := httptest.NewRecorder()
 
-	mvc.NewHandler(mux).ServeHTTP(res, req)
+	server.NewHandler(mux).ServeHTTP(res, req)
 
 	fmt.Println(res.Code)
 	fmt.Println(res.Body.String())
@@ -68,10 +68,10 @@ func ExampleNotFound() {
 	// Not Found
 }
 
-func ExampleStaticFile() {
+func ExampleServer_StaticFile() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      router,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  exampleFileSystem(),
@@ -79,7 +79,7 @@ func ExampleStaticFile() {
 		Layout:      mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	mvc.StaticFile(
+	server.StaticFile(
 		"/asset.txt",
 		"static/asset.txt",
 		mvc.WithCacheControl("public, max-age=60"),
@@ -99,10 +99,10 @@ func ExampleStaticFile() {
 	// hello
 }
 
-func ExampleStaticPathValue() {
+func ExampleServer_StaticPathValue() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      router,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  exampleFileSystem(),
@@ -110,7 +110,7 @@ func ExampleStaticPathValue() {
 		Layout:      mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	mvc.StaticPathValue("/{file...}", "file", "static")
+	server.StaticPathValue("/{file...}", "file", "static")
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/asset.txt", http.NoBody)
 	res := httptest.NewRecorder()

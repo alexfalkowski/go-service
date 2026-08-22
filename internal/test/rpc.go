@@ -8,9 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	g "github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	h "github.com/alexfalkowski/go-service/v2/net/http/status"
 )
 
@@ -68,8 +66,4 @@ func ErrorsNotMappedProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (
 // ErrorsInternalProtobufSayHello returns ErrInternal, which already implements the HTTP status coder contract.
 func ErrorsInternalProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return nil, ErrInternal
-}
-
-func (w *World) registerRPC() {
-	rpc.Register(w.Router, UnaryContent, StreamContent, Pool, stream.Options{})
 }

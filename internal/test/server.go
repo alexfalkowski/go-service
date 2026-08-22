@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
@@ -31,6 +32,8 @@ type Server struct {
 	Access access.Controller
 	// Mux holds HTTP routes registered by tests.
 	Mux *http.ServeMux
+	// MVC renders the not-found view for unmatched HTTP routes.
+	MVC *mvc.Server
 	// RoutePolicy stores route policy used by HTTP middleware.
 	RoutePolicy *http.RoutePolicy
 	// HTTPServer is populated when RegisterHTTP is true.
@@ -81,6 +84,7 @@ func (s *Server) Register() error {
 	if s.RegisterHTTP {
 		params := http.ServerParams{
 			Shutdowner: sh, Mux: s.Mux,
+			MVC:      s.MVC,
 			Pool:     Pool,
 			Config:   s.TransportConfig.HTTP,
 			Logger:   s.Logger,

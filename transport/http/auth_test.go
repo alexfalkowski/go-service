@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
@@ -25,7 +24,7 @@ func TestUnaryHandlerAuthenticatesSupportedToken(t *testing.T) {
 
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldHTTP())
 
-			rpc.Route("/hello", test.SuccessSayHello)
+			world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 			header := http.Header{}
 			header.Set(http.ContentTypeKey, media.JSON)
@@ -49,7 +48,7 @@ func TestUnaryHandlerRejectsUnknownTokenKind(t *testing.T) {
 
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
@@ -66,7 +65,7 @@ func TestUnaryHandlerRejectsUnknownTokenKind(t *testing.T) {
 func TestUnaryHandlerAcceptsValidAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
@@ -95,7 +94,7 @@ func TestUnaryHandlerRejectsDeniedAccess(t *testing.T) {
 		test.WithWorldHTTP(),
 	)
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
@@ -125,7 +124,7 @@ func TestAuthDoesNotBypassApplicationMetricsPath(t *testing.T) {
 func TestRejectsInvalidAuthUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
@@ -142,7 +141,7 @@ func TestRejectsInvalidAuthUnary(t *testing.T) {
 func TestAuthUnaryWithAppend(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
@@ -160,7 +159,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 func TestUnaryHandlerAcceptsLowercaseBearerScheme(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
@@ -178,7 +177,7 @@ func TestUnaryHandlerAcceptsLowercaseBearerScheme(t *testing.T) {
 func TestUnaryHandlerRejectsMissingAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
@@ -195,7 +194,7 @@ func TestUnaryHandlerRejectsMissingAuthentication(t *testing.T) {
 func TestUnaryHandlerRejectsEmptyAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")), test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
@@ -211,7 +210,7 @@ func TestUnaryHandlerRejectsEmptyAuthentication(t *testing.T) {
 func TestUnaryHandlerRejectsMissingClientAuthentication(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
@@ -231,7 +230,7 @@ func TestUnaryHandlerPropagatesTokenError(t *testing.T) {
 		test.WithWorldToken(test.NewGenerator(strings.Empty, test.ErrGenerate), test.NewVerifier("test")),
 		test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)

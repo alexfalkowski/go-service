@@ -13,8 +13,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
 	"github.com/alexfalkowski/go-service/v2/net/http/events"
+	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
+	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/net/url"
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -79,6 +82,16 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	httpServerLimiter, err := NewHTTPServerLimiter(lc, LimiterKeyMap, os.serverLimiter)
 	require.NoError(tb, err)
 
+	mvcServer := mvc.NewServer(mvc.ServerParams{
+		Router:      router,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: logger.Logger}),
+		FileSystem:  FileSystem,
+		Pool:        Pool,
+		Layout:      Layout,
+	})
+	restServer := rest.NewServer(router, UnaryContent, StreamContent, stream.Options{})
+	rpcServer := rpc.NewServer(router, UnaryContent, StreamContent, stream.Options{})
+
 	server := &Server{
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
 		TransportConfig: transportCfg, DebugConfig: debugCfg,
@@ -87,6 +100,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 		HTTPLimiter: httpServerLimiter,
 		Verifier:    os.verifier, Access: os.access, Generator: generator,
 		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
+		MVC: mvcServer,
 	}
 	require.NoError(tb, server.Register())
 
@@ -104,9 +118,6 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	httpClient, err := client.NewHTTP()
 	require.NoError(tb, err)
 
-	registerMVC(router, logger.Logger)
-	registerRest(router)
-
 	receiver, sender, err := NewEvents(router, os.rt, generator)
 	require.NoError(tb, err)
 
@@ -120,10 +131,10 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 		Receiver: receiver, Sender: sender,
 		Cache: cacheKind, CachePinger: cachePinger, PG: os.pg,
 		httpClient: httpClient,
+		MVCServer:  mvcServer, RestServer: restServer, RPCServer: rpcServer,
 	}
 
 	world.registerOptions(os)
-	world.registerRPC()
 	world.registerDatabase()
 	world.registerTelemetry()
 
@@ -177,6 +188,12 @@ type World struct {
 	Sender *transportevents.Sender
 	// Rest is the world REST client.
 	Rest *rest.Client
+	// MVCServer registers world MVC routes and renders views.
+	MVCServer *mvc.Server
+	// RestServer registers world REST routes.
+	RestServer *rest.Server
+	// RPCServer registers world RPC routes.
+	RPCServer *rpc.Server
 
 	// DB contains connected SQL test pools, when enabled.
 	DB *sql.DBs

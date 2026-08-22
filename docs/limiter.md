@@ -25,6 +25,7 @@ transport:
 ```
 
 > [!NOTE]
+>
 > - Omitting the `limiter` block disables limiting entirely; a nil config is treated as disabled.
 > - `interval` is parsed as a Go duration string. Invalid values can fail fast.
 > - `tokens` and `interval` use the underlying in-memory store defaults when set to zero: `1` token per `1s`. Configure positive values for explicit quotas.

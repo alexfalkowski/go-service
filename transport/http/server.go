@@ -57,6 +57,9 @@ type ServerParams struct {
 	// Mux is the HTTP request multiplexer that holds registered routes/handlers.
 	Mux *http.ServeMux
 
+	// MVC renders the not-found view for unmatched routes when MVC is defined.
+	MVC *mvc.Server
+
 	// Pool is the shared buffer pool used to inspect mux 404s without committing the response early.
 	Pool *sync.BufferPool
 
@@ -170,7 +173,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(hd)
 	}
 
-	handler := http.NewNotFoundHandler(params.Mux, params.Pool, mvc.NotFoundHandler(), status.NotFoundHandler())
+	handler := http.NewNotFoundHandler(params.Mux, params.Pool, params.MVC.NotFoundHandler(), status.NotFoundHandler())
 	neg.UseHandler(compress.GzipHandler(handler))
 
 	handler = http.NewTelemetryHandler(neg, "http.server")

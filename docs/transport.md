@@ -54,6 +54,7 @@ Built-in protobuf-oriented media type aliases include:
 - `application/prototext`, `application/prototxt`, `application/pbtxt`
 
 > [!NOTE]
+>
 > - `application/hjson` maps to the built-in `hjson` encoder kind.
 > - Unknown or invalid media types fall back to JSON selection only for outbound (`Accept`-driven)
 >   negotiation. An absent request `Content-Type` still defaults to JSON, but an unknown or invalid one
@@ -71,11 +72,11 @@ Built-in protobuf-oriented media type aliases include:
 REST and RPC support streaming routes alongside the single-value helpers above, for responses (and,
 over HTTP/2, requests) that arrive as a sequence of values instead of one buffered payload:
 
-| single-value | streaming | direction | HTTP/2 required |
-| --- | --- | --- | --- |
-| `rest.Get`/`rest.Route` | `rest.StreamGet`/`rest.StreamRoute` | send-only | no |
-| `rest.Post`/`rest.Put`/`rest.Patch`/`rest.RouteRequest` | `rest.StreamPost`/`rest.StreamPut`/`rest.StreamPatch`/`rest.StreamRouteRequest` | bidirectional | yes |
-| `rpc.Route` | `rpc.StreamRoute` | bidirectional | yes |
+| single-value                                                                        | streaming                                                                                                   | direction     | HTTP/2 required |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------- | --------------- |
+| `rest.Server.Get`/`rest.Server.Route`                                               | `rest.Server.StreamGet`/`rest.Server.StreamRoute`                                                           | send-only     | no              |
+| `rest.Server.Post`/`rest.Server.Put`/`rest.Server.Patch`/`rest.Server.RouteRequest` | `rest.Server.StreamPost`/`rest.Server.StreamPut`/`rest.Server.StreamPatch`/`rest.Server.StreamRouteRequest` | bidirectional | yes             |
+| `rpc.Server.Route`                                                                  | `rpc.Server.StreamRoute`                                                                                    | bidirectional | yes             |
 
 A send-only streaming handler gets a `*stream.Stream[Res]` with `Send`; a bidirectional streaming
 handler gets a `*stream.RequestStream[Req, Res]` with both `Send` and `Recv`. Client calls use the
@@ -119,7 +120,7 @@ MVC static helpers keep their `StaticOption` signature; use
 > live in `github.com/alexfalkowski/go-service/v2/net/http/content/stream`. Import `unary` for `Content`, `Media`,
 > `NewContent`, `NewHandler`, and `NewRequestHandler`; import `stream` for incremental request/response helpers.
 > `stream.NewHandler` and `stream.NewRequestHandler` take `*stream.Content`, while unary handlers take
-> `*unary.Content`. `rest.Register`, `rpc.Register`, and `client.NewClient` take the unary and streaming content
+> `*unary.Content`. `rest.NewServer`, `rpc.NewServer`, and `client.NewClient` take the unary and streaming content
 > owners separately.
 > Migrate root `content` imports and identifiers to `content/unary` and `unary`, respectively; use
 > `net/http.ContentTypeKey` and `net/http.AcceptKey` for the shared header names.
@@ -130,6 +131,7 @@ above — an unregistered or unparseable streaming media type is rejected outrig
 back to JSON, unlike single-value negotiation.
 
 > [!NOTE]
+>
 > - Bidirectional streaming routes require HTTP/2 (including h2c); a request over HTTP/1.x is rejected
 >   with `505 HTTP Version Not Supported` before the handler runs. Send-only streaming routes have no
 >   such requirement and stay fully supported on HTTP/1.1 chunked responses.
@@ -160,12 +162,12 @@ back to JSON, unlike single-value negotiation.
 The HTTP transport wraps the mux with `net/http.NewNotFoundHandler` so generated 404 responses can be rendered consistently while preserving other mux responses such as 405 Method Not Allowed.
 
 - REST/RPC-style missing routes use `net/http/status.NotFoundHandler`, which writes the standard `status.WriteError` response.
-- MVC missing routes can use `net/http/mvc.NotFoundHandler` to render the registered MVC not-found view when the request accepts HTML (`Accept: text/html`) or is an HTMX request (`Hx-Request: true`).
+- MVC missing routes can use `mvc.Server.NotFoundHandler` to render the registered MVC not-found view when the request accepts HTML (`Accept: text/html`) or is an HTMX request (`Hx-Request: true`).
 - Routes that match and write their own status are not replaced by this mux-level not-found handler.
 
 ## HTTP MVC errors
 
-When an MVC controller returns an error, `net/http/mvc.Route` renders the returned view with a client-safe `mvc.Error` model. The model contains the HTTP status `Code` and safe client-visible `Message`.
+When an MVC controller returns an error, `mvc.Server.Route` renders the returned view with a client-safe `mvc.Error` model. The model contains the HTTP status `Code` and safe client-visible `Message`.
 
 The raw error string remains available to templates as `mvcModelError` metadata for compatibility. Rendering that metadata can expose diagnostic details, so prefer `.Model.Message` for client-visible error pages.
 
@@ -188,6 +190,7 @@ transport:
 ```
 
 > [!NOTE]
+>
 > - Address may use `<network>://<address>` (for example `tcp://:8000`) or a raw listen address such as `:8000`, which defaults to the `tcp` network.
 > - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
 > - `transport.http.timeout` bounds non-streaming handler contexts and `transport.grpc.timeout` bounds unary RPC handlers. Both default to `30s` and do not cap stream lifetime; long-lived HTTP and gRPC streams remain governed by client cancellation and their stream-specific controls.

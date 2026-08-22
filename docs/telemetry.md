@@ -120,6 +120,7 @@ telemetry:
 ```
 
 > [!NOTE]
+>
 > - `batch_timeout`, `export_timeout`, `max_queue_size`, and `max_export_batch_size` tune the OTLP batch export pipeline and apply only when `kind` is `otlp`. When a value is unset or zero, the OpenTelemetry SDK default is used (queue `2048`, batch `512`). A nonzero `batch_timeout` must use whole-second precision. Explicit queue and batch limits may be at most `8192` and `2048`, respectively; the effective batch may not exceed the effective queue.
 > - `http_timeout` bounds one OTLP/HTTP export request. It defaults to `10s` when unset or zero and does not apply to OTLP/gRPC.
 > - `headers` values are source strings.

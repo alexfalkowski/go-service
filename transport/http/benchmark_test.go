@@ -39,9 +39,9 @@ func BenchmarkMVC(b *testing.B) {
 		b.ReportAllocs()
 
 		world := newHTTPBenchmarkWorld(b)
-		view := mvc.NewFullView("views/hello.tmpl")
+		view := world.MVCServer.NewFullView("views/hello.tmpl")
 
-		mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		world.MVCServer.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 			return view, &test.Model, nil
 		})
 
@@ -78,7 +78,7 @@ func BenchmarkRPC(b *testing.B) {
 		b.ReportAllocs()
 
 		world := newHTTPBenchmarkWorld(b)
-		rpc.Route("/hello", test.SuccessSayHello)
+		world.RPCServer.Route("/hello", test.SuccessSayHello)
 		startHTTPBenchmarkWorld(b, world)
 
 		b.ResetTimer()
@@ -86,9 +86,8 @@ func BenchmarkRPC(b *testing.B) {
 		for _, mt := range test.MessageMediaTypes() {
 			cl, err := world.NewHTTP()
 			require.NoError(b, err)
-			client := rpc.NewClient(world.ServerURL("http"),
+			client := rpc.NewClient(world.ServerURL("http"), test.NewContentClient(client.WithRoundTripper(cl.Transport)),
 				rpc.WithClientContentType(mt.ContentType),
-				rpc.WithClientRoundTripper(cl.Transport),
 			)
 
 			b.Run(mt.Name, func(b *testing.B) {
@@ -113,7 +112,7 @@ func BenchmarkRPC(b *testing.B) {
 		b.ReportAllocs()
 
 		world := newHTTPBenchmarkWorld(b)
-		rpc.Route("/hello", test.SuccessProtobufSayHello)
+		world.RPCServer.Route("/hello", test.SuccessProtobufSayHello)
 		startHTTPBenchmarkWorld(b, world)
 
 		b.ResetTimer()
@@ -121,9 +120,8 @@ func BenchmarkRPC(b *testing.B) {
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 			cl, err := world.NewHTTP()
 			require.NoError(b, err)
-			client := rpc.NewClient(world.ServerURL("http"),
-				rpc.WithClientContentType("application/"+mt),
-				rpc.WithClientRoundTripper(cl.Transport))
+			client := rpc.NewClient(world.ServerURL("http"), test.NewContentClient(client.WithRoundTripper(cl.Transport)),
+				rpc.WithClientContentType("application/"+mt))
 
 			b.Run(mt, func(b *testing.B) {
 				for b.Loop() {
@@ -152,8 +150,8 @@ func BenchmarkRest(b *testing.B) {
 		b.ReportAllocs()
 
 		world := newHTTPBenchmarkWorld(b)
-		test.RegisterRequestHandlers("/hello", test.RestRequestContent)
-		mvc.StaticFile("/robots.txt", "static/robots.txt")
+		world.RegisterRequestHandlers("/hello", test.RestRequestContent)
+		world.MVCServer.StaticFile("/robots.txt", "static/robots.txt")
 		startHTTPBenchmarkWorld(b, world)
 
 		b.ResetTimer()
@@ -162,7 +160,7 @@ func BenchmarkRest(b *testing.B) {
 			cl, err := world.NewHTTP()
 			require.NoError(b, err)
 			url := world.NamedServerURL("http", "hello")
-			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
+			client := rest.NewClient(test.NewContentClient(client.WithRoundTripper(cl.Transport)))
 
 			b.Run(mt.Name, func(b *testing.B) {
 				for b.Loop() {
@@ -187,7 +185,7 @@ func BenchmarkRest(b *testing.B) {
 			cl, err := world.NewHTTP()
 			require.NoError(b, err)
 			url := world.PathServerURL("http", "robots.txt")
-			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
+			client := rest.NewClient(test.NewContentClient(client.WithRoundTripper(cl.Transport)))
 
 			for b.Loop() {
 				buffer := test.Pool.Get()
@@ -215,7 +213,7 @@ func BenchmarkRest(b *testing.B) {
 		b.ReportAllocs()
 
 		world := newHTTPBenchmarkWorld(b)
-		test.RegisterRequestHandlers("/hello", test.RestRequestProtobuf)
+		world.RegisterRequestHandlers("/hello", test.RestRequestProtobuf)
 		startHTTPBenchmarkWorld(b, world)
 
 		b.ResetTimer()
@@ -224,7 +222,7 @@ func BenchmarkRest(b *testing.B) {
 			cl, err := world.NewHTTP()
 			require.NoError(b, err)
 			url := world.NamedServerURL("http", "hello")
-			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
+			client := rest.NewClient(test.NewContentClient(client.WithRoundTripper(cl.Transport)))
 
 			b.Run(mt, func(b *testing.B) {
 				for b.Loop() {
@@ -255,7 +253,7 @@ func BenchmarkRestStream(b *testing.B) {
 	b.ReportAllocs()
 
 	world := test.NewWorld(b, test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-	rest.StreamPost("/hello", streamHello)
+	world.RestServer.StreamPost("/hello", streamHello)
 	startHTTPBenchmarkWorld(b, world)
 
 	url := world.PathServerURL("https", "hello")
@@ -297,7 +295,7 @@ func BenchmarkRPCStream(b *testing.B) {
 	b.ReportAllocs()
 
 	world := test.NewWorld(b, test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	rpc.StreamRoute("/hello", streamHello)
+	world.RPCServer.StreamRoute("/hello", streamHello)
 	startHTTPBenchmarkWorld(b, world)
 
 	httpClient, err := world.NewHTTP()
@@ -451,8 +449,8 @@ func benchmarkHTTPStream(b *testing.B, log *logger.Logger, trace, tlsEnabled boo
 
 	address, cleanup := startBenchmarkHTTPServer(b, log, trace, tlsEnabled, func(router *transporthttp.Router, cfg *transporthttp.Config) {
 		opts := stream.Options{ReadTimeout: cfg.GetReadTimeout(), WriteTimeout: cfg.GetWriteTimeout(), MaxReceiveSize: cfg.GetMaxReceiveSize()}
-		rest.Register(router, test.UnaryContent, test.StreamContent, test.Pool, opts)
-		rest.StreamPost("/hello", streamHello)
+		restServer := rest.NewServer(router, test.UnaryContent, test.StreamContent, opts)
+		restServer.StreamPost("/hello", streamHello)
 	})
 	httpClient, scheme, closeIdleConnections := newHTTPStreamClient(b, tlsEnabled)
 	url := fmt.Sprintf("%s://%s/hello", scheme, address)

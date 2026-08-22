@@ -1,84 +1,20 @@
 package rest
 
-import (
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/time"
-)
+import http "github.com/alexfalkowski/go-service/v2/net/http/client"
 
 // Options is an alias for [client.Options].
-type Options = client.Options
+type Options = http.Options
 
-// ClientOption configures the REST client helper constructed by NewClient.
+// NewClient constructs a REST client that uses httpClient.
 //
-// Options are applied in the order provided to NewClient. If multiple options configure the same
-// field, the last one wins.
-type ClientOption interface {
-	apply(opts *clientOptions)
-}
-
-type clientOptions struct {
-	roundTripper http.RoundTripper
-	timeout      time.Duration
-}
-
-type clientOptionFunc func(*clientOptions)
-
-func (f clientOptionFunc) apply(o *clientOptions) {
-	f(o)
-}
-
-// WithClientRoundTripper sets the underlying HTTP RoundTripper used by the REST client.
-//
-// This is typically used to inject a transport that includes middleware such as retries, circuit
-// breakers, authentication, or custom TLS.
-func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
-		o.roundTripper = rt
-	})
-}
-
-// WithClientTimeout sets the unary client timeout using a duration string (for example "1s" or
-// "500ms").
-//
-// The duration string is parsed using [time.MustParseDuration] and panics if it cannot be parsed.
-// Streaming calls remain bounded by their caller-provided contexts.
-func WithClientTimeout(timeout string) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
-		o.timeout = time.MustParseDuration(timeout)
-	})
-}
-
-// NewClient constructs a REST client backed by net/http/client.
-//
-// NewClient depends on package-level registration (see [Register]) for unary and stream content plus
-// the buffer pool. [Register] must be called before NewClient; otherwise it will panic due to nil dependencies.
-//
-// Behavior:
-//   - It constructs a content-aware [client.Client] configured with the selected RoundTripper and unary
-//     timeout. Stream calls use their request contexts instead.
-//   - It disables automatic redirect following (returns redirect responses instead of following them).
-func NewClient(opts ...ClientOption) *Client {
-	os := options(opts...)
-	client := client.NewClient(unaryContent, streamContent, pool,
-		client.WithRoundTripper(os.roundTripper),
-		client.WithTimeout(os.timeout),
-		client.WithRedirect(client.RedirectIgnore),
-	)
-
+// Construct httpClient with [client.NewClient] to configure codecs, response buffering, transport,
+// timeout, and redirect policy. The client is safe to share with other HTTP helpers.
+// To ignore redirects, configure httpClient with `client.WithRedirect(client.RedirectIgnore)`.
+func NewClient(client *http.Client) *Client {
 	return &Client{client}
 }
 
 // Client wraps [client.Client] for REST usage.
 type Client struct {
-	*client.Client
-}
-
-func options(opts ...ClientOption) *clientOptions {
-	os := &clientOptions{}
-	for _, o := range opts {
-		o.apply(os)
-	}
-
-	return os
+	*http.Client
 }

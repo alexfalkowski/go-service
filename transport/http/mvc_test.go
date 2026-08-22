@@ -18,17 +18,17 @@ import (
 func TestRouteRendersSuccessfulView(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
 
-	full, _ := mvc.NewViewPair("views/hello.tmpl")
+	full, _ := world.MVCServer.NewViewPair("views/hello.tmpl")
 
 	controller := func(_ context.Context) (*mvc.View, *test.Page, error) {
 		return full, &test.Model, nil
 	}
 
-	mvc.Delete("/hello", controller)
-	mvc.Get("/hello", controller)
-	mvc.Post("/hello", controller)
-	mvc.Put("/hello", controller)
-	mvc.Patch("/hello", controller)
+	world.MVCServer.Delete("/hello", controller)
+	world.MVCServer.Get("/hello", controller)
+	world.MVCServer.Post("/hello", controller)
+	world.MVCServer.Put("/hello", controller)
+	world.MVCServer.Patch("/hello", controller)
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.HTML)
@@ -48,9 +48,9 @@ func TestRouteRendersSuccessfulView(t *testing.T) {
 func TestRoutePartialViewSuccess(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
 
-	_, partial := mvc.NewViewPair("views/hello.tmpl")
+	_, partial := world.MVCServer.NewViewPair("views/hello.tmpl")
 
-	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+	world.MVCServer.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 		return partial, &test.Model, nil
 	})
 
@@ -72,8 +72,8 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 func TestRouteRendersErrorView(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
 
-	view := mvc.NewFullView("views/error.tmpl")
-	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+	view := world.MVCServer.NewFullView("views/error.tmpl")
+	world.MVCServer.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 		return view, &test.Model, status.ServiceUnavailableError(test.ErrInternal)
 	})
 
@@ -95,8 +95,8 @@ func TestRouteRendersErrorView(t *testing.T) {
 func TestRouteRendersNotFoundView(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	view := mvc.NewFullView("views/error.tmpl")
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+	view := world.MVCServer.NewFullView("views/error.tmpl")
+	require.True(t, world.MVCServer.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
 		return view, &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
 	}))
 
@@ -119,8 +119,8 @@ func TestRouteRendersNotFoundView(t *testing.T) {
 func TestNotFoundUsesContentFallbackWithoutHTMLAccept(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	view := mvc.NewFullView("views/error.tmpl")
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+	view := world.MVCServer.NewFullView("views/error.tmpl")
+	require.True(t, world.MVCServer.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
 		return view, &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
 	}))
 
@@ -139,8 +139,8 @@ func TestNotFoundUsesContentFallbackWithoutHTMLAccept(t *testing.T) {
 func TestNotFoundHandlesHTMXRequest(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	view := mvc.NewPartialView("views/error.tmpl")
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+	view := world.MVCServer.NewPartialView("views/error.tmpl")
+	require.True(t, world.MVCServer.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
 		return view, &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
 	}))
 
@@ -164,7 +164,7 @@ func TestNotFoundHandlesHTMXRequest(t *testing.T) {
 func TestStaticFileRouteServesExistingFile(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	mvc.StaticFile("/robots.txt", "static/robots.txt")
+	world.MVCServer.StaticFile("/robots.txt", "static/robots.txt")
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.Text)
@@ -181,7 +181,7 @@ func TestStaticFileRouteServesExistingFile(t *testing.T) {
 func TestStaticFileRouteReportsMissingFile(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	mvc.StaticFile("/robots.txt", "static/bob.txt")
+	world.MVCServer.StaticFile("/robots.txt", "static/bob.txt")
 
 	header := http.Header{}
 	url := world.PathServerURL("http", "robots.txt")
@@ -194,7 +194,7 @@ func TestStaticFileRouteReportsMissingFile(t *testing.T) {
 func TestStaticPathRouteServesExistingFile(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	mvc.StaticPathValue("/{file}", "file", "static")
+	world.MVCServer.StaticPathValue("/{file}", "file", "static")
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.Text)
@@ -211,7 +211,7 @@ func TestStaticPathRouteServesExistingFile(t *testing.T) {
 func TestStaticPathRouteReportsMissingFile(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	mvc.StaticPathValue("/{file}", "file", "static")
+	world.MVCServer.StaticPathValue("/{file}", "file", "static")
 
 	header := http.Header{}
 	url := world.PathServerURL("http", "bob.txt")
@@ -222,37 +222,37 @@ func TestStaticPathRouteReportsMissingFile(t *testing.T) {
 }
 
 func TestNewServerRejectsMissingViews(t *testing.T) {
-	mvc.Register(mvc.RegisterParams{
+	noFileSystem := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		Pool:        test.Pool,
 		Layout:      test.Layout,
 	})
 
-	require.False(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+	require.False(t, noFileSystem.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 		return nil, &test.Model, nil
 	}))
-	require.False(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
+	require.False(t, noFileSystem.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
 		return nil, nil
 	}))
-	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
-	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
+	require.False(t, noFileSystem.StaticFile("/robots.txt", "static/robots.txt"))
+	require.False(t, noFileSystem.StaticPathValue("/{file}", "file", "static"))
 
-	mvc.Register(mvc.RegisterParams{
+	noLayout := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
 		Pool:        test.Pool,
 	})
 
-	require.False(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+	require.False(t, noLayout.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 		return nil, &test.Model, nil
 	}))
-	require.False(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
+	require.False(t, noLayout.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
 		return nil, nil
 	}))
-	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
-	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
+	require.False(t, noLayout.StaticFile("/robots.txt", "static/robots.txt"))
+	require.False(t, noLayout.StaticPathValue("/{file}", "file", "static"))
 }
 
 func newTestRouter() *http.Router {

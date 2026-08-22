@@ -12,7 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
-	sync "github.com/alexfalkowski/go-sync"
 )
 
 // Module wires the HTTP transport stack into [go.uber.org/fx].
@@ -21,13 +20,12 @@ import (
 // handler styles used by go-service:
 //   - mux, route policy, and router construction ([http.NewServeMux], [http.NewRoutePolicy], [http.NewRouter])
 //   - content negotiation and encoding ([unary.NewContent], [contentstream.NewContent])
-//   - MVC view rendering helpers ([mvc.NewFunctionMap], [mvc.Register])
-//   - RPC and REST routing ([rpc.Register], [rest.Register] — called from [registerRoutes] rather than
-//     as their own separate Fx invoke targets, so their [stream.Options] argument is a plain
-//     value this package computes from its own *[Config], not a separate Fx-resolved dependency),
-//     including the streaming route helpers (rest.StreamRoute/StreamGet/StreamRouteRequest/StreamPost/
-//     StreamPut/StreamPatch and rpc.StreamRoute): on a bidirectional stream, a successful Send or Recv
-//     extends both the response write deadline and the request read deadline (see
+//   - MVC view rendering helpers ([mvc.NewFunctionMap], [mvc.NewServer])
+//   - RPC and REST routing ([rpc.NewServer], [rest.NewServer], both resolving [stream.Options] as an
+//     Fx dependency computed from *[Config] by [newStreamOptions]), including the streaming route
+//     helpers (rest.StreamRoute/StreamGet/StreamRouteRequest/StreamPost/StreamPut/StreamPatch and
+//     rpc.StreamRoute): on a bidirectional stream, a successful Send or Recv extends both the response
+//     write deadline and the request read deadline (see
 //     [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler]); a send-only
 //     stream extends only the write deadline. Bidirectional streaming routes also bound each decoded
 //     request value instead of the request body's cumulative size (see
@@ -48,8 +46,10 @@ var Module = di.Module(
 	di.Constructor(unary.NewContent),
 	di.Constructor(stream.NewContent),
 	di.Constructor(mvc.NewFunctionMap),
-	di.Register(mvc.Register),
-	di.Register(registerRoutes),
+	di.Constructor(mvc.NewServer),
+	di.Constructor(newStreamOptions),
+	di.Constructor(rest.NewServer),
+	di.Constructor(rpc.NewServer),
 	di.Constructor(NewServerLimiter),
 	di.Constructor(NewToken),
 	di.Constructor(token.NewGenerator),
@@ -59,21 +59,15 @@ var Module = di.Module(
 	health.Module,
 )
 
-// registerRoutes wires [rest.Register] and [rpc.Register] with the router, content, and buffer pool
-// dependencies Fx resolves normally, plus a [stream.Options] value computed here from cfg and
-// passed as a plain argument.
+// newStreamOptions resolves the [stream.Options] dependency for [rest.NewServer] and [rpc.NewServer].
 //
-// Calling rest.Register/rpc.Register directly (rather than as their own separate Fx invoke targets)
-// means [stream.Options] never needs to exist as its own DI graph node: it is a common,
-// easily-collided type (nothing else in the DI graph keys on it, but nothing stops something else from
-// needing to someday), so resolving it by bare type would be fragile in a way resolving *[Config] is
-// not. net/http/rest and net/http/rpc must not import this package (see AGENTS.md), so cfg's values are
-// computed here and passed in, mirroring how NewServer already derives its own
+// net/http/rest and net/http/rpc must not import this package (see AGENTS.md), so cfg's values are
+// computed here and resolved via Fx, mirroring how NewServer already derives its own
 // ReadTimeout/WriteTimeout/max receive size from the same *Config: the read/write timeouts resolve
 // through the same options-aware precedence (options key, falling back to the lower-level default)
 // NewServer uses for its own ReadTimeout/WriteTimeout, so a service that sets explicit streaming
 // budgets gets a matching server deadline instead of a silently different one.
-func registerRoutes(cfg *Config, router *http.Router, uc *unary.Content, sc *stream.Content, pool *sync.BufferPool, drain *server.Drain) {
+func newStreamOptions(cfg *Config, drain *server.Drain) stream.Options {
 	var so stream.Options
 
 	if cfg.IsEnabled() {
@@ -85,6 +79,5 @@ func registerRoutes(cfg *Config, router *http.Router, uc *unary.Content, sc *str
 		}
 	}
 
-	rest.Register(router, uc, sc, pool, so)
-	rpc.Register(router, uc, sc, pool, so)
+	return so
 }

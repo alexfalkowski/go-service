@@ -62,13 +62,13 @@ type Settings = breaker.Settings
 //   - The breaker still "learns" that the upstream is unhealthy and may open accordingly.
 //
 // Defaults: HTTP status codes >= 500 or 429 are treated as failures (see `defaultOptions` and [WithFailureStatusFunc]).
-func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
-	o := defaultOptions()
-	for _, option := range options {
-		option.apply(o)
+func NewRoundTripper(hrt http.RoundTripper, opts ...Option) *RoundTripper {
+	options := defaultOptions()
+	for _, opt := range opts {
+		opt.apply(options)
 	}
 
-	return &RoundTripper{options: o, RoundTripper: hrt, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
+	return &RoundTripper{options: options, RoundTripper: hrt, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
 }
 
 // RoundTripper wraps an underlying [http.RoundTripper] and applies circuit breaking.
