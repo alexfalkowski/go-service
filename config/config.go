@@ -14,10 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/reflect"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
 )
 
 // NewConfig decodes configuration into a newly allocated *T and validates it.
@@ -118,26 +115,12 @@ func featureConfig(cfg *Config) *feature.Config {
 	return cfg.Feature
 }
 
-func grpcConfig(cfg *Config) *grpc.Config {
-	if cfg.Transport.IsEnabled() {
-		return cfg.Transport.GRPC
-	}
-	return nil
-}
-
 func idConfig(cfg *Config) *id.Config {
 	return cfg.ID
 }
 
 func hooksConfig(cfg *Config) *hooks.Config {
 	return cfg.Hooks
-}
-
-func httpConfig(cfg *Config) *http.Config {
-	if cfg.Transport.IsEnabled() {
-		return cfg.Transport.HTTP
-	}
-	return nil
 }
 
 func pgConfig(cfg *Config) *pg.Config {
@@ -150,13 +133,6 @@ func pgConfig(cfg *Config) *pg.Config {
 func timeConfig(cfg *Config) *time.Config {
 	if cfg.Time.IsEnabled() {
 		return cfg.Time
-	}
-	return nil
-}
-
-func accessConfig(cfg *Config) *access.Config {
-	if cfg.Transport.IsEnabled() {
-		return cfg.Transport.Access
 	}
 	return nil
 }
