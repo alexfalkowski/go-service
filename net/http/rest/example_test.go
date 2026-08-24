@@ -15,15 +15,15 @@ import (
 	"github.com/alexfalkowski/go-sync"
 )
 
-func ExampleGet() {
+func ExampleServer_Get() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
 	pool := sync.NewBufferPool()
 	streamMap := encodingstream.NewMap()
 	streamContent := contentstream.NewContent(streamMap, pool)
-	rest.Register(router, unary.NewContent(encoding.NewMap(), pool), streamContent, pool, contentstream.Options{})
+	server := rest.NewServer(router, unary.NewContent(encoding.NewMap(), pool), streamContent, contentstream.Options{})
 
-	rest.Get("/hello", func(context.Context) (*exampleResponse, error) {
+	server.Get("/hello", func(context.Context) (*exampleResponse, error) {
 		return &exampleResponse{Message: "hello"}, nil
 	})
 
@@ -41,15 +41,15 @@ func ExampleGet() {
 	// }
 }
 
-func ExampleStreamGet() {
+func ExampleServer_StreamGet() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
 	pool := sync.NewBufferPool()
 	streamMap := encodingstream.NewMap()
 	streamContent := contentstream.NewContent(streamMap, pool)
-	rest.Register(router, unary.NewContent(encoding.NewMap(), pool), streamContent, pool, contentstream.Options{})
+	server := rest.NewServer(router, unary.NewContent(encoding.NewMap(), pool), streamContent, contentstream.Options{})
 
-	rest.StreamGet("/hello", func(_ context.Context, stream *contentstream.Stream[exampleResponse]) error {
+	server.StreamGet("/hello", func(_ context.Context, stream *contentstream.Stream[exampleResponse]) error {
 		if err := stream.Send(&exampleResponse{Message: "hello"}); err != nil {
 			return err
 		}

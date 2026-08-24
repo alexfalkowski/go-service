@@ -36,6 +36,7 @@ feature:
 ```
 
 > [!NOTE]
+>
 > - `feature.Config` embeds client config; `IsEnabled` is true only when both the feature config and embedded client config are present. An empty `feature:` block is treated as disabled by feature config helpers.
 > - This repository does not construct a built-in OpenFeature provider from this config.
 > - Services that need a remote or custom provider should use `feature.Config` in their own provider constructor and provide the resulting `openfeature.FeatureProvider` in DI; `feature.Module` registers that supplied provider with the OpenFeature SDK lifecycle.

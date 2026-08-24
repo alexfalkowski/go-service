@@ -181,6 +181,7 @@ transport:
 ```
 
 > [!NOTE]
+>
 > - `ssh.key` is the active key id used for minting tokens (the matching `ssh.keys` entry requires private key material).
 > - `ssh.keys` is the trusted key map used for verification (public keys).
 > - `ssh.exp` sets the token validity window; SSH keys remain long-lived, while generated tokens are short-lived.

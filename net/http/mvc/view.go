@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-sync"
 )
 
 // ErrMissingView is returned when MVC rendering is requested without a view.
@@ -25,8 +26,7 @@ var ErrMissingView = errors.New("mvc: missing view")
 // The full parameter is the template file used as the base layout for "full page" renders.
 // The partial parameter is the template file used as the base layout for "partial" renders.
 //
-// These values are later used by NewFullView/NewPartialView to parse templates from the
-// registered filesystem (see mvc.Register and mvc.IsDefined).
+// These values are later used to parse templates from the configured filesystem.
 func NewLayout(full, partial string) *Layout {
 	return &Layout{full: full, partial: partial}
 }
@@ -76,40 +76,38 @@ func (l *Layout) name(name string) string {
 //
 // This is a convenience helper when a controller supports both full-page and partial rendering.
 // Call it during startup or route registration so template read and parse failures fail fast.
-func NewViewPair(name string) (*View, *View) {
-	return NewFullView(name), NewPartialView(name)
+func (s *Server) NewViewPair(name string) (*View, *View) {
+	return s.NewFullView(name), s.NewPartialView(name)
 }
 
-// NewFullView parses the full layout template and the view template from the registered filesystem.
+// NewFullView parses the full layout template and the view template from the configured filesystem.
 //
-// It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
 // Call it during startup or route registration so template read and parse failures fail fast.
-// If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
+// If MVC is not defined, or if template parsing fails (missing files, parse errors), this method will
 // panic.
-func NewFullView(name string) *View {
-	return newView(layout.Full(), name)
+func (s *Server) NewFullView(name string) *View {
+	return s.newView(s.layout.Full(), name)
 }
 
-// NewPartialView parses the partial layout template and the view template from the registered filesystem.
+// NewPartialView parses the partial layout template and the view template from the configured filesystem.
 //
-// It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
 // Call it during startup or route registration so template read and parse failures fail fast.
-// If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
+// If MVC is not defined, or if template parsing fails (missing files, parse errors), this method will
 // panic.
-func NewPartialView(name string) *View {
-	return newView(layout.Partial(), name)
+func (s *Server) NewPartialView(name string) *View {
+	return s.newView(s.layout.Partial(), name)
 }
 
-func newView(layoutName, name string) *View {
-	tmpl := template.New(layoutName).Funcs(fmap)
-	parseTemplate(tmpl, layoutName)
-	parseTemplate(tmpl.New(name), name)
+func (s *Server) newView(layoutName, name string) *View {
+	tmpl := template.New(layoutName).Funcs(s.fmap)
+	s.parseTemplate(tmpl, layoutName)
+	s.parseTemplate(tmpl.New(name), name)
 
-	return &View{name: layoutName, template: tmpl}
+	return &View{name: layoutName, template: tmpl, pool: s.pool}
 }
 
-func parseTemplate(tmpl *template.Template, name string) {
-	data, err := fs.ReadFile(fileSystem, name)
+func (s *Server) parseTemplate(tmpl *template.Template, name string) {
+	data, err := fs.ReadFile(s.fileSystem, name)
 	runtime.Must(err)
 
 	_, err = tmpl.Parse(string(data))
@@ -119,6 +117,7 @@ func parseTemplate(tmpl *template.Template, name string) {
 // View renders an HTML template.
 type View struct {
 	template *template.Template
+	pool     *sync.BufferPool
 	name     string
 }
 
@@ -143,8 +142,8 @@ type View struct {
 // transport HTTP server before MVC handlers run, and outbound response bodies are capped by go-service HTTP
 // clients when responses are read.
 func (v *View) Render(ctx context.Context, model any) error {
-	buffer := pool.Get()
-	defer pool.Put(buffer)
+	buffer := v.pool.Get()
+	defer v.pool.Put(buffer)
 
 	if err := v.render(ctx, buffer, model); err != nil {
 		return err
@@ -167,20 +166,20 @@ func (v *View) render(ctx context.Context, writer io.Writer, model any) error {
 	return v.template.ExecuteTemplate(writer, v.name, template)
 }
 
-func writeView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) {
-	if err := renderView(ctx, res, view, model, code); err != nil {
+func (s *Server) writeView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) {
+	if err := s.renderView(ctx, res, view, model, code); err != nil {
 		res.WriteHeader(status.Code(err))
 	}
 }
 
-func renderView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) error {
+func (s *Server) renderView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) error {
 	if view == nil {
 		status.RecordError(ctx, ErrMissingView)
 		return ErrMissingView
 	}
 
-	buffer := pool.Get()
-	defer pool.Put(buffer)
+	buffer := s.pool.Get()
+	defer s.pool.Put(buffer)
 
 	if err := view.render(ctx, buffer, model); err != nil {
 		status.RecordError(ctx, err)

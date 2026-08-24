@@ -1,13 +1,13 @@
 // Package mvc provides a small MVC-style HTML rendering layer for go-service HTTP servers.
 //
 // This package provides helpers to register controller-driven routes that render HTML templates.
-// It relies on package-level registration (see Register) to supply the HTTP router, template function map,
-// filesystem, and layout.
+// [Server] (constructed via [NewServer], typically via dependency injection) holds the HTTP router,
+// template function map, filesystem, and layout used by those helpers.
 //
-// Registration requirements:
+// Definition requirements:
 //
-// Call Register (typically via Fx) before using Route/Get/Post/etc. The routing helpers return false
-// when MVC is not defined (for example when no filesystem or layout is registered).
+// Route/Get/Post/etc. return false when MVC is not defined on the Server (for example when no
+// filesystem or layout is configured); see [Server.IsDefined].
 //
 // Context requirements:
 //

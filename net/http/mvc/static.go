@@ -14,20 +14,20 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// StaticFile registers an HTTP GET route that serves the named file from the registered filesystem.
+// StaticFile registers an HTTP GET route that serves the named file from the configured filesystem.
 //
 // It returns false when MVC is not defined (see IsDefined).
-func StaticFile(pattern, name string, opts ...StaticOption) bool {
-	if !IsDefined() {
+func (s *Server) StaticFile(pattern, name string, opts ...StaticOption) bool {
+	if !s.IsDefined() {
 		return false
 	}
 
 	options := options(opts...)
 	handler := func(res http.ResponseWriter, req *http.Request) {
-		serveFile(req.Context(), res, name, options)
+		s.serveFile(req.Context(), res, name, options)
 	}
 
-	router.HandleRoute(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler), options.httpOptions()...)
+	s.router.HandleRoute(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler), options.httpOptions()...)
 	return true
 }
 
@@ -37,8 +37,8 @@ func StaticFile(pattern, name string, opts ...StaticOption) bool {
 // traversal attempts are rejected with HTTP 400.
 //
 // It returns false when MVC is not defined (see IsDefined).
-func StaticPathValue(pattern, value, prefix string, opts ...StaticOption) bool {
-	if !IsDefined() {
+func (s *Server) StaticPathValue(pattern, value, prefix string, opts ...StaticOption) bool {
+	if !s.IsDefined() {
 		return false
 	}
 
@@ -53,15 +53,15 @@ func StaticPathValue(pattern, value, prefix string, opts ...StaticOption) bool {
 		}
 
 		name := path.Join(prefix, cleaned)
-		serveFile(req.Context(), res, name, options)
+		s.serveFile(req.Context(), res, name, options)
 	}
 
-	router.HandleRoute(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler), options.httpOptions()...)
+	s.router.HandleRoute(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler), options.httpOptions()...)
 	return true
 }
 
-func serveFile(ctx context.Context, res http.ResponseWriter, name string, options *staticOptions) {
-	f, err := fileSystem.Open(name)
+func (s *Server) serveFile(ctx context.Context, res http.ResponseWriter, name string, options *staticOptions) {
+	f, err := s.fileSystem.Open(name)
 	if err != nil {
 		status.RecordError(ctx, err)
 		res.WriteHeader(staticStatusCode(err))

@@ -22,12 +22,12 @@ func TestGetAcceptsUnaryHandler(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rest.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
+	server := rest.NewServer(router, test.UnaryContent, test.StreamContent, stream.Options{})
 
 	var handler unary.Handler[test.Response] = func(context.Context) (*test.Response, error) {
 		return &test.Response{Greeting: "Hello Bob"}, nil
 	}
-	rest.Get("/hello", handler, http.WithRouteOperation(), http.WithRouteUnauthenticated())
+	server.Get("/hello", handler, http.WithRouteOperation(), http.WithRouteUnauthenticated())
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	res := httptest.NewRecorder()
@@ -43,9 +43,9 @@ func TestStreamGetSendsValuesAndMarksRouteStreaming(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rest.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
+	server := rest.NewServer(router, test.UnaryContent, test.StreamContent, stream.Options{})
 
-	rest.StreamGet("/hello", func(_ context.Context, stream *stream.Stream[test.Response]) error {
+	server.StreamGet("/hello", func(_ context.Context, stream *stream.Stream[test.Response]) error {
 		if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 			return err
 		}
@@ -76,10 +76,10 @@ func TestStreamRouteLimitsRequestBody(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rest.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
+	server := rest.NewServer(router, test.UnaryContent, test.StreamContent, stream.Options{})
 
 	called := false
-	rest.StreamRoute("POST /hello", func(context.Context, *stream.Stream[test.Response]) error {
+	server.StreamRoute("POST /hello", func(context.Context, *stream.Stream[test.Response]) error {
 		called = true
 		return nil
 	}, http.WithRouteOperation(), http.WithRouteUnauthenticated())
@@ -102,9 +102,9 @@ func TestStreamRouteLimitsRequestBody(t *testing.T) {
 func TestStreamPostRejectsHTTP1(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rest.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
+	server := rest.NewServer(router, test.UnaryContent, test.StreamContent, stream.Options{})
 
-	rest.StreamPost("/hello", func(_ context.Context, _ *stream.RequestStream[test.Request, test.Response]) error {
+	server.StreamPost("/hello", func(_ context.Context, _ *stream.RequestStream[test.Request, test.Response]) error {
 		return nil
 	})
 
@@ -120,23 +120,23 @@ func TestStreamPostRejectsHTTP1(t *testing.T) {
 }
 
 func TestStreamPostPutPatchRecvAndSendOverHTTP2(t *testing.T) {
+	mux := http.NewServeMux()
+	policy := http.NewRoutePolicy()
+	router := http.NewRouter(mux, policy)
+	server := rest.NewServer(router, test.UnaryContent, test.StreamContent, stream.Options{})
+
 	tests := []struct {
 		name   string
 		method string
 		call   func(string, stream.RequestHandler[test.Request, test.Response], ...http.RouteOption)
 	}{
-		{name: "post", method: http.MethodPost, call: rest.StreamPost[test.Request, test.Response]},
-		{name: "put", method: http.MethodPut, call: rest.StreamPut[test.Request, test.Response]},
-		{name: "patch", method: http.MethodPatch, call: rest.StreamPatch[test.Request, test.Response]},
+		{name: "post", method: http.MethodPost, call: server.StreamPost[test.Request, test.Response]},
+		{name: "put", method: http.MethodPut, call: server.StreamPut[test.Request, test.Response]},
+		{name: "patch", method: http.MethodPatch, call: server.StreamPatch[test.Request, test.Response]},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mux := http.NewServeMux()
-			policy := http.NewRoutePolicy()
-			router := http.NewRouter(mux, policy)
-			rest.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
-
 			tt.call("/hello", func(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 				for {
 					req, err := stream.Recv()

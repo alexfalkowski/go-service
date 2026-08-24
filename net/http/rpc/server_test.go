@@ -19,9 +19,9 @@ import (
 func TestStreamRouteRejectsHTTP1(t *testing.T) {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())
-	rpc.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
+	server := rpc.NewServer(router, test.UnaryContent, test.StreamContent, stream.Options{})
 
-	rpc.StreamRoute("/hello", func(_ context.Context, _ *stream.RequestStream[test.Request, test.Response]) error {
+	server.StreamRoute("/hello", func(_ context.Context, _ *stream.RequestStream[test.Request, test.Response]) error {
 		return nil
 	})
 
@@ -40,9 +40,9 @@ func TestRouteAppliesRouteOptions(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rpc.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
+	server := rpc.NewServer(router, test.UnaryContent, test.StreamContent, stream.Options{})
 
-	rpc.Route("/hello", test.SuccessSayHello, http.WithRouteOperation(), http.WithRouteUnauthenticated())
+	server.Route("/hello", test.SuccessSayHello, http.WithRouteOperation(), http.WithRouteUnauthenticated())
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	require.True(t, policy.IsOperation(req))
@@ -55,9 +55,9 @@ func TestStreamRouteRecvAndSendOverHTTP2(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
-	rpc.Register(router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{})
+	server := rpc.NewServer(router, test.UnaryContent, test.StreamContent, stream.Options{})
 
-	rpc.StreamRoute("/hello", func(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
+	server.StreamRoute("/hello", func(_ context.Context, stream *stream.RequestStream[test.Request, test.Response]) error {
 		for {
 			req, err := stream.Recv()
 			if err != nil {

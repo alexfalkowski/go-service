@@ -111,14 +111,14 @@ func TestDebugServerRejectsBodiesOverMaxReceiveSize(t *testing.T) {
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
 }
 
-func requireDebugEndpoints(t *testing.T, scheme string, options ...test.WorldOption) {
+func requireDebugEndpoints(t *testing.T, scheme string, opts ...test.WorldOption) {
 	t.Helper()
 
-	options = append([]test.WorldOption{test.WithWorldTelemetry("otlp")}, options...)
+	opts = append([]test.WorldOption{test.WithWorldTelemetry("otlp")}, opts...)
 
 	for _, endpoint := range debugPaths {
 		t.Run(endpoint.name, func(t *testing.T) {
-			world := test.NewStartedWorld(t, options...)
+			world := test.NewStartedWorld(t, opts...)
 
 			header := http.Header{}
 			url := world.NamedDebugURL(scheme, endpoint.path)

@@ -11,9 +11,9 @@ import (
 //
 // The handler only handles requests that explicitly accept HTML or come from HTMX, allowing API clients
 // to receive the transport's content error fallback instead.
-func NotFoundHandler() http.NotFoundHandler {
+func (s *Server) NotFoundHandler() http.NotFoundHandler {
 	return func(res http.ResponseWriter, req *http.Request) bool {
-		if !IsDefined() || notFoundController == nil {
+		if !s.IsDefined() || s.notFoundController == nil {
 			return false
 		}
 
@@ -25,7 +25,7 @@ func NotFoundHandler() http.NotFoundHandler {
 			return false
 		}
 
-		writeNotFound(req, res)
+		s.writeNotFound(req, res)
 		return true
 	}
 }
@@ -34,17 +34,18 @@ func NotFoundHandler() http.NotFoundHandler {
 //
 // When MVC is not defined, it returns mux unchanged. When no NotFoundController has been registered, the
 // returned handler preserves the mux's default behavior until one is registered.
-func NewHandler(mux *http.ServeMux) http.Handler {
-	if !IsDefined() {
+func (s *Server) NewHandler(mux *http.ServeMux) http.Handler {
+	if !s.IsDefined() {
 		return mux
 	}
 
-	return &Handler{mux: mux}
+	return &Handler{mux: mux, server: s}
 }
 
 // Handler wraps an HTTP mux and renders MVC error pages for unmatched routes.
 type Handler struct {
-	mux *http.ServeMux
+	mux    *http.ServeMux
+	server *Server
 }
 
 // ServeHTTP serves req through the wrapped mux.
@@ -52,7 +53,7 @@ type Handler struct {
 // If the mux has no matching route and the generated response is a 404, ServeHTTP renders the registered
 // MVC error view instead of the mux's default plain-text response.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	if !IsDefined() || notFoundController == nil {
+	if !h.server.IsDefined() || h.server.notFoundController == nil {
 		h.mux.ServeHTTP(res, req)
 		return
 	}
@@ -63,8 +64,8 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	buffer := pool.Get()
-	defer pool.Put(buffer)
+	buffer := h.server.pool.Get()
+	defer h.server.pool.Put(buffer)
 
 	response := &bufferedWriter{response: res, buffer: buffer, header: http.Header{}}
 	metrics := snoop.CaptureMetricsFn(response, func(res http.ResponseWriter) {
@@ -75,5 +76,5 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	writeNotFound(req, res)
+	h.server.writeNotFound(req, res)
 }

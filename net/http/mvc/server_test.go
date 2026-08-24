@@ -20,14 +20,14 @@ import (
 
 func TestStaticPathValueRejectsTraversal(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
 		Pool:        test.Pool,
 		Layout:      test.Layout,
 	})
-	require.True(t, mvc.StaticPathValue("/{file...}", "file", "static"))
+	require.True(t, server.StaticPathValue("/{file...}", "file", "static"))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/robots.txt", http.NoBody)
 	handler, _ := mux.Handler(req)
@@ -43,7 +43,7 @@ func TestStaticPathValueRejectsTraversal(t *testing.T) {
 
 func TestStaticPathValueSetsContentType(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -52,7 +52,7 @@ func TestStaticPathValueSetsContentType(t *testing.T) {
 		Pool:   test.Pool,
 		Layout: test.Layout,
 	})
-	require.True(t, mvc.StaticPathValue("/{file...}", "file", "static"))
+	require.True(t, server.StaticPathValue("/{file...}", "file", "static"))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/icon.svg", http.NoBody)
 	res := httptest.NewRecorder()
@@ -65,7 +65,7 @@ func TestStaticPathValueSetsContentType(t *testing.T) {
 
 func TestStaticPathValueRejectsDirectory(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -74,7 +74,7 @@ func TestStaticPathValueRejectsDirectory(t *testing.T) {
 		Pool:   test.Pool,
 		Layout: test.Layout,
 	})
-	require.True(t, mvc.StaticPathValue("/{file...}", "file", "static"))
+	require.True(t, server.StaticPathValue("/{file...}", "file", "static"))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/assets", http.NoBody)
 	res := httptest.NewRecorder()
@@ -86,7 +86,7 @@ func TestStaticPathValueRejectsDirectory(t *testing.T) {
 
 func TestStaticFileSetsContentType(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -95,7 +95,7 @@ func TestStaticFileSetsContentType(t *testing.T) {
 		Pool:   test.Pool,
 		Layout: test.Layout,
 	})
-	require.True(t, mvc.StaticFile("/icon.svg", "static/icon.svg"))
+	require.True(t, server.StaticFile("/icon.svg", "static/icon.svg"))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/icon.svg", http.NoBody)
 	res := httptest.NewRecorder()
@@ -108,7 +108,7 @@ func TestStaticFileSetsContentType(t *testing.T) {
 
 func TestStaticFileRejectsDirectory(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -117,7 +117,7 @@ func TestStaticFileRejectsDirectory(t *testing.T) {
 		Pool:   test.Pool,
 		Layout: test.Layout,
 	})
-	require.True(t, mvc.StaticFile("/assets", "static/assets"))
+	require.True(t, server.StaticFile("/assets", "static/assets"))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/assets", http.NoBody)
 	res := httptest.NewRecorder()
@@ -129,14 +129,14 @@ func TestStaticFileRejectsDirectory(t *testing.T) {
 
 func TestStaticFileRejectsPermissionDenied(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  permissionFileSystem{},
 		Pool:        test.Pool,
 		Layout:      test.Layout,
 	})
-	require.True(t, mvc.StaticFile("/asset", "asset.txt"))
+	require.True(t, server.StaticFile("/asset", "asset.txt"))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset", http.NoBody)
 	ctx := status.WithRequestError(req.Context())
@@ -151,14 +151,14 @@ func TestStaticFileRejectsPermissionDenied(t *testing.T) {
 
 func TestStaticFileRecordsRequestErrorWhenStatFails(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  statErrorFileSystem{},
 		Pool:        test.Pool,
 		Layout:      test.Layout,
 	})
-	require.True(t, mvc.StaticFile("/asset", "asset.txt"))
+	require.True(t, server.StaticFile("/asset", "asset.txt"))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset", http.NoBody)
 	ctx := status.WithRequestError(req.Context())
@@ -173,7 +173,7 @@ func TestStaticFileRecordsRequestErrorWhenStatFails(t *testing.T) {
 
 func TestStaticFileSetsCacheControl(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -182,7 +182,7 @@ func TestStaticFileSetsCacheControl(t *testing.T) {
 		Pool:   test.Pool,
 		Layout: test.Layout,
 	})
-	require.True(t, mvc.StaticFile("/asset.txt", "static/asset.txt", mvc.WithCacheControl("public, max-age=60")))
+	require.True(t, server.StaticFile("/asset.txt", "static/asset.txt", mvc.WithCacheControl("public, max-age=60")))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset.txt", http.NoBody)
 	res := httptest.NewRecorder()
@@ -197,14 +197,14 @@ func TestStaticFileSetsCacheControl(t *testing.T) {
 
 func TestStaticFileIgnoresConditionalRequestHeaders(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
 		Pool:        test.Pool,
 		Layout:      test.Layout,
 	})
-	require.True(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
+	require.True(t, server.StaticFile("/robots.txt", "static/robots.txt"))
 
 	for _, tt := range []struct {
 		headers map[string]string
@@ -242,7 +242,7 @@ func TestStaticPathValueIgnoresConditionalRequestHeaders(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			mux := http.NewServeMux()
-			mvc.Register(mvc.RegisterParams{
+			server := mvc.NewServer(mvc.ServerParams{
 				Router:      newTestRouter(mux),
 				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 				FileSystem: fstest.MapFS{
@@ -252,7 +252,7 @@ func TestStaticPathValueIgnoresConditionalRequestHeaders(t *testing.T) {
 				Pool:   test.Pool,
 				Layout: test.Layout,
 			})
-			require.True(t, mvc.StaticPathValue("/{file...}", "file", "static"))
+			require.True(t, server.StaticPathValue("/{file...}", "file", "static"))
 
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, tt.path, http.NoBody)
 			req.Header.Set(tt.header, tt.value)
@@ -270,7 +270,7 @@ func TestStaticPathValueIgnoresConditionalRequestHeaders(t *testing.T) {
 
 func TestViewRenderReturnsContextError(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
@@ -278,7 +278,7 @@ func TestViewRenderReturnsContextError(t *testing.T) {
 		Layout:      test.Layout,
 	})
 
-	view := mvc.NewFullView("views/hello.tmpl")
+	view := server.NewFullView("views/hello.tmpl")
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 
@@ -289,7 +289,7 @@ func TestViewRenderReturnsContextError(t *testing.T) {
 
 func TestViewRenderReturnsWriteError(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
@@ -297,7 +297,7 @@ func TestViewRenderReturnsWriteError(t *testing.T) {
 		Layout:      test.Layout,
 	})
 
-	view := mvc.NewFullView("views/hello.tmpl")
+	view := server.NewFullView("views/hello.tmpl")
 	ctx := meta.WithRequestResponse(t.Context(), nil, &test.ErrResponseWriter{})
 
 	err := view.Render(ctx, &test.Model)
@@ -307,24 +307,24 @@ func TestViewRenderReturnsWriteError(t *testing.T) {
 
 func TestNewViewUsesLayoutPathWhenBasenameCollides(t *testing.T) {
 	for _, tt := range []struct {
-		view func() *mvc.View
+		view func(*mvc.Server) *mvc.View
 		name string
 		want string
 	}{
 		{
-			view: func() *mvc.View { return mvc.NewFullView("pages/full.tmpl") },
+			view: func(s *mvc.Server) *mvc.View { return s.NewFullView("pages/full.tmpl") },
 			name: "full",
 			want: "full layout full page",
 		},
 		{
-			view: func() *mvc.View { return mvc.NewPartialView("pages/partial.tmpl") },
+			view: func(s *mvc.Server) *mvc.View { return s.NewPartialView("pages/partial.tmpl") },
 			name: "partial",
 			want: "partial layout partial page",
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			mux := http.NewServeMux()
-			mvc.Register(mvc.RegisterParams{
+			server := mvc.NewServer(mvc.ServerParams{
 				Router:      newTestRouter(mux),
 				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 				FileSystem: fstest.MapFS{
@@ -340,7 +340,7 @@ func TestNewViewUsesLayoutPathWhenBasenameCollides(t *testing.T) {
 			res := httptest.NewRecorder()
 			ctx := meta.WithRequestResponse(t.Context(), nil, res)
 
-			err := tt.view().Render(ctx, &test.Model)
+			err := tt.view(server).Render(ctx, &test.Model)
 
 			require.NoError(t, err)
 			test.RequireResponseBody(t, res, tt.want)
@@ -357,7 +357,7 @@ func TestLayoutNamesFindsConfiguredLayouts(t *testing.T) {
 
 func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -369,8 +369,8 @@ func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	require.True(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewFullView("views/error.tmpl"), &test.Model, status.BadRequestError(fs.ErrInvalid)
+	require.True(t, server.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return server.NewFullView("views/error.tmpl"), &test.Model, status.BadRequestError(fs.ErrInvalid)
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
@@ -388,7 +388,7 @@ func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 
 func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -400,8 +400,8 @@ func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	require.True(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewFullView("views/bad.tmpl"), &test.Model, nil
+	require.True(t, server.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return server.NewFullView("views/bad.tmpl"), &test.Model, nil
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
@@ -419,7 +419,7 @@ func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
 
 func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -432,11 +432,11 @@ func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
-		return mvc.NewFullView("views/error.tmpl"), nil
+	require.True(t, server.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
+		return server.NewFullView("views/error.tmpl"), nil
 	}))
-	require.True(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewFullView("views/bad.tmpl"), &test.Model, nil
+	require.True(t, server.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return server.NewFullView("views/bad.tmpl"), &test.Model, nil
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
@@ -452,7 +452,7 @@ func TestRouteRenderErrorDoesNotUseNotFoundController(t *testing.T) {
 
 func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -464,8 +464,8 @@ func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	require.True(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewFullView("views/bad.tmpl"), &test.Model, status.BadRequestError(fs.ErrInvalid)
+	require.True(t, server.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return server.NewFullView("views/bad.tmpl"), &test.Model, status.BadRequestError(fs.ErrInvalid)
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
@@ -483,7 +483,7 @@ func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 
 func TestNotFoundHandlesNotFound(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -495,8 +495,8 @@ func TestNotFoundHandlesNotFound(t *testing.T) {
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
-		return mvc.NewFullView("views/error.tmpl"), &mvc.Error{
+	require.True(t, server.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+		return server.NewFullView("views/error.tmpl"), &mvc.Error{
 			Code:    http.StatusNotFound,
 			Message: http.StatusText(http.StatusNotFound),
 		}
@@ -505,7 +505,7 @@ func TestNotFoundHandlesNotFound(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", http.NoBody)
 	res := httptest.NewRecorder()
 
-	mvc.NewHandler(mux).ServeHTTP(res, req)
+	server.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusNotFound, res.Code)
 	require.Equal(t, "text/html; charset=utf-8", res.Header().Get(http.ContentTypeKey))
@@ -514,7 +514,7 @@ func TestNotFoundHandlesNotFound(t *testing.T) {
 
 func TestNotFoundIncludesRequestMeta(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -526,9 +526,9 @@ func TestNotFoundIncludesRequestMeta(t *testing.T) {
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	require.True(t, mvc.NotFound(func(ctx context.Context) (*mvc.View, *requestModel) {
+	require.True(t, server.NotFound(func(ctx context.Context) (*mvc.View, *requestModel) {
 		req := meta.Request(ctx)
-		return mvc.NewFullView("views/error.tmpl"), &requestModel{
+		return server.NewFullView("views/error.tmpl"), &requestModel{
 			Method: req.Method,
 			Path:   req.URL.Path,
 		}
@@ -537,7 +537,7 @@ func TestNotFoundIncludesRequestMeta(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPut, "/missing", http.NoBody)
 	res := httptest.NewRecorder()
 
-	mvc.NewHandler(mux).ServeHTTP(res, req)
+	server.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusNotFound, res.Code)
 	test.RequireResponseBodyContains(t, res, "PUT /missing")
@@ -545,7 +545,7 @@ func TestNotFoundIncludesRequestMeta(t *testing.T) {
 
 func TestNotFoundUsesDefaultWhenControllerMissing(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
@@ -556,7 +556,7 @@ func TestNotFoundUsesDefaultWhenControllerMissing(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", http.NoBody)
 	res := httptest.NewRecorder()
 
-	mvc.NewHandler(mux).ServeHTTP(res, req)
+	server.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusNotFound, res.Code)
 	test.RequireResponseBodyContains(t, res, "404 page not found")
@@ -577,7 +577,7 @@ func TestFallbackRendersFallbackTemplate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mux := http.NewServeMux()
-			mvc.Register(mvc.RegisterParams{
+			server := mvc.NewServer(mvc.ServerParams{
 				Router:      newTestRouter(mux),
 				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 				FileSystem: fstest.MapFS{
@@ -589,8 +589,8 @@ func TestFallbackRendersFallbackTemplate(t *testing.T) {
 				Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 			})
 
-			require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
-				return mvc.NewPartialView("views/error.tmpl"), &mvc.Error{
+			require.True(t, server.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+				return server.NewPartialView("views/error.tmpl"), &mvc.Error{
 					Code:    http.StatusNotFound,
 					Message: http.StatusText(http.StatusNotFound),
 				}
@@ -601,7 +601,7 @@ func TestFallbackRendersFallbackTemplate(t *testing.T) {
 			req.Header.Set("Hx-Request", tt.hx)
 			res := httptest.NewRecorder()
 
-			require.Equal(t, tt.handled, mvc.NotFoundHandler()(res, req))
+			require.Equal(t, tt.handled, server.NotFoundHandler()(res, req))
 			if !tt.handled {
 				return
 			}
@@ -626,7 +626,7 @@ func TestNotFoundHandlerAddsVary(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mux := http.NewServeMux()
-			mvc.Register(mvc.RegisterParams{
+			server := mvc.NewServer(mvc.ServerParams{
 				Router:      newTestRouter(mux),
 				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 				FileSystem: fstest.MapFS{
@@ -638,8 +638,8 @@ func TestNotFoundHandlerAddsVary(t *testing.T) {
 				Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 			})
 
-			require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
-				return mvc.NewFullView("views/error.tmpl"), &mvc.Error{
+			require.True(t, server.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+				return server.NewFullView("views/error.tmpl"), &mvc.Error{
 					Code:    http.StatusNotFound,
 					Message: http.StatusText(http.StatusNotFound),
 				}
@@ -649,7 +649,7 @@ func TestNotFoundHandlerAddsVary(t *testing.T) {
 			req.Header.Set("Accept", tt.accept)
 			res := httptest.NewRecorder()
 
-			require.Equal(t, tt.handled, mvc.NotFoundHandler()(res, req))
+			require.Equal(t, tt.handled, server.NotFoundHandler()(res, req))
 			require.Equal(t, []string{"Accept", "Hx-Request"}, res.Header().Values(http.VaryKey))
 		})
 	}
@@ -657,7 +657,7 @@ func TestNotFoundHandlerAddsVary(t *testing.T) {
 
 func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
@@ -665,7 +665,7 @@ func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 		Layout:      test.Layout,
 	})
 
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
+	require.True(t, server.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
 		return nil, &test.Model
 	}))
 
@@ -674,7 +674,7 @@ func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
 
-	mvc.NewHandler(mux).ServeHTTP(res, req)
+	server.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	test.RequireEmptyResponseBody(t, res)
@@ -683,7 +683,7 @@ func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 
 func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
@@ -696,17 +696,17 @@ func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
-		return mvc.NewFullView("views/error.tmpl"), &mvc.Error{Code: http.StatusNotFound}
+	require.True(t, server.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+		return server.NewFullView("views/error.tmpl"), &mvc.Error{Code: http.StatusNotFound}
 	}))
-	require.True(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
+	require.True(t, server.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return server.NewFullView("views/hello.tmpl"), &test.Model, nil
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	res := httptest.NewRecorder()
 
-	mvc.NewHandler(mux).ServeHTTP(res, req)
+	server.NewHandler(mux).ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusMethodNotAllowed, res.Code)
 	test.RequireResponseBodyNotContains(t, res, "custom")
@@ -714,7 +714,7 @@ func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
 
 func TestStaticFileSetsContentLength(t *testing.T) {
 	mux := http.NewServeMux()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.ErrFileSystem{},
@@ -722,7 +722,7 @@ func TestStaticFileSetsContentLength(t *testing.T) {
 		Layout:      test.Layout,
 	})
 
-	require.True(t, mvc.StaticFile("/asset", "asset.txt"))
+	require.True(t, server.StaticFile("/asset", "asset.txt"))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/asset", http.NoBody)
 	res := httptest.NewRecorder()
@@ -737,7 +737,7 @@ func TestStaticFileSetsContentLength(t *testing.T) {
 func TestGetAppliesRouteOptions(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      http.NewRouter(mux, policy),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
@@ -745,8 +745,8 @@ func TestGetAppliesRouteOptions(t *testing.T) {
 		Layout:      test.Layout,
 	})
 
-	require.True(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewFullView("views/hello.tmpl"), &test.Page{}, nil
+	require.True(t, server.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return server.NewFullView("views/hello.tmpl"), &test.Page{}, nil
 	}, mvc.WithRouteUnauthenticated()))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
@@ -759,7 +759,7 @@ func TestGetAppliesRouteOptions(t *testing.T) {
 func TestStaticFileAppliesRouteOptions(t *testing.T) {
 	mux := http.NewServeMux()
 	policy := http.NewRoutePolicy()
-	mvc.Register(mvc.RegisterParams{
+	server := mvc.NewServer(mvc.ServerParams{
 		Router:      http.NewRouter(mux, policy),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
@@ -767,7 +767,7 @@ func TestStaticFileAppliesRouteOptions(t *testing.T) {
 		Layout:      test.Layout,
 	})
 
-	require.True(t, mvc.StaticFile("/robots.txt", "static/robots.txt", mvc.WithStaticUnauthenticated()))
+	require.True(t, server.StaticFile("/robots.txt", "static/robots.txt", mvc.WithStaticUnauthenticated()))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/robots.txt", http.NoBody)
 	res := httptest.NewRecorder()

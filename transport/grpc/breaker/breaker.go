@@ -17,13 +17,13 @@ import (
 type Settings = breaker.Settings
 
 // NewClient returns a gRPC client guarded by circuit breakers.
-func NewClient(options ...Option) *Client {
-	o := defaultOptions()
-	for _, option := range options {
-		option.apply(o)
+func NewClient(opts ...Option) *Client {
+	options := defaultOptions()
+	for _, opt := range opts {
+		opt.apply(options)
 	}
 
-	return &Client{registry: &registry{options: o, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}}
+	return &Client{registry: &registry{options: options, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}}
 }
 
 // Client provides gRPC client circuit-breaking interceptors.

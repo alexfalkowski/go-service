@@ -24,13 +24,12 @@ func TestRPCReturnsNoContent(t *testing.T) {
 		t.Run(mt.Name, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
-			rpc.Route("/hello", test.NoContent)
+			world.RPCServer.Route("/hello", test.NoContent)
 			httpClient, err := world.NewHTTP()
 			require.NoError(t, err)
 
-			client := rpc.NewClient(world.ServerURL("http"),
+			client := rpc.NewClient(world.ServerURL("http"), test.NewContentClient(client.WithRoundTripper(httpClient.Transport)),
 				rpc.WithClientContentType(mt.ContentType),
-				rpc.WithClientRoundTripper(httpClient.Transport),
 			)
 			req := &test.Request{Name: "Bob"}
 			res := &test.Response{}
@@ -55,9 +54,9 @@ func TestRPCWritesProtobufResponse(t *testing.T) {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
-			rpc.Route("/hello", test.SuccessProtobufSayHello)
+			world.RPCServer.Route("/hello", test.SuccessProtobufSayHello)
 
-			client := rpc.NewClient(world.ServerURL("http"), rpc.WithClientContentType("application/"+mt))
+			client := rpc.NewClient(world.ServerURL("http"), test.NewContentClient(), rpc.WithClientContentType("application/"+mt))
 			req := &v1.SayHelloRequest{Name: "Bob"}
 			res := &v1.SayHelloResponse{}
 
@@ -84,9 +83,9 @@ func TestRPCPropagatesProtobufErrors(t *testing.T) {
 				t.Run(mt, func(t *testing.T) {
 					world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
-					rpc.Route("/hello", handler.handler)
+					world.RPCServer.Route("/hello", handler.handler)
 
-					client := rpc.NewClient(world.ServerURL("http"), rpc.WithClientContentType("application/"+mt))
+					client := rpc.NewClient(world.ServerURL("http"), test.NewContentClient(), rpc.WithClientContentType("application/"+mt))
 					req := &v1.SayHelloRequest{Name: "Bob"}
 					res := &v1.SayHelloResponse{}
 
@@ -105,7 +104,7 @@ func TestRPCReportsUnmarshalErrors(t *testing.T) {
 		t.Run(mt.Name, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
-			rpc.Route("/hello", test.SuccessSayHello)
+			world.RPCServer.Route("/hello", test.SuccessSayHello)
 
 			url := world.PathServerURL("http", "hello")
 
@@ -135,7 +134,7 @@ func TestRPCReturnsStatusError(t *testing.T) {
 				t.Run(mt.Name, func(t *testing.T) {
 					world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
-					rpc.Route("/hello", handler.handler)
+					world.RPCServer.Route("/hello", handler.handler)
 
 					header := http.Header{}
 					header.Set(http.ContentTypeKey, mt.ContentType)
@@ -193,13 +192,13 @@ func TestRPCRejectsDisallowedMediaType(t *testing.T) {
 				test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP(),
 			)
 
-			rpc.Route("/hello", test.SuccessSayHello)
+			world.RPCServer.Route("/hello", test.SuccessSayHello)
 			httpClient, err := world.NewHTTP()
 			require.NoError(t, err)
 
-			client := rpc.NewClient(world.ServerURL("http"),
+			client := rpc.NewClient(world.ServerURL("http"), test.NewContentClient(client.WithRoundTripper(httpClient.Transport)),
 				rpc.WithClientContentType(mt),
-				rpc.WithClientRoundTripper(httpClient.Transport))
+			)
 			req := &test.Request{Name: "Bob"}
 			res := &test.Response{}
 
@@ -217,7 +216,7 @@ func TestRejectsInvalidRPCRequest(t *testing.T) {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
-			rpc.Route("/hello", test.SuccessSayHello)
+			world.RPCServer.Route("/hello", test.SuccessSayHello)
 			header := http.Header{}
 			header.Set(http.ContentTypeKey, "application/"+mt)
 			res, body, err := world.ResponseWithBody(t.Context(), world.PathServerURL("http", "hello"), http.MethodPost, header, http.NoBody)
@@ -234,13 +233,13 @@ func TestRejectsInvalidRPCResponse(t *testing.T) {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
-			rpc.Route("/hello", test.SuccessSayHello)
+			world.RPCServer.Route("/hello", test.SuccessSayHello)
 			httpClient, err := world.NewHTTP()
 			require.NoError(t, err)
 
-			client := rpc.NewClient(world.ServerURL("http"),
+			client := rpc.NewClient(world.ServerURL("http"), test.NewContentClient(client.WithRoundTripper(httpClient.Transport)),
 				rpc.WithClientContentType("application/"+mt),
-				rpc.WithClientRoundTripper(httpClient.Transport))
+			)
 
 			require.Error(t, client.Post(t.Context(), "/hello", &test.Request{Name: "Bob"}, nil))
 		})
@@ -252,10 +251,10 @@ func TestRPCStreamRouteRefreshesReadDeadlineOverHTTP2(t *testing.T) {
 	config.HTTP.Timeout = 100 * time.Millisecond
 	config.HTTP.Options = options.Map{"read_timeout": "100ms", "write_timeout": "100ms"}
 	world := test.NewWorld(t, test.WithWorldTransportConfig(config), test.WithWorldSecure(), test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	rpc.Register(world.Router, test.UnaryContent, test.StreamContent, test.Pool, stream.Options{
+	rpcServer := rpc.NewServer(world.Router, test.UnaryContent, test.StreamContent, stream.Options{
 		ReadTimeout: config.HTTP.GetReadTimeout(), WriteTimeout: config.HTTP.GetWriteTimeout(), MaxReceiveSize: config.HTTP.GetMaxReceiveSize(),
 	})
-	rpc.StreamRoute("/hello", echoStreamServer)
+	rpcServer.StreamRoute("/hello", echoStreamServer)
 	world.Start()
 
 	httpClient, err := world.NewHTTP()
@@ -279,13 +278,12 @@ func requireSuccessfulRPCPost(t *testing.T, contentType string) {
 
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
-	rpc.Route("/hello", test.SuccessSayHello)
+	world.RPCServer.Route("/hello", test.SuccessSayHello)
 	httpClient, err := world.NewHTTP()
 	require.NoError(t, err)
 
-	client := rpc.NewClient(world.ServerURL("http"),
+	client := rpc.NewClient(world.ServerURL("http"), test.NewContentClient(client.WithRoundTripper(httpClient.Transport)),
 		rpc.WithClientContentType(contentType),
-		rpc.WithClientRoundTripper(httpClient.Transport),
 	)
 	req := &test.Request{Name: "Bob"}
 	res := &test.Response{}
