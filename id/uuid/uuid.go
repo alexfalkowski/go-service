@@ -1,17 +1,6 @@
 package uuid
 
-import (
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/google/uuid"
-)
-
-func init() {
-	// UUIDv7 generation is on the request metadata hot path. The google/uuid
-	// random pool cuts it from 2 allocs/op to 1 alloc/op in BenchmarkGenerators.
-	// This intentionally accepts the library's process-wide heap-backed pool
-	// tradeoff because these IDs are operational identifiers, not secrets.
-	uuid.EnableRandPool()
-}
+import "uuid"
 
 // NewGenerator constructs a UUID generator.
 //
@@ -28,9 +17,7 @@ type Generator struct{}
 // Generate returns a newly generated UUIDv7 string.
 //
 // It calls [uuid.NewV7] and returns the canonical string representation of the UUID.
-// If UUID generation fails, this method panics via [runtime.Must].
+// UUID generation cannot fail, so this method never panics.
 func (g *Generator) Generate() string {
-	id, err := uuid.NewV7()
-	runtime.Must(err)
-	return id.String()
+	return uuid.NewV7().String()
 }
