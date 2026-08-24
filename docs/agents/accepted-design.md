@@ -628,11 +628,9 @@ areas without accounting for the entry that covers it.
   concrete same-process reuse bugs in supported tests/tools, ignored successful
   shutdown cleanup, or an API promise that failed startup is recoverable in the
   same process.
-- The UUIDv7 generator intentionally calls `google/uuid.EnableRandPool` at
-  package init time. UUID is the default ID generator and sits on request
-  metadata hot paths; the process-wide heap-backed random pool tradeoff is
-  accepted for these operational identifiers, which are not secrets or bearer
-  tokens. Do not flag this as a global-state or security issue unless the
-  generator starts being used for secret material, the upstream pool semantics
-  change materially, or a public API starts promising no `google/uuid` global
-  mutation.
+- The UUIDv7 generator uses the standard library `uuid` package (Go 1.27+)
+  rather than `google/uuid`. UUID is the default ID generator and sits on
+  request metadata hot paths; these are operational identifiers, not secrets or
+  bearer tokens. Do not flag the dependency change or the absence of a
+  process-wide random pool as a regression unless a public API starts
+  promising a specific random-source strategy.
