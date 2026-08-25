@@ -6,7 +6,7 @@ require (
 	aidanwoods.dev/go-paseto v1.6.0
 	github.com/Basekick-Labs/msgpack/v6 v6.1.0
 	github.com/BurntSushi/toml v1.6.0
-	github.com/KimMachineGun/automemlimit v0.7.5
+	github.com/KimMachineGun/automemlimit v1.0.0
 	github.com/XSAM/otelsql v0.43.0
 	github.com/alexfalkowski/go-health/v2 v2.39.0
 	github.com/alexfalkowski/go-sync v1.34.0
