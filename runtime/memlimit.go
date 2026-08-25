@@ -16,10 +16,14 @@ import (
 // The provided logger is passed through to automemlimit and may be used to emit
 // diagnostic messages about detection and the chosen limit.
 //
+// When automemlimit detects an unlimited cgroup and GOMEMLIMIT is not already
+// configured, it sets Go's runtime memory limit to math.MaxInt64. This replaces
+// any programmatic limit applied before startup.
+//
 // RegisterMemLimit is best-effort: any returned values and errors are intentionally
 // ignored so that failure to set GOMEMLIMIT does not prevent a service from starting.
-// If you need to enforce that a limit is set or handle errors, call the upstream
-// automemlimit API directly.
+// Call the upstream automemlimit API directly to observe errors or choose a
+// provider and limit policy.
 func RegisterMemLimit(logger *slog.Logger) {
-	_, _ = memlimit.SetGoMemLimitWithOpts(memlimit.WithLogger(logger))
+	_, _ = memlimit.Set(memlimit.WithLogger(logger))
 }
