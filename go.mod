@@ -6,7 +6,7 @@ require (
 	aidanwoods.dev/go-paseto v1.6.0
 	github.com/Basekick-Labs/msgpack/v6 v6.1.0
 	github.com/BurntSushi/toml v1.6.0
-	github.com/KimMachineGun/automemlimit v0.7.5
+	github.com/KimMachineGun/automemlimit v1.0.0
 	github.com/XSAM/otelsql v0.43.0
 	github.com/alexfalkowski/go-health/v2 v2.39.0
 	github.com/alexfalkowski/go-sync v1.34.0
@@ -93,7 +93,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang/mock v1.7.0-rc.1 // indirect
-	github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3 // indirect
+	github.com/google/pprof v0.0.0-20260825002013-8a176773c324 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0 // indirect

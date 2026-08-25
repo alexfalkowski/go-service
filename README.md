@@ -365,7 +365,7 @@ Server commands created through `cli.Application.AddServer` include `runtime.Mod
 - [automemlimit](https://github.com/KimMachineGun/automemlimit)
 
 > [!NOTE]
-> This registration is best-effort and does not fail startup if a memory limit cannot be applied. Direct Fx compositions and client-style commands should include `runtime.Module` explicitly when they want this behavior.
+> This registration is best-effort and does not fail startup if a memory limit cannot be applied. When automemlimit detects an unlimited cgroup and `GOMEMLIMIT` is not already configured, it sets Go's runtime memory limit to `math.MaxInt64`, replacing any programmatic limit applied before startup. Direct Fx compositions and client-style commands should include `runtime.Module` explicitly when they want this behavior.
 
 ---
 
