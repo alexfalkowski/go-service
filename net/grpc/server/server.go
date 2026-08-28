@@ -86,9 +86,11 @@ func (s *Server) Serve() error {
 // Shutdown gracefully stops the gRPC server while respecting ctx.
 //
 // Shutdown first attempts a graceful stop in a background goroutine, allowing
-// in-flight RPCs to complete normally. If ctx is canceled or reaches its
-// deadline before graceful shutdown completes, Shutdown force-stops the server
-// and returns ctx.Err().
+// in-flight RPCs to complete normally. Graceful stopping waits for active
+// handlers; it does not cancel stream handler contexts or interrupt an
+// in-progress receive. If ctx is canceled or reaches its deadline before
+// graceful shutdown completes, Shutdown force-stops the server and returns
+// ctx.Err().
 func (s *Server) Shutdown(ctx context.Context) error {
 	defer s.listener.Close()
 

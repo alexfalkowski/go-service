@@ -19,7 +19,9 @@
 // helper. When the transport is disabled via config, constructors in this package typically return nil so that
 // downstream wiring can treat the server as "not enabled".
 // The configured timeout applies only to unary RPC handlers; stream lifetimes remain governed by their
-// contexts and stream-specific controls.
+// contexts and stream-specific controls. During graceful shutdown, gRPC waits for active stream handlers
+// but does not cancel their contexts or interrupt an in-progress receive, so handlers that must finish
+// within the lifecycle stop deadline need a bounded or application-owned cancellation workflow.
 //
 // # Client wiring
 //
