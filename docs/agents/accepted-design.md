@@ -112,7 +112,8 @@ areas without accounting for the entry that covers it.
   this upstream lifecycle boundary as a generic transport drain-interceptor
   gap. Report only a concrete repository-owned handler that fails to honor its
   documented bounded or application-owned shutdown workflow.
-- `telemetry.Register()` installs the global OpenTelemetry propagator.
+- `telemetry.RegisterPropagation(...)` installs the global OpenTelemetry
+  propagator.
 - OTLP exporter endpoints intentionally come from explicit go-service config
   fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and
   `telemetry.tracer.url`. Standard OpenTelemetry endpoint environment variables
@@ -570,9 +571,6 @@ areas without accounting for the entry that covers it.
   event id, preferably with durable shared storage when duplicate valid
   deliveries would be unsafe. Do not flag missing transport-level replay
   storage unless the code starts promising replay protection.
-- HTTP webhook signing intentionally ignores the Standard Webhooks `Sign` error
-  because the current vendored implementation always returns nil. Do not flag
-  this unless the dependency behavior changes.
 - HTTP CloudEvents receiver registration intentionally ignores the current
   CloudEvents constructor errors because supported wiring passes no protocol
   options and uses the typed `ReceiverFunc`, which matches the SDK receive
