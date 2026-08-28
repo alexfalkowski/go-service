@@ -103,6 +103,15 @@ areas without accounting for the entry that covers it.
   `ErrServerStopped` speculation; report only a concrete supported lifecycle
   path that demonstrates `Serve` is invoked after `Stop`/`GracefulStop` and
   causes an incorrect exit code.
+- gRPC graceful shutdown delegates to upstream `grpc.Server.GracefulStop`,
+  which stops accepting new RPCs and waits for active handlers but does not
+  cancel stream handler contexts or interrupt an in-progress `RecvMsg`.
+  Long-lived stream handlers that need to finish before the lifecycle stop
+  deadline must use a bounded or application-owned cancellation workflow;
+  otherwise the lifecycle force-stops the server at the deadline. Do not flag
+  this upstream lifecycle boundary as a generic transport drain-interceptor
+  gap. Report only a concrete repository-owned handler that fails to honor its
+  documented bounded or application-owned shutdown workflow.
 - `telemetry.Register()` installs the global OpenTelemetry propagator.
 - OTLP exporter endpoints intentionally come from explicit go-service config
   fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and
