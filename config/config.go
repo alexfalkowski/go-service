@@ -71,7 +71,7 @@ type Config struct {
 	// Cache configures the cache subsystem (implementation kind and implementation-specific options).
 	Cache *cache.Config `yaml:"cache,omitempty" json:"cache,omitempty" toml:"cache,omitempty"`
 
-	// Crypto configures cryptographic primitives used by the service (for example HMAC, RSA, Ed25519, SSH, AES).
+	// Crypto configures cryptographic primitives used by the service (for example HMAC, RSA, Ed25519, and AES).
 	Crypto *crypto.Config `yaml:"crypto,omitempty" json:"crypto,omitempty" toml:"crypto,omitempty"`
 
 	// Feature configures feature client behavior used by some internal feature integrations.

@@ -20,8 +20,7 @@
 // limiter construction fails with ErrMissingKey.
 //
 // The "user-id" key uses the verified principal stored in metadata. For
-// JWT/PASETO tokens this is the subject claim; for SSH tokens this is the
-// verified key name returned by the token verifier. Prefer it for per-principal
+// JWT/PASETO tokens this is the subject claim. Prefer it for per-principal
 // quotas when authenticated identity is available.
 //
 // The "transport-service-method" key prefixes that service-method value with

@@ -6,7 +6,7 @@
 // # Scope
 //
 // Most concrete cryptographic functionality lives in subpackages (for example crypto/aes,
-// crypto/ed25519, crypto/hmac, crypto/rsa, crypto/ssh, crypto/tls, crypto/pem, and
+// crypto/ed25519, crypto/hmac, crypto/rsa, crypto/tls, crypto/pem, and
 // crypto/rand). Prefer importing those packages directly when you need specific primitives.
 //
 // The root package intentionally stays small:

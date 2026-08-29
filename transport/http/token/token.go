@@ -17,7 +17,7 @@ import (
 // NewToken constructs a token service when token auth is enabled.
 //
 // The returned service is responsible for generating and verifying tokens according to cfg (for example,
-// JWT/PASETO/SSH token kinds as configured by the underlying token package).
+// JWT/PASETO token kinds as configured by the underlying token package).
 //
 // If cfg is disabled, it returns nil so callers can treat token auth as not configured.
 func NewToken(cfg *token.Config, fs *os.FS, gen id.Generator) *Token {

@@ -3,7 +3,6 @@ package token
 import (
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
-	"github.com/alexfalkowski/go-service/v2/token/ssh"
 )
 
 // Config configures token generation and verification for a go-service application.
@@ -25,10 +24,9 @@ import (
 //
 //   - "jwt": JSON Web Tokens (see package token/jwt)
 //   - "paseto": PASETO v4 public tokens (see package token/paseto)
-//   - "ssh": SSH-style signed tokens (see package token/ssh)
 //
 // The selected implementation's nested configuration must be provided in the
-// corresponding field (JWT/Paseto/SSH).
+// corresponding field (JWT/Paseto).
 //
 // Config validation rejects unknown Kind values. If validation is bypassed, the
 // token facade treats the configuration as invalid and [Token.Generate]/[Token.Verify]
@@ -44,15 +42,10 @@ type Config struct {
 	// When Kind == "paseto", this configuration is consumed by token/paseto.
 	Paseto *paseto.Config `yaml:"paseto,omitempty" json:"paseto,omitempty" toml:"paseto,omitempty" validate:"required_if=Kind paseto"`
 
-	// SSH configures the SSH token implementation.
-	//
-	// When Kind == "ssh", this configuration is consumed by token/ssh.
-	SSH *ssh.Config `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty" validate:"required_if=Kind ssh"`
-
 	// Kind selects the token implementation to use.
 	//
-	// Supported values: "jwt", "paseto", "ssh".
-	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty" validate:"required,oneof=jwt paseto ssh"`
+	// Supported values: "jwt", "paseto".
+	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty" validate:"required,oneof=jwt paseto"`
 }
 
 // IsEnabled reports whether token configuration is present.

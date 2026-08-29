@@ -9,7 +9,7 @@ import (
 // NewToken constructs a token service for gRPC transport integration.
 //
 // The returned service is responsible for generating and verifying tokens according to cfg.Token (for example,
-// JWT/PASETO/SSH token kinds as configured by the underlying token package).
+// JWT/PASETO token kinds as configured by the underlying token package).
 //
 // If cfg is disabled or cfg.Token is omitted, it returns nil so downstream wiring can treat token auth
 // as not configured.

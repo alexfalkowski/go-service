@@ -20,8 +20,8 @@ type Config struct {
 	//
 	// A zero value keeps the Standard Webhooks library's fixed 5-minute freshness
 	// window. A non-zero value replaces that fixed window with this configured
-	// tolerance, matching the clock-skew Leeway already exposed by the JWT,
-	// PASETO, and SSH token verifiers.
+	// tolerance, matching the clock-skew Leeway already exposed by the JWT and
+	// PASETO token verifiers.
 	Leeway time.Duration `yaml:"leeway,omitempty" json:"leeway,omitempty" toml:"leeway,omitempty" validate:"omitempty,duration_second_precision"`
 }
 

@@ -26,7 +26,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/keys"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
-	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
@@ -81,7 +80,7 @@ func NewDecoder(set *flag.FlagSet) config.Decoder {
 	return decoder
 }
 
-// NewToken returns a token config populated with the standard JWT, Paseto, and SSH test fixtures.
+// NewToken returns a token config populated with the standard JWT and Paseto test fixtures.
 func NewToken(kind string) *token.Config {
 	return &token.Config{
 		Kind: kind,
@@ -102,15 +101,6 @@ func NewToken(kind string) *token.Config {
 			Keys: keys.Map{
 				"1234567890": {
 					Config: NewEd25519(),
-				},
-			},
-		},
-		SSH: &ssh.Config{
-			Expiration: time.Hour,
-			Key:        UserID.String(),
-			Keys: ssh.Keys{
-				UserID.String(): {
-					Config: NewSSH("secrets/ssh_public", "secrets/ssh_private"),
 				},
 			},
 		},

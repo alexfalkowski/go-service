@@ -150,7 +150,7 @@ func TestUnaryHandlerAcceptsLowercaseBearerScheme(t *testing.T) {
 }
 
 func TestUnaryHandlerAcceptsValidAuthentication(t *testing.T) {
-	for _, kind := range []string{"jwt", "paseto", "ssh"} {
+	for _, kind := range []string{"jwt", "paseto"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
 			gen := uuid.NewGenerator()

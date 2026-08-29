@@ -9,7 +9,6 @@ import (
 	token "github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
-	"github.com/alexfalkowski/go-service/v2/token/ssh"
 )
 
 // NewToken constructs a Token facade that can generate and verify tokens for multiple kinds.
@@ -18,10 +17,9 @@ import (
 //
 //   - "jwt": token/jwt
 //   - "paseto": token/paseto
-//   - "ssh": token/ssh
 //
 // The underlying implementations are constructed eagerly from the corresponding nested
-// configuration blocks (cfg.JWT, cfg.Paseto, cfg.SSH). Individual implementations may
+// configuration blocks (cfg.JWT, cfg.Paseto). Individual implementations may
 // be nil when their nested configuration is nil.
 //
 // A nil cfg is treated as disabled and returns nil. If Kind selects an implementation whose
@@ -38,7 +36,6 @@ func NewToken(cfg *Config, fs *os.FS, gen id.Generator) *Token {
 		cfg:    cfg,
 		jwt:    jwt.NewToken(cfg.JWT, fs, gen),
 		paseto: paseto.NewToken(cfg.Paseto, fs, gen),
-		ssh:    ssh.NewToken(cfg.SSH, fs),
 	}
 }
 
@@ -50,7 +47,6 @@ type Token struct {
 	cfg    *Config
 	jwt    *jwt.Token
 	paseto *paseto.Token
-	ssh    *ssh.Token
 }
 
 // Generate creates a token for the configured kind.
@@ -59,9 +55,6 @@ type Token struct {
 //
 //   - "jwt" and "paseto": the token is minted for the provided audience (aud) and
 //     subject (sub).
-//
-//   - "ssh": the token is minted for the provided audience (aud), while subject
-//     is derived from the active trusted key id.
 //
 // If the configured kind is unknown, Generate returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 //
@@ -82,12 +75,6 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 		}
 		tkn, err := t.paseto.Generate(aud, sub)
 		return strings.Bytes(tkn), err
-	case "ssh":
-		if t.ssh == nil {
-			return nil, token.ErrInvalidConfig
-		}
-		tkn, err := t.ssh.Generate(aud, sub)
-		return strings.Bytes(tkn), err
 	default:
 		return nil, token.ErrInvalidConfig
 	}
@@ -99,9 +86,6 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 //
 //   - "jwt" and "paseto": verifies the token for the provided audience (aud) and
 //     returns the subject ("sub") claim.
-//
-//   - "ssh": verifies the token for the provided audience (aud), and the
-//     returned string is the "sub" claim, which must match the signed key id.
 //
 // If the configured kind is unknown, Verify returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
 func (t *Token) Verify(tkn []byte, aud string) (string, error) {
@@ -117,12 +101,6 @@ func (t *Token) Verify(tkn []byte, aud string) (string, error) {
 			return strings.Empty, token.ErrInvalidConfig
 		}
 		sub, err := t.paseto.Verify(bytes.String(tkn), aud)
-		return sub, invalidMatch(err)
-	case "ssh":
-		if t.ssh == nil {
-			return strings.Empty, token.ErrInvalidConfig
-		}
-		sub, err := t.ssh.Verify(bytes.String(tkn), aud)
 		return sub, invalidMatch(err)
 	default:
 		return strings.Empty, token.ErrInvalidConfig

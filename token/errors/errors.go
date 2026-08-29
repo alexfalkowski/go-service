@@ -21,13 +21,13 @@ var (
 	// mismatch. The JWT verifier returns this sentinel on issuer mismatch, so callers
 	// can detect it with errors.Is. The PASETO verifier instead surfaces issuer rule
 	// failures as an upstream [github.com/alexfalkowski/go-service/v2/token/paseto.RuleError],
-	// which does not match this sentinel; SSH tokens do not carry an issuer.
+	// which does not match this sentinel.
 	ErrInvalidIssuer = errors.New("token: invalid issuer")
 
 	// ErrInvalidAudience is a sentinel error indicating the audience claim is invalid.
 	//
 	// For claim-based token formats, this commonly corresponds to an "aud" claim
-	// mismatch. The JWT and SSH verifiers return this sentinel on audience mismatch, so
+	// mismatch. The JWT verifier returns this sentinel on audience mismatch, so
 	// callers can detect it with errors.Is. The PASETO verifier instead surfaces audience
 	// rule failures as an upstream [github.com/alexfalkowski/go-service/v2/token/paseto.RuleError],
 	// which does not match this sentinel.

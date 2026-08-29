@@ -397,9 +397,9 @@ See [docs/telemetry.md](docs/telemetry.md) for the config shape, metadata, propa
 
 ## 🎫 Tokens
 
-Token configuration is rooted at `token.Config`, usually nested under `transport.http.token` and/or `transport.grpc.token`. Supported kinds are `jwt`, `paseto`, and `ssh`, plus a shared Casbin-based access-control layer configured at `transport.access`.
+Token configuration is rooted at `token.Config`, usually nested under `transport.http.token` and/or `transport.grpc.token`. Supported kinds are `jwt` and `paseto`, plus a shared Casbin-based access-control layer configured at `transport.access`.
 
-See [docs/tokens.md](docs/tokens.md) for Casbin RBAC access control, and the JWT/PASETO/SSH config shapes, key rotation, and verification semantics.
+See [docs/tokens.md](docs/tokens.md) for Casbin RBAC access control, and the JWT/PASETO config shapes, key rotation, and verification semantics.
 
 ---
 
@@ -448,7 +448,7 @@ See [docs/transport.md](docs/transport.md) for server configuration and TLS, HTT
 
 ## 🔑 Cryptography
 
-The crypto root config is `crypto.Config` and supports AES, Ed25519, HMAC, RSA, and SSH key types. Most fields are source strings.
+The crypto root config is `crypto.Config` and supports AES, Ed25519, HMAC, and RSA key types. Most fields are source strings.
 
 See [docs/crypto.md](docs/crypto.md) for the config shape, key format requirements, the `crypto.Message` encryption API, and dependencies.
 

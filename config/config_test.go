@@ -354,9 +354,6 @@ func verifyCryptoConfig(t *testing.T, cfg *config.Config) {
 	require.True(t, cfg.Crypto.RSA.IsEnabled())
 	require.NotEmpty(t, cfg.Crypto.RSA.Public)
 	require.NotEmpty(t, cfg.Crypto.RSA.Private)
-	require.True(t, cfg.Crypto.SSH.IsEnabled())
-	require.NotEmpty(t, cfg.Crypto.SSH.Public)
-	require.NotEmpty(t, cfg.Crypto.SSH.Private)
 }
 
 func verifyFeatureConfig(t *testing.T, cfg *config.Config) {
