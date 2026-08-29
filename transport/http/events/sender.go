@@ -43,6 +43,11 @@ type Sender struct {
 }
 
 // Send transmits event using the configured CloudEvents HTTP encoding.
+//
+// ctx must carry the destination URL set via
+// [github.com/alexfalkowski/go-service/v2/net/http/events.ContextWithTarget]: Sender has no per-call target
+// parameter, so a ctx without a target makes Send fail immediately with a "not initialized" protocol error
+// rather than issuing a request.
 func (s *Sender) Send(ctx context.Context, event events.Event) events.Result {
 	if s.hook != nil {
 		ctx = hooks.WithWebhookID(ctx, s.hook.GenerateID())
