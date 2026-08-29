@@ -105,6 +105,9 @@ type ServerParams struct {
 // The server is built using Negroni and composes middleware in this order inside that instrumentation wrapper
 // (first listed runs first):
 //   - metadata extraction/injection, route-pattern resolution, and response headers ([github.com/alexfalkowski/go-service/v2/net/http/meta])
+//   - the unary request timeout from `params.Config.GetTimeout()`; routes marked request- or
+//     response-streaming in `params.RoutePolicy` are exempt and keep their stream-specific lifecycle
+//     controls instead
 //   - optional logging ([github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger]) when `params.Logger` is non-nil
 //   - panic recovery that converts a downstream panic into a safe `500 Internal Server Error` response when the
 //     response has not already been committed

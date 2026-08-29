@@ -38,6 +38,10 @@ func NewReceiver(router *http.Router, hook *hooks.Webhook) *Receiver {
 // The handler is registered for HTTP POST requests as an unauthenticated transport route and dispatches each
 // decoded event to receiver.
 //
+// ctx is passed through for the underlying CloudEvents constructor and does not bound the registered handler:
+// it retains no construction-time context and serves every request with that request's own context. Cancel
+// the server, not ctx, to stop receiving.
+//
 // Middleware:
 // The receive handler is wrapped with the configured webhook hook handler, which typically verifies request
 // signatures before allowing events through. When a webhook hook is configured, the handler supports
