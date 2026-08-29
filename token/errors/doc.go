@@ -2,7 +2,7 @@
 //
 // This package centralizes common token validation failures so callers can:
 //
-//   - Check classes of failures consistently across token kinds (JWT, PASETO, SSH, etc.),
+//   - Check classes of failures consistently across token kinds (JWT and PASETO),
 //     typically via errors.Is.
 //   - Avoid importing implementation-specific packages just to compare error values.
 //   - Map token failures to transport-appropriate responses (for example HTTP 401/403,

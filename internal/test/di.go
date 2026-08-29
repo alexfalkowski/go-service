@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/di"
@@ -162,7 +161,6 @@ func invokeCrypt(
 	_ *rsa.Encryptor, _ *rsa.Decryptor,
 	_ *aes.Cipher,
 	_ *hmac.Signer,
-	_ *ssh.Signer, _ *ssh.Verifier,
 ) error {
 	msg := strings.Bytes("hello")
 

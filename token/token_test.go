@@ -11,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
-	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,26 +47,6 @@ func TestVerifyReturnsSubjectForMatchingAudience(t *testing.T) {
 			require.NotErrorIs(t, err, errors.ErrInvalidMatch)
 		})
 	}
-
-	t.Run("ssh", func(t *testing.T) {
-		cfg := test.NewToken("ssh")
-		tkn := token.NewToken(cfg, test.FS, nil)
-
-		gen, err := tkn.Generate("hello", strings.Empty)
-		require.NoError(t, err)
-
-		sshToken := ssh.NewToken(cfg.SSH, test.FS)
-		sub, err := sshToken.Verify(bytes.String(gen), "hello")
-		require.NoError(t, err)
-		require.Equal(t, test.UserID.String(), sub)
-
-		sub, err = tkn.Verify(gen, "hello")
-		require.NoError(t, err)
-		require.Equal(t, test.UserID.String(), sub)
-
-		_, err = tkn.Verify(gen, "other")
-		require.ErrorIs(t, err, errors.ErrInvalidAudience)
-	})
 }
 
 func TestVerifyDispatchesJWTToConcreteImplementation(t *testing.T) {
@@ -98,19 +77,6 @@ func TestVerifyDispatchesPasetoToConcreteImplementation(t *testing.T) {
 	require.Equal(t, test.UserID.String(), sub)
 }
 
-func TestVerifyDispatchesSSHToConcreteImplementation(t *testing.T) {
-	cfg := test.NewToken("ssh")
-	tkn := token.NewToken(cfg, test.FS, nil)
-
-	raw, err := tkn.Generate("hello", strings.Empty)
-	require.NoError(t, err)
-
-	sshToken := ssh.NewToken(cfg.SSH, test.FS)
-	sub, err := sshToken.Verify(bytes.String(raw), "hello")
-	require.NoError(t, err)
-	require.Equal(t, test.UserID.String(), sub)
-}
-
 func TestVerifyRejectsPasetoEmptySubject(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	gen := uuid.NewGenerator()
@@ -137,18 +103,6 @@ func TestVerifyRejectsJWTEmptySubject(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrInvalidSubject)
 }
 
-func TestSSHSubjectMatchesActiveKey(t *testing.T) {
-	cfg := test.NewToken("ssh")
-	tkn := token.NewToken(cfg, test.FS, nil)
-
-	raw, err := tkn.Generate("hello", "ignored-subject")
-	require.NoError(t, err)
-
-	sub, err := tkn.Verify(raw, "hello")
-	require.NoError(t, err)
-	require.Equal(t, test.UserID.String(), sub)
-}
-
 func TestConfigRejectsInvalidValues(t *testing.T) {
 	valid := test.NewToken("jwt")
 	tests := []struct {
@@ -171,10 +125,6 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 			name:   "missing paseto config",
 			config: &token.Config{Kind: "paseto"},
 		},
-		{
-			name:   "missing ssh config",
-			config: &token.Config{Kind: "ssh"},
-		},
 	}
 
 	for _, tt := range tests {
@@ -183,7 +133,7 @@ func TestConfigRejectsInvalidValues(t *testing.T) {
 		})
 	}
 
-	for _, kind := range []string{"jwt", "paseto", "ssh"} {
+	for _, kind := range []string{"jwt", "paseto"} {
 		t.Run(kind, func(t *testing.T) {
 			require.NoError(t, test.Validator.Struct(test.NewToken(kind)))
 		})
@@ -209,7 +159,7 @@ func TestNewTokenReturnsNilForNilConfig(t *testing.T) {
 }
 
 func TestRejectsInvalidKindConfig(t *testing.T) {
-	for _, kind := range []string{"jwt", "paseto", "ssh"} {
+	for _, kind := range []string{"jwt", "paseto"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := &token.Config{Kind: kind}
 			tkn := token.NewToken(cfg, test.FS, nil)
@@ -251,15 +201,6 @@ func TestRejectsInvalidMatchClassification(t *testing.T) {
 			require.ErrorIs(t, err, errors.ErrInvalidMatch)
 		})
 	}
-
-	t.Run("ssh", func(t *testing.T) {
-		cfg := test.NewToken("ssh")
-		tkn := token.NewToken(cfg, test.FS, nil)
-
-		sub, err := tkn.Verify([]byte("test"), "hello")
-		require.Equal(t, strings.Empty, sub)
-		require.ErrorIs(t, err, errors.ErrInvalidMatch)
-	})
 }
 
 func TestVerifyRedactsPasetoTokenError(t *testing.T) {

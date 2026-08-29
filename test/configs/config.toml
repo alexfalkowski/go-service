@@ -26,10 +26,6 @@ key = "file:../test/secrets/hmac"
 public = "file:../test/secrets/rsa_public"
 private = "file:../test/secrets/rsa_private"
 
-[crypto.ssh]
-public = "file:../test/secrets/ssh_public"
-private = "file:../test/secrets/ssh_private"
-
 [feature]
 address = "localhost:9000"
 timeout = "10s"

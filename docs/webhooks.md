@@ -26,8 +26,8 @@ the protocol with a custom selector header.
 freshness check during verification. A zero value (the default) keeps the
 Standard Webhooks library's fixed 5-minute freshness window; a non-zero value
 replaces that fixed window with this configured tolerance, matching the
-clock-skew `leeway` already exposed by the JWT, PASETO, and SSH token
-verifiers. Like those, `leeway` is a Go duration string and must be a positive
+clock-skew `leeway` already exposed by the JWT and PASETO token verifiers. Like
+those, `leeway` is a Go duration string and must be a positive
 whole-second duration.
 
 Inbound verification checks Standard Webhooks signatures and timestamps, but

@@ -5,7 +5,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 )
 
 // Config is the root crypto configuration for a go-service based service.
@@ -37,9 +36,6 @@ type Config struct {
 	// RSA configures RSA public/private key material used by RSA key generation and OAEP
 	// encryption/decryption helpers.
 	RSA *rsa.Config `yaml:"rsa,omitempty" json:"rsa,omitempty" toml:"rsa,omitempty"`
-
-	// SSH configures SSH public/private key material used for SSH signing and verification.
-	SSH *ssh.Config `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
 }
 
 // IsEnabled reports whether crypto configuration is enabled.

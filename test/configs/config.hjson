@@ -29,10 +29,6 @@
       public: "file:../test/secrets/rsa_public"
       private: "file:../test/secrets/rsa_private"
     }
-    ssh: {
-      public: "file:../test/secrets/ssh_public"
-      private: "file:../test/secrets/ssh_private"
-    }
   }
   feature: {
     address: "localhost:9000"

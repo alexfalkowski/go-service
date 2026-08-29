@@ -1,7 +1,7 @@
 // Package token provides token generation and verification helpers used by go-service.
 //
 // This package defines common token concepts and shared helpers used by concrete
-// token implementations (for example JWT, PASETO, and SSH).
+// token implementations (for example JWT and PASETO).
 //
 // It also provides a small facade type ([Token]) that delegates token generation
 // and verification to the configured implementation so callers can depend on a
@@ -14,7 +14,6 @@
 //
 //   - "jwt": JSON Web Tokens signed using Ed25519 (see the token/jwt package).
 //   - "paseto": PASETO v4 public tokens (see the token/paseto package).
-//   - "ssh": SSH-style signed tokens (see the token/ssh package).
 //
 // Concrete packages document their own token formats, claims, cryptographic
 // algorithms, and validation semantics.
@@ -32,9 +31,7 @@
 //     configured Expiration.
 //
 // For JWT and PASETO, the returned identity is the non-empty subject claim
-// ("sub"). For SSH-style tokens, the returned identity is also "sub"; SSH
-// requires that "sub" match the signed key id ("kid") because that format
-// authenticates a trusted peer key.
+// ("sub").
 //
 // # Facade behavior and unknown kinds
 //
@@ -52,7 +49,7 @@
 //
 // The standard startup path through
 // [github.com/alexfalkowski/go-service/v2/config.NewConfig] validates that the
-// nested JWT, PASETO, or SSH block matching [Config.Kind] is present. Direct
+// nested JWT or PASETO block matching [Config.Kind] is present. Direct
 // callers that construct [Config] without validation remain fail-closed:
 // [Token.Generate] and [Token.Verify] return
 // [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig] when

@@ -246,7 +246,7 @@ areas without accounting for the entry that covers it.
   fail to load, weak keys are accepted, secrets leak, or the documented support
   boundary changes.
 - Crypto key generation is intentionally not a `crypto`-package product surface.
-  The `crypto/{aes,hmac,ed25519,rsa,ssh}` `Generator` types exist to produce
+  The `crypto/{aes,hmac,ed25519,rsa}` `Generator` types exist to produce
   config-compatible key material, but a runnable, user-facing generation entry
   point (CLI command, aggregating facade, make target, or shipped example) is
   intentionally out of scope for this repository; key generation lives in a
@@ -349,7 +349,7 @@ areas without accounting for the entry that covers it.
   `"service-method"`, `"ip"`, and `"user-agent"`; `"token"` is
   intentionally not a limiter key. Server limiters run after metadata
   extraction and token verification, so `"user-id"` is the verified principal
-  (JWT/PASETO subject or SSH key name), and missing, malformed, or invalid auth
+  (JWT/PASETO subject), and missing, malformed, or invalid auth
   is rejected before the limiter by design. Do not flag that bypass; use an
   external edge, gateway, ingress, load balancer, or service mesh limiter when
   those attempts need quota enforcement.
@@ -520,13 +520,13 @@ areas without accounting for the entry that covers it.
   real client, route, or deployment contract that depends on strict weighted
   `Accept` negotiation for MVC 404 responses.
 - JWT verification requires both the expected algorithm and a `kid` header.
-- JWT, PASETO, and SSH token key material is intentionally loaded and checked
+- JWT and PASETO token key material is intentionally loaded and checked
   by the runtime `Generate` and `Verify` paths. Do not flag missing startup
   warmup/validation for token key sources solely because bad, missing,
   unreadable, or malformed administrator-supplied key material can surface
   during token issuance or verification. Do not recommend duplicating runtime
   token checks at startup merely to reject an empty or incomplete trusted key
-  set, including SSH `keys`, unless a supported config contract explicitly
+  set, unless a supported config contract explicitly
   promises that structural key usability is validated before runtime token
   operations. Report only concrete bugs such as panics, accepted weak or wrong
   key types/sizes, secret leakage, ignored documented token config validation,

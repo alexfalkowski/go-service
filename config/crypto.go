@@ -5,7 +5,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 )
 
 func cryptoAESConfig(cfg *Config) *aes.Config {
@@ -32,13 +31,6 @@ func cryptoHMACConfig(cfg *Config) *hmac.Config {
 func cryptoRSAConfig(cfg *Config) *rsa.Config {
 	if cfg.Crypto.IsEnabled() {
 		return cfg.Crypto.RSA
-	}
-	return nil
-}
-
-func cryptoSSHConfig(cfg *Config) *ssh.Config {
-	if cfg.Crypto.IsEnabled() {
-		return cfg.Crypto.SSH
 	}
 	return nil
 }

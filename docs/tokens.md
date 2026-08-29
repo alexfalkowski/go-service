@@ -8,7 +8,6 @@ Supported token `kind` values:
 
 - `jwt`
 - `paseto`
-- `ssh`
 
 ## Access control (Casbin)
 
@@ -141,49 +140,3 @@ transport:
 
 > [!NOTE]
 > The PASETO implementation issues **v4 public** tokens. Generation signs with `paseto.key`, writes that id as footer `kid`, and verification selects the public key from `paseto.keys`. `paseto.leeway` is optional clock-skew tolerance for verification.
-
-## SSH tokens
-
-SSH token verification keys are id-addressable and support rotation.
-
-Verification-only example:
-
-```yaml
-transport:
-  http:
-    token:
-      kind: ssh
-      ssh:
-        exp: 5m
-        leeway: 30s
-        keys:
-          active:
-            public: file:/keys/active.pub
-```
-
-Signing + verification example:
-
-```yaml
-transport:
-  http:
-    token:
-      kind: ssh
-      ssh:
-        exp: 5m
-        leeway: 30s
-        key: active
-        keys:
-          active:
-            public: file:/keys/active.pub
-            private: file:/keys/active
-          old:
-            public: file:/keys/old.pub
-```
-
-> [!NOTE]
->
-> - `ssh.key` is the active key id used for minting tokens (the matching `ssh.keys` entry requires private key material).
-> - `ssh.keys` is the trusted key map used for verification (public keys).
-> - `ssh.exp` sets the token validity window; SSH keys remain long-lived, while generated tokens are short-lived.
-> - `ssh.leeway` is optional clock-skew tolerance for verification; keep it small because it extends acceptance around `iat` and `exp`.
-> - SSH tokens carry `sub` equal to `kid`, so the verified subject is the trusted peer key id.
