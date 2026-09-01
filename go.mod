@@ -10,7 +10,7 @@ require (
 	github.com/XSAM/otelsql v0.43.0
 	github.com/alexfalkowski/go-health/v2 v2.39.0
 	github.com/alexfalkowski/go-sync v1.34.0
-	github.com/arl/statsviz v0.8.1
+	github.com/arl/statsviz v0.8.2
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
 	github.com/beevik/nts v0.3.1
@@ -73,7 +73,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/crypto v0.55.0
 	golang.org/x/net v0.58.0
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260825221802-da73d73af1c5
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260831171406-18b4a7587f8a
 	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.12
 )
@@ -107,8 +107,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
-	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.70.1 // indirect
+	github.com/prometheus/client_model v0.6.3 // indirect
+	github.com/prometheus/common v0.71.0 // indirect
 	github.com/prometheus/procfs v0.21.1 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.22.0 // indirect
 	github.com/secure-io/siv-go v0.0.0-20180922214919-5ff40651e2c4 // indirect
@@ -123,5 +123,5 @@ require (
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260825221802-da73d73af1c5 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260831171406-18b4a7587f8a // indirect
 )
