@@ -14,7 +14,7 @@ commands:
 executors:
   go-with-postgres-valkey-status-observability:
     docker:
-      - image: alexfalkowski/go:5.1
+      - image: alexfalkowski/go:5.2
       - image: postgres:18-trixie
         environment:
           POSTGRES_DB: test
@@ -28,7 +28,7 @@ executors:
       - image: grafana/otel-lgtm:latest
   release:
     docker:
-      - image: alexfalkowski/release:8.32
+      - image: alexfalkowski/release:8.33
   alpine:
     docker:
       - image: alpine:latest
