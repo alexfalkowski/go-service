@@ -272,15 +272,19 @@ func BenchmarkRestStream(b *testing.B) {
 }
 
 // BenchmarkHTTPStream measures bidirectional streaming with fixed 1 KiB request payloads through progressively enabled HTTP transport layers and TLS.
+//
+// Each operation is a complete stream containing the named number of messages.
+// Throughput therefore reports request payload bytes per stream, while ns/op and
+// B/op remain stream-level measurements.
 func BenchmarkHTTPStream(b *testing.B) {
 	for _, messageCount := range []int{1, 10, 100} {
 		b.Run(fmt.Sprintf("%d-messages", messageCount), func(b *testing.B) {
 			b.Helper()
 
-			benchmarkHTTPLayers(b, func(b *testing.B, log *logger.Logger, trace, tlsEnabled bool) {
+			benchmarkHTTPLayers(b, func(b *testing.B, logging, trace, tlsEnabled bool) {
 				b.Helper()
 
-				benchmarkHTTPStream(b, log, trace, tlsEnabled, messageCount)
+				benchmarkHTTPStream(b, logging, trace, tlsEnabled, messageCount)
 			})
 		})
 	}
@@ -352,29 +356,23 @@ func streamHelloClient(name string, messageCount int) func(context.Context, *cli
 	}
 }
 
-func benchmarkHTTPLayers(b *testing.B, benchmark func(*testing.B, *logger.Logger, bool, bool)) {
+func benchmarkHTTPLayers(b *testing.B, benchmark func(*testing.B, bool, bool, bool)) {
 	b.Helper()
 
 	b.Run("none", func(b *testing.B) {
-		benchmark(b, nil, false, false)
+		benchmark(b, false, false, false)
 	})
 
 	b.Run("log", func(b *testing.B) {
-		log, err := logger.NewLogger(logger.LoggerParams{})
-		require.NoError(b, err)
-
-		benchmark(b, log, false, false)
+		benchmark(b, true, false, false)
 	})
 
 	b.Run("trace", func(b *testing.B) {
-		log, err := logger.NewLogger(logger.LoggerParams{})
-		require.NoError(b, err)
-
-		benchmark(b, log, true, false)
+		benchmark(b, true, true, false)
 	})
 
 	b.Run("tls", func(b *testing.B) {
-		benchmark(b, nil, false, true)
+		benchmark(b, false, false, true)
 	})
 }
 
@@ -416,11 +414,11 @@ func benchmarkStdHTTP(b *testing.B) {
 	httpClient.CloseIdleConnections()
 }
 
-func benchmarkHTTP(b *testing.B, log *logger.Logger, trace, tlsEnabled bool) {
+func benchmarkHTTP(b *testing.B, logging, trace, tlsEnabled bool) {
 	b.Helper()
 	b.ReportAllocs()
 
-	address, cleanup := startBenchmarkHTTPServer(b, log, trace, tlsEnabled, func(router *transporthttp.Router, _ *transporthttp.Config) {
+	address, cleanup := startBenchmarkHTTPServer(b, logging, trace, tlsEnabled, func(router *transporthttp.Router, _ *transporthttp.Config) {
 		router.HandleRoute("GET /hello", transporthttp.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
 	})
 	httpClient, scheme, closeIdleConnections := newBenchmarkHTTPClient(b, tlsEnabled)
@@ -443,11 +441,12 @@ func benchmarkHTTP(b *testing.B, log *logger.Logger, trace, tlsEnabled bool) {
 	cleanup()
 }
 
-func benchmarkHTTPStream(b *testing.B, log *logger.Logger, trace, tlsEnabled bool, messageCount int) {
+func benchmarkHTTPStream(b *testing.B, logging, trace, tlsEnabled bool, messageCount int) {
 	b.Helper()
 	b.ReportAllocs()
+	b.SetBytes(int64(messageCount * 1024))
 
-	address, cleanup := startBenchmarkHTTPServer(b, log, trace, tlsEnabled, func(router *transporthttp.Router, cfg *transporthttp.Config) {
+	address, cleanup := startBenchmarkHTTPServer(b, logging, trace, tlsEnabled, func(router *transporthttp.Router, cfg *transporthttp.Config) {
 		opts := stream.Options{ReadTimeout: cfg.GetReadTimeout(), WriteTimeout: cfg.GetWriteTimeout(), MaxReceiveSize: cfg.GetMaxReceiveSize()}
 		restServer := rest.NewServer(router, test.UnaryContent, test.StreamContent, opts)
 		restServer.StreamPost("/hello", streamHello)
@@ -470,7 +469,7 @@ func benchmarkHTTPStream(b *testing.B, log *logger.Logger, trace, tlsEnabled boo
 	cleanup()
 }
 
-func startBenchmarkHTTPServer(b *testing.B, log *logger.Logger, trace, tlsEnabled bool, register func(*transporthttp.Router, *transporthttp.Config)) (string, func()) {
+func startBenchmarkHTTPServer(b *testing.B, logging, trace, tlsEnabled bool, register func(*transporthttp.Router, *transporthttp.Config)) (string, func()) {
 	b.Helper()
 
 	mux := transporthttp.NewServeMux()
@@ -483,7 +482,14 @@ func startBenchmarkHTTPServer(b *testing.B, log *logger.Logger, trace, tlsEnable
 	}
 
 	if trace {
-		test.RegisterTracer(lc, nil)
+		test.RegisterTracer(lc, test.NewOTLPTracerConfig())
+	}
+
+	var log *logger.Logger
+	if logging {
+		var err error
+		log, err = test.NewLogger(lc, test.NewOTLPLoggerConfig())
+		require.NoError(b, err)
 	}
 
 	register(router, cfg.HTTP)
