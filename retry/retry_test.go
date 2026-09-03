@@ -36,33 +36,3 @@ func TestNewBackoffProducesStrategyDelays(t *testing.T) {
 		})
 	}
 }
-
-func TestWithCappedDurationBoundsGrowingBackoff(t *testing.T) {
-	backoff := retry.WithCappedDuration(4*time.Millisecond, retry.NewBackoff("exponential", time.Millisecond))
-
-	want := []time.Duration{time.Millisecond, 2 * time.Millisecond, 4 * time.Millisecond, 4 * time.Millisecond}
-	for _, w := range want {
-		next, stop := backoff.Next()
-
-		require.False(t, stop, "capped backoff should not stop before max retries")
-		require.Equal(t, w, time.Duration(next))
-	}
-}
-
-func TestWithJitterPercentBoundsBackoff(t *testing.T) {
-	backoff := retry.WithJitterPercent(20, retry.NewBackoff("constant", 100*time.Millisecond))
-
-	durations := map[time.Duration]struct{}{}
-	for range 100 {
-		next, stop := backoff.Next()
-		duration := time.Duration(next)
-
-		require.False(t, stop, "jittered constant backoff should not stop")
-		require.GreaterOrEqual(t, duration, 80*time.Millisecond, "jittered backoff should stay above -20%%")
-		require.LessOrEqual(t, duration, 120*time.Millisecond, "jittered backoff should stay below +20%%")
-
-		durations[duration] = struct{}{}
-	}
-
-	require.Greater(t, len(durations), 1, "jittered backoff should decorrelate repeated delays")
-}

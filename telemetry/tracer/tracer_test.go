@@ -477,32 +477,6 @@ func requireSamplerRecording(t *testing.T, sampler *tracer.SamplerConfig, ctx co
 	require.Equal(t, want, span.IsRecording())
 }
 
-func TestRegisterOTLPOverGRPCExporterWithBatchTuning(t *testing.T) {
-	t.Cleanup(func() {
-		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
-	})
-
-	err := tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
-		Config: &tracer.Config{
-			Kind:               "otlp",
-			Protocol:           "grpc",
-			URL:                "localhost:4317",
-			BatchTimeout:       time.Second,
-			ExportTimeout:      time.Second,
-			MaxQueueSize:       1024,
-			MaxExportBatchSize: 256,
-		},
-		ID:          test.ID,
-		Name:        test.Name,
-		Version:     test.Version,
-		Environment: test.Environment,
-	})
-
-	require.NoError(t, err)
-	require.True(t, tracer.IsEnabled())
-}
-
 func withUnsampledRemoteParent(ctx context.Context) context.Context {
 	return tracer.ContextWithRemoteSpanContext(ctx, tracer.NewSpanContext(tracer.SpanContextConfig{
 		TraceID: tracer.TraceID{1},

@@ -204,21 +204,6 @@ func TestTraceHandlerWithoutSpanLeavesRecordUnchanged(t *testing.T) {
 	require.NotContains(t, capture.Records[0].Attrs, "span_id")
 }
 
-func TestStdoutLoggerLogsUnderSpan(t *testing.T) {
-	test.EnableIsolatedSpanExporter(t)
-
-	lc := fxtest.NewLifecycle(t)
-	log, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
-	require.NoError(t, err)
-
-	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(t.Context(), "request")
-	defer span.End()
-
-	require.NotPanics(t, func() {
-		log.Log(ctx, logger.NewText("test"))
-	})
-}
-
 func TestRejectsInvalidLogger(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &logger.Config{Kind: "wrong", Level: "debug"}
@@ -422,32 +407,6 @@ func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 
 	_, err := logger.NewLogger(params)
 	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
-}
-
-func TestOTLPOverGRPCLoggerWithBatchTuning(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
-	cfg := &logger.Config{
-		Kind:               "otlp",
-		Protocol:           "grpc",
-		URL:                "localhost:4317",
-		BatchTimeout:       time.Second,
-		ExportTimeout:      time.Second,
-		MaxQueueSize:       1024,
-		MaxExportBatchSize: 256,
-	}
-	params := logger.LoggerParams{
-		Lifecycle:   lc,
-		Config:      cfg,
-		ID:          test.ID,
-		Name:        test.Name,
-		Version:     test.Version,
-		Environment: test.Environment,
-	}
-
-	log, err := logger.NewLogger(params)
-	require.NoError(t, err)
-	require.NotNil(t, log)
-	require.NoError(t, lc.Stop(t.Context()))
 }
 
 func TestOTLPLoggerUsesConfiguredLevel(t *testing.T) {

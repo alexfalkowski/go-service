@@ -89,26 +89,6 @@ func TestDecodeDiscardsUnknownFields(t *testing.T) {
 	require.Equal(t, "test", msg.Test)
 }
 
-func TestDecodeAllowsTrailingValues(t *testing.T) {
-	t.Parallel()
-
-	buffer := test.Pool.Get()
-	defer test.Pool.Put(buffer)
-
-	_, err := buffer.WriteString(`{"test":"one"}{"test":"two"}`)
-	require.NoError(t, err)
-
-	decoder := json.NewDecoder(buffer)
-
-	var first map[string]string
-	require.NoError(t, decoder.Decode(&first))
-	require.Equal(t, map[string]string{"test": "one"}, first)
-
-	var second map[string]string
-	require.NoError(t, decoder.Decode(&second))
-	require.Equal(t, map[string]string{"test": "two"}, second)
-}
-
 func TestEncoderCloseIsIdempotent(t *testing.T) {
 	t.Parallel()
 

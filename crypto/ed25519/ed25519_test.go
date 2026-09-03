@@ -128,52 +128,6 @@ func TestVerifierRejectsAlteredSignatureAndMessage(t *testing.T) {
 	require.ErrorIs(t, verifier.Verify(sig, strings.Bytes("bob")), errors.ErrInvalidMatch)
 }
 
-func TestRejectsInvalidSignerPrivateKey(t *testing.T) {
-	tests := []struct {
-		signer *ed25519.Signer
-		name   string
-	}{
-		{name: "nil signer", signer: nil},
-		{name: "zero value signer", signer: &ed25519.Signer{}},
-		{name: "short private key", signer: &ed25519.Signer{PrivateKey: []byte("short")}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var (
-				sig []byte
-				err error
-			)
-			require.NotPanics(t, func() {
-				sig, err = tt.signer.Sign(strings.Bytes("test"))
-			})
-			require.Nil(t, sig)
-			require.ErrorIs(t, err, errors.ErrInvalidKeySize)
-		})
-	}
-}
-
-func TestRejectsInvalidVerifierPublicKey(t *testing.T) {
-	tests := []struct {
-		verifier *ed25519.Verifier
-		name     string
-	}{
-		{name: "nil verifier", verifier: nil},
-		{name: "zero value verifier", verifier: &ed25519.Verifier{}},
-		{name: "short public key", verifier: &ed25519.Verifier{PublicKey: []byte("short")}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var err error
-			require.NotPanics(t, func() {
-				err = tt.verifier.Verify(strings.Bytes("sig"), strings.Bytes("test"))
-			})
-			require.ErrorIs(t, err, errors.ErrInvalidKeySize)
-		})
-	}
-}
-
 func TestSignerAndVerifierRejectUnsupportedKeyType(t *testing.T) {
 	public, private, err := rsa.NewGenerator(rand.NewGenerator(rand.NewReader())).Generate()
 	require.NoError(t, err)

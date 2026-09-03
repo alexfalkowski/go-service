@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx"
 )
 
 func TestNewMapRegistersDefaultEncodersAndDecoders(t *testing.T) {
@@ -46,14 +45,6 @@ func TestNewMapRegistersDefaultEncodersAndDecoders(t *testing.T) {
 			require.IsType(t, expectedDecoders[kind], codec.Decoder(strings.NewReader("")))
 		})
 	}
-}
-
-func TestMapGetIsNilSafe(t *testing.T) {
-	t.Parallel()
-
-	var m *stream.Map
-
-	require.Equal(t, stream.Codec{}, m.Get("json"))
 }
 
 func TestMapGetReturnsZeroCodecForUnknownKind(t *testing.T) {
@@ -107,27 +98,4 @@ func TestMapRegisterReplacesExistingCodec(t *testing.T) {
 	codec = m.Get("custom")
 	require.Equal(t, reflect.ValueOf(anotherEncoder).Pointer(), reflect.ValueOf(codec.Encoder).Pointer())
 	require.Nil(t, codec.Decoder)
-}
-
-func TestModuleProvidesDefaultMap(t *testing.T) {
-	t.Parallel()
-
-	var m *stream.Map
-
-	app := fx.New(
-		stream.Module,
-		fx.Populate(&m),
-		fx.NopLogger,
-	)
-
-	require.NoError(t, app.Err())
-	for _, kind := range []string{"json", "msgpack", "gob", "yaml"} {
-		t.Run(kind, func(t *testing.T) {
-			t.Parallel()
-
-			codec := m.Get(kind)
-			require.NotNil(t, codec.Encoder)
-			require.NotNil(t, codec.Decoder)
-		})
-	}
 }

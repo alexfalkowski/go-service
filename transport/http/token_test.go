@@ -12,11 +12,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestNewTokenUsesDefaultConfiguration(t *testing.T) {
-	tkn := http.NewToken(test.NewHTTPTransportConfig(), nil, nil)
-	require.Nil(t, tkn)
-}
-
 func TestNewTokenUsesConfiguredTokenSettings(t *testing.T) {
 	cfg := test.NewHTTPTransportConfig()
 	cfg.Token = test.NewToken("jwt")

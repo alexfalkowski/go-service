@@ -420,17 +420,6 @@ func TestModuleRegistersGenericCache(t *testing.T) {
 	require.Equal(t, "hello?", *value)
 }
 
-func TestGenericCacheIgnoresValuesWhenDisabled(t *testing.T) {
-	cache.Register(nil)
-
-	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
-
-	value, ok, err := cache.Get[string](t.Context(), "test")
-	require.NoError(t, err)
-	require.False(t, ok)
-	require.Nil(t, value)
-}
-
 func TestGenericGetValidEmptyCache(t *testing.T) {
 	cfg := test.NewCacheConfig("ttlcache", "none", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())

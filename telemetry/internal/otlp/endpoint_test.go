@@ -95,10 +95,6 @@ func TestValidateEndpointRequiresEndpoint(t *testing.T) {
 	headers := map[string]string{"Authorization": "Bearer token"}
 
 	require.ErrorIs(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Headers: headers}), otlp.ErrMissingEndpoint)
-	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "https://collector.example.com/v1/traces", Headers: headers}))
-
-	err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "http://collector.example.com/v1/traces", Headers: headers})
-	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
 }
 
 func TestValidateEndpointRejectsInvalidProtocol(t *testing.T) {

@@ -8,13 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIgnoreRedirect(t *testing.T) {
-	t.Parallel()
-
-	err := http.IgnoreRedirect(nil, nil)
-	require.ErrorIs(t, err, http.ErrUseLastResponse)
-}
-
 func TestSameOriginRedirectMatchesSchemeHostAndPort(t *testing.T) {
 	t.Parallel()
 

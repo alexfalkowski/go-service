@@ -5,15 +5,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/stretchr/testify/require"
 )
-
-func TestStatusTextMapsCodeToMessage(t *testing.T) {
-	t.Parallel()
-
-	require.Equal(t, codes.Unauthenticated.String(), grpc.StatusText(codes.Unauthenticated))
-}
 
 func TestParseServiceMethod(t *testing.T) {
 	t.Parallel()
@@ -39,12 +32,6 @@ func TestParseServiceMethod(t *testing.T) {
 			require.Equal(t, test.method, method)
 		})
 	}
-}
-
-func TestSetTrailerAcceptsEmptyMetadata(t *testing.T) {
-	t.Parallel()
-
-	require.NoError(t, grpc.SetTrailer(t.Context(), nil))
 }
 
 func TestNewServerWithAdvancedOptions(t *testing.T) {

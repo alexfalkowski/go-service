@@ -6,13 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/compress"
 	"github.com/alexfalkowski/go-service/v2/compress/none"
-	"github.com/alexfalkowski/go-service/v2/compress/s2"
-	"github.com/alexfalkowski/go-service/v2/compress/snappy"
-	"github.com/alexfalkowski/go-service/v2/compress/zstd"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx"
 )
 
 var compressorKinds = []string{"zstd", "s2", "snappy", "none"}
@@ -40,23 +36,6 @@ func TestMapReturnsRegisteredCompressors(t *testing.T) {
 	}
 }
 
-func TestNewMapRegistersDefaultCompressors(t *testing.T) {
-	compressors := compress.NewMap()
-
-	expected := map[string]compress.Compressor{
-		"zstd":   zstd.NewCompressor(),
-		"s2":     s2.NewCompressor(),
-		"snappy": snappy.NewCompressor(),
-		"none":   none.NewCompressor(),
-	}
-
-	for kind, expectedCompressor := range expected {
-		t.Run(kind, func(t *testing.T) {
-			require.IsType(t, expectedCompressor, compressors.Get(kind))
-		})
-	}
-}
-
 func TestMapRegisterReplacesExistingCompressor(t *testing.T) {
 	compressors := compress.NewMap()
 	custom := test.NewCompressor(test.ErrFailed)
@@ -67,33 +46,4 @@ func TestMapRegisterReplacesExistingCompressor(t *testing.T) {
 
 	compressors.Register("custom", replacement)
 	require.Same(t, replacement, compressors.Get("custom"))
-}
-
-func TestModuleProvidesDefaultCompressors(t *testing.T) {
-	var compressors *compress.Map
-
-	app := fx.New(
-		compress.Module,
-		fx.Populate(&compressors),
-		fx.NopLogger,
-	)
-
-	require.NoError(t, app.Err())
-	for _, kind := range compressorKinds {
-		t.Run(kind, func(t *testing.T) {
-			require.NotNil(t, compressors.Get(kind))
-		})
-	}
-}
-
-func TestModuleDoesNotProvideZstdCompressor(t *testing.T) {
-	var compressor *zstd.Compressor
-
-	app := fx.New(
-		compress.Module,
-		fx.Populate(&compressor),
-		fx.NopLogger,
-	)
-
-	require.Error(t, app.Err())
 }

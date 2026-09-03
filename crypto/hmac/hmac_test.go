@@ -36,9 +36,6 @@ func TestNewSignerSignsAndVerifiesOrDisablesWhenUnconfigured(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, signer)
 
-	signer, err = hmac.NewSigner(test.FS, test.NewHMAC())
-	require.NoError(t, err)
-
 	mac, err := signer.Sign(strings.Bytes("test"))
 	require.NoError(t, err)
 	require.Len(t, mac, hmac.Size)

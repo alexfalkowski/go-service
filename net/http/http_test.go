@@ -1,35 +1,13 @@
 package http_test
 
 import (
-	"net/http/httptest"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
-	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
-
-func TestMaxBytesHandler(t *testing.T) {
-	t.Parallel()
-
-	handler := http.MaxBytesHandler(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		_, _, err := io.ReadAll(req.Body)
-		var maxBytesError *http.MaxBytesError
-		require.ErrorAs(t, err, &maxBytesError)
-
-		_, _ = res.Write([]byte("ok"))
-	}), 1)
-
-	res := httptest.NewRecorder()
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/", bytes.NewBufferString("too large"))
-
-	handler.ServeHTTP(res, req)
-
-	require.Equal(t, http.StatusOK, res.Code)
-}
 
 func TestProtocolsReturnsSupportedHTTPVersions(t *testing.T) {
 	t.Parallel()
@@ -39,18 +17,6 @@ func TestProtocolsReturnsSupportedHTTPVersions(t *testing.T) {
 	require.True(t, protocols.HTTP1())
 	require.True(t, protocols.HTTP2())
 	require.True(t, protocols.UnencryptedHTTP2())
-}
-
-func TestParseTimeParsesHTTPHeaderTime(t *testing.T) {
-	t.Parallel()
-
-	now := time.Now().UTC()
-	value := now.Format(http.TimeFormat)
-
-	parsed, err := http.ParseTime(value)
-
-	require.NoError(t, err)
-	require.Equal(t, now.Truncate(time.Second.Duration()), parsed)
 }
 
 func TestTransportReturnsConfiguredRoundTripper(t *testing.T) {

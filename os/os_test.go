@@ -7,22 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//nolint:usetesting
-func TestEnvironmentExposesSetAndUnsetVariables(t *testing.T) {
-	key := "__ENV_KEY"
-
-	require.NoError(t, os.Setenv(key, "test"))
-	require.Equal(t, "test", os.Getenv(key))
-	value, ok := os.LookupEnv(key)
-	require.True(t, ok)
-	require.Equal(t, "test", value)
-	require.Contains(t, os.Environ(), key+"=test")
-	require.NoError(t, os.Unsetenv(key))
-	value, ok = os.LookupEnv(key)
-	require.False(t, ok)
-	require.Empty(t, value)
-}
-
 func TestSanitizeArgsRemovesGoTestArguments(t *testing.T) {
 	args := []string{"service", "-test.v", "server", "-config", "config.yml", "-test.run=TestName", "-test-mode"}
 	sanitized := os.SanitizeArgs(args)

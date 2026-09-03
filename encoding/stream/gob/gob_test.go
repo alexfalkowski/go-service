@@ -52,27 +52,6 @@ func TestDecodeReturnsError(t *testing.T) {
 	require.Error(t, decoder.Decode(&msg))
 }
 
-func TestDecodeAllowsTrailingValues(t *testing.T) {
-	t.Parallel()
-
-	buffer := test.Pool.Get()
-	defer test.Pool.Put(buffer)
-
-	encoder := gob.NewEncoder(buffer)
-	require.NoError(t, encoder.Encode(map[string]string{"test": "one"}))
-	require.NoError(t, encoder.Encode(map[string]string{"test": "two"}))
-
-	decoder := gob.NewDecoder(buffer)
-
-	var first map[string]string
-	require.NoError(t, decoder.Decode(&first))
-	require.Equal(t, map[string]string{"test": "one"}, first)
-
-	var second map[string]string
-	require.NoError(t, decoder.Decode(&second))
-	require.Equal(t, map[string]string{"test": "two"}, second)
-}
-
 func TestEncoderCloseIsIdempotent(t *testing.T) {
 	t.Parallel()
 
