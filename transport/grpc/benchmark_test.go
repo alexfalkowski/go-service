@@ -29,46 +29,44 @@ func BenchmarkGRPC(b *testing.B) {
 }
 
 // BenchmarkGRPCStream measures gRPC bidirectional streaming (SayStreamHello) with fixed 1 KiB request payloads.
+//
+// Each operation is a complete stream containing the named number of messages.
+// Throughput therefore reports request payload bytes per stream, while ns/op and
+// B/op remain stream-level measurements.
 func BenchmarkGRPCStream(b *testing.B) {
 	for _, messageCount := range []int{1, 10, 100} {
 		b.Run(fmt.Sprintf("%d-messages", messageCount), func(b *testing.B) {
 			b.Helper()
 
-			benchmarkGRPCLayers(b, func(b *testing.B, log *logger.Logger, trace, tlsEnabled bool) {
+			benchmarkGRPCLayers(b, func(b *testing.B, logging, trace, tlsEnabled bool) {
 				b.Helper()
 
-				benchmarkGRPCStream(b, log, trace, tlsEnabled, messageCount)
+				benchmarkGRPCStream(b, logging, trace, tlsEnabled, messageCount)
 			})
 		})
 	}
 }
 
-func benchmarkGRPCLayers(b *testing.B, benchmark func(*testing.B, *logger.Logger, bool, bool)) {
+func benchmarkGRPCLayers(b *testing.B, benchmark func(*testing.B, bool, bool, bool)) {
 	b.Helper()
 
 	b.Run("none", func(b *testing.B) {
 		test.ResetTelemetry(b)
 		defer test.ResetTelemetry(b)
 
-		benchmark(b, nil, false, false)
+		benchmark(b, false, false, false)
 	})
 
 	b.Run("log", func(b *testing.B) {
-		log, err := logger.NewLogger(logger.LoggerParams{})
-		require.NoError(b, err)
-
-		benchmark(b, log, false, false)
+		benchmark(b, true, false, false)
 	})
 
 	b.Run("trace", func(b *testing.B) {
-		log, err := logger.NewLogger(logger.LoggerParams{})
-		require.NoError(b, err)
-
-		benchmark(b, log, true, false)
+		benchmark(b, true, true, false)
 	})
 
 	b.Run("tls", func(b *testing.B) {
-		benchmark(b, nil, false, true)
+		benchmark(b, false, false, true)
 	})
 }
 
@@ -105,11 +103,11 @@ func benchmarkStdGRPC(b *testing.B) {
 	require.NoError(b, conn.Close())
 }
 
-func benchmarkGRPC(b *testing.B, log *logger.Logger, trace, tlsEnabled bool) {
+func benchmarkGRPC(b *testing.B, logging, trace, tlsEnabled bool) {
 	b.Helper()
 	b.ReportAllocs()
 
-	greeterClient, cleanup := startBenchmarkGRPC(b, log, trace, tlsEnabled)
+	greeterClient, cleanup := startBenchmarkGRPC(b, logging, trace, tlsEnabled)
 	req := &v1.SayHelloRequest{Name: "test"}
 
 	b.ResetTimer()
@@ -125,11 +123,12 @@ func benchmarkGRPC(b *testing.B, log *logger.Logger, trace, tlsEnabled bool) {
 	cleanup()
 }
 
-func benchmarkGRPCStream(b *testing.B, log *logger.Logger, trace, tlsEnabled bool, messageCount int) {
+func benchmarkGRPCStream(b *testing.B, logging, trace, tlsEnabled bool, messageCount int) {
 	b.Helper()
 	b.ReportAllocs()
+	b.SetBytes(int64(messageCount * 1024))
 
-	greeterClient, cleanup := startBenchmarkGRPC(b, log, trace, tlsEnabled)
+	greeterClient, cleanup := startBenchmarkGRPC(b, logging, trace, tlsEnabled)
 	name := strings.Repeat("b", 1024)
 
 	b.ResetTimer()
@@ -153,7 +152,7 @@ func benchmarkGRPCStream(b *testing.B, log *logger.Logger, trace, tlsEnabled boo
 	cleanup()
 }
 
-func startBenchmarkGRPC(b *testing.B, log *logger.Logger, trace, tlsEnabled bool) (v1.GreeterServiceClient, func()) {
+func startBenchmarkGRPC(b *testing.B, logging, trace, tlsEnabled bool) (v1.GreeterServiceClient, func()) {
 	b.Helper()
 
 	lc := test.QuietLifecycle(b)
@@ -163,7 +162,14 @@ func startBenchmarkGRPC(b *testing.B, log *logger.Logger, trace, tlsEnabled bool
 	}
 
 	if trace {
-		test.RegisterTracer(lc, nil)
+		test.RegisterTracer(lc, test.NewOTLPTracerConfig())
+	}
+
+	var log *logger.Logger
+	if logging {
+		var err error
+		log, err = test.NewLogger(lc, test.NewOTLPLoggerConfig())
+		require.NoError(b, err)
 	}
 
 	grpcServer, err := transportgrpc.NewServer(transportgrpc.ServerParams{
