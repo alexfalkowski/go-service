@@ -189,6 +189,14 @@ type RequestStream[Req any, Res any] struct {
 // [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s buffered path already produces,
 // so it maps to the same 413 through [github.com/alexfalkowski/go-service/v2/net/http/status.Code].
 //
+// Errors:
+// A decode failure other than the terminal io.EOF is classified with
+// [github.com/alexfalkowski/go-service/v2/net/http/status.BadRequestError], the same way
+// [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewRequestHandler] classifies its
+// equivalent request-decode failure, so malformed or type-invalid client input maps to 400 instead of
+// the default 500. [ErrDraining] and an over-cap value's [http.MaxBytesError] are unaffected: decode's
+// earlier guard clauses return them before this classification runs.
+//
 // Deadlines:
 // Recv extends the read deadline before attempting Decode, so the wait for the next value — including
 // the first — is bounded by the configured timeout rather than only the calls after it. A successful
@@ -259,7 +267,11 @@ func (s *RequestStream[Req, Res]) decode() (*Req, error) {
 			return nil, &http.MaxBytesError{Limit: s.maxReceiveSize}
 		}
 
-		return nil, err
+		if errors.Is(err, io.EOF) {
+			return nil, err
+		}
+
+		return nil, status.BadRequestError(err)
 	}
 
 	if s.capped.Exceeds(quota.BufferedLen(s.decoder)) {
