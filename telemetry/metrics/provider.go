@@ -4,8 +4,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-sync"
+	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	sdk "go.opentelemetry.io/otel/sdk/metric"
 )
@@ -88,8 +90,10 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 
 	params.Lifecycle.Append(di.Hook{
 		OnStart: func(_ context.Context) error {
-			// Re-add host metrics when https://github.com/shirou/gopsutil/issues/2115 is fixed.
-			err := runtime.Start(runtime.WithMeterProvider(provider))
+			err := errors.Join(
+				runtime.Start(runtime.WithMeterProvider(provider)),
+				host.Start(host.WithMeterProvider(provider)),
+			)
 
 			return prefix(err)
 		},
