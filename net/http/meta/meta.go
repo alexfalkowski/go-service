@@ -19,12 +19,12 @@ type Map = meta.Map
 // Pair is an alias for [meta.Pair].
 type Pair = meta.Pair
 
-// CamelStrings exports all stored meta attributes as a string map with lowerCamelCased keys.
+// Strings exports all stored meta attributes as a string map with unchanged keys.
 //
-// The prefix parameter is prepended to each exported key (if non-empty). Attributes whose rendered value is
-// empty are skipped.
-func CamelStrings(ctx context.Context, prefix string) Map {
-	return meta.CamelStrings(ctx, prefix)
+// Standard metadata keys use snake_case. The prefix parameter is prepended to each exported key (if non-empty).
+// Attributes whose rendered value is empty are skipped.
+func Strings(ctx context.Context, prefix string) Map {
+	return meta.Strings(ctx, prefix)
 }
 
 // Error converts err to a [meta.Value] using err.Error().
@@ -61,7 +61,6 @@ func Request(ctx context.Context) *http.Request {
 // It returns nil when WithRequestResponse has not been called.
 func Response(ctx context.Context) http.ResponseWriter {
 	requestResponse, _ := ctx.Value(requestResponseKey).(requestResponse)
-
 	return requestResponse.response
 }
 

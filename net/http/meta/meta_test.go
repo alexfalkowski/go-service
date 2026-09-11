@@ -181,7 +181,7 @@ func TestRoundTripperStoresServiceMethod(t *testing.T) {
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 			require.Equal(t, meta.Ignored("http"), meta.Transport(req.Context()))
 			require.Equal(t, meta.Ignored("/users/123"), meta.ServiceMethod(req.Context()))
-			require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
+			require.NotContains(t, meta.Strings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
 
 			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
 		}),
@@ -267,7 +267,7 @@ func TestHandlerStoresServiceMethodFromPath(t *testing.T) {
 	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
 		require.Equal(t, meta.Ignored("http"), meta.Transport(req.Context()))
 		require.Equal(t, meta.Ignored("/users/123"), meta.ServiceMethod(req.Context()))
-		require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
+		require.NotContains(t, meta.Strings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
 	})
 }
 
@@ -284,7 +284,7 @@ func TestHandlerStoresServiceMethodFromPattern(t *testing.T) {
 		require.Equal(t, meta.Ignored("http"), meta.Transport(req.Context()))
 		require.Equal(t, meta.Ignored("GET /users/{id}"), meta.ServiceMethod(req.Context()))
 		require.Equal(t, "GET /users/{id}", req.Pattern)
-		require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
+		require.NotContains(t, meta.Strings(req.Context(), meta.NoPrefix), meta.ServiceMethodKey)
 	})
 }
 
@@ -313,6 +313,6 @@ func TestHandlerStoresGeolocationAsIgnored(t *testing.T) {
 
 		require.Equal(t, "geo:47,11", geolocation.Value())
 		require.Empty(t, geolocation.String())
-		require.NotContains(t, meta.CamelStrings(req.Context(), meta.NoPrefix), meta.GeolocationKey)
+		require.NotContains(t, meta.Strings(req.Context(), meta.NoPrefix), meta.GeolocationKey)
 	})
 }

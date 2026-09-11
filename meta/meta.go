@@ -41,24 +41,8 @@ func Attribute(ctx context.Context, key string) Value {
 
 // Map is a string key-value map of exported attributes.
 //
-// Export helpers return this type after rendering [Value] entries and applying key conversion and prefixing.
+// Export helpers return this type after rendering [Value] entries and applying optional key prefixes.
 type Map map[string]string
-
-// SnakeStrings returns all stored attributes as a string map with snake_cased keys.
-//
-// The prefix parameter is prepended to each exported key (if non-empty).
-// Attributes whose rendered value is empty are skipped.
-func SnakeStrings(ctx context.Context, prefix string) Map {
-	return attributes(ctx).Strings(prefix, strings.ToSnake)
-}
-
-// CamelStrings returns all stored attributes as a string map with lowerCamelCased keys.
-//
-// The prefix parameter is prepended to each exported key (if non-empty).
-// Attributes whose rendered value is empty are skipped.
-func CamelStrings(ctx context.Context, prefix string) Map {
-	return attributes(ctx).Strings(prefix, strings.ToLowerCamel)
-}
 
 // Limit bounds the length of an exported metadata value.
 //
@@ -72,12 +56,12 @@ func (l Limit) Bytes() int {
 	return int(l)
 }
 
-// Attributes returns context metadata as lowerCamelCase string attributes.
+// Attributes returns context metadata as snake_case string attributes.
 //
 // Attribute values are bounded by limit so one metadata value cannot dominate a
 // log record or telemetry payload. Metadata retained in ctx is not truncated.
 func Attributes(ctx context.Context, limit Limit) Map {
-	attrs := CamelStrings(ctx, NoPrefix)
+	attrs := Strings(ctx, NoPrefix)
 	for key, value := range attrs {
 		attrs[key] = truncate(value, limit)
 	}
@@ -90,11 +74,7 @@ func Attributes(ctx context.Context, limit Limit) Map {
 // The prefix parameter is prepended to each exported key (if non-empty).
 // Attributes whose rendered value is empty are skipped.
 func Strings(ctx context.Context, prefix string) Map {
-	return attributes(ctx).Strings(prefix, identity)
-}
-
-func identity(s string) string {
-	return s
+	return attributes(ctx).Strings(prefix)
 }
 
 func truncate(value string, limit Limit) string {

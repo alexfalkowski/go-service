@@ -9,8 +9,8 @@ import (
 
 // Meta extracts context metadata and returns it as slog attributes.
 //
-// It reads metadata stored in the provided context (via the `meta` package) and converts
-// it to camel-cased string key/value attributes with no prefix.
+// It reads metadata stored in the provided context (via the `meta` package) as string key/value attributes with no
+// prefix. Standard metadata keys use snake_case; arbitrary keys are preserved.
 //
 // Metadata values are bounded by limit at a valid UTF-8 boundary.
 //

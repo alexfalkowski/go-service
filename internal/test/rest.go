@@ -51,22 +51,22 @@ func RestRequestNoContent(_ context.Context, _ *Request) (*Response, error) {
 	return nil, nil
 }
 
-// RestContent builds a greeting from the `name` query parameter and echoes camel-cased request metadata.
+// RestContent builds a greeting from the `name` query parameter and echoes snake_case request metadata.
 func RestContent(ctx context.Context) (*Response, error) {
 	req := meta.Request(ctx)
 	_ = meta.Response(ctx)
 	name := cmp.Or(req.URL.Query().Get("name"), "Bob")
 	s := "Hello " + name
 
-	return &Response{Meta: meta.CamelStrings(ctx, meta.NoPrefix), Greeting: s}, nil
+	return &Response{Meta: meta.Strings(ctx, meta.NoPrefix), Greeting: s}, nil
 }
 
-// RestRequestContent builds a greeting from the request body and echoes camel-cased request metadata.
+// RestRequestContent builds a greeting from the request body and echoes snake_case request metadata.
 func RestRequestContent(ctx context.Context, req *Request) (*Response, error) {
 	name := cmp.Or(req.Name, "Bob")
 	s := "Hello " + name
 
-	return &Response{Meta: meta.CamelStrings(ctx, meta.NoPrefix), Greeting: s}, nil
+	return &Response{Meta: meta.Strings(ctx, meta.NoPrefix), Greeting: s}, nil
 }
 
 // RestRequestProtobuf returns a protobuf greeting response for REST-to-protobuf content tests.

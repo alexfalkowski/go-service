@@ -20,8 +20,7 @@ const (
 // Ignored constructs a Value that preserves the underlying value in-context but renders as an empty string.
 //
 // This is useful when you want to keep the raw value available for in-process logic, but you do not want it
-// to be exported via [Strings], [SnakeStrings], or [CamelStrings] (for example into logs or
-// transport headers).
+// to be exported via [Strings] (for example into logs or transport headers).
 //
 // Note: export helpers skip attributes whose rendered string is empty, so [Ignored] values will not appear
 // in exported maps.

@@ -23,14 +23,12 @@
 // # Export helpers
 //
 // Stored attributes can be exported to plain string maps for logging and transport propagation using:
-//   - [Strings]: keys unchanged
-//   - [SnakeStrings]: keys converted to snake_case
-//   - [CamelStrings]: keys converted to lowerCamelCase
-//   - [Attributes]: lowerCamelCase keys with bounded values for telemetry sinks
+//   - [Strings]: keys unchanged (standard metadata keys use snake_case)
+//   - [Attributes]: snake_case keys with bounded values for telemetry sinks
 //
 // Export helpers skip attributes whose rendered string is empty. A prefix may be prepended to each exported key.
 //
 // Start with [WithAttributes], [NewPair], the typed With* pair helpers, and [Attribute] for arbitrary
 // attributes. Use [Value] constructors ([String], [Blank], [Ignored], [Redacted]) for controlling rendering,
-// and [Strings], [SnakeStrings], [CamelStrings], or [Attributes] for exporting attributes.
+// and [Strings] or [Attributes] for exporting attributes.
 package meta
