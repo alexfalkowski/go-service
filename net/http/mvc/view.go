@@ -159,7 +159,7 @@ func (v *View) render(ctx context.Context, writer io.Writer, model any) error {
 	}
 
 	template := &Template{
-		Meta:  meta.Strings(ctx, meta.NoPrefix),
+		Meta:  meta.Strings(ctx),
 		Model: model,
 	}
 

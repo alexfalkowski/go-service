@@ -26,7 +26,7 @@
 //   - [Strings]: keys unchanged (standard metadata keys use snake_case)
 //   - [Attributes]: snake_case keys with bounded values for telemetry sinks
 //
-// Export helpers skip attributes whose rendered string is empty. A prefix may be prepended to each exported key.
+// Export helpers skip attributes whose rendered string is empty.
 //
 // Start with [WithAttributes], [NewPair], the typed With* pair helpers, and [Attribute] for arbitrary
 // attributes. Use [Value] constructors ([String], [Blank], [Ignored], [Redacted]) for controlling rendering,

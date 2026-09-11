@@ -5,11 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/strings"
 )
-
-// NoPrefix is a convenience constant for passing an empty prefix to export helpers.
-const NoPrefix = strings.Empty
 
 // contextKey is the package-private type used for metadata context storage.
 type contextKey struct{}
@@ -41,7 +37,7 @@ func Attribute(ctx context.Context, key string) Value {
 
 // Map is a string key-value map of exported attributes.
 //
-// Export helpers return this type after rendering [Value] entries and applying optional key prefixes.
+// Export helpers return this type after rendering [Value] entries.
 type Map map[string]string
 
 // Limit bounds the length of an exported metadata value.
@@ -61,7 +57,7 @@ func (l Limit) Bytes() int {
 // Attribute values are bounded by limit so one metadata value cannot dominate a
 // log record or telemetry payload. Metadata retained in ctx is not truncated.
 func Attributes(ctx context.Context, limit Limit) Map {
-	attrs := Strings(ctx, NoPrefix)
+	attrs := Strings(ctx)
 	for key, value := range attrs {
 		attrs[key] = truncate(value, limit)
 	}
@@ -71,10 +67,9 @@ func Attributes(ctx context.Context, limit Limit) Map {
 
 // Strings returns all stored attributes as a string map with keys unchanged.
 //
-// The prefix parameter is prepended to each exported key (if non-empty).
 // Attributes whose rendered value is empty are skipped.
-func Strings(ctx context.Context, prefix string) Map {
-	return attributes(ctx).Strings(prefix)
+func Strings(ctx context.Context) Map {
+	return attributes(ctx).Strings()
 }
 
 func truncate(value string, limit Limit) string {

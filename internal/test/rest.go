@@ -58,7 +58,7 @@ func RestContent(ctx context.Context) (*Response, error) {
 	name := cmp.Or(req.URL.Query().Get("name"), "Bob")
 	s := "Hello " + name
 
-	return &Response{Meta: meta.Strings(ctx, meta.NoPrefix), Greeting: s}, nil
+	return &Response{Meta: meta.Strings(ctx), Greeting: s}, nil
 }
 
 // RestRequestContent builds a greeting from the request body and echoes snake_case request metadata.
@@ -66,7 +66,7 @@ func RestRequestContent(ctx context.Context, req *Request) (*Response, error) {
 	name := cmp.Or(req.Name, "Bob")
 	s := "Hello " + name
 
-	return &Response{Meta: meta.Strings(ctx, meta.NoPrefix), Greeting: s}, nil
+	return &Response{Meta: meta.Strings(ctx), Greeting: s}, nil
 }
 
 // RestRequestProtobuf returns a protobuf greeting response for REST-to-protobuf content tests.

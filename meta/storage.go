@@ -39,18 +39,17 @@ func (s Storage) Get(key string) Value {
 
 // Strings exports stored attributes as a string map.
 //
-// Each key is prefixed with prefix (if non-empty).
 // Each value is rendered using [Value.String].
 //
 // Export behavior:
 //   - Attributes whose rendered value is an empty string are skipped.
 //     (This includes [Blank] and [Ignored] values, and any [Value] whose rendered [Value.String] is empty.)
 //   - Keys are included only if they have a non-empty rendered value.
-func (s Storage) Strings(prefix string) Map {
+func (s Storage) Strings() Map {
 	attributes := make(Map, len(s))
 	for key, value := range s {
 		if rendered := value.String(); !strings.IsEmpty(rendered) {
-			attributes[s.key(prefix, key)] = rendered
+			attributes[key] = rendered
 		}
 	}
 	return attributes
@@ -64,14 +63,6 @@ func (s Storage) Clone() Storage {
 	maps.Copy(cloned, s)
 
 	return cloned
-}
-
-func (s Storage) key(prefix, key string) string {
-	if strings.IsEmpty(prefix) {
-		return key
-	}
-
-	return prefix + key
 }
 
 func attributes(ctx context.Context) Storage {
