@@ -10,9 +10,6 @@ const requestResponseKey = context.Key("request-response")
 
 const limiterKey = context.Key("limiter")
 
-// NoPrefix is an alias for [meta.NoPrefix].
-const NoPrefix = meta.NoPrefix
-
 // Map is an alias for [meta.Map].
 type Map = meta.Map
 
@@ -21,10 +18,9 @@ type Pair = meta.Pair
 
 // Strings exports all stored meta attributes as a string map with unchanged keys.
 //
-// Standard metadata keys use snake_case. The prefix parameter is prepended to each exported key (if non-empty).
-// Attributes whose rendered value is empty are skipped.
-func Strings(ctx context.Context, prefix string) Map {
-	return meta.Strings(ctx, prefix)
+// Standard metadata keys use snake_case. Attributes whose rendered value is empty are skipped.
+func Strings(ctx context.Context) Map {
+	return meta.Strings(ctx)
 }
 
 // Error converts err to a [meta.Value] using err.Error().

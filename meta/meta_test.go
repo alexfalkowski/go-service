@@ -8,19 +8,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStringsFormatsVisibleAttributesWithPrefix(t *testing.T) {
+func TestStringsExportsVisibleAttributes(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(),
 		meta.NewPair("test_id", meta.String("1")),
 		meta.NewPair("see", meta.Ignored("secret")),
 		meta.NewPair("redacted", meta.Redacted("2")),
 	)
 
-	assertStrings(t, ctx, "no prefix", meta.Map{"test_id": "1", "redacted": "*"}, func(ctx context.Context) meta.Map {
-		return meta.Strings(ctx, meta.NoPrefix)
-	})
-	assertStrings(t, ctx, "prefix", meta.Map{"test.test_id": "1", "test.redacted": "*"}, func(ctx context.Context) meta.Map {
-		return meta.Strings(ctx, "test.")
-	})
+	require.Equal(t, meta.Map{"test_id": "1", "redacted": "*"}, meta.Strings(ctx))
 }
 
 func TestAttributesBoundsSnakeCasedValues(t *testing.T) {
@@ -152,12 +147,4 @@ func TestTransportServiceMethod(t *testing.T) {
 	)
 
 	require.Equal(t, meta.Ignored("http:GET /users/{id}"), meta.TransportServiceMethod(ctx))
-}
-
-func assertStrings(t *testing.T, ctx context.Context, name string, want meta.Map, export func(context.Context) meta.Map) {
-	t.Helper()
-
-	t.Run(name, func(t *testing.T) {
-		require.Equal(t, want, export(ctx))
-	})
 }
