@@ -35,7 +35,7 @@ func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
 	name := cmp.Or(req.URL.Query().Get("name"), r.Name)
 	s := "Hello " + name
 
-	return &Response{Meta: meta.CamelStrings(ctx, meta.NoPrefix), Greeting: s}, nil
+	return &Response{Meta: meta.Strings(ctx, meta.NoPrefix), Greeting: s}, nil
 }
 
 // SuccessProtobufSayHello returns a protobuf greeting response for the supplied request name.

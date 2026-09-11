@@ -7,11 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// Converter transforms an attribute key before it is exported.
-//
-// It is used by export helpers to normalize key casing (for example snake_case or lowerCamelCase).
-type Converter func(string) string
-
 // Storage stores meta values keyed by attribute name.
 //
 // Storage is the internal backing map used by this package to hold context-scoped attributes.
@@ -44,18 +39,18 @@ func (s Storage) Get(key string) Value {
 
 // Strings exports stored attributes as a string map.
 //
-// Each key is transformed using converter and then prefixed with prefix (if non-empty).
+// Each key is prefixed with prefix (if non-empty).
 // Each value is rendered using [Value.String].
 //
 // Export behavior:
 //   - Attributes whose rendered value is an empty string are skipped.
 //     (This includes [Blank] and [Ignored] values, and any [Value] whose rendered [Value.String] is empty.)
 //   - Keys are included only if they have a non-empty rendered value.
-func (s Storage) Strings(prefix string, converter Converter) Map {
+func (s Storage) Strings(prefix string) Map {
 	attributes := make(Map, len(s))
 	for key, value := range s {
 		if rendered := value.String(); !strings.IsEmpty(rendered) {
-			attributes[s.key(prefix, converter(key))] = rendered
+			attributes[s.key(prefix, key)] = rendered
 		}
 	}
 	return attributes

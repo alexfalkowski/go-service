@@ -8,34 +8,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStringsFormatsVisibleAttributesWithCaseAndPrefix(t *testing.T) {
+func TestStringsFormatsVisibleAttributesWithPrefix(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(),
-		meta.NewPair("testId", meta.String("1")),
+		meta.NewPair("test_id", meta.String("1")),
 		meta.NewPair("see", meta.Ignored("secret")),
 		meta.NewPair("redacted", meta.Redacted("2")),
 	)
 
-	assertStrings(t, ctx, "snake", meta.Map{"test_id": "1", "redacted": "*"}, func(ctx context.Context) meta.Map {
-		return meta.SnakeStrings(ctx, meta.NoPrefix)
-	})
-	assertStrings(t, ctx, "camel", meta.Map{"testId": "1", "redacted": "*"}, func(ctx context.Context) meta.Map {
-		return meta.CamelStrings(ctx, meta.NoPrefix)
-	})
-	assertStrings(t, ctx, "none", meta.Map{"testId": "1", "redacted": "*"}, func(ctx context.Context) meta.Map {
+	assertStrings(t, ctx, "no prefix", meta.Map{"test_id": "1", "redacted": "*"}, func(ctx context.Context) meta.Map {
 		return meta.Strings(ctx, meta.NoPrefix)
 	})
-	assertStrings(t, ctx, "prefix", meta.Map{"test.testId": "1", "test.redacted": "*"}, func(ctx context.Context) meta.Map {
+	assertStrings(t, ctx, "prefix", meta.Map{"test.test_id": "1", "test.redacted": "*"}, func(ctx context.Context) meta.Map {
 		return meta.Strings(ctx, "test.")
 	})
 }
 
-func TestAttributesBoundsCamelCasedValues(t *testing.T) {
+func TestAttributesBoundsSnakeCasedValues(t *testing.T) {
 	ctx := meta.WithAttributes(t.Context(),
-		meta.NewPair("request-id", meta.String("abcd")),
+		meta.NewPair(meta.RequestIDKey, meta.String("abcd")),
 		meta.NewPair("secret", meta.Ignored("hidden")),
 	)
 
-	require.Equal(t, meta.Map{"requestId": "abc"}, meta.Attributes(ctx, meta.Limit(3)))
+	require.Equal(t, meta.Map{"request_id": "abc"}, meta.Attributes(ctx, meta.Limit(3)))
 }
 
 func TestWithAttributesReturnsSameContextWithoutPairs(t *testing.T) {
@@ -92,10 +86,10 @@ func TestWithAttributesKeepsParentContextIsolatedWithSinglePair(t *testing.T) {
 	parent := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("parent")))
 	child := meta.WithAttributes(parent, meta.WithUserID(meta.String("child")))
 
-	require.Equal(t, meta.String("parent"), meta.Attribute(parent, "requestId"))
-	require.True(t, meta.Attribute(parent, "userId").IsEmpty())
-	require.Equal(t, meta.String("parent"), meta.Attribute(child, "requestId"))
-	require.Equal(t, meta.String("child"), meta.Attribute(child, "userId"))
+	require.Equal(t, meta.String("parent"), meta.Attribute(parent, "request_id"))
+	require.True(t, meta.Attribute(parent, "user_id").IsEmpty())
+	require.Equal(t, meta.String("parent"), meta.Attribute(child, "request_id"))
+	require.Equal(t, meta.String("child"), meta.Attribute(child, "user_id"))
 }
 
 func TestWithAttributesKeepsParentContextIsolated(t *testing.T) {
@@ -108,12 +102,12 @@ func TestWithAttributesKeepsParentContextIsolated(t *testing.T) {
 		meta.WithUserID(meta.String("user")),
 	)
 
-	require.Equal(t, meta.String("parent"), meta.Attribute(parent, "requestId"))
-	require.Equal(t, meta.String("test-agent"), meta.Attribute(parent, "userAgent"))
-	require.True(t, meta.Attribute(parent, "userId").IsEmpty())
-	require.Equal(t, meta.String("child"), meta.Attribute(child, "requestId"))
-	require.Equal(t, meta.String("test-agent"), meta.Attribute(child, "userAgent"))
-	require.Equal(t, meta.String("user"), meta.Attribute(child, "userId"))
+	require.Equal(t, meta.String("parent"), meta.Attribute(parent, "request_id"))
+	require.Equal(t, meta.String("test-agent"), meta.Attribute(parent, "user_agent"))
+	require.True(t, meta.Attribute(parent, "user_id").IsEmpty())
+	require.Equal(t, meta.String("child"), meta.Attribute(child, "request_id"))
+	require.Equal(t, meta.String("test-agent"), meta.Attribute(child, "user_agent"))
+	require.Equal(t, meta.String("user"), meta.Attribute(child, "user_id"))
 }
 
 func TestAccessorsReturnStoredAttributes(t *testing.T) {

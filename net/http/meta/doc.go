@@ -4,7 +4,7 @@
 //
 //   - It exposes small convenience wrappers around the generic `meta` package for exporting
 //     context-scoped attributes as string maps suitable for logging and header propagation
-//     (for example CamelStrings).
+//     (for example Strings). Standard metadata keys use snake_case; arbitrary keys are preserved.
 //
 //   - It provides a small context-backed store for request-scoped HTTP objects used by go-service
 //     handlers and middleware, including:

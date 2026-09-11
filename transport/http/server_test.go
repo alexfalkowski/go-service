@@ -234,7 +234,7 @@ func requirePanicLog(t *testing.T, capture *test.CaptureHandler, panicMessage, s
 		require.Equal(t, "http", record.Attrs["system"].String())
 		require.Equal(t, service, record.Attrs["service"].String())
 		require.Equal(t, "get", record.Attrs["method"].String())
-		require.NotEmpty(t, record.Attrs["requestId"].String())
+		require.NotEmpty(t, record.Attrs["request_id"].String())
 
 		return
 	}

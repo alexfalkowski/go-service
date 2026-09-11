@@ -129,7 +129,7 @@ type View struct {
 //
 // Render model:
 // Render wraps the provided model in a Template which includes exported meta attributes under [Template.Meta].
-// This allows templates to access request-scoped metadata (for example requestId) without controllers having
+// This allows templates to access request-scoped metadata (for example request_id) without controllers having
 // to explicitly thread those values through the model.
 //
 // Error handling:

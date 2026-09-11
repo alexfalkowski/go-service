@@ -216,7 +216,7 @@ func TestReceiveLogsPanickingProcessor(t *testing.T) {
 		require.Equal(t, "post", record.Attrs["method"].String())
 		require.Equal(t, int64(http.StatusInternalServerError), record.Attrs["code"].Int64())
 		require.NotEmpty(t, record.Attrs["duration"].String())
-		require.NotEmpty(t, record.Attrs["requestId"].String())
+		require.NotEmpty(t, record.Attrs["request_id"].String())
 	}
 
 	require.Equal(t, 1, panicLogs)

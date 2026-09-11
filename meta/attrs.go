@@ -9,7 +9,7 @@ const (
 	// RequestIDKey is the attribute key used for request IDs.
 	//
 	// This key is commonly used to correlate logs and traces for a single request across services.
-	RequestIDKey = "requestId"
+	RequestIDKey = "request_id"
 
 	// SystemKey is the attribute key used for the system name.
 	//
@@ -34,7 +34,7 @@ const (
 	// ServiceMethodKey is the attribute key used for transport service-method names.
 	//
 	// For example: an HTTP route path or a gRPC full method name.
-	ServiceMethodKey = "serviceMethod"
+	ServiceMethodKey = "service_method"
 
 	// CodeKey is the attribute key used for status codes.
 	//
@@ -49,22 +49,22 @@ const (
 	// UserAgentKey is the attribute key used for user agents.
 	//
 	// This value commonly originates from the HTTP User-Agent header.
-	UserAgentKey = "userAgent"
+	UserAgentKey = "user_agent"
 
 	// UserIDKey is the attribute key used for user IDs.
 	//
 	// This may represent an end user, an API key identity, or a service identity depending on context.
-	UserIDKey = "userId"
+	UserIDKey = "user_id"
 
 	// IPAddrKey is the attribute key used for IP addresses.
 	//
 	// This value is commonly derived from connection metadata or trusted forwarding headers.
-	IPAddrKey = "ipAddr"
+	IPAddrKey = "ip_addr"
 
 	// IPAddrKindKey is the attribute key used to describe how IPAddrKey was derived.
 	//
 	// This may be used to distinguish between direct peer IPs and values derived from proxy headers.
-	IPAddrKindKey = "ipAddrKind"
+	IPAddrKindKey = "ip_addr_kind"
 
 	// AuthorizationKey is the attribute key used for authorization values.
 	//
@@ -73,7 +73,7 @@ const (
 	AuthorizationKey = "authorization"
 
 	// GeolocationKey is the attribute key used for geolocation values.
-	GeolocationKey = "geoLocation"
+	GeolocationKey = "geo_location"
 )
 
 // WithRequestID creates a request ID pair for [WithAttributes].
@@ -144,7 +144,7 @@ func ServiceMethod(ctx context.Context) Value {
 // It combines the underlying [Value.Value] strings, so ignored transport/service-method values still
 // contribute to the combined value. The returned value is [Ignored] and formatted as
 // "<transport>:<service-method>", which keeps it available for in-process lookups such as limiter keys
-// while preventing it from being exported by [Strings], [SnakeStrings], or [CamelStrings].
+// while preventing it from being exported by [Strings].
 func TransportServiceMethod(ctx context.Context) Value {
 	return Ignored(strings.Concat(Transport(ctx).Value(), ":", ServiceMethod(ctx).Value()))
 }
