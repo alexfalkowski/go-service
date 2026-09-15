@@ -13,7 +13,7 @@ require (
 	github.com/arl/statsviz v0.8.2
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
-	github.com/beevik/nts v0.3.1
+	github.com/beevik/nts v0.3.2
 	github.com/casbin/casbin/v2 v2.135.0
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/cristalhq/acmd v0.12.0
@@ -74,7 +74,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/crypto v0.57.0
 	golang.org/x/net v0.59.0
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260908043556-f8649ddbbfe6
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260911204522-f61a6ca850bd
 	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.12
 )
