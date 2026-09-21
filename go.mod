@@ -20,7 +20,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/felixge/fgprof v0.9.5
 	github.com/felixge/httpsnoop v1.1.0
-	github.com/go-playground/validator/v10 v10.30.4
+	github.com/go-playground/validator/v10 v10.30.5
 	github.com/go-sprout/sprout v1.1.2
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.4
@@ -74,7 +74,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/crypto v0.57.0
 	golang.org/x/net v0.59.0
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260911204522-f61a6ca850bd
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260918162117-cecb64721679
 	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.12
 )
