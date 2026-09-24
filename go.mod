@@ -12,8 +12,8 @@ require (
 	github.com/alexfalkowski/go-sync v1.35.0
 	github.com/arl/statsviz v0.8.2
 	github.com/avfs/avfs v0.35.0
-	github.com/beevik/ntp v1.5.0
-	github.com/beevik/nts v0.3.2
+	github.com/beevik/ntp v1.6.0
+	github.com/beevik/nts v0.3.3
 	github.com/casbin/casbin/v2 v2.135.0
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/cristalhq/acmd v0.12.0
