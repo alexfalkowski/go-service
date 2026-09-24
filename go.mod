@@ -33,7 +33,7 @@ require (
 	github.com/lmittmann/tint v1.2.0
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/oklog/ulid v1.3.1
-	github.com/open-feature/go-sdk v1.18.0
+	github.com/open-feature/go-sdk v1.19.0
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.8
 	github.com/prometheus/client_golang v1.24.1
 	github.com/prometheus/otlptranslator v1.0.0

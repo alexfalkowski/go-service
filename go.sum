@@ -175,8 +175,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/oklog/ulid v1.3.1 h1:EGfNDEx6MqHz8B3uNV6QAib1UR2Lm97sHi3ocA6ESJ4=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
-github.com/open-feature/go-sdk v1.18.0 h1:+Ge8LAJjqDwQBqAWaWiTbnsiJ22d5SPQq7/hOiBwpqM=
-github.com/open-feature/go-sdk v1.18.0/go.mod h1:LOlB7jvyi3hz9mp7R2uIwCv+wcabCB4ir76AZJ1z2IQ=
+github.com/open-feature/go-sdk v1.19.0 h1:vahRSX/kYzLny7bUuxssNiiHOGqHlDIG47z+jJ/DCEY=
+github.com/open-feature/go-sdk v1.19.0/go.mod h1:JlS8ClrWUzfywMOOeFo0Ro3BeT8cS5O/KbZUOOjwtyQ=
 github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.8 h1:Q4qE8pJzHIUvUOxxOGCjVC6JCvwhEAhd1dORiqZRQkM=
 github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.8/go.mod h1:tAfMn9uwFTEispHdfltEbmMJ+am+LqyNJwtB9KXMNdc=
 github.com/orisano/pixelmatch v0.0.0-20220722002657-fb0b55479cde/go.mod h1:nZgzbfBr3hhjoZnS66nKrHmduYNpc34ny7RK4z5/HM0=
