@@ -120,12 +120,15 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 ## Accepted Design
 
 Before recording a finding, review candidate, audit entry, or proposed change,
-agents MUST read `docs/agents/accepted-design.md`. It records the accepted
-designs, intentional tradeoffs, and support boundaries that agents repeatedly
-re-flag as bugs, covering transport, TLS, config, telemetry, limiters, tokens,
-crypto, debug endpoints, encoding, MVC, and health surfaces. Those rules are
-mandatory and carry the same weight as this file. Agents MUST NOT report a
-finding in those areas without checking that file first.
+agents MUST read the index `docs/agents/accepted-design.md` and every area file
+under `docs/agents/accepted-design/` that is relevant to their scope. When a
+scope spans several areas or relevance is unclear, read every candidate area
+file. These files record the accepted designs, intentional tradeoffs, and
+support boundaries that agents repeatedly re-flag as bugs, covering transport,
+TLS, config, telemetry, limiters, tokens, crypto, debug endpoints, encoding,
+MVC, health, and CLI lifecycle surfaces. Those rules are mandatory and carry the
+same weight as this file. Agents MUST NOT report a finding in those areas
+without checking the relevant area files first.
 
 ## Testing, Style, And Docs
 
