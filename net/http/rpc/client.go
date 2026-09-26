@@ -40,9 +40,9 @@ type Client struct {
 //   - returns ErrInvalidResponse when res is nil
 //
 // Content-Type behavior:
-// The request Content-Type is set to c.contentType and is used to select encoders/decoders via
-// the underlying content-aware client. When configured, Accept is sent as the response media
-// preference and fallback decoder selection.
+// The request Content-Type is set to c.contentType and selects the request encoder via the
+// underlying content-aware client; it is also the fallback response decoder when the response has
+// no Content-Type. When configured, Accept is sent as the response media preference.
 //
 // The res parameter is typically a pointer to the destination value (for example *MyResponse).
 func (c *Client) Post(ctx context.Context, path string, req, res any) error {

@@ -92,6 +92,38 @@ func TestStreamGetIssuesGetRequest(t *testing.T) {
 	require.Equal(t, "Hello Bob", greeting)
 }
 
+func TestStreamGetDefaultsAcceptToNDJSON(t *testing.T) {
+	var accept string
+
+	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, stream *contentstream.Stream[test.Response]) error {
+		return stream.Send(&test.Response{Greeting: "Hello Bob"})
+	})
+
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		accept = req.Header.Get(http.AcceptKey)
+		handler.ServeHTTP(res, req)
+	}))
+	t.Cleanup(server.Close)
+
+	c := client.NewClient(test.UnaryContent, test.StreamContent, test.Pool)
+
+	var greeting string
+	err := c.StreamGet(t.Context(), server.URL, client.Options{},
+		func(_ context.Context, stream *client.ResponseStream) error {
+			var res test.Response
+			if err := stream.Recv(&res); err != nil {
+				return err
+			}
+
+			greeting = res.Greeting
+			return nil
+		})
+
+	require.NoError(t, err)
+	require.Equal(t, media.NDJSON, accept)
+	require.Equal(t, "Hello Bob", greeting)
+}
+
 func TestStreamPostPutPatchIssueBidiRequests(t *testing.T) {
 	tests := []struct {
 		name   string
