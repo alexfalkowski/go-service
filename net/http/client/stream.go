@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/quota"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -64,6 +65,8 @@ func (c *Client) StreamPatch(ctx context.Context, url string, opts Options, hand
 // ignored.
 //
 // Content negotiation:
+// When opts.Accept is empty, Stream sends [media.NDJSON] as the Accept header, since the request
+// Content-Type describes the unary request body and cannot select a streaming response.
 // The response streaming decoder is resolved from the response Content-Type header, falling back to
 // opts.ContentType, via the streaming registry passed to [NewClient] (see
 // [contentstream.Content.NewFromMedia]). An unregistered or unparseable streaming media type, or a
@@ -98,6 +101,10 @@ func (c *Client) StreamPatch(ctx context.Context, url string, opts Options, hand
 // The underlying [http.Client] never has a [http.Client.Timeout] (see [NewClient]); bound the call
 // with ctx instead.
 func (c *Client) Stream(ctx context.Context, method, url string, opts Options, handler StreamHandler) error {
+	if strings.IsEmpty(opts.Accept) {
+		opts.Accept = media.NDJSON
+	}
+
 	request, err := c.newRequest(ctx, method, url, opts)
 	if err != nil {
 		return err

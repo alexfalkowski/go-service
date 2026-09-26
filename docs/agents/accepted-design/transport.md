@@ -88,6 +88,20 @@ and carry the same mandatory weight.
   method-prefixing is the supported registration form. Report only concrete bugs
   where a method-prefixed operation pattern fails to match or the supported
   callers stop prefixing.
+- Unary HTTP REST and RPC response encoding
+  (`net/http/content/unary.Content.NewFromAccept`) intentionally uses the first
+  `Accept` media type, falling back to `Content-Type` and then JSON, as
+  documented in `docs/transport.md` and the `net/http/rest` and `net/http/rpc`
+  package docs. It does not evaluate quality weights, so a leading excluded
+  range such as `application/yaml;q=0, application/json` still selects YAML.
+  RFC 9110 §12.5.1 permits a server to disregard `Accept`, and go-service
+  clients set it from one configured `Options.Accept` value. Streaming routes
+  (`net/http/content/stream.Content.NewFromAccept`) evaluate the full list,
+  including `q=0`, because an unsatisfiable stream `Accept` is rejected rather
+  than answered in a different wire format. Do not flag the unary behavior or the
+  unary/stream asymmetry; report only concrete bugs where the first `Accept`
+  media type is not the one used, or a public API starts promising weighted
+  unary negotiation.
 - HTTP `net/http/client.Options.ContentType` is expected to be a real encodable
   request media type. Error media types (`text/error` and other `*/error`
   subtypes) are internal error-response media with no encoder, so supplying one
