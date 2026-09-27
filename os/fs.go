@@ -41,10 +41,14 @@ type FileMode = fs.FileMode
 
 // NewFS constructs an FS backed by the host OS filesystem.
 //
-// Internally this uses [osfs.New]() from [github.com/avfs/avfs] to provide an [avfs.VFS]
-// implementation that delegates to the real operating system.
+// Internally this uses [osfs.NewWithNoIdm]() from [github.com/avfs/avfs] to provide
+// an [avfs.VFS] implementation that delegates to the real operating system without
+// an identity manager. [osfs.New] wires in a real uid/gid identity manager that
+// avfs itself recommends against for production; go-service has no supported path
+// that uses identity-management features (for example Chown-by-name), so
+// NewWithNoIdm is used unconditionally.
 func NewFS() *FS {
-	return &FS{VFS: osfs.New()}
+	return &FS{VFS: osfs.NewWithNoIdm()}
 }
 
 // FS wraps an [avfs.VFS] and provides go-service-specific filesystem helpers.
