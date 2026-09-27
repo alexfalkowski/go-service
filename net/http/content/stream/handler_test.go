@@ -517,6 +517,28 @@ func TestNewHandlerReturnsServiceUnavailableOnDrainBeforeCommit(t *testing.T) {
 	require.False(t, called)
 }
 
+func TestNewHandlerHeadReturnsNegotiatedHeadersWithoutInvokingHandler(t *testing.T) {
+	called := false
+	handler := contentstream.NewHandler(test.StreamContent, contentstream.Options{}, func(_ context.Context, _ *contentstream.Stream[test.Response]) error {
+		called = true
+
+		return nil
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodHead, "/hello", http.NoBody)
+	req.Header.Set(http.AcceptKey, media.NDJSON)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, media.NDJSON, res.Header().Get(http.ContentTypeKey))
+	require.Equal(t, []string{http.AcceptKey, http.ContentTypeKey}, res.Header().Values(http.VaryKey))
+	require.NotEmpty(t, res.Header().Get(compress.HeaderNoCompression))
+	require.Empty(t, res.Body.Bytes())
+	require.False(t, called)
+}
+
 func TestNewHandlerAbortsAfterCommitRecordsTraceError(t *testing.T) {
 	exporter := test.EnableIsolatedSpanExporter(t)
 	handler := http.NewTelemetryHandler(contentstream.NewHandler(

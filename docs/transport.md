@@ -135,6 +135,8 @@ back to JSON, unlike single-value negotiation.
 > - Bidirectional streaming routes require HTTP/2 (including h2c); a request over HTTP/1.x is rejected
 >   with `505 HTTP Version Not Supported` before the handler runs. Send-only streaming routes have no
 >   such requirement and stay fully supported on HTTP/1.1 chunked responses.
+> - A `HEAD` request to a send-only streaming route (matched by the same mux pattern as `GET`) gets the
+>   negotiated response headers with an implicit 200; the stream handler itself is never invoked.
 > - Streaming responses are not gzip-compressed, regardless of the client's `Accept-Encoding`.
 > - `max_receive_size` applies per decoded value on a streaming request body, not as a cumulative total
 >   across the whole stream; overall stream volume is controlled by the configured rate limiter instead,
