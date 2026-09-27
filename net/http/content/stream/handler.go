@@ -33,6 +33,12 @@ import (
 // the handler context with [ErrDraining]. A handler that returns after observing ctx.Done ends a committed
 // response cleanly; it must therefore select on ctx.Done while waiting on an upstream source.
 //
+// HEAD:
+// A HEAD request (matched by the same mux pattern as GET) receives the negotiated headers with an
+// implicit 200 and the handler is never invoked, so a HEAD request cannot start or pin an unbounded
+// producer. net/http otherwise discards HEAD response body writes, which would make every [Stream.Send]
+// look like it succeeded.
+//
 // opts.WriteTimeout, when positive, is pushed forward as the response write deadline after every
 // successful Send (see [http.ResponseController.SetWriteDeadline]), turning a whole-stream write
 // timeout into a per-message inactivity budget. Zero disables this.
@@ -61,6 +67,10 @@ func NewHandler[Res any](content *Content, opts Options, handler Handler[Res]) h
 		ctx = meta.WithRequestResponse(ctx, req, res)
 		res.Header().Set(http.ContentTypeKey, media.MustParse(resMedia.String()).WithUTF8())
 		res.Header().Set(compress.HeaderNoCompression, "1")
+
+		if req.Method == http.MethodHead {
+			return
+		}
 
 		buffer := content.pool.Get()
 		defer content.pool.Put(buffer)
@@ -125,7 +135,7 @@ type Handler[Res any] func(ctx context.Context, stream *Stream[Res]) error
 // opts.MaxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a
 // whole (see [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader]): a request with many small
 // values is never rejected for its cumulative size, only
-// for a single value that exceeds opts.MaxReceiveSize. A value at or under the limit is a normal terminal
+// for a single value that exceeds opts.MaxReceiveSize. A value over the limit is a normal terminal
 // [http.MaxBytesError] surfaced from Recv; the deviation is that no total byte ceiling exists for a
 // streaming route the way [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s buffered
 // path enforces one. opts.MaxReceiveSize <= 0 disables the per-value cap entirely.

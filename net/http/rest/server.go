@@ -110,6 +110,10 @@ func (s *Server) Route[Res any](pattern string, handler unary.Handler[Res], opts
 //
 // The effective route pattern passed to the router is method-qualified (see Delete for details).
 // This method delegates to StreamRoute.
+//
+// HEAD: the underlying mux also matches a HEAD request against this GET pattern. See
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewHandler] for HEAD's negotiated-headers,
+// handler-skipped behavior.
 func (s *Server) StreamGet[Res any](pattern string, handler stream.Handler[Res], opts ...http.RouteOption) {
 	s.StreamRoute(strings.Join(strings.Space, http.MethodGet, pattern), handler, opts...)
 }
@@ -189,6 +193,11 @@ func (s *Server) StreamRouteRequest[Req any, Res any](pattern string, handler st
 //
 // Unlike StreamRouteRequest and its method-qualified helpers, StreamRoute has no HTTP/2 requirement
 // and stays fully supported on HTTP/1.1 chunked responses.
+//
+// HEAD: when pattern is method-qualified with GET (as StreamGet registers it), the underlying mux also
+// matches a HEAD request against it. See
+// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewHandler] for HEAD's
+// negotiated-headers, handler-skipped behavior.
 //
 // Registration:
 // The resulting handler is registered on the configured router, and the route is marked streaming on
