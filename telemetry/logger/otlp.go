@@ -11,9 +11,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
-	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/sdk/log"
 )
 
@@ -41,7 +41,7 @@ func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
 	)
 
 	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(exporter, batchProcessorOptions(params.Config)...)), log.WithResource(attrs))
-	global.SetLoggerProvider(provider)
+	otel.SetLoggerProvider(provider)
 
 	params.Lifecycle.Append(di.Hook{
 		OnStop: func(ctx context.Context) error {
