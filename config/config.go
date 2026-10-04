@@ -2,6 +2,7 @@ package config
 
 import (
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
+	"github.com/alexfalkowski/go-service/v2/config/validate"
 	"github.com/alexfalkowski/go-service/v2/crypto"
 	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
@@ -29,11 +30,11 @@ import (
 //  1. Empty detection: if the decoded value is zero, NewConfig returns ErrInvalidConfig. This guards against
 //     accidentally starting with a zero-value configuration when the input is missing or does not populate any fields.
 //
-//  2. Validation: the decoded value is validated using the provided Validator (go-playground/validator).
-//     Any validation errors are returned to the caller.
+//  2. Validation: the decoded value is validated using the provided [validate.Validator]
+//     (go-playground/validator). Any validation errors are returned to the caller.
 //
 // On success, NewConfig returns the validated configuration value.
-func NewConfig[T any](decoder Decoder, validator *Validator) (*T, error) {
+func NewConfig[T any](decoder Decoder, validator *validate.Validator) (*T, error) {
 	config := ptr.Zero[T]()
 	if err := decoder.Decode(config); err != nil {
 		return nil, err

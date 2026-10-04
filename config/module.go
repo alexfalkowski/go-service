@@ -1,11 +1,18 @@
 package config
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import (
+	"github.com/alexfalkowski/go-service/v2/config/validate"
+	"github.com/alexfalkowski/go-service/v2/di"
+)
 
 // Module wires the configuration subsystem into [go.uber.org/fx]/[go.uber.org/dig].
 //
 // It provides the core configuration components:
-//   - Validator (NewValidator) used to validate decoded config structs.
+//   - [validate.Validator] ([validate.Module]) used to validate decoded config structs. The
+//     `config_size`, `duration_second_precision`, `otlp_cadence`, and `otlp_batch_config` validation
+//     tags are contributed by `bytes`, `time`, and `telemetry/otlp`'s own `Module`s, composed via
+//     [github.com/alexfalkowski/go-service/v2/module.Library] rather than here, so this package does
+//     not need to know about their rules by name.
 //   - Decoder (NewDecoder) that dispatches config loading based on the "-config" / "-c" flag.
 //   - *[Config] ([NewConfig]) as the standard top-level configuration.
 //
@@ -20,7 +27,8 @@ import "github.com/alexfalkowski/go-service/v2/di"
 // [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.MustSecrets]. Missing environment variables or
 // unreadable files therefore fail fast during startup projection rather than later exporter construction.
 var Module = di.Module(
-	di.Constructor(NewValidator), di.Constructor(NewDecoder), di.Constructor(NewConfig[Config]),
+	validate.Module,
+	di.Constructor(NewDecoder), di.Constructor(NewConfig[Config]),
 	di.Constructor(cryptoAESConfig), di.Constructor(cryptoED25519Config),
 	di.Constructor(cryptoHMACConfig), di.Constructor(cryptoRSAConfig),
 	di.Constructor(environmentConfig), di.Constructor(cacheConfig),

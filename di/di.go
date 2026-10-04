@@ -25,6 +25,11 @@ type App = fx.App
 // Embed In in parameter structs to declare fields that should be injected by Fx/Dig.
 type In = fx.In
 
+// Out is an alias for [fx.Out].
+//
+// Embed Out in result structs to tag fields into a value group for aggregation elsewhere in the graph.
+type Out = fx.Out
+
 // Option is an alias for [fx.Option].
 //
 // Options are used to compose modules, provide constructors, decorate values, and register invocations.

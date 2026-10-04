@@ -2,7 +2,8 @@ package time
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module wires the network time provider constructor into [go.uber.org/fx].
+// Module wires the network time provider constructor and this package's `duration_second_precision`
+// validation rule into [go.uber.org/fx].
 //
 // Including this module in an Fx application provides a constructor for Network via
 // NewNetwork.
@@ -14,6 +15,11 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //
 // This module does not force the application to use network time; it only makes the
 // provider available for optional injection.
+//
+// It also contributes a [github.com/alexfalkowski/go-service/v2/config/validate.Validation] to the
+// shared "validations" group consumed by
+// [github.com/alexfalkowski/go-service/v2/config/validate.NewValidator].
 var Module = di.Module(
 	di.Constructor(NewNetwork),
+	di.Constructor(newValidation),
 )

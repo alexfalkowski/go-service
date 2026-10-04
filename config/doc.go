@@ -25,7 +25,8 @@
 // For typed configuration, use `NewConfig[T]`, which:
 //   - decodes into a newly allocated `*T` using a [Decoder],
 //   - rejects empty decoded values by returning [ErrInvalidConfig], and
-//   - validates the decoded value using [Validator] (go-playground/validator).
+//   - validates the decoded value using [github.com/alexfalkowski/go-service/v2/config/validate.Validator]
+//     (go-playground/validator).
 //
 // # DI wiring
 //

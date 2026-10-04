@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/alexfalkowski/go-service/v2/config"
+	"github.com/alexfalkowski/go-service/v2/config/validate"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/flag"
@@ -42,7 +43,7 @@ func ExampleNewConfig() {
 		Name:    env.Name("payments"),
 	})
 
-	cfg, err := config.NewConfig[exampleConfig](decoder, config.NewValidator())
+	cfg, err := config.NewConfig[exampleConfig](decoder, validate.NewValidator(validate.ValidatorParams{}))
 	if err != nil {
 		panic(err)
 	}

@@ -1,10 +1,12 @@
 package test
 
 import (
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/config"
 	configoptions "github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/config/server"
+	"github.com/alexfalkowski/go-service/v2/config/validate"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
@@ -13,12 +15,15 @@ import (
 	sql "github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/debug"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/telemetry/otlp"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
@@ -43,7 +48,25 @@ const (
 )
 
 // Validator is the shared config validator used by test helpers.
-var Validator = config.NewValidator()
+var Validator = newValidator()
+
+// newValidator builds a Validator with every repository-owned validation rule registered, by composing
+// the same contributing modules as [config.Module] plus [time.Module] (which [config.Module] relies on
+// [github.com/alexfalkowski/go-service/v2/module.Library] to provide in real applications), outside of
+// a full server/client app.
+func newValidator() *validate.Validator {
+	var v *validate.Validator
+
+	app := di.New(
+		bytes.Module, time.Module, otlp.Module,
+		di.Constructor(validate.NewValidator),
+		di.Register(func(validator *validate.Validator) { v = validator }),
+		di.NoLogger,
+	)
+	runtime.Must(app.Err())
+
+	return v
+}
 
 // FastRetryConfig is a shared client retry config for tests that need one retry with minimal backoff.
 var FastRetryConfig = &retry.Config{
