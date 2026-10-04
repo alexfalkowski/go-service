@@ -83,6 +83,36 @@ func TestDurationJSONRejectsInvalidValue(t *testing.T) {
 	}
 }
 
+func TestValidateSecondPrecision(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		duration time.Duration
+		wantErr  bool
+	}{
+		{name: "negative", duration: -time.Second, wantErr: true},
+		{name: "zero", wantErr: true},
+		{name: "sub second", duration: 500 * time.Millisecond, wantErr: true},
+		{name: "second", duration: time.Second},
+		{name: "minute", duration: time.Minute},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := time.ValidateSecondPrecision(tt.duration)
+			if tt.wantErr {
+				require.ErrorIs(t, err, time.ErrInvalidSecondPrecision)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestDurationZeroValueEncodesAsZero(t *testing.T) {
 	t.Parallel()
 

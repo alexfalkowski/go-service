@@ -123,6 +123,36 @@ func TestSizeUnmarshalJSONAcceptsWhitespace(t *testing.T) {
 	require.Equal(t, bytes.Size(64), size)
 }
 
+func TestValidateConfigSize(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		size    bytes.Size
+		wantErr bool
+	}{
+		{name: "negative", size: -1, wantErr: true},
+		{name: "zero"},
+		{name: "default", size: bytes.DefaultSize},
+		{name: "max", size: bytes.MaxConfigSize},
+		{name: "oversized", size: bytes.MaxConfigSize + 1, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := bytes.ValidateConfigSize(tt.size)
+			if tt.wantErr {
+				require.ErrorIs(t, err, bytes.ErrInvalidConfigSize)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestSizeZeroValueEncoding(t *testing.T) {
 	t.Parallel()
 

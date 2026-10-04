@@ -3,6 +3,7 @@ package bytes
 import (
 	"strconv"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	units "github.com/docker/go-units"
 )
@@ -39,6 +40,21 @@ const (
 	MaxConfigSize Size = 256 * MB
 )
 
+// ErrInvalidConfigSize is returned when a byte size is negative or exceeds [MaxConfigSize].
+var ErrInvalidConfigSize = errors.New("bytes: invalid config size")
+
+// ValidateConfigSize checks size against [MaxConfigSize].
+//
+// It is used by typed configuration fields that opt into the repository-owned byte-size cap, such as
+// the config package's `config_size` validation tag.
+func ValidateConfigSize(size Size) error {
+	if size >= 0 && size <= MaxConfigSize {
+		return nil
+	}
+
+	return ErrInvalidConfigSize
+}
+
 // Size is the go-service decimal byte-size type used across the repository.
 //
 // It is a named type over int64 so it can expose config-friendly text and JSON
@@ -53,7 +69,8 @@ const (
 //
 // Parsing and unmarshaling [Size] values do not enforce [MaxConfigSize] by
 // themselves. Configuration fields that require repository-owned bounds use
-// validation such as the config package's `config_size` rule after parsing.
+// [ValidateConfigSize] (registered as the config package's `config_size` tag)
+// after parsing.
 type Size int64
 
 // Bytes returns s as a raw byte count.

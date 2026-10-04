@@ -1,6 +1,7 @@
 package module
 
 import (
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/compress"
 	"github.com/alexfalkowski/go-service/v2/config"
@@ -16,6 +17,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/sync"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
+	"github.com/alexfalkowski/go-service/v2/telemetry/otlp"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
@@ -30,7 +32,9 @@ import (
 //   - [encoding.Module] (encoding registry and default encoders)
 //   - [stream.Module] (streaming encoding registry and default streaming encoders/decoders)
 //   - [crypto.Module] (crypto primitives and helpers)
-//   - [time.Module] (time providers/utilities)
+//   - [bytes.Module], [time.Module], [otlp.Module] (time providers/utilities, plus the `config_size`,
+//     `duration_second_precision`, `otlp_cadence`, and `otlp_batch_config` validation rules consumed
+//     by [config.Module])
 //   - [sync.Module] (shared buffer pool wiring)
 //   - [id.Module] (ID generator implementations and selection)
 //
@@ -42,7 +46,9 @@ var Library = di.Module(
 	encoding.Module,
 	stream.Module,
 	crypto.Module,
+	bytes.Module,
 	time.Module,
+	otlp.Module,
 	sync.Module,
 	id.Module,
 )

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 )
 
@@ -47,6 +48,21 @@ const Second Duration = Duration(time.Second)
 //
 // Its value is 30 seconds.
 const DefaultTimeout Duration = 30 * Second
+
+// ErrInvalidSecondPrecision is returned when a duration is not a positive whole number of seconds.
+var ErrInvalidSecondPrecision = errors.New("time: invalid second precision")
+
+// ValidateSecondPrecision checks that d is positive and an exact multiple of [Second].
+//
+// It is used by typed configuration fields that opt into the repository-owned second-precision
+// requirement, such as the config package's `duration_second_precision` validation tag.
+func ValidateSecondPrecision(d Duration) error {
+	if d > 0 && d%Second == 0 {
+		return nil
+	}
+
+	return ErrInvalidSecondPrecision
+}
 
 // Duration is the go-service duration type used across the repository.
 //
