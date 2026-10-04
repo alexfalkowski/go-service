@@ -10,6 +10,10 @@ import (
 	transportevents "github.com/alexfalkowski/go-service/v2/transport/http/events"
 )
 
+// ExampleReceiver_Register builds *events.Receiver directly. Real services get it
+// injected via events.Module (transport/http/events/module.go), composed into
+// module.Server. events.NewSender has no DI constructor in this module; sender wiring
+// is left to the consuming service.
 func ExampleReceiver_Register() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())

@@ -15,6 +15,9 @@ type exampleConfig struct {
 	Name string `yaml:"name" validate:"required"`
 }
 
+// ExampleNewConfig builds *Config directly to show the decode/validate mechanics in
+// isolation. Real services get it injected via config.Module, composed into
+// module.Server/module.Client; see module/example_test.go for the DI entrypoint.
 func ExampleNewConfig() {
 	fs := os.NewFS()
 
