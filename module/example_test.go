@@ -7,6 +7,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/module"
 )
 
+// ExampleServer and ExampleClient are the DI entrypoint the other example_test.go
+// files in this repo refer back to: module.Server/module.Client composed through
+// cli.NewApplication, not manual constructor calls.
 func ExampleServer() {
 	application := cli.NewApplication(func(commander cli.Commander) {
 		server := commander.AddServer("serve", "Run the service", module.Server)

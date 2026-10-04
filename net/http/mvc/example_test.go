@@ -12,6 +12,10 @@ import (
 	sync "github.com/alexfalkowski/go-sync"
 )
 
+// ExampleServer_Get and the other examples in this file build *mvc.Server directly to
+// show request handling in isolation. Real services get it injected via http.Module
+// (transport/http/module.go), composed into module.Server; see ExampleServer in
+// module/example_test.go.
 func ExampleServer_Get() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())

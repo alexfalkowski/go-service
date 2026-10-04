@@ -15,6 +15,10 @@ import (
 	"github.com/alexfalkowski/go-sync"
 )
 
+// ExampleClient_Post builds *rpc.Server and *rpc.Client directly to show the request
+// lifecycle in isolation. Real services get rpc.Server injected via http.Module and
+// compose module.Client for a caller (see module/example_test.go). rpc.Client has no
+// DI module in this repo; client wiring is left to the consuming service.
 func ExampleClient_Post() {
 	mux := http.NewServeMux()
 	router := http.NewRouter(mux, http.NewRoutePolicy())

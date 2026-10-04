@@ -15,6 +15,10 @@ import (
 	"github.com/alexfalkowski/go-sync"
 )
 
+// ExampleClient_RequestStream builds *client.Client directly. Unlike the server-side
+// packages, client.NewClient has no DI module in this repo — HTTP client wiring is
+// left to the consuming service (see go-client-template) — so this manual
+// construction is the supported usage, not a shortcut around DI.
 func ExampleClient_RequestStream() {
 	pool := sync.NewBufferPool()
 	unaryContent := unary.NewContent(encoding.NewMap(), pool)
