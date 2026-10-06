@@ -42,7 +42,7 @@ require (
 	github.com/rs/xid v1.6.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sethvargo/go-limiter v1.2.0
-	github.com/sethvargo/go-retry v0.4.0
+	github.com/sethvargo/go-retry v0.5.0
 	github.com/sony/gobreaker v1.0.0
 	github.com/standard-webhooks/standard-webhooks/libraries v0.0.1
 	github.com/stretchr/testify v1.12.1
@@ -73,7 +73,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/crypto v0.57.0
 	golang.org/x/net v0.59.0
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260928230214-8a89bd6388cc
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261005182115-fad411399dd8
 	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.12
 )
