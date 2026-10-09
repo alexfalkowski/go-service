@@ -1197,9 +1197,9 @@ func (b *drainBody) Close() error {
 }
 
 type closeTracker struct {
-	closes    int
 	decodeErr error
 	err       error
+	closes    int
 }
 
 type trackedEncoder struct {
