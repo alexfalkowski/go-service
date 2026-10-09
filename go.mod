@@ -72,7 +72,7 @@ require (
 	go.uber.org/fx v1.24.0
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/crypto v0.57.0
-	golang.org/x/net v0.59.0
+	golang.org/x/net v0.60.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20261005182115-fad411399dd8
 	google.golang.org/grpc v1.84.0
 	google.golang.org/protobuf v1.36.12
