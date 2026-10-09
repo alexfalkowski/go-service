@@ -59,18 +59,18 @@ func TestNewNotFoundHandler(t *testing.T) {
 }
 
 type notFoundHandlerTest struct {
+	header             http.Header
 	name               string
 	method             string
 	path               string
 	body               string
 	contains           string
-	header             http.Header
-	registerRoute      bool
-	handle             bool
 	contentType        string
 	contentLength      string
-	checkContentLength bool
 	code               int
+	registerRoute      bool
+	handle             bool
+	checkContentLength bool
 }
 
 func testNotFoundHandler(t *testing.T, tt notFoundHandlerTest) {
