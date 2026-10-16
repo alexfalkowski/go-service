@@ -228,15 +228,11 @@ func NewTLSConfig(c, k string) *tls.Config {
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
-			Config: &server.Config{
-				Address: RandomAddress(),
-			},
+			Address: RandomAddress(),
 			Timeout: timeout,
 		},
 		GRPC: &grpc.Config{
-			Config: &server.Config{
-				Address: RandomAddress(),
-			},
+			Address: RandomAddress(),
 			Timeout: timeout,
 		},
 	}
@@ -244,12 +240,12 @@ func NewInsecureTransportConfig() *transport.Config {
 
 // NewHTTPTransportConfig returns a minimal HTTP transport config for tests that fill fields manually.
 func NewHTTPTransportConfig() *http.Config {
-	return &http.Config{Config: &server.Config{}}
+	return &http.Config{Config: server.Config{}}
 }
 
 // NewGRPCTransportConfig returns a minimal gRPC transport config for tests that fill fields manually.
 func NewGRPCTransportConfig() *grpc.Config {
-	return &grpc.Config{Config: &server.Config{}}
+	return &grpc.Config{Config: server.Config{}}
 }
 
 // NewSecureTransportConfig returns HTTP and gRPC transport configs wired with the shared TLS server fixtures on ephemeral local addresses.
@@ -258,17 +254,13 @@ func NewSecureTransportConfig() *transport.Config {
 
 	return &transport.Config{
 		HTTP: &http.Config{
-			Config: &server.Config{
-				TLS:     config,
-				Address: RandomAddress(),
-			},
+			TLS:     config,
+			Address: RandomAddress(),
 			Timeout: timeout,
 		},
 		GRPC: &grpc.Config{
-			Config: &server.Config{
-				TLS:     config,
-				Address: RandomAddress(),
-			},
+			TLS:     config,
+			Address: RandomAddress(),
 			Timeout: timeout,
 		},
 	}
@@ -372,19 +364,15 @@ func newSQLPool(dsns []sql.DSN) *sql.Pool {
 // NewInsecureDebugConfig returns a debug server config bound to an ephemeral local address without TLS.
 func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
-		Config: &server.Config{
-			Address: RandomAddress(),
-		},
+		Address: RandomAddress(),
 	}
 }
 
 // NewSecureDebugConfig returns a debug server config bound to an ephemeral local address with the shared TLS fixture.
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
-		Config: &server.Config{
-			TLS:     NewTLSServerConfig(),
-			Address: RandomAddress(),
-		},
+		TLS:     NewTLSServerConfig(),
+		Address: RandomAddress(),
 	}
 }
 

@@ -1,0 +1,5 @@
+transport:
+  http:
+    timeout: 5s
+  grpc:
+    timeout: 10s

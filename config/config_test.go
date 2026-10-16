@@ -112,6 +112,36 @@ func TestConfigAcceptsValidTelemetrySettings(t *testing.T) {
 	}
 }
 
+func TestConfigEnablesTransportsWithTimeoutOnly(t *testing.T) {
+	set := flag.NewFlagSet("test")
+	set.AddConfig(test.FilePath("configs/valid_transport_timeout_only.yaml"))
+
+	decoder := test.NewDecoder(set)
+
+	cfg, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.NoError(t, err)
+
+	t.Run("http", func(t *testing.T) {
+		httpConfig := cfg.Transport.HTTP
+
+		require.True(t, httpConfig.IsEnabled())
+		require.Zero(t, httpConfig.Config)
+		require.Equal(t, 5*time.Second, httpConfig.GetTimeout())
+		require.Equal(t, bytes.DefaultSize, httpConfig.GetMaxReceiveSize())
+		require.Equal(t, time.DefaultTimeout, httpConfig.GetReadTimeout(), "read timeout uses the default")
+		require.Equal(t, time.DefaultTimeout, httpConfig.GetWriteTimeout(), "write timeout uses the default")
+	})
+
+	t.Run("grpc", func(t *testing.T) {
+		grpcConfig := cfg.Transport.GRPC
+
+		require.True(t, grpcConfig.IsEnabled())
+		require.Zero(t, grpcConfig.Config)
+		require.Equal(t, 10*time.Second, grpcConfig.GetTimeout())
+		require.Equal(t, bytes.DefaultSize, grpcConfig.GetMaxReceiveSize())
+	})
+}
+
 func TestConfigRejectsInvalidTimeout(t *testing.T) {
 	set := flag.NewFlagSet("test")
 	set.AddConfig(test.FilePath("configs/invalid_time.config.yaml"))

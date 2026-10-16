@@ -25,9 +25,7 @@ func TestRejectsInvalidServer(t *testing.T) {
 	transporthttp.Register(test.FS)
 
 	cfg := &transporthttp.Config{
-		Config: &server.Config{
-			TLS: test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
-		},
+		TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 		Timeout: 5 * time.Second,
 	}
 	params := transporthttp.ServerParams{
@@ -43,9 +41,7 @@ func TestServerRejectsCAOnlyTLS(t *testing.T) {
 	transporthttp.Register(test.FS)
 
 	cfg := &transporthttp.Config{
-		Config: &server.Config{
-			TLS: &tls.Config{CA: test.FilePath("certs/rootCA.pem")},
-		},
+		TLS:     &tls.Config{CA: test.FilePath("certs/rootCA.pem")},
 		Timeout: 5 * time.Second,
 	}
 	params := transporthttp.ServerParams{
@@ -55,6 +51,13 @@ func TestServerRejectsCAOnlyTLS(t *testing.T) {
 
 	_, err := transporthttp.NewServer(params)
 	require.ErrorIs(t, err, server.ErrMissingKeyPair)
+}
+
+func TestServerSkipsStartupWhenDisabled(t *testing.T) {
+	srv, err := transporthttp.NewServer(transporthttp.ServerParams{Config: nil})
+
+	require.NoError(t, err)
+	require.Nil(t, srv)
 }
 
 func TestServerMaxReceiveSize(t *testing.T) {
