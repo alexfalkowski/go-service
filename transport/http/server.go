@@ -180,7 +180,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	neg.UseHandler(compress.GzipHandler(handler))
 
 	handler = http.NewTelemetryHandler(neg, "http.server")
-	httpServer := http.NewServer(params.Config.Options, handler)
+	httpServer := http.NewServer(params.Config.serverConfig().Options, handler)
 
 	cfg, err := newConfig(fs, params.Config)
 	if err != nil {
@@ -233,14 +233,15 @@ func (h *timeoutHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, n
 }
 
 func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
+	shared := cfg.serverConfig()
 	config := &config.Config{
-		Address: cmp.Or(cfg.Address, net.DefaultAddress("8080")),
+		Address: cmp.Or(shared.Address, net.DefaultAddress("8080")),
 	}
-	if !cfg.TLS.HasKeyMaterial() && !cfg.TLS.HasCA() {
+	if !shared.TLS.HasKeyMaterial() && !shared.TLS.HasCA() {
 		return config, nil
 	}
 
-	tlsConfig, err := server.NewConfig(fs, cfg.TLS)
+	tlsConfig, err := server.NewConfig(fs, shared.TLS)
 	if err != nil {
 		return nil, err
 	}

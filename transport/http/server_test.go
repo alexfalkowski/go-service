@@ -57,6 +57,30 @@ func TestServerRejectsCAOnlyTLS(t *testing.T) {
 	require.ErrorIs(t, err, server.ErrMissingKeyPair)
 }
 
+func TestServerSkipsStartupWhenDisabled(t *testing.T) {
+	srv, err := transporthttp.NewServer(transporthttp.ServerParams{Config: nil})
+
+	require.NoError(t, err)
+	require.Nil(t, srv)
+}
+
+func TestServerStartsWithTimeoutOnlyConfig(t *testing.T) {
+	transporthttp.Register(test.FS)
+
+	cfg := &transporthttp.Config{Timeout: 5 * time.Second}
+	require.True(t, cfg.IsEnabled())
+	require.Equal(t, 5*time.Second, cfg.GetTimeout())
+
+	srv, err := transporthttp.NewServer(transporthttp.ServerParams{
+		Shutdowner: test.NewShutdowner(),
+		Config:     cfg,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, srv)
+
+	t.Cleanup(func() { require.NoError(t, srv.GetService().Stop(context.Background())) })
+}
+
 func TestServerMaxReceiveSize(t *testing.T) {
 	cfg := test.NewInsecureTransportConfig()
 	cfg.HTTP.MaxReceiveSize = 64

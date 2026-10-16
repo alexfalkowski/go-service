@@ -14,8 +14,8 @@ import (
 // If cfg is disabled or cfg.Token is omitted, it returns nil so downstream wiring can treat token auth
 // as not configured.
 func NewToken(cfg *Config, fs *os.FS, gen id.Generator) *token.Token {
-	if !cfg.IsEnabled() || !cfg.Token.IsEnabled() {
+	if !cfg.IsEnabled() || !cfg.serverConfig().Token.IsEnabled() {
 		return nil
 	}
-	return token.NewToken(cfg.Token, fs, gen)
+	return token.NewToken(cfg.serverConfig().Token, fs, gen)
 }

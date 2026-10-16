@@ -138,8 +138,8 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 	options = append(options, params.Options...)
 
-	grpcServer := grpc.NewServer(params.Config.Options, options...)
-	cfg := &config.Config{Address: cmp.Or(params.Config.Address, net.DefaultAddress("9090"))}
+	grpcServer := grpc.NewServer(params.Config.serverConfig().Options, options...)
+	cfg := &config.Config{Address: cmp.Or(params.Config.serverConfig().Address, net.DefaultAddress("9090"))}
 
 	service, err := grpcserver.NewService("grpc", grpcServer, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
@@ -252,11 +252,12 @@ func maxReceiveSizeOption(cfg *Config) grpc.ServerOption {
 }
 
 func credsServerOption(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
-	if !cfg.TLS.HasKeyMaterial() && !cfg.TLS.HasCA() {
+	tls := cfg.serverConfig().TLS
+	if !tls.HasKeyMaterial() && !tls.HasCA() {
 		return grpc.EmptyServerOption{}, nil
 	}
 
-	conf, err := server.NewConfig(fs, cfg.TLS)
+	conf, err := server.NewConfig(fs, tls)
 	if err != nil {
 		return grpc.EmptyServerOption{}, err
 	}

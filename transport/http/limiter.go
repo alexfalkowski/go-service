@@ -18,5 +18,5 @@ func NewServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *Config) (*limit
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
-	return limiter.NewServerLimiter(lc, keys, cfg.Limiter)
+	return limiter.NewServerLimiter(lc, keys, cfg.serverConfig().Limiter)
 }

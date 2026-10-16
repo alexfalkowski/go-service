@@ -21,5 +21,5 @@ func NewServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *Config, policy 
 		return nil, nil
 	}
 
-	return limiter.NewServer(lc, keys, cfg.Limiter, policy)
+	return limiter.NewServer(lc, keys, cfg.serverConfig().Limiter, policy)
 }

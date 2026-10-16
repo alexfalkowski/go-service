@@ -3,6 +3,7 @@ package http_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -28,6 +29,24 @@ func TestConfigDefaultsTimeoutsIndependently(t *testing.T) {
 	require.Equal(t, time.DefaultTimeout, cfg.GetTimeout())
 	require.Equal(t, time.DefaultTimeout, cfg.GetReadTimeout())
 	require.Equal(t, time.DefaultTimeout, cfg.GetWriteTimeout())
+}
+
+func TestConfigIsEnabledOnlyWhenPresent(t *testing.T) {
+	var omitted *http.Config
+
+	require.False(t, omitted.IsEnabled())
+	require.True(t, (&http.Config{}).IsEnabled())
+	require.True(t, (&http.Config{Timeout: 5 * time.Second}).IsEnabled())
+	require.True(t, (&http.Config{Config: &server.Config{}}).IsEnabled())
+}
+
+func TestConfigWithoutSharedServerConfigUsesDefaults(t *testing.T) {
+	cfg := &http.Config{Timeout: 5 * time.Second}
+
+	require.Equal(t, 5*time.Second, cfg.GetTimeout())
+	require.Equal(t, time.DefaultTimeout, cfg.GetReadTimeout())
+	require.Equal(t, time.DefaultTimeout, cfg.GetWriteTimeout())
+	require.Equal(t, bytes.DefaultSize, cfg.GetMaxReceiveSize())
 }
 
 func TestConfigRejectsNegativeUnaryTimeout(t *testing.T) {

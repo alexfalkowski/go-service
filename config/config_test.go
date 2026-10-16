@@ -112,6 +112,19 @@ func TestConfigAcceptsValidTelemetrySettings(t *testing.T) {
 	}
 }
 
+func TestConfigEnablesHTTPWithTimeoutOnly(t *testing.T) {
+	set := flag.NewFlagSet("test")
+	set.AddConfig(test.FilePath("configs/valid_http_timeout_only.yaml"))
+
+	decoder := test.NewDecoder(set)
+
+	cfg, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.NoError(t, err)
+	require.True(t, cfg.Transport.HTTP.IsEnabled())
+	require.Equal(t, 5*time.Second, cfg.Transport.HTTP.GetTimeout())
+	require.Nil(t, cfg.Transport.HTTP.Config)
+}
+
 func TestConfigRejectsInvalidTimeout(t *testing.T) {
 	set := flag.NewFlagSet("test")
 	set.AddConfig(test.FilePath("configs/invalid_time.config.yaml"))

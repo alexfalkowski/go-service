@@ -33,9 +33,11 @@ type Config struct {
 // IsEnabled reports whether the HTTP transport is enabled.
 //
 // It returns false when the receiver is nil, which allows config to be omitted entirely to disable the
-// HTTP transport stack.
+// HTTP transport stack. A present config is enabled even when the embedded shared server configuration is
+// omitted (for example when only `timeout` is set), in which case the shared defaults apply, such as the
+// `tcp://:8080` address.
 func (c *Config) IsEnabled() bool {
-	return c != nil && c.Config.IsEnabled()
+	return c != nil
 }
 
 // GetTimeout returns the configured unary request execution timeout.
@@ -56,7 +58,7 @@ func (c *Config) GetReadTimeout() time.Duration {
 		return time.DefaultTimeout
 	}
 
-	return c.Options.NonNegativeDuration("read_timeout", time.DefaultTimeout)
+	return c.serverConfig().Options.NonNegativeDuration("read_timeout", time.DefaultTimeout)
 }
 
 // GetWriteTimeout returns the configured streaming write timeout. The
@@ -66,5 +68,17 @@ func (c *Config) GetWriteTimeout() time.Duration {
 		return time.DefaultTimeout
 	}
 
-	return c.Options.NonNegativeDuration("write_timeout", time.DefaultTimeout)
+	return c.serverConfig().Options.NonNegativeDuration("write_timeout", time.DefaultTimeout)
+}
+
+// serverConfig returns the embedded shared server configuration, or an empty one when it was omitted.
+//
+// The embedded pointer is nil when none of its fields are configured, so promoted field reads must go
+// through this method on an enabled config.
+func (c *Config) serverConfig() *server.Config {
+	if c.Config == nil {
+		return &server.Config{}
+	}
+
+	return c.Config
 }

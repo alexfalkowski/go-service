@@ -47,6 +47,20 @@ func TestServerSkipsStartupWhenDisabled(t *testing.T) {
 	require.Nil(t, srv)
 }
 
+func TestServerStartsWithTimeoutOnlyConfig(t *testing.T) {
+	cfg := &grpc.Config{Timeout: 5 * time.Second}
+
+	srv, err := grpc.NewServer(grpc.ServerParams{
+		Shutdowner:   test.NewShutdowner(),
+		Config:       cfg,
+		MethodPolicy: grpc.NewMethodPolicy(),
+	})
+	require.NoError(t, err)
+	require.NotNil(t, srv)
+
+	t.Cleanup(func() { require.NoError(t, srv.GetService().Stop(context.Background())) })
+}
+
 func TestNilServerReturnsNilRegistrars(t *testing.T) {
 	var srv *grpc.Server
 
