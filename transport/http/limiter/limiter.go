@@ -84,8 +84,8 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	res.Header().Set("RateLimit", decision.Header())
-	res.Header().Set("RateLimit-Policy", decision.PolicyHeader())
+	res.Header().Set("Ratelimit", decision.Header())
+	res.Header().Set("Ratelimit-Policy", decision.PolicyHeader())
 
 	if !decision.Allowed() {
 		if resetAfter := decision.ResetAfterSeconds(); resetAfter > 0 {
