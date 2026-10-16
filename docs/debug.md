@@ -2,6 +2,8 @@
 
 [← Back to README](../README.md)
 
+A `debug` block enables the debug server even when it is empty; omit the block entirely to disable it.
+
 Debug server config:
 
 ```yaml

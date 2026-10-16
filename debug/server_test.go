@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/debug"
 	debughttp "github.com/alexfalkowski/go-service/v2/debug/http"
@@ -46,9 +45,7 @@ func TestDebugServerExposesRegisteredEndpoints(t *testing.T) {
 
 func TestNewServerRejectsInvalidTLSConfiguration(t *testing.T) {
 	cfg := &debug.Config{
-		Config: &server.Config{
-			TLS: test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
-		},
+		TLS: test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 	}
 	params := debug.ServerParams{
 		Shutdowner: test.NewShutdowner(),
@@ -63,10 +60,8 @@ func TestNewServerRejectsInvalidTLSConfiguration(t *testing.T) {
 func TestDebugServerRejectsBodiesOverMaxReceiveSize(t *testing.T) {
 	mux := debughttp.NewServeMux()
 	cfg := &debug.Config{
-		Config: &server.Config{
-			Address:        test.RandomAddress(),
-			MaxReceiveSize: 1,
-		},
+		Address:        test.RandomAddress(),
+		MaxReceiveSize: 1,
 	}
 	lc := fxtest.NewLifecycle(t)
 	debugServer, err := debug.NewServer(debug.ServerParams{
@@ -128,4 +123,11 @@ func requireDebugEndpoints(t *testing.T, scheme string, opts ...test.WorldOption
 			require.Equal(t, http.StatusOK, res.StatusCode)
 		})
 	}
+}
+
+func TestDebugConfigIsEnabledOnlyWhenPresent(t *testing.T) {
+	var omitted *debug.Config
+
+	require.False(t, omitted.IsEnabled())
+	require.True(t, (&debug.Config{}).IsEnabled())
 }

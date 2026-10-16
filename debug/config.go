@@ -10,18 +10,18 @@ import "github.com/alexfalkowski/go-service/v2/config/server"
 // # Optional pointers and "enabled" semantics
 //
 // This config is intentionally optional. By convention across go-service configuration types, a nil
-// *[Config] is treated as "debug disabled". The embedded *[server.Config] is also optional; IsEnabled
-// returns true only when both the outer *[Config] and the embedded *[server.Config] are non-nil/enabled.
+// *[Config] is treated as "debug disabled". A present config is enabled even when none of the embedded
+// [server.Config] fields are set, in which case the shared defaults apply.
 //
 // This allows services to omit the debug config entirely to disable the debug server.
 type Config struct {
-	*server.Config `yaml:",inline" json:",inline" toml:",inline"`
+	server.Config `yaml:",inline" json:",inline" toml:",inline"`
 }
 
-// IsEnabled reports whether debug configuration is present and enabled.
+// IsEnabled reports whether debug configuration is present.
 //
-// It returns true only when both the debug wrapper config and the embedded server config are non-nil
-// and enabled.
+// It returns false when the receiver is nil, which allows config to be omitted entirely to disable the
+// debug server.
 func (c *Config) IsEnabled() bool {
-	return c != nil && c.Config.IsEnabled()
+	return c != nil
 }

@@ -21,7 +21,7 @@ import (
 //
 // The struct tags are compatible with the repository's config decoder (YAML/JSON/TOML).
 type Config struct {
-	*server.Config `yaml:",inline" json:",inline" toml:",inline"`
+	server.Config `yaml:",inline" json:",inline" toml:",inline"`
 
 	// Timeout bounds unary RPC execution.
 	//
@@ -33,9 +33,11 @@ type Config struct {
 // IsEnabled reports whether the gRPC transport is enabled.
 //
 // It returns false when the receiver is nil, which allows config to be omitted entirely to disable the
-// gRPC transport stack.
+// gRPC transport stack. A present config is enabled even when none of the embedded shared server fields
+// are set (for example when only `timeout` is set), in which case the shared defaults apply, such as the
+// `tcp://:9090` address.
 func (c *Config) IsEnabled() bool {
-	return c != nil && c.Config.IsEnabled()
+	return c != nil
 }
 
 // GetTimeout returns the configured unary RPC execution timeout.

@@ -11,7 +11,7 @@ import (
 )
 
 func TestConfigResolvesUnaryTimeout(t *testing.T) {
-	cfg := &grpc.Config{Config: &server.Config{}, Timeout: 5 * time.Second}
+	cfg := &grpc.Config{Config: server.Config{}, Timeout: 5 * time.Second}
 
 	require.Equal(t, 5*time.Second, cfg.GetTimeout())
 }
@@ -22,8 +22,17 @@ func TestConfigDefaultsUnaryTimeout(t *testing.T) {
 	require.Equal(t, time.DefaultTimeout, cfg.GetTimeout())
 }
 
+func TestConfigIsEnabledOnlyWhenPresent(t *testing.T) {
+	var omitted *grpc.Config
+
+	require.False(t, omitted.IsEnabled())
+	require.True(t, (&grpc.Config{}).IsEnabled())
+	require.True(t, (&grpc.Config{Timeout: 5 * time.Second}).IsEnabled())
+	require.True(t, (&grpc.Config{Config: server.Config{}}).IsEnabled())
+}
+
 func TestConfigRejectsNegativeUnaryTimeout(t *testing.T) {
-	cfg := &grpc.Config{Config: &server.Config{}, Timeout: -time.Second}
+	cfg := &grpc.Config{Config: server.Config{}, Timeout: -time.Second}
 
 	require.Error(t, test.Validator.Struct(cfg))
 }
