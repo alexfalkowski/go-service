@@ -33,7 +33,7 @@ require (
 	github.com/lmittmann/tint v1.2.1
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/oklog/ulid v1.3.1
-	github.com/open-feature/go-sdk v1.19.0
+	github.com/open-feature/go-sdk v1.20.0
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.8
 	github.com/prometheus/client_golang v1.25.0
 	github.com/prometheus/otlptranslator v1.0.0
@@ -83,7 +83,7 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/aead/cmac v0.0.0-20160719120800-7af84192f0b1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bmatcuk/doublestar/v4 v4.10.3 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.10.4 // indirect
 	github.com/casbin/govaluate v1.10.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -113,7 +113,7 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20260916203055-22a1a467d9f0 // indirect
 	github.com/prometheus/client_model v0.6.3 // indirect
 	github.com/prometheus/common v0.72.1 // indirect
-	github.com/prometheus/procfs v0.22.0 // indirect
+	github.com/prometheus/procfs v0.23.0 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.23.0 // indirect
 	github.com/secure-io/siv-go v0.0.0-20180922214919-5ff40651e2c4 // indirect
 	github.com/shirou/gopsutil/v4 v4.26.9 // indirect
