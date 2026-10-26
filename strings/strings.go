@@ -23,6 +23,12 @@ const Space = " "
 // preserving standard library semantics.
 type Reader = strings.Reader
 
+// Replacer is an alias of [strings.Replacer].
+//
+// It is provided so go-service code can depend on a consistent import path while
+// preserving standard library semantics.
+type Replacer = strings.Replacer
+
 // Contains reports whether substr is within s.
 //
 // This is a thin wrapper around [strings.Contains] and does not change semantics.
@@ -89,6 +95,13 @@ func Repeat(s string, count int) string {
 // This is a thin wrapper around [strings.NewReader] and does not change semantics.
 func NewReader(s string) *Reader {
 	return strings.NewReader(s)
+}
+
+// NewReplacer returns a new Replacer from pairs of old and new strings.
+//
+// This is a thin wrapper around [strings.NewReplacer] and does not change semantics.
+func NewReplacer(oldnew ...string) *Replacer {
+	return strings.NewReplacer(oldnew...)
 }
 
 // ReplaceAll returns a copy of s with all non-overlapping instances of o replaced by n.
