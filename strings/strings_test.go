@@ -3,6 +3,7 @@ package strings_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
@@ -240,6 +241,69 @@ func TestCountReturnsSubstringOccurrences(t *testing.T) {
 			require.Equal(t, test.want, strings.Count(test.s, test.substr))
 		})
 	}
+}
+
+func TestNewReplacerReplacesConfiguredPairs(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		s      string
+		oldnew []string
+		want   string
+	}{
+		{name: "no pairs", s: "service", want: "service"},
+		{name: "multiple pairs", s: "service/admin/service", oldnew: []string{"service", "api", "admin", "ops"}, want: "api/ops/api"},
+		{name: "missing match", s: "service", oldnew: []string{"admin", "ops"}, want: "service"},
+		{name: "empty input", oldnew: []string{"service", "api"}, want: ""},
+		{name: "first matching pair wins", s: "ab", oldnew: []string{"a", "b", "ab", "c"}, want: "bb"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			replacer := strings.NewReplacer(test.oldnew...)
+
+			require.Equal(t, test.want, replacer.Replace(test.s))
+		})
+	}
+}
+
+func TestNewReplacerPanicsForUnpairedString(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		oldnew []string
+	}{
+		{name: "one string", oldnew: []string{"service"}},
+		{name: "three strings", oldnew: []string{"service", "api", "admin"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Panics(t, func() {
+				strings.NewReplacer(test.oldnew...)
+			})
+		})
+	}
+}
+
+func TestReplacerWriteStringWritesReplacedString(t *testing.T) {
+	t.Parallel()
+
+	var buffer bytes.Buffer
+	replacer := strings.NewReplacer("service", "api", "admin", "ops")
+	want := "api/ops"
+
+	written, err := replacer.WriteString(&buffer, "service/admin")
+
+	require.NoError(t, err)
+	require.Equal(t, len(want), written)
+	require.Equal(t, want, buffer.String())
 }
 
 func TestReplaceAllReplacesEveryMatch(t *testing.T) {
