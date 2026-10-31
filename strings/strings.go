@@ -17,6 +17,9 @@ const Empty = ""
 // It is provided as a named constant for readability and reuse.
 const Space = " "
 
+// Builder is an alias of [strings.Builder].
+type Builder = strings.Builder
+
 // Reader is an alias of [strings.Reader].
 //
 // It is provided so go-service code can depend on a consistent import path while
@@ -69,6 +72,11 @@ func CutAfter(s, sep string) string {
 	return after
 }
 
+// Fields wraps [strings.Fields] without changing its semantics.
+func Fields(s string) []string {
+	return strings.Fields(s)
+}
+
 // SplitSeq returns an iterator over all substrings of s separated by sep.
 //
 // This is a thin wrapper around [strings.SplitSeq] and does not change semantics.
@@ -81,6 +89,11 @@ func SplitSeq(s, sep string) iter.Seq[string] {
 // This is a thin wrapper around [strings.HasPrefix] and does not change semantics.
 func HasPrefix(s, prefix string) bool {
 	return strings.HasPrefix(s, prefix)
+}
+
+// HasSuffix wraps [strings.HasSuffix] without changing its semantics.
+func HasSuffix(s, suffix string) bool {
+	return strings.HasSuffix(s, suffix)
 }
 
 // Repeat returns a new string consisting of count copies of s.
@@ -124,6 +137,16 @@ func ToLower(s string) string {
 // This is a thin wrapper around [strings.Trim] and does not change semantics.
 func Trim(s, cutset string) string {
 	return strings.Trim(s, cutset)
+}
+
+// TrimPrefix wraps [strings.TrimPrefix] without changing its semantics.
+func TrimPrefix(s, prefix string) string {
+	return strings.TrimPrefix(s, prefix)
+}
+
+// TrimRight wraps [strings.TrimRight] without changing its semantics.
+func TrimRight(s, cutset string) string {
+	return strings.TrimRight(s, cutset)
 }
 
 // TrimSpace returns s with all leading and trailing white space removed.

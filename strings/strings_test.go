@@ -12,6 +12,57 @@ import (
 // testBytesSink keeps conversion results observable for allocation assertions.
 var testBytesSink []byte
 
+func TestBuilderBuildsString(t *testing.T) {
+	t.Parallel()
+
+	var builder strings.Builder
+	written, err := builder.WriteString("service/admin")
+
+	require.NoError(t, err)
+	require.Equal(t, len("service/admin"), written)
+	require.Equal(t, "service/admin", builder.String())
+}
+
+func TestFieldsSplitsWhitespaceSeparatedStrings(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(t, []string{"service", "admin", "metrics"}, strings.Fields("  service\tadmin\nmetrics  "))
+}
+
+func TestHasSuffixRecognizesSuffix(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		s      string
+		suffix string
+		want   bool
+	}{
+		{name: "matching suffix", s: "config.yaml", suffix: ".yaml", want: true},
+		{name: "prefix only", s: "yaml.config", suffix: "yaml", want: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, test.want, strings.HasSuffix(test.s, test.suffix))
+		})
+	}
+}
+
+func TestTrimPrefixRemovesLeadingPrefix(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(t, "env:CONFIG", strings.TrimPrefix("env:env:CONFIG", "env:"))
+}
+
+func TestTrimRightRemovesTrailingCutset(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(t, "/service/admin", strings.TrimRight("/service/admin///", "/"))
+}
+
 func TestBytesConvertsStringsToEqualBytes(t *testing.T) {
 	t.Parallel()
 
