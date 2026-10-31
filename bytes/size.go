@@ -8,37 +8,33 @@ import (
 	units "github.com/docker/go-units"
 )
 
-const (
-	// KB is the decimal kilobyte size constant: 1,000 bytes.
-	KB Size = Size(units.KB)
+// KB is the decimal kilobyte size constant: 1,000 bytes.
+const KB Size = Size(units.KB)
 
-	// MB is the decimal megabyte size constant: 1,000,000 bytes.
-	MB Size = Size(units.MB)
+// MB is the decimal megabyte size constant: 1,000,000 bytes.
+const MB Size = Size(units.MB)
 
-	// GB is the decimal gigabyte size constant: 1,000,000,000 bytes.
-	GB Size = Size(units.GB)
+// GB is the decimal gigabyte size constant: 1,000,000,000 bytes.
+const GB Size = Size(units.GB)
 
-	// TB is the decimal terabyte size constant: 1,000,000,000,000 bytes.
-	TB Size = Size(units.TB)
+// TB is the decimal terabyte size constant: 1,000,000,000,000 bytes.
+const TB Size = Size(units.TB)
 
-	// PB is the decimal petabyte size constant: 1,000,000,000,000,000 bytes.
-	PB Size = Size(units.PB)
-)
+// PB is the decimal petabyte size constant: 1,000,000,000,000,000 bytes.
+const PB Size = Size(units.PB)
 
-const (
-	// DefaultSize is the shared default size used by config surfaces that need a conservative byte limit.
-	//
-	// Its value is 4 megabytes.
-	DefaultSize Size = 4 * MB
+// DefaultSize is the shared default size used by config surfaces that need a conservative byte limit.
+//
+// Its value is 4 megabytes.
+const DefaultSize Size = 4 * MB
 
-	// MaxConfigSize is the shared upper bound for typed configuration fields that opt into
-	// repository-owned byte-size validation.
-	//
-	// It is used by fields and public APIs that explicitly promise the repository cap, such as cache
-	// value sizes and server receive sizes. Low-level option maps and callers that parse [Size] values
-	// directly must apply their own bounds when they need one.
-	MaxConfigSize Size = 256 * MB
-)
+// MaxConfigSize is the shared upper bound for typed configuration fields that opt into
+// repository-owned byte-size validation.
+//
+// It is used by fields and public APIs that explicitly promise the repository cap, such as cache
+// value sizes and server receive sizes. Low-level option maps and callers that parse [Size] values
+// directly must apply their own bounds when they need one.
+const MaxConfigSize Size = 256 * MB
 
 // ErrInvalidConfigSize is returned when a byte size is negative or exceeds [MaxConfigSize].
 var ErrInvalidConfigSize = errors.New("bytes: invalid config size")

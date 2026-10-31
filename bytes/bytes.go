@@ -17,6 +17,11 @@ type Buffer = bytes.Buffer
 // standard library implementation.
 type Reader = bytes.Reader
 
+// ContainsRune wraps [bytes.ContainsRune] without changing its semantics.
+func ContainsRune(b []byte, r rune) bool {
+	return bytes.ContainsRune(b, r)
+}
+
 // NewBuffer returns a new Buffer initialized with buf's contents.
 //
 // This is a thin wrapper around [bytes.NewBuffer]. The returned buffer uses buf as its initial
@@ -28,14 +33,14 @@ func NewBuffer(buf []byte) *bytes.Buffer {
 // NewBufferString returns a new Buffer initialized with the contents of s.
 //
 // This is a thin wrapper around [bytes.NewBufferString].
-func NewBufferString(s string) *bytes.Buffer {
+func NewBufferString(s string) *Buffer {
 	return bytes.NewBufferString(s)
 }
 
 // NewReader returns a new [bytes.Reader] reading from b.
 //
 // This is a thin wrapper around [bytes.NewReader]. The returned reader reads from b without copying.
-func NewReader(b []byte) *bytes.Reader {
+func NewReader(b []byte) *Reader {
 	return bytes.NewReader(b)
 }
 
