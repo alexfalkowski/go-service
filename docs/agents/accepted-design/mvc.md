@@ -13,11 +13,11 @@ and carry the same mandatory weight.
 - MVC static files are expected to be served from embedded or otherwise stable
   application assets. Do not flag ignored mid-stream `io.Copy` errors in
   `mvc.writeStaticFile` as reliability gaps solely because an artificial
-  `fs.FS` can return partial data after successful `Open`/`Stat`; report only
+  `io.FS` can return partial data after successful `Open`/`Stat`; report only
   concrete supported filesystem paths where static reads can fail mid-stream
   and operators need different behavior.
 - `mvc.StaticPathValue` intentionally treats the decoded
-  `Request.PathValue` as an `fs.FS` path beneath the configured prefix. Go's
+  `Request.PathValue` as an `io.FS` path beneath the configured prefix. Go's
   `ServeMux` can decode `%2F` inside a single wildcard to `/`, so a pattern such
   as `/{file}` can resolve descendants under that prefix. Do not flag this
   solely as path traversal; report only a concrete prefix escape, a supported

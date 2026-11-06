@@ -24,6 +24,7 @@ type Page struct {
 //
 //go:embed views/*.tmpl
 //go:embed static/*.txt
+//go:embed locales/*.yaml
 var FileSystem embed.FS
 
 // Layout is the shared MVC layout used when rendering the embedded templates.

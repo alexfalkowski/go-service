@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
@@ -312,7 +313,7 @@ func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
 		Kind: "otlp",
 		URL:  "http://collector.example.com/v1/logs",
 		Headers: header.Map{
-			"Authorization": "Bearer token",
+			http.AuthorizationKey: "Bearer token",
 		},
 	}
 	params := logger.LoggerParams{
@@ -357,7 +358,7 @@ func TestRejectsInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 		Protocol: "grpc",
 		URL:      "collector.example.com:4317",
 		Headers: header.Map{
-			"Authorization": "Bearer token",
+			http.AuthorizationKey: "Bearer token",
 		},
 	}
 	params := logger.LoggerParams{
@@ -381,7 +382,7 @@ func TestOTLPOverGRPCLoggerWithTLSHeaders(t *testing.T) {
 		URL:      "collector.example.com:4317",
 		TLS:      &tls.Config{ServerName: "collector.example.com"},
 		Headers: header.Map{
-			"Authorization": "Bearer token",
+			http.AuthorizationKey: "Bearer token",
 		},
 	}
 	params := logger.LoggerParams{
@@ -408,7 +409,7 @@ func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 	cfg := &logger.Config{
 		Kind: "otlp",
 		Headers: header.Map{
-			"Authorization": "Bearer token",
+			http.AuthorizationKey: "Bearer token",
 		},
 	}
 	params := logger.LoggerParams{

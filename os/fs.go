@@ -1,11 +1,11 @@
 package os
 
 import (
-	"io/fs"
 	"path/filepath"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/avfs/avfs"
 	"github.com/avfs/avfs/vfs/osfs"
@@ -18,26 +18,26 @@ import (
 // variable is allowed and resolves to empty bytes.
 var ErrEnvSourceMissing = errors.New("os: env source missing")
 
-// ModeAppend is an alias of [fs.ModeAppend].
+// ModeAppend is an alias of [io.ModeAppend].
 //
 // It is provided so callers can depend on go-service types while using standard
 // file mode constants.
-const ModeAppend = fs.ModeAppend
+const ModeAppend = io.ModeAppend
 
-// DirEntry is an alias of [fs.DirEntry].
+// DirEntry is an alias of [io.DirEntry].
 //
 // It represents a directory entry read from a directory.
-type DirEntry = fs.DirEntry
+type DirEntry = io.DirEntry
 
-// FileInfo is an alias of [fs.FileInfo].
+// FileInfo is an alias of [io.FileInfo].
 //
 // It describes a file and is typically returned by Stat.
-type FileInfo = fs.FileInfo
+type FileInfo = io.FileInfo
 
-// FileMode is an alias of [fs.FileMode].
+// FileMode is an alias of [io.FileMode].
 //
 // It represents a file's mode and permission bits.
-type FileMode = fs.FileMode
+type FileMode = io.FileMode
 
 // NewFS constructs an FS backed by the host OS filesystem.
 //
@@ -111,9 +111,9 @@ func (fs *FS) PathExists(name string) bool {
 
 // IsNotExist reports whether err indicates a missing path.
 //
-// This helper uses [errors.Is] to match [os.ErrNotExist].
+// This helper uses [errors.Is] to match [io.ErrNotExist].
 func (*FS) IsNotExist(err error) bool {
-	return errors.Is(err, fs.ErrNotExist)
+	return errors.Is(err, io.ErrNotExist)
 }
 
 // PathExtension returns the file extension of path without the leading ".".

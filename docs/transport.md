@@ -81,7 +81,25 @@ over HTTP/2, requests) that arrive as a sequence of values instead of one buffer
 A send-only streaming handler gets a `*stream.Stream[Res]` with `Send`; a bidirectional streaming
 handler gets a `*stream.RequestStream[Req, Res]` with both `Send` and `Recv`. Client calls use the
 matching `client.Stream`/`client.RequestStream` functions, which take the same kind of callback.
-See `net/http/client`'s `ExampleClient_RequestStream` for a complete HTTP/2 bidirectional client call.
+
+For a bidirectional POST, given a configured `*client.Client` named `c`, an
+HTTP/2 endpoint `url`, and application-defined `request` and `response` models:
+
+```go
+err := c.StreamPost(ctx, url,
+    client.Options{ContentType: media.NDJSON, Accept: media.NDJSON},
+    func(_ context.Context, stream *client.RequestResponseStream) error {
+        if err := stream.Send(&request); err != nil {
+            return err
+        }
+        return stream.Recv(&response)
+    },
+)
+```
+
+Import `context` from go-service, and `client` and `media` from its `net/http`
+packages. Handle the returned error before using the response. The configured
+client transport must negotiate HTTP/2, including h2c where applicable.
 
 ## HTTP route policy
 
@@ -172,6 +190,76 @@ The HTTP transport wraps the mux with `net/http.NewNotFoundHandler` so generated
 When an MVC controller returns an error, `mvc.Server.Route` renders the returned view with a client-safe `mvc.Error` model. The model contains the HTTP status `Code` and safe client-visible `Message`.
 
 The raw error string remains available to templates as `mvcModelError` metadata for compatibility. Rendering that metadata can expose diagnostic details, so prefer `.Model.Message` for client-visible error pages.
+
+## HTTP MVC localization
+
+MVC supports application-owned translation catalogs through `i18n.NewCatalog`.
+In a service composed with `module.Server`, provide a `*i18n.Catalog` from the
+service's own Fx module alongside the existing `io.FS` and `*mvc.Layout` providers.
+`io.FS` aliases the standard `io/fs.FS`, so embedded filesystems and existing
+providers remain compatible:
+
+```go
+// NewCatalog provides the application's embedded translation catalog during startup.
+func NewCatalog() (*i18n.Catalog, error) {
+    return i18n.NewCatalog(language.English, assets, "locales/*.yaml")
+}
+```
+
+Here `assets` is the application's embedded filesystem; import
+`github.com/alexfalkowski/go-service/v2/i18n` and `golang.org/x/text/language`,
+and register `NewCatalog` with `di.Constructor(NewCatalog)`. Direct callers pass
+the result through `mvc.ServerParams.Catalog`. No top-level configuration block
+is required. File names identify the language, such as `locales/active.en.yaml`
+and `locales/active.de.yaml`. JSON and TOML catalogs are also supported.
+Each glob must match files, and the default language must contain messages.
+Unreadable files, malformed catalogs, and message template syntax errors fail startup.
+
+For example, the English source catalog can contain:
+
+```yaml
+page_title: My task list
+greeting: Hello, {{.Name}}!
+tasks:
+  one: '{{.PluralCount}} task'
+  other: '{{.PluralCount}} tasks'
+```
+
+Templates receive `.Localizer` alongside `.Model` and `.Meta`:
+
+```gotemplate
+<html lang="{{ .Localizer.Tag }}">
+<h1>{{ .Localizer.Text "page_title" }}</h1>
+<p>{{ .Localizer.Message "greeting" .Model }}</p>
+<p>{{ .Localizer.Plural "tasks" .Model.Count nil }}</p>
+```
+
+`Message` receives the model for named variables. `Plural` selects the language's
+CLDR plural form; with nil data its count is available as `.PluralCount`.
+Pass a model instead of nil when a pluralized message needs additional variables.
+Translations are plain text and retain `html/template` escaping; keep HTML markup
+in the view. Missing translations use the default-language message. Missing keys,
+missing map variables, invalid plural counts, and execution errors fail rendering
+without committing a partial response body.
+
+Each render selects a supported language from an explicit
+`mvc.WithLanguage(ctx, preference)`, then the request's `Accept-Language`, then
+the catalog default. Install the derived context in middleware before the MVC
+handler runs, or pass it directly to `View.Render`. The application owns URL,
+cookie, and user-profile preferences; MVC does not read them automatically.
+Invalid preferences are ignored. Full, partial, controller-error, and not-found
+views all receive the localizer.
+
+Localized renders add `Vary: Accept-Language` and set `Content-Language` to the
+selected catalog language; individual missing translations may still use the
+default language. Add an appropriate cache policy, such as `Cache-Control: private`,
+when selection depends on user-specific preferences. Applications without a
+catalog retain existing behavior and have a nil `.Localizer`.
+
+Load catalogs once during startup; there is no runtime mutation or hot reload.
+Applications maintain the source catalog for keys used in templates:
+`goi18n extract` scans Go message definitions and does not extract HTML template
+keys. Localization does not choose timezones, currencies, or date formats.
 
 ## Transport configuration (servers)
 

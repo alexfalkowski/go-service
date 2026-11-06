@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"io/fs"
 	"net/http/httptest"
 	"testing"
 
@@ -268,8 +267,8 @@ type AuthRoundTripper struct {
 
 // RoundTrip records the Authorization headers and returns the next status response.
 func (r *AuthRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	r.AuthValues = append(r.AuthValues, req.Header.Get("Authorization"))
-	r.AuthCounts = append(r.AuthCounts, len(req.Header.Values("Authorization")))
+	r.AuthValues = append(r.AuthValues, req.Header.Get(http.AuthorizationKey))
+	r.AuthCounts = append(r.AuthCounts, len(req.Header.Values(http.AuthorizationKey)))
 	code := r.Codes[r.Calls]
 	r.Calls++
 
@@ -342,25 +341,25 @@ func (r *HeaderDeletingRoundTripper) RoundTrip(req *http.Request) (*http.Respons
 	return r.RoundTripper.RoundTrip(req)
 }
 
-// ErrFileSystem is an [fs.FS] test double whose file read returns a partial payload and ErrFailed.
+// ErrFileSystem is an [io.FS] test double whose file read returns a partial payload and ErrFailed.
 type ErrFileSystem struct{}
 
-// Open returns a failing file for asset.txt and [fs.ErrNotExist] for other names.
-func (ErrFileSystem) Open(name string) (fs.File, error) {
+// Open returns a failing file for asset.txt and [io.ErrNotExist] for other names.
+func (ErrFileSystem) Open(name string) (io.File, error) {
 	if name != "asset.txt" {
-		return nil, fs.ErrNotExist
+		return nil, io.ErrNotExist
 	}
 
 	return &ErrFile{}, nil
 }
 
-// ErrFile is an [fs.File] test double that returns a partial payload and ErrFailed.
+// ErrFile is an [io.File] test double that returns a partial payload and ErrFailed.
 type ErrFile struct {
 	read bool
 }
 
 // Stat returns ErrFileInfo.
-func (f *ErrFile) Stat() (fs.FileInfo, error) {
+func (f *ErrFile) Stat() (io.FileInfo, error) {
 	return ErrFileInfo{}, nil
 }
 
@@ -376,12 +375,12 @@ func (f *ErrFile) Read(p []byte) (int, error) {
 	return len("hello"), ErrFailed
 }
 
-// Close implements [fs.File] and always succeeds.
+// Close implements [io.File] and always succeeds.
 func (f *ErrFile) Close() error {
 	return nil
 }
 
-// ErrFileInfo is an [fs.FileInfo] test double for ErrFile.
+// ErrFileInfo is an [io.FileInfo] test double for ErrFile.
 type ErrFileInfo struct{}
 
 // Name returns asset.txt.
@@ -395,7 +394,7 @@ func (ErrFileInfo) Size() int64 {
 }
 
 // Mode returns no file mode bits.
-func (ErrFileInfo) Mode() fs.FileMode {
+func (ErrFileInfo) Mode() io.FileMode {
 	return 0
 }
 

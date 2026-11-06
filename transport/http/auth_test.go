@@ -28,9 +28,9 @@ func TestUnaryHandlerAuthenticatesSupportedToken(t *testing.T) {
 
 			header := http.Header{}
 			header.Set(http.ContentTypeKey, media.JSON)
-			header.Set("Request-Id", "test")
-			header.Set("X-Forwarded-For", "127.0.0.1")
-			header.Set("Geolocation", "geo:47,11")
+			header.Set(http.RequestIDKey, "test")
+			header.Set(http.XForwardedForKey, "127.0.0.1")
+			header.Set(http.GeolocationKey, "geo:47,11")
 
 			url := world.PathServerURL("http", "hello")
 
@@ -52,7 +52,7 @@ func TestUnaryHandlerRejectsUnknownTokenKind(t *testing.T) {
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
-	header.Set("Request-Id", "test")
+	header.Set(http.RequestIDKey, "test")
 
 	url := world.PathServerURL("http", "hello")
 
@@ -69,8 +69,8 @@ func TestUnaryHandlerAcceptsValidAuthentication(t *testing.T) {
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
-	header.Set("Request-Id", "test")
-	header.Set("X-Forwarded-For", "127.0.0.1")
+	header.Set(http.RequestIDKey, "test")
+	header.Set(http.XForwardedForKey, "127.0.0.1")
 
 	url := world.PathServerURL("http", "hello")
 
@@ -128,7 +128,7 @@ func TestRejectsInvalidAuthUnary(t *testing.T) {
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
-	header.Set("Request-Id", "test")
+	header.Set(http.RequestIDKey, "test")
 
 	url := world.PathServerURL("http", "hello")
 
@@ -145,8 +145,8 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
-	header.Set("Request-Id", "test")
-	header.Set("Authorization", "What Invalid")
+	header.Set(http.RequestIDKey, "test")
+	header.Set(http.AuthorizationKey, "What Invalid")
 
 	url := world.PathServerURL("http", "hello")
 
@@ -163,8 +163,8 @@ func TestUnaryHandlerAcceptsLowercaseBearerScheme(t *testing.T) {
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
-	header.Set("Request-Id", "test")
-	header.Set("Authorization", "bearer test")
+	header.Set(http.RequestIDKey, "test")
+	header.Set(http.AuthorizationKey, "bearer test")
 
 	url := world.PathServerURL("http", "hello")
 
@@ -181,7 +181,7 @@ func TestUnaryHandlerRejectsMissingAuthentication(t *testing.T) {
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
-	header.Set("Request-Id", "test")
+	header.Set(http.RequestIDKey, "test")
 
 	url := world.PathServerURL("http", "hello")
 
@@ -198,7 +198,7 @@ func TestUnaryHandlerRejectsEmptyAuthentication(t *testing.T) {
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
-	header.Set("Request-Id", "test")
+	header.Set(http.RequestIDKey, "test")
 
 	url := world.PathServerURL("http", "hello")
 
@@ -214,7 +214,7 @@ func TestUnaryHandlerRejectsMissingClientAuthentication(t *testing.T) {
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
-	header.Set("Request-Id", "test")
+	header.Set(http.RequestIDKey, "test")
 
 	url := world.PathServerURL("http", "hello")
 
@@ -234,7 +234,7 @@ func TestUnaryHandlerPropagatesTokenError(t *testing.T) {
 
 	header := http.Header{}
 	header.Set(http.ContentTypeKey, media.JSON)
-	header.Set("Request-Id", "test")
+	header.Set(http.RequestIDKey, "test")
 
 	url := world.PathServerURL("http", "hello")
 
@@ -257,7 +257,7 @@ func TestUnaryHandlerReturnsBreakerError(t *testing.T) {
 		t.Run("attempt-"+strconv.Itoa(i+1), func(t *testing.T) {
 			header := http.Header{}
 			header.Set(http.ContentTypeKey, media.JSON)
-			header.Set("Request-Id", "test")
+			header.Set(http.RequestIDKey, "test")
 
 			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 		})

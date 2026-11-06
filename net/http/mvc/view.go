@@ -2,12 +2,12 @@ package mvc
 
 import (
 	"html/template"
-	"io/fs"
 	"path"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/i18n"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -103,11 +103,11 @@ func (s *Server) newView(layoutName, name string) *View {
 	s.parseTemplate(tmpl, layoutName)
 	s.parseTemplate(tmpl.New(name), name)
 
-	return &View{name: layoutName, template: tmpl, pool: s.pool}
+	return &View{name: layoutName, template: tmpl, pool: s.pool, catalog: s.catalog}
 }
 
 func (s *Server) parseTemplate(tmpl *template.Template, name string) {
-	data, err := fs.ReadFile(s.fileSystem, name)
+	data, err := io.ReadFile(s.fileSystem, name)
 	runtime.Must(err)
 
 	_, err = tmpl.Parse(string(data))
@@ -118,6 +118,7 @@ func (s *Server) parseTemplate(tmpl *template.Template, name string) {
 type View struct {
 	template *template.Template
 	pool     *sync.BufferPool
+	catalog  *i18n.Catalog
 	name     string
 }
 
@@ -131,6 +132,8 @@ type View struct {
 // Render wraps the provided model in a Template which includes exported meta attributes under [Template.Meta].
 // This allows templates to access request-scoped metadata (for example request_id) without controllers having
 // to explicitly thread those values through the model.
+// When a catalog is configured, Template.Localizer provides localized messages;
+// see the package documentation for language selection and response headers.
 //
 // Error handling:
 // Render renders into an internal buffer before writing to the response so template execution failures do not
@@ -159,8 +162,9 @@ func (v *View) render(ctx context.Context, writer io.Writer, model any) error {
 	}
 
 	template := &Template{
-		Meta:  meta.Strings(ctx),
-		Model: model,
+		Meta:      meta.Strings(ctx),
+		Model:     model,
+		Localizer: v.localizer(ctx),
 	}
 
 	return v.template.ExecuteTemplate(writer, v.name, template)

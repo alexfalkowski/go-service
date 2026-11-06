@@ -101,7 +101,7 @@ func TestRouteRendersNotFoundView(t *testing.T) {
 	}))
 
 	header := http.Header{}
-	header.Set("Accept", media.HTML)
+	header.Set(http.AcceptKey, media.HTML)
 	header.Set(http.ContentTypeKey, media.HTML)
 
 	url := world.PathServerURL("http", "missing")
@@ -145,8 +145,8 @@ func TestNotFoundHandlesHTMXRequest(t *testing.T) {
 	}))
 
 	header := http.Header{}
-	header.Set("Accept", "*/*")
-	header.Set("Hx-Request", "true")
+	header.Set(http.AcceptKey, "*/*")
+	header.Set(http.HXRequestKey, "true")
 	header.Set(http.ContentTypeKey, media.HTML)
 
 	url := world.PathServerURL("http", "missing")

@@ -3,6 +3,7 @@ package io
 import (
 	"bytes"
 	"io"
+	"io/fs"
 )
 
 // EOF aliases [io.EOF].
@@ -14,8 +15,38 @@ var ErrUnexpectedEOF = io.ErrUnexpectedEOF
 // ErrClosedPipe aliases [io.ErrClosedPipe].
 var ErrClosedPipe = io.ErrClosedPipe
 
+// ErrInvalid aliases [fs.ErrInvalid].
+var ErrInvalid = fs.ErrInvalid
+
+// ErrNotExist aliases [fs.ErrNotExist].
+var ErrNotExist = fs.ErrNotExist
+
+// ErrPermission aliases [fs.ErrPermission].
+var ErrPermission = fs.ErrPermission
+
 // Discard aliases [io.Discard].
 var Discard = io.Discard
+
+// ModeAppend aliases [fs.ModeAppend].
+const ModeAppend = fs.ModeAppend
+
+// ModeDir aliases [fs.ModeDir].
+const ModeDir = fs.ModeDir
+
+// FS aliases [fs.FS] to keep read-only filesystem contracts on the go-service import path.
+type FS = fs.FS
+
+// File aliases [fs.File].
+type File = fs.File
+
+// FileInfo aliases [fs.FileInfo].
+type FileInfo = fs.FileInfo
+
+// FileMode aliases [fs.FileMode].
+type FileMode = fs.FileMode
+
+// DirEntry aliases [fs.DirEntry].
+type DirEntry = fs.DirEntry
 
 // Reader is an alias for [io.Reader].
 //
@@ -107,6 +138,21 @@ func ReadFull(r Reader, buf []byte) (int, error) {
 // This is a thin wrapper around [io.WriteString].
 func WriteString(w Writer, s string) (int, error) {
 	return io.WriteString(w, s)
+}
+
+// ReadFile wraps [fs.ReadFile], preserving file contents without trimming whitespace.
+func ReadFile(fsys FS, name string) ([]byte, error) {
+	return fs.ReadFile(fsys, name)
+}
+
+// Glob wraps [fs.Glob].
+func Glob(fsys FS, pattern string) ([]string, error) {
+	return fs.Glob(fsys, pattern)
+}
+
+// ValidPath wraps [fs.ValidPath].
+func ValidPath(name string) bool {
+	return fs.ValidPath(name)
 }
 
 // ReadAll reads all remaining bytes from r and returns:

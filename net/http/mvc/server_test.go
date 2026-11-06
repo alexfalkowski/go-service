@@ -1,7 +1,6 @@
 package mvc_test
 
 import (
-	"io/fs"
 	"log/slog"
 	"net/http/httptest"
 	"testing"
@@ -38,7 +37,7 @@ func TestStaticPathValueRejectsTraversal(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.ErrorIs(t, status.RequestError(ctx), fs.ErrInvalid)
+	require.ErrorIs(t, status.RequestError(ctx), io.ErrInvalid)
 }
 
 func TestStaticPathValueSetsContentType(t *testing.T) {
@@ -69,7 +68,7 @@ func TestStaticPathValueRejectsDirectory(t *testing.T) {
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
-			"static/assets": &fstest.MapFile{Mode: fs.ModeDir},
+			"static/assets": &fstest.MapFile{Mode: io.ModeDir},
 		},
 		Pool:   test.Pool,
 		Layout: test.Layout,
@@ -112,7 +111,7 @@ func TestStaticFileRejectsDirectory(t *testing.T) {
 		Router:      newTestRouter(mux),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem: fstest.MapFS{
-			"static/assets": &fstest.MapFile{Mode: fs.ModeDir},
+			"static/assets": &fstest.MapFile{Mode: io.ModeDir},
 		},
 		Pool:   test.Pool,
 		Layout: test.Layout,
@@ -146,7 +145,7 @@ func TestStaticFileRejectsPermissionDenied(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusForbidden, res.Code)
-	require.ErrorIs(t, status.RequestError(ctx), fs.ErrPermission)
+	require.ErrorIs(t, status.RequestError(ctx), io.ErrPermission)
 }
 
 func TestStaticFileRecordsRequestErrorWhenStatFails(t *testing.T) {
@@ -190,8 +189,8 @@ func TestStaticFileSetsCacheControl(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, "public, max-age=60", res.Header().Get("Cache-Control"))
-	require.Empty(t, res.Header().Get("ETag"))
+	require.Equal(t, "public, max-age=60", res.Header().Get(http.CacheControlKey))
+	require.Empty(t, res.Header().Get(http.ETagKey))
 	test.RequireResponseBody(t, res, "hello")
 }
 
@@ -210,8 +209,8 @@ func TestStaticFileIgnoresConditionalRequestHeaders(t *testing.T) {
 		headers map[string]string
 		name    string
 	}{
-		{headers: map[string]string{"If-None-Match": `W/"asset"`}, name: "none match"},
-		{headers: map[string]string{"If-Modified-Since": "Sun, 06 Nov 1994 08:49:37 GMT"}, name: "modified since"},
+		{headers: map[string]string{http.IfNoneMatchKey: `W/"asset"`}, name: "none match"},
+		{headers: map[string]string{http.IfModifiedSinceKey: "Sun, 06 Nov 1994 08:49:37 GMT"}, name: "modified since"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/robots.txt", http.NoBody)
@@ -223,8 +222,8 @@ func TestStaticFileIgnoresConditionalRequestHeaders(t *testing.T) {
 			mux.ServeHTTP(res, req)
 
 			require.Equal(t, http.StatusOK, res.Code)
-			require.Empty(t, res.Header().Get("ETag"))
-			require.Empty(t, res.Header().Get("Last-Modified"))
+			require.Empty(t, res.Header().Get(http.ETagKey))
+			require.Empty(t, res.Header().Get(http.LastModifiedKey))
 			test.RequireResponseBody(t, res, "User-agent: *\nAllow: /\n")
 		})
 	}
@@ -237,8 +236,8 @@ func TestStaticPathValueIgnoresConditionalRequestHeaders(t *testing.T) {
 		name   string
 		path   string
 	}{
-		{header: "If-None-Match", name: "none match", path: "/asset.txt", value: `W/"asset"`},
-		{header: "If-Modified-Since", name: "modified since", path: "/a,b.txt", value: "Sun, 06 Nov 1994 08:49:37 GMT"},
+		{header: http.IfNoneMatchKey, name: "none match", path: "/asset.txt", value: `W/"asset"`},
+		{header: http.IfModifiedSinceKey, name: "modified since", path: "/a,b.txt", value: "Sun, 06 Nov 1994 08:49:37 GMT"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			mux := http.NewServeMux()
@@ -261,8 +260,8 @@ func TestStaticPathValueIgnoresConditionalRequestHeaders(t *testing.T) {
 			mux.ServeHTTP(res, req)
 
 			require.Equal(t, http.StatusOK, res.Code)
-			require.Empty(t, res.Header().Get("ETag"))
-			require.Empty(t, res.Header().Get("Last-Modified"))
+			require.Empty(t, res.Header().Get(http.ETagKey))
+			require.Empty(t, res.Header().Get(http.LastModifiedKey))
 			test.RequireResponseBody(t, res, "hello")
 		})
 	}
@@ -344,6 +343,8 @@ func TestNewViewUsesLayoutPathWhenBasenameCollides(t *testing.T) {
 
 			require.NoError(t, err)
 			test.RequireResponseBody(t, res, tt.want)
+			require.Empty(t, res.Header().Get(http.ContentLanguageKey))
+			require.Empty(t, res.Header().Values(http.VaryKey))
 		})
 	}
 }
@@ -370,7 +371,7 @@ func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 	})
 
 	require.True(t, server.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return server.NewFullView("views/error.tmpl"), &test.Model, status.BadRequestError(fs.ErrInvalid)
+		return server.NewFullView("views/error.tmpl"), &test.Model, status.BadRequestError(io.ErrInvalid)
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
@@ -383,7 +384,7 @@ func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
 	test.RequireResponseBodyContains(t, res, "400 http: bad request invalid argument")
-	require.ErrorIs(t, status.RequestError(ctx), fs.ErrInvalid)
+	require.ErrorIs(t, status.RequestError(ctx), io.ErrInvalid)
 }
 
 func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
@@ -465,7 +466,7 @@ func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 	})
 
 	require.True(t, server.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return server.NewFullView("views/bad.tmpl"), &test.Model, status.BadRequestError(fs.ErrInvalid)
+		return server.NewFullView("views/bad.tmpl"), &test.Model, status.BadRequestError(io.ErrInvalid)
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
@@ -478,7 +479,7 @@ func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	test.RequireEmptyResponseBody(t, res)
-	require.ErrorIs(t, status.RequestError(ctx), fs.ErrInvalid)
+	require.ErrorIs(t, status.RequestError(ctx), io.ErrInvalid)
 }
 
 func TestNotFoundHandlesNotFound(t *testing.T) {
@@ -597,8 +598,8 @@ func TestFallbackRendersFallbackTemplate(t *testing.T) {
 			}))
 
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", http.NoBody)
-			req.Header.Set("Accept", tt.accept)
-			req.Header.Set("Hx-Request", tt.hx)
+			req.Header.Set(http.AcceptKey, tt.accept)
+			req.Header.Set(http.HXRequestKey, tt.hx)
 			res := httptest.NewRecorder()
 
 			require.Equal(t, tt.handled, server.NotFoundHandler()(res, req))
@@ -646,11 +647,11 @@ func TestNotFoundHandlerAddsVary(t *testing.T) {
 			}))
 
 			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", http.NoBody)
-			req.Header.Set("Accept", tt.accept)
+			req.Header.Set(http.AcceptKey, tt.accept)
 			res := httptest.NewRecorder()
 
 			require.Equal(t, tt.handled, server.NotFoundHandler()(res, req))
-			require.Equal(t, []string{"Accept", "Hx-Request"}, res.Header().Values(http.VaryKey))
+			require.Equal(t, []string{http.AcceptKey, http.HXRequestKey}, res.Header().Values(http.VaryKey))
 		})
 	}
 }
@@ -730,7 +731,7 @@ func TestStaticFileSetsContentLength(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
-	require.Equal(t, "6", res.Header().Get("Content-Length"))
+	require.Equal(t, "6", res.Header().Get(http.ContentLengthKey))
 	test.RequireResponseBody(t, res, "hello")
 }
 
@@ -787,19 +788,19 @@ func newTestRouter(mux *http.ServeMux) *http.Router {
 
 type permissionFileSystem struct{}
 
-func (permissionFileSystem) Open(string) (fs.File, error) {
-	return nil, fs.ErrPermission
+func (permissionFileSystem) Open(string) (io.File, error) {
+	return nil, io.ErrPermission
 }
 
 type statErrorFileSystem struct{}
 
-func (statErrorFileSystem) Open(string) (fs.File, error) {
+func (statErrorFileSystem) Open(string) (io.File, error) {
 	return &statErrorFile{}, nil
 }
 
 type statErrorFile struct{}
 
-func (statErrorFile) Stat() (fs.FileInfo, error) {
+func (statErrorFile) Stat() (io.FileInfo, error) {
 	return nil, test.ErrFailed
 }
 

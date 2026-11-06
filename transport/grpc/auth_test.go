@@ -96,7 +96,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := t.Context()
-	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
+	ctx = meta.AppendToOutgoingContext(ctx, grpc.AuthorizationKey, "What Invalid")
 
 	conn := test.RequireGRPCConn(t, world)
 	t.Cleanup(func() {
@@ -114,7 +114,7 @@ func TestAuthStreamWithAppend(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := t.Context()
-	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
+	ctx = meta.AppendToOutgoingContext(ctx, grpc.AuthorizationKey, "What Invalid")
 
 	conn := test.RequireGRPCConn(t, world)
 	t.Cleanup(func() {
@@ -134,7 +134,7 @@ func TestUnaryHandlerAcceptsLowercaseBearerScheme(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 
 	ctx := t.Context()
-	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "bearer test")
+	ctx = meta.AppendToOutgoingContext(ctx, grpc.AuthorizationKey, "bearer test")
 
 	conn := test.RequireGRPCConn(t, world)
 	t.Cleanup(func() {

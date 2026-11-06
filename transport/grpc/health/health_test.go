@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
@@ -82,7 +83,7 @@ func TestCheckRejectsInvalidRequest(t *testing.T) {
 	client := health.NewClient(conn)
 	req := &health.Request{Service: test.Name.String()}
 
-	md := meta.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
+	md := meta.New(map[string]string{grpc.RequestIDKey: "test-id", grpc.UserAgentKey: "test-user-agent"})
 	ctx := meta.NewOutgoingContext(t.Context(), md)
 
 	resp, err := client.Check(ctx, req)
@@ -192,7 +193,7 @@ func TestCheckReportsServiceNotFound(t *testing.T) {
 	client := health.NewClient(conn)
 	req := &health.Request{Service: "bob"}
 
-	md := meta.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
+	md := meta.New(map[string]string{grpc.RequestIDKey: "test-id", grpc.UserAgentKey: "test-user-agent"})
 	ctx := meta.NewOutgoingContext(t.Context(), md)
 
 	_, err := client.Check(ctx, req)

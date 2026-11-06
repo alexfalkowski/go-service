@@ -20,7 +20,7 @@ func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
 		env.UserID("service-user"),
 		test.NewGenerator("fresh-token", nil),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-			require.Equal(t, "Bearer fresh-token", req.Header.Get("Authorization"))
+			require.Equal(t, "Bearer fresh-token", req.Header.Get(http.AuthorizationKey))
 
 			return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil
 		}),
@@ -31,7 +31,7 @@ func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
 	res, err := roundTripper.RoundTrip(req)
 	require.NoError(t, err)
 	require.NoError(t, res.Body.Close())
-	require.Empty(t, req.Header.Values("Authorization"))
+	require.Empty(t, req.Header.Values(http.AuthorizationKey))
 }
 
 func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
@@ -39,7 +39,7 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 		env.UserID("service-user"),
 		test.NewGenerator("fresh-token", nil),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-			require.Equal(t, "Bearer fresh-token", req.Header.Get("Authorization"))
+			require.Equal(t, "Bearer fresh-token", req.Header.Get(http.AuthorizationKey))
 
 			return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil
 		}),
@@ -60,7 +60,7 @@ func TestRoundTripperGeneratesTokenForMethodPath(t *testing.T) {
 		env.UserID("service-user"),
 		generator,
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-			require.Equal(t, "Bearer fresh-token", req.Header.Get("Authorization"))
+			require.Equal(t, "Bearer fresh-token", req.Header.Get(http.AuthorizationKey))
 
 			return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil
 		}),

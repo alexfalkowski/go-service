@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/events"
 	eventhooks "github.com/alexfalkowski/go-service/v2/transport/http/events/hooks"
 	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	"github.com/stretchr/testify/require"
@@ -42,7 +43,7 @@ func TestHandlerRejectsBinaryCloudEventsWithWebhook(t *testing.T) {
 	)
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
-	req.Header.Set("Ce-Specversion", "1.0")
+	req.Header.Set(events.SpecVersionKey, "1.0")
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)

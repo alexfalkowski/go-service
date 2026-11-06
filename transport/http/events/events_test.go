@@ -253,7 +253,7 @@ func TestSenderWithWebhookDoesNotFollowCrossOriginRedirect(t *testing.T) {
 	var trustedSignature string
 	trusted := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		trustedSignature = req.Header.Get(webhooks.HeaderWebhookSignature)
-		res.Header().Set("Location", attacker.URL+"/events")
+		res.Header().Set(http.LocationKey, attacker.URL+"/events")
 		res.WriteHeader(http.StatusTemporaryRedirect)
 	}))
 	t.Cleanup(trusted.Close)
@@ -282,8 +282,8 @@ func TestSenderUsesStructuredEncoding(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		data, _, err := io.ReadAll(req.Body)
-		contentTypes <- req.Header.Get("Content-Type")
-		specVersions <- req.Header.Get("Ce-Specversion")
+		contentTypes <- req.Header.Get(http.ContentTypeKey)
+		specVersions <- req.Header.Get(events.SpecVersionKey)
 		bodies <- bytes.String(data)
 		readErrors <- err
 
@@ -320,11 +320,11 @@ func TestSenderUsesBinaryEncoding(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		data, _, err := io.ReadAll(req.Body)
-		contentTypes <- req.Header.Get("Content-Type")
-		specVersions <- req.Header.Get("Ce-Specversion")
-		ids <- req.Header.Get("Ce-Id")
-		sources <- req.Header.Get("Ce-Source")
-		types <- req.Header.Get("Ce-Type")
+		contentTypes <- req.Header.Get(http.ContentTypeKey)
+		specVersions <- req.Header.Get(events.SpecVersionKey)
+		ids <- req.Header.Get(events.IDKey)
+		sources <- req.Header.Get(events.SourceKey)
+		types <- req.Header.Get(events.TypeKey)
 		bodies <- bytes.String(data)
 		readErrors <- err
 
@@ -378,7 +378,7 @@ func TestReceiveUsesServerMaxReceiveSizeBeforeWebhookVerification(t *testing.T) 
 	body := strings.Repeat("a", 256)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, world.PathServerURL("http", "events"), strings.NewReader(body))
 	require.NoError(t, err)
-	req.Header.Set("Content-Type", "application/cloudevents+json")
+	req.Header.Set(http.ContentTypeKey, "application/cloudevents+json")
 
 	hook, err := hooks.NewHook(test.FS, test.NewHook())
 	require.NoError(t, err)

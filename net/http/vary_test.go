@@ -26,9 +26,9 @@ func TestAddVaryAddsResponseVaryHeader(t *testing.T) {
 		},
 		{
 			name:     "preserves comma separated fields",
-			existing: []string{"Accept-Encoding, Accept"},
+			existing: []string{http.AcceptEncodingKey + ", " + http.AcceptKey},
 			fields:   []string{http.AcceptKey, http.ContentTypeKey},
-			want:     []string{"Accept-Encoding, Accept", http.ContentTypeKey},
+			want:     []string{http.AcceptEncodingKey + ", " + http.AcceptKey, http.ContentTypeKey},
 		},
 		{
 			name:     "compares fields case insensitively",

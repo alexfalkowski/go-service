@@ -43,8 +43,8 @@ func TestNewNotFoundHandler(t *testing.T) {
 			registerRoute: true,
 			code:          http.StatusMethodNotAllowed,
 			header: http.Header{
-				"Content-Type":   {"application/problem+json"},
-				"Content-Length": {"999"},
+				http.ContentTypeKey:   {"application/problem+json"},
+				http.ContentLengthKey: {"999"},
 			},
 			contentType:        "text/plain; charset=utf-8",
 			checkContentLength: true,
@@ -108,9 +108,9 @@ func testNotFoundHandler(t *testing.T, tt notFoundHandlerTest) {
 		test.RequireResponseBodyContains(t, res, tt.contains)
 	}
 	if !strings.IsEmpty(tt.contentType) {
-		require.Equal(t, tt.contentType, res.Header().Get("Content-Type"))
+		require.Equal(t, tt.contentType, res.Header().Get(http.ContentTypeKey))
 	}
 	if tt.checkContentLength {
-		require.Equal(t, tt.contentLength, res.Header().Get("Content-Length"))
+		require.Equal(t, tt.contentLength, res.Header().Get(http.ContentLengthKey))
 	}
 }

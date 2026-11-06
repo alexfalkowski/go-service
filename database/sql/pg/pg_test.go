@@ -1,13 +1,13 @@
 package pg_test
 
 import (
-	"io/fs"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
@@ -74,7 +74,7 @@ func TestOpenRejectsInvalidDSNConfiguration(t *testing.T) {
 				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
 				[]config.DSN{{URL: test.FilePath("secrets/none")}},
 			),
-			wantErr: fs.ErrNotExist,
+			wantErr: io.ErrNotExist,
 		},
 		{
 			name: "invalid reader",
@@ -82,7 +82,7 @@ func TestOpenRejectsInvalidDSNConfiguration(t *testing.T) {
 				[]config.DSN{{URL: test.FilePath("secrets/none")}},
 				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
 			),
-			wantErr: fs.ErrNotExist,
+			wantErr: io.ErrNotExist,
 		},
 		{
 			name:    "empty dsn configuration",

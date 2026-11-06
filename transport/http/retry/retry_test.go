@@ -207,7 +207,7 @@ func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsMinimumBackoff(t *testing.
 			rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
 				calls++
 				res := test.ResponseWithStatus(tt.code)
-				res.Header.Set("Retry-After", tt.retryAfter)
+				res.Header.Set(http.RetryAfterKey, tt.retryAfter)
 
 				return res, nil
 			})
@@ -245,7 +245,7 @@ func TestRoundTripperHonorsGrownBackoffForRetryAfter(t *testing.T) {
 						return test.ResponseWithStatus(http.StatusTooManyRequests), nil
 					case 2:
 						res := test.ResponseWithStatus(http.StatusTooManyRequests)
-						res.Header.Set("Retry-After", tt.retryAfter)
+						res.Header.Set(http.RetryAfterKey, tt.retryAfter)
 
 						return res, nil
 					default:
@@ -274,7 +274,7 @@ func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsCappedBackoff(t *testing.T
 	rt := test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
 		calls++
 		res := test.ResponseWithStatus(http.StatusTooManyRequests)
-		res.Header.Set("Retry-After", "1")
+		res.Header.Set(http.RetryAfterKey, "1")
 
 		return res, nil
 	})
@@ -296,7 +296,7 @@ func TestRoundTripperRetriesWhenRetryAfterDoesNotExceedBackoff(t *testing.T) {
 			calls++
 			if calls == 1 {
 				res := test.ResponseWithStatus(http.StatusTooManyRequests)
-				res.Header.Set("Retry-After", "1")
+				res.Header.Set(http.RetryAfterKey, "1")
 
 				return res, nil
 			}
@@ -320,7 +320,7 @@ func TestRoundTripperRetriesWhenRetryAfterIsInvalid(t *testing.T) {
 		calls++
 		if calls == 1 {
 			res := test.ResponseWithStatus(http.StatusTooManyRequests)
-			res.Header.Set("Retry-After", "invalid")
+			res.Header.Set(http.RetryAfterKey, "invalid")
 
 			return res, nil
 		}

@@ -22,10 +22,28 @@ cache connectivity checks for pingable cache drivers such as Redis and ttlcache.
 checks and observer mapping. Create go-health `server.Registration` values,
 register them under the service or gRPC service name on `*server.Server`, and
 map them to `healthz`, `livez`, `readyz`, or `grpc` with `Observe`. See the
-executable [`Registrations` example](../health/example_test.go) and the
 [`go-service-template` health module](https://github.com/alexfalkowski/go-service-template/tree/master/internal/health)
 for the standard DI pattern. A checker is not exposed by a probe until that
 registration and observer mapping exists.
+
+Inside the application's registration function, given an injected `healthServer`,
+service name `name`, and `databaseChecker`, register the check and select its probes:
+
+```go
+registrations := health.Registrations{
+    server.NewRegistration("database", time.Second.Duration(), databaseChecker),
+}
+healthServer.Register(name, registrations...)
+for _, probe := range []string{"healthz", "livez", "readyz"} {
+    if err := healthServer.Observe(name, probe, "database"); err != nil {
+        return err
+    }
+}
+```
+
+Here `server` is `github.com/alexfalkowski/go-health/v2/server`; `health` and
+`time` are the corresponding go-service packages. Choose the probe mapping
+according to the application's health policy.
 
 When gRPC transport is enabled, `transport/grpc/health` registers the standard
 `grpc.health.v1.Health` service on the gRPC server. Named checks use the service

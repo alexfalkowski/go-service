@@ -24,7 +24,7 @@ func TestPostRequiresRequest(t *testing.T) {
 
 func TestPostUsesConfiguredTimeout(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		res.Header().Set("Content-Type", media.JSON)
+		res.Header().Set(http.ContentTypeKey, media.JSON)
 		res.WriteHeader(http.StatusOK)
 		res.(http.Flusher).Flush()
 		<-req.Context().Done()

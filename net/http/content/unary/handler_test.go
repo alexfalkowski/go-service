@@ -32,13 +32,13 @@ func TestNewRequestHandlerUsesAcceptForResponse(t *testing.T) {
 			req.Header.Set(http.ContentTypeKey, media.JSON)
 			req.Header.Set(http.AcceptKey, tc.mediaType)
 			res := httptest.NewRecorder()
-			res.Header().Set(http.VaryKey, "Accept-Encoding, Accept")
+			res.Header().Set(http.VaryKey, http.AcceptEncodingKey+", "+http.AcceptKey)
 
 			handler.ServeHTTP(res, req)
 
 			require.Equal(t, http.StatusOK, res.Code)
 			require.Equal(t, tc.mediaType, res.Header().Get(http.ContentTypeKey))
-			require.Equal(t, []string{"Accept-Encoding, Accept", http.ContentTypeKey}, res.Header().Values(http.VaryKey))
+			require.Equal(t, []string{http.AcceptEncodingKey + ", " + http.AcceptKey, http.ContentTypeKey}, res.Header().Values(http.VaryKey))
 			var response test.Response
 			require.NoError(t, test.Encoder.Get(tc.kind).Decode(res.Body, &response))
 			require.Equal(t, "Hello Bob", response.Greeting)

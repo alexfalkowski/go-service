@@ -1,7 +1,6 @@
 package tracer_test
 
 import (
-	"net/http"
 	"net/http/httptest"
 	"testing"
 	"unicode/utf8"
@@ -10,6 +9,7 @@ import (
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
@@ -264,7 +264,7 @@ func TestRegisterInvalidOTLPEndpoint(t *testing.T) {
 			Kind: "otlp",
 			URL:  "http://collector.example.com/v1/traces",
 			Headers: header.Map{
-				"Authorization": "Bearer token",
+				http.AuthorizationKey: "Bearer token",
 			},
 		},
 	})
@@ -276,13 +276,13 @@ func TestRegisterOTLPOverHTTPExporterDoesNotFollowRedirects(t *testing.T) {
 	trustedHeaders := make(chan string, 1)
 	attackerHeaders := make(chan string, 1)
 	attacker := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
-		attackerHeaders <- req.Header.Get("Authorization")
+		attackerHeaders <- req.Header.Get(http.AuthorizationKey)
 	}))
 	t.Cleanup(attacker.Close)
 
 	trusted := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		trustedHeaders <- req.Header.Get("Authorization")
-		res.Header().Set("Location", attacker.URL+"/v1/traces")
+		trustedHeaders <- req.Header.Get(http.AuthorizationKey)
+		res.Header().Set(http.LocationKey, attacker.URL+"/v1/traces")
 		res.WriteHeader(http.StatusTemporaryRedirect)
 	}))
 	t.Cleanup(trusted.Close)
@@ -297,7 +297,7 @@ func TestRegisterOTLPOverHTTPExporterDoesNotFollowRedirects(t *testing.T) {
 			Kind: "otlp",
 			URL:  trusted.URL + "/v1/traces",
 			Headers: header.Map{
-				"Authorization": "Bearer token",
+				http.AuthorizationKey: "Bearer token",
 			},
 		},
 		ID:          test.ID,
@@ -355,7 +355,7 @@ func TestRegisterInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 			Protocol: "grpc",
 			URL:      "collector.example.com:4317",
 			Headers: header.Map{
-				"Authorization": "Bearer token",
+				http.AuthorizationKey: "Bearer token",
 			},
 		},
 	})
@@ -376,7 +376,7 @@ func TestRegisterOTLPOverGRPCExporterWithTLSHeaders(t *testing.T) {
 			URL:      "collector.example.com:4317",
 			TLS:      &tls.Config{ServerName: "collector.example.com"},
 			Headers: header.Map{
-				"Authorization": "Bearer token",
+				http.AuthorizationKey: "Bearer token",
 			},
 		},
 		FS:          test.FS,
@@ -391,7 +391,7 @@ func TestRegisterOTLPOverGRPCExporterWithTLSHeaders(t *testing.T) {
 }
 
 func TestRegisterOTLPEndpointAddressSecurity(t *testing.T) {
-	headers := header.Map{"Authorization": "Bearer token"}
+	headers := header.Map{http.AuthorizationKey: "Bearer token"}
 	tests := []struct {
 		wantErr error
 		name    string
@@ -438,7 +438,7 @@ func TestRegisterMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 		Config: &tracer.Config{
 			Kind: "otlp",
 			Headers: header.Map{
-				"Authorization": "Bearer token",
+				http.AuthorizationKey: "Bearer token",
 			},
 		},
 	})

@@ -59,8 +59,8 @@ func TestServerLimiter(t *testing.T) {
 			res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 			require.NoError(t, err)
 			require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
-			require.Equal(t, `"default";r=0;t=1`, res.Header.Get("Ratelimit"))
-			require.Equal(t, `"default";q=1;w=1`, res.Header.Get("Ratelimit-Policy"))
+			require.Equal(t, `"default";r=0;t=1`, res.Header.Get(http.RateLimitKey))
+			require.Equal(t, `"default";q=1;w=1`, res.Header.Get(http.RateLimitPolicyKey))
 		})
 	}
 }
@@ -82,9 +82,9 @@ func TestServerLimiterSetsRetryAfter(t *testing.T) {
 	res, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
-	require.Contains(t, res.Header.Get("Ratelimit"), `"default";r=0;t=`)
-	require.Equal(t, `"default";q=1;w=3600`, res.Header.Get("Ratelimit-Policy"))
-	retryAfter, err := strconv.ParseUint(res.Header.Get("Retry-After"), 10, 64)
+	require.Contains(t, res.Header.Get(http.RateLimitKey), `"default";r=0;t=`)
+	require.Equal(t, `"default";q=1;w=3600`, res.Header.Get(http.RateLimitPolicyKey))
+	retryAfter, err := strconv.ParseUint(res.Header.Get(http.RetryAfterKey), 10, 64)
 	require.NoError(t, err)
 	require.Positive(t, retryAfter)
 	require.LessOrEqual(t, retryAfter, uint64(3600))
@@ -108,8 +108,8 @@ func TestServerLimiterDoesNotBypassApplicationMetricsPath(t *testing.T) {
 	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
-	require.Equal(t, `"default";r=0;t=1`, res.Header.Get("Ratelimit"))
-	require.Equal(t, `"default";q=1;w=1`, res.Header.Get("Ratelimit-Policy"))
+	require.Equal(t, `"default";r=0;t=1`, res.Header.Get(http.RateLimitKey))
+	require.Equal(t, `"default";q=1;w=1`, res.Header.Get(http.RateLimitPolicyKey))
 }
 
 func TestClientLimiterRejectsExcessRequests(t *testing.T) {

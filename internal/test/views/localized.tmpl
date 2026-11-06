@@ -1,0 +1,8 @@
+{{ define "content" }}
+<section lang="{{ .Localizer.Tag }}">
+    <h1>{{ .Localizer.Text "page_title" }}</h1>
+    <p>{{ .Localizer.Message "greeting" .Model }}</p>
+    <p>{{ .Localizer.Plural "tasks" .Model.Count nil }}</p>
+    <p>{{ .Localizer.Text "fallback" }}</p>
+</section>
+{{ end }}
