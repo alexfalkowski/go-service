@@ -436,6 +436,14 @@ negative values are invalid.
 
 ---
 
+## 🌍 Localization (i18n)
+
+`i18n` provides application-owned translation catalogs with named variables, plural forms, and fallback messages. Catalogs are independent of HTTP and can be shared by MVC views, workers, and CLI commands.
+
+See [docs/i18n.md](docs/i18n.md) for catalog formats, standalone use, language selection, Fx wiring, and MVC integration.
+
+---
+
 ## 🌐 Transport
 
 The transport layer provides higher-level wiring and middleware policy for communication in/out of the service: composed HTTP/gRPC server and client stacks, retries, breakers, token middleware, and health wiring. `net/...` holds the lower-level protocol primitives those stacks build on.

@@ -194,36 +194,14 @@ The raw error string remains available to templates as `mvcModelError` metadata 
 ## HTTP MVC localization
 
 MVC supports application-owned translation catalogs through `i18n.NewCatalog`.
+See [Localization (i18n)](i18n.md) for message files, standalone worker and CLI
+use, catalog construction, and Fx wiring.
+
 In a service composed with `module.Server`, provide a `*i18n.Catalog` from the
 service's own Fx module alongside the existing `io.FS` and `*mvc.Layout` providers.
 `io.FS` aliases the standard `io/fs.FS`, so embedded filesystems and existing
-providers remain compatible:
-
-```go
-// NewCatalog provides the application's embedded translation catalog during startup.
-func NewCatalog() (*i18n.Catalog, error) {
-    return i18n.NewCatalog(language.English, assets, "locales/*.yaml")
-}
-```
-
-Here `assets` is the application's embedded filesystem; import
-`github.com/alexfalkowski/go-service/v2/i18n` and `golang.org/x/text/language`,
-and register `NewCatalog` with `di.Constructor(NewCatalog)`. Direct callers pass
-the result through `mvc.ServerParams.Catalog`. No top-level configuration block
-is required. File names identify the language, such as `locales/active.en.yaml`
-and `locales/active.de.yaml`. JSON and TOML catalogs are also supported.
-Each glob must match files, and the default language must contain messages.
-Unreadable files, malformed catalogs, and message template syntax errors fail startup.
-
-For example, the English source catalog can contain:
-
-```yaml
-page_title: My task list
-greeting: Hello, {{.Name}}!
-tasks:
-  one: '{{.PluralCount}} task'
-  other: '{{.PluralCount}} tasks'
-```
+providers remain compatible. Direct callers pass the catalog through
+`mvc.ServerParams.Catalog`. No top-level configuration block is required.
 
 Templates receive `.Localizer` alongside `.Model` and `.Meta`:
 
