@@ -18,13 +18,13 @@ import (
 )
 
 func TestClientUnaryInterceptorReplacesOutgoingAuthorization(t *testing.T) {
-	ctx := meta.NewOutgoingContext(context.Background(), meta.Pairs("authorization", "Bearer stale-token"))
+	ctx := meta.NewOutgoingContext(context.Background(), meta.Pairs(grpc.AuthorizationKey, "Bearer stale-token"))
 	interceptor := token.NewClient(env.UserID("service-user"), staticTokenGenerator("fresh-token")).UnaryInterceptor()
 
 	err := interceptor(ctx, "/greet.v1.Greeter/SayHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
 		md, ok := meta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"Bearer fresh-token"}, md.Get("authorization"))
+		require.Equal(t, []string{"Bearer fresh-token"}, md.Get(grpc.AuthorizationKey))
 
 		return nil
 	})
@@ -32,12 +32,12 @@ func TestClientUnaryInterceptorReplacesOutgoingAuthorization(t *testing.T) {
 }
 
 func TestClientStreamInterceptorReplacesOutgoingAuthorization(t *testing.T) {
-	ctx := meta.NewOutgoingContext(context.Background(), meta.Pairs("authorization", "Bearer stale-token"))
+	ctx := meta.NewOutgoingContext(context.Background(), meta.Pairs(grpc.AuthorizationKey, "Bearer stale-token"))
 	interceptor := token.NewClient(env.UserID("service-user"), staticTokenGenerator("fresh-token")).StreamInterceptor()
 	streamer := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		md, ok := meta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"Bearer fresh-token"}, md.Get("authorization"))
+		require.Equal(t, []string{"Bearer fresh-token"}, md.Get(grpc.AuthorizationKey))
 
 		return nil, nil
 	}

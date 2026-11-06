@@ -33,16 +33,16 @@ func TestServerLimiterUnary(t *testing.T) {
 
 	_, err := client.SayHello(t.Context(), req, grpc.Header(&header))
 	require.NoError(t, err)
-	require.NotEmpty(t, header.Get("ratelimit"))
-	require.NotEmpty(t, header.Get("ratelimit-policy"))
+	require.NotEmpty(t, header.Get(grpc.RateLimitKey))
+	require.NotEmpty(t, header.Get(grpc.RateLimitPolicyKey))
 
 	rejectedHeader := grpcmeta.Map{}
 	_, err = client.SayHello(t.Context(), req, grpc.Header(&rejectedHeader))
 	require.Error(t, err)
 	require.False(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
-	require.NotEmpty(t, rejectedHeader.Get("ratelimit"))
-	require.NotEmpty(t, rejectedHeader.Get("ratelimit-policy"))
+	require.NotEmpty(t, rejectedHeader.Get(grpc.RateLimitKey))
+	require.NotEmpty(t, rejectedHeader.Get(grpc.RateLimitPolicyKey))
 	requireRetryInfo(t, err)
 }
 
@@ -75,8 +75,8 @@ func TestServerLimiterStreamHeader(t *testing.T) {
 		return nil
 	})
 	require.NoError(t, err)
-	require.NotEmpty(t, allowed.Header.Get("ratelimit"))
-	require.NotEmpty(t, allowed.Header.Get("ratelimit-policy"))
+	require.NotEmpty(t, allowed.Header.Get(grpc.RateLimitKey))
+	require.NotEmpty(t, allowed.Header.Get(grpc.RateLimitPolicyKey))
 
 	rejected := &test.MetaServerStream{Ctx: ctx}
 	err = interceptor(nil, rejected, &grpc.StreamServerInfo{FullMethod: "/greet.v1.GreeterService/SayStreamHello"}, func(any, grpc.ServerStream) error {
@@ -85,8 +85,8 @@ func TestServerLimiterStreamHeader(t *testing.T) {
 	require.Error(t, err)
 	require.False(t, status.IsLocalError(err))
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
-	require.NotEmpty(t, rejected.Header.Get("ratelimit"))
-	require.NotEmpty(t, rejected.Header.Get("ratelimit-policy"))
+	require.NotEmpty(t, rejected.Header.Get(grpc.RateLimitKey))
+	require.NotEmpty(t, rejected.Header.Get(grpc.RateLimitPolicyKey))
 	requireRetryInfo(t, err)
 }
 
@@ -108,8 +108,8 @@ func TestServerLimiterStreamHeaderNotDuplicated(t *testing.T) {
 
 	header, err := stream.Header()
 	require.NoError(t, err)
-	require.Len(t, header.Get("ratelimit"), 1)
-	require.Len(t, header.Get("ratelimit-policy"), 1)
+	require.Len(t, header.Get(grpc.RateLimitKey), 1)
+	require.Len(t, header.Get(grpc.RateLimitPolicyKey), 1)
 }
 
 func TestClientLimiterRejectsExcessUnaryRequests(t *testing.T) {

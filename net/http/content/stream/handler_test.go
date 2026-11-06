@@ -36,13 +36,13 @@ func TestNewHandlerSendsValuesAndOptsOutOfGzip(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(http.AcceptKey, media.NDJSON)
 	res := httptest.NewRecorder()
-	res.Header().Set(http.VaryKey, "Accept-Encoding, Accept")
+	res.Header().Set(http.VaryKey, http.AcceptEncodingKey+", "+http.AcceptKey)
 
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, media.NDJSON, res.Header().Get(http.ContentTypeKey))
-	require.Equal(t, []string{"Accept-Encoding, Accept", http.ContentTypeKey}, res.Header().Values(http.VaryKey))
+	require.Equal(t, []string{http.AcceptEncodingKey + ", " + http.AcceptKey, http.ContentTypeKey}, res.Header().Values(http.VaryKey))
 	require.NotEmpty(t, res.Header().Get(compress.HeaderNoCompression))
 
 	scanner := bufio.NewScanner(res.Body)
@@ -74,12 +74,12 @@ func TestNewHandlerGzipHandlerPassesThroughUncompressed(t *testing.T) {
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
 	req.Header.Set(http.AcceptKey, media.NDJSON)
-	req.Header.Set("Accept-Encoding", "gzip")
+	req.Header.Set(http.AcceptEncodingKey, "gzip")
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
 
-	require.Empty(t, res.Header().Get("Content-Encoding"))
+	require.Empty(t, res.Header().Get(http.ContentEncodingKey))
 	require.Equal(t, "Hello Bob", decodeNDJSONGreeting(t, bufio.NewScanner(res.Body)))
 }
 

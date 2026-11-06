@@ -1,7 +1,6 @@
 package mvc
 
 import (
-	"io/fs"
 	"path"
 	"strconv"
 
@@ -45,8 +44,8 @@ func (s *Server) StaticPathValue(pattern, value, prefix string, opts ...StaticOp
 	options := options(opts...)
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		cleaned := path.Clean(req.PathValue(value))
-		if cleaned == "." || cleaned != req.PathValue(value) || !fs.ValidPath(cleaned) || strings.Contains(cleaned, `\`) {
-			err := status.BadRequestError(fs.ErrInvalid)
+		if cleaned == "." || cleaned != req.PathValue(value) || !io.ValidPath(cleaned) || strings.Contains(cleaned, `\`) {
+			err := status.BadRequestError(io.ErrInvalid)
 			status.RecordError(req.Context(), err)
 			res.WriteHeader(staticStatusCode(err))
 			return
@@ -84,7 +83,7 @@ func (s *Server) serveFile(ctx context.Context, res http.ResponseWriter, name st
 	writeStaticFile(res, name, f, info)
 }
 
-func writeStaticFile(res http.ResponseWriter, name string, f fs.File, info fs.FileInfo) {
+func writeStaticFile(res http.ResponseWriter, name string, f io.File, info io.FileInfo) {
 	setStaticContentLength(res, info.Size())
 	setStaticContentType(res, name)
 	res.WriteHeader(http.StatusOK)
@@ -92,10 +91,10 @@ func writeStaticFile(res http.ResponseWriter, name string, f fs.File, info fs.Fi
 }
 
 func staticStatusCode(err error) int {
-	if errors.Is(err, fs.ErrNotExist) {
+	if errors.Is(err, io.ErrNotExist) {
 		return http.StatusNotFound
 	}
-	if errors.Is(err, fs.ErrPermission) {
+	if errors.Is(err, io.ErrPermission) {
 		return http.StatusForbidden
 	}
 	return status.Code(err)

@@ -74,14 +74,14 @@ func TestClientWithTokenDoesNotFollowCrossOriginRedirect(t *testing.T) {
 func TestRoundTripperWithTokenDoesNotSendAuthorizationToCrossOriginRedirect(t *testing.T) {
 	var attackerAuthorization string
 	attacker := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
-		attackerAuthorization = req.Header.Get("Authorization")
+		attackerAuthorization = req.Header.Get(http.AuthorizationKey)
 	}))
 	t.Cleanup(attacker.Close)
 
 	var trustedAuthorization string
 	trusted := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		trustedAuthorization = req.Header.Get("Authorization")
-		res.Header().Set("Location", attacker.URL+"/target")
+		trustedAuthorization = req.Header.Get(http.AuthorizationKey)
+		res.Header().Set(http.LocationKey, attacker.URL+"/target")
 		res.WriteHeader(http.StatusTemporaryRedirect)
 	}))
 	t.Cleanup(trusted.Close)

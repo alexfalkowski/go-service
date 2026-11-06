@@ -381,7 +381,7 @@ See [docs/sql.md](docs/sql.md) for the config shape, reader/writer pool settings
 
 Health checks are based on [go-health](https://github.com/alexfalkowski/go-health) and expose Kubernetes-style `/<name>/healthz`, `/<name>/livez`, and `/<name>/readyz` endpoints, plus the standard gRPC `grpc.health.v1.Health` service when gRPC transport is enabled.
 
-`module.Server` installs the HTTP/gRPC health transports, but services own the checks and observer mapping — see the executable [`Registrations` example](health/example_test.go).
+`module.Server` installs the HTTP/gRPC health transports, but services own the checks and observer mapping.
 
 See [docs/health.md](docs/health.md) for endpoint behavior, checker wiring, and the gRPC health protocol.
 

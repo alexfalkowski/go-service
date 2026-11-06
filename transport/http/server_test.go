@@ -200,7 +200,7 @@ func TestServerRecoversPanic(t *testing.T) {
 	require.Equal(t, "http: internal server error", body)
 	requirePanicLog(t, capture, "test panic after informational response", "panic-after-informational")
 
-	_, _, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-write"), http.Header{"Accept-Encoding": {"identity"}})
+	_, _, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-write"), http.Header{http.AcceptEncodingKey: {"identity"}})
 	require.Error(t, err)
 	requirePanicLog(t, capture, "test panic after commit", "panic-after-write")
 
@@ -210,7 +210,7 @@ func TestServerRecoversPanic(t *testing.T) {
 	require.Equal(t, "http: internal server error", body)
 	requirePanicLog(t, capture, "test operation panic", "panic-operation")
 
-	_, _, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-error"), http.Header{"Accept-Encoding": {"identity"}})
+	_, _, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-error"), http.Header{http.AcceptEncodingKey: {"identity"}})
 	require.Error(t, err)
 	requirePanicLog(t, capture, "test panic after error", "panic-after-error")
 

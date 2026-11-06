@@ -19,6 +19,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
@@ -35,7 +36,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	grpcretry "github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
+	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
 	httpretry "github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/retry"
@@ -227,7 +228,7 @@ func NewTLSConfig(c, k string) *tls.Config {
 // NewInsecureTransportConfig returns HTTP and gRPC transport configs that listen on ephemeral local addresses without TLS.
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
-		HTTP: &http.Config{
+		HTTP: &transporthttp.Config{
 			Address: RandomAddress(),
 			Timeout: timeout,
 		},
@@ -239,8 +240,8 @@ func NewInsecureTransportConfig() *transport.Config {
 }
 
 // NewHTTPTransportConfig returns a minimal HTTP transport config for tests that fill fields manually.
-func NewHTTPTransportConfig() *http.Config {
-	return &http.Config{Config: server.Config{}}
+func NewHTTPTransportConfig() *transporthttp.Config {
+	return &transporthttp.Config{Config: server.Config{}}
 }
 
 // NewGRPCTransportConfig returns a minimal gRPC transport config for tests that fill fields manually.
@@ -253,7 +254,7 @@ func NewSecureTransportConfig() *transport.Config {
 	config := NewTLSServerConfig()
 
 	return &transport.Config{
-		HTTP: &http.Config{
+		HTTP: &transporthttp.Config{
 			TLS:     config,
 			Address: RandomAddress(),
 			Timeout: timeout,
@@ -273,7 +274,7 @@ func NewOTLPLoggerConfig() *logger.Config {
 		Level: "debug",
 		URL:   otlpHTTPURL + "/v1/logs",
 		Headers: header.Map{
-			"Authorization": FilePath("secrets/telemetry"),
+			http.AuthorizationKey: FilePath("secrets/telemetry"),
 		},
 	}
 }
@@ -315,7 +316,7 @@ func NewOTLPMetricsConfig() *metrics.Config {
 		Kind: "otlp",
 		URL:  otlpHTTPURL + "/v1/metrics",
 		Headers: header.Map{
-			"Authorization": FilePath("secrets/telemetry"),
+			http.AuthorizationKey: FilePath("secrets/telemetry"),
 		},
 	}
 }
@@ -326,7 +327,7 @@ func NewOTLPTracerConfig() *tracer.Config {
 		Kind: "otlp",
 		URL:  otlpHTTPURL + "/v1/traces",
 		Headers: header.Map{
-			"Authorization": FilePath("secrets/telemetry"),
+			http.AuthorizationKey: FilePath("secrets/telemetry"),
 		},
 	}
 }

@@ -52,7 +52,7 @@ func (s *MetaServerStream) Context() context.Context {
 
 // SetHeader records md after appending a service-version value.
 func (s *MetaServerStream) SetHeader(md meta.Map) error {
-	md.Append("service-version", "v2")
+	md.Append(grpc.ServiceVersionKey, "v2")
 	s.Header = md
 
 	return nil

@@ -1,0 +1,10 @@
+page_title: My task list
+greeting: Hello, {{.Name}}!
+tasks:
+  one: '{{.PluralCount}} task'
+  other: '{{.PluralCount}} tasks'
+fallback: Available in English
+fallback_greeting: Hello, {{.Name}}!
+assigned_tasks:
+  one: '{{.Name}} has {{.Count}} task'
+  other: '{{.Name}} has {{.Count}} tasks'

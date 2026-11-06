@@ -24,16 +24,16 @@ func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 		grpcmeta.WithRequestID(grpcmeta.String("current-id")),
 	)
 	ctx = grpcmeta.NewOutgoingContext(ctx, grpcmeta.Pairs(
-		"user-agent", "stale-agent",
-		"request-id", "stale-id",
+		grpc.UserAgentKey, "stale-agent",
+		grpc.RequestIDKey, "stale-id",
 	))
 	interceptor := grpcmeta.NewClient(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id")).UnaryInterceptor()
 
 	err := interceptor(ctx, "/greet.v1.Greeter/SayHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
 		md, ok := grpcmeta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"current-agent"}, md.Get("user-agent"))
-		require.Equal(t, []string{"current-id"}, md.Get("request-id"))
+		require.Equal(t, []string{"current-agent"}, md.Get(grpc.UserAgentKey))
+		require.Equal(t, []string{"current-id"}, md.Get(grpc.RequestIDKey))
 		require.Equal(t, meta.Ignored("grpc"), meta.Transport(ctx))
 		require.Equal(t, meta.Ignored("/greet.v1.Greeter/SayHello"), meta.ServiceMethod(ctx))
 		require.NotContains(t, meta.Strings(ctx), meta.ServiceMethodKey)
@@ -45,16 +45,16 @@ func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 
 func TestUnaryClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
 	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs(
-		"user-agent", "",
-		"request-id", "",
+		grpc.UserAgentKey, "",
+		grpc.RequestIDKey, "",
 	))
 	interceptor := grpcmeta.NewClient(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id")).UnaryInterceptor()
 
 	err := interceptor(ctx, "/greet.v1.Greeter/SayHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
 		md, ok := grpcmeta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"fallback-agent"}, md.Get("user-agent"))
-		require.Equal(t, []string{"generated-id"}, md.Get("request-id"))
+		require.Equal(t, []string{"fallback-agent"}, md.Get(grpc.UserAgentKey))
+		require.Equal(t, []string{"generated-id"}, md.Get(grpc.RequestIDKey))
 		require.Equal(t, grpcmeta.String("fallback-agent"), grpcmeta.UserAgent(ctx))
 		require.Equal(t, grpcmeta.String("generated-id"), meta.RequestID(ctx))
 		require.Equal(t, meta.Ignored("grpc"), meta.Transport(ctx))
@@ -67,13 +67,13 @@ func TestUnaryClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
 }
 
 func TestUnaryClientInterceptorPreservesOutgoingRequestID(t *testing.T) {
-	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
+	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs(grpc.RequestIDKey, "caller-id"))
 	interceptor := grpcmeta.NewClient(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id")).UnaryInterceptor()
 
 	err := interceptor(ctx, "/greet.v1.Greeter/SayHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
 		md, ok := grpcmeta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"caller-id"}, md.Get("request-id"))
+		require.Equal(t, []string{"caller-id"}, md.Get(grpc.RequestIDKey))
 		require.Equal(t, grpcmeta.String("caller-id"), meta.RequestID(ctx))
 
 		return nil
@@ -91,8 +91,8 @@ func TestUnaryClientInterceptorSanitizesNonPrintableMetadata(t *testing.T) {
 	err := interceptor(ctx, "/greet.v1.Greeter/SayHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
 		md, ok := grpcmeta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"fallback-agent"}, md.Get("user-agent"))
-		require.Equal(t, []string{"generated-id"}, md.Get("request-id"))
+		require.Equal(t, []string{"fallback-agent"}, md.Get(grpc.UserAgentKey))
+		require.Equal(t, []string{"generated-id"}, md.Get(grpc.RequestIDKey))
 		require.Equal(t, grpcmeta.String("aaé"), grpcmeta.UserAgent(ctx))
 		require.Equal(t, grpcmeta.String("aaé"), meta.RequestID(ctx))
 
@@ -107,15 +107,15 @@ func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 		grpcmeta.WithRequestID(grpcmeta.String("current-id")),
 	)
 	ctx = grpcmeta.NewOutgoingContext(ctx, grpcmeta.Pairs(
-		"user-agent", "stale-agent",
-		"request-id", "stale-id",
+		grpc.UserAgentKey, "stale-agent",
+		grpc.RequestIDKey, "stale-id",
 	))
 	interceptor := grpcmeta.NewClient(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id")).StreamInterceptor()
 	streamer := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		md, ok := grpcmeta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"current-agent"}, md.Get("user-agent"))
-		require.Equal(t, []string{"current-id"}, md.Get("request-id"))
+		require.Equal(t, []string{"current-agent"}, md.Get(grpc.UserAgentKey))
+		require.Equal(t, []string{"current-id"}, md.Get(grpc.RequestIDKey))
 		require.Equal(t, meta.Ignored("grpc"), meta.Transport(ctx))
 		require.Equal(t, meta.Ignored("/greet.v1.Greeter/SayStreamHello"), meta.ServiceMethod(ctx))
 		require.NotContains(t, meta.Strings(ctx), meta.ServiceMethodKey)
@@ -139,8 +139,8 @@ func TestStreamClientInterceptorSanitizesNonPrintableMetadata(t *testing.T) {
 	streamer := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		md, ok := grpcmeta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"fallback-agent"}, md.Get("user-agent"))
-		require.Equal(t, []string{"generated-id"}, md.Get("request-id"))
+		require.Equal(t, []string{"fallback-agent"}, md.Get(grpc.UserAgentKey))
+		require.Equal(t, []string{"generated-id"}, md.Get(grpc.RequestIDKey))
 		require.Equal(t, grpcmeta.String("aaé"), grpcmeta.UserAgent(ctx))
 		require.Equal(t, grpcmeta.String("aaé"), meta.RequestID(ctx))
 
@@ -156,15 +156,15 @@ func TestStreamClientInterceptorSanitizesNonPrintableMetadata(t *testing.T) {
 
 func TestStreamClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
 	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs(
-		"user-agent", "",
-		"request-id", "",
+		grpc.UserAgentKey, "",
+		grpc.RequestIDKey, "",
 	))
 	interceptor := grpcmeta.NewClient(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id")).StreamInterceptor()
 	streamer := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		md, ok := grpcmeta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"fallback-agent"}, md.Get("user-agent"))
-		require.Equal(t, []string{"generated-id"}, md.Get("request-id"))
+		require.Equal(t, []string{"fallback-agent"}, md.Get(grpc.UserAgentKey))
+		require.Equal(t, []string{"generated-id"}, md.Get(grpc.RequestIDKey))
 		require.Equal(t, grpcmeta.String("fallback-agent"), grpcmeta.UserAgent(ctx))
 		require.Equal(t, grpcmeta.String("generated-id"), meta.RequestID(ctx))
 		require.Equal(t, meta.Ignored("grpc"), meta.Transport(ctx))
@@ -182,12 +182,12 @@ func TestStreamClientInterceptorIgnoresBlankOutgoingMetadata(t *testing.T) {
 }
 
 func TestStreamClientInterceptorPreservesOutgoingRequestID(t *testing.T) {
-	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
+	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs(grpc.RequestIDKey, "caller-id"))
 	interceptor := grpcmeta.NewClient(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id")).StreamInterceptor()
 	streamer := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		md, ok := grpcmeta.FromOutgoingContext(ctx)
 		require.True(t, ok)
-		require.Equal(t, []string{"caller-id"}, md.Get("request-id"))
+		require.Equal(t, []string{"caller-id"}, md.Get(grpc.RequestIDKey))
 		require.Equal(t, grpcmeta.String("caller-id"), meta.RequestID(ctx))
 
 		return nil, nil
@@ -227,7 +227,7 @@ func TestUnaryServerInterceptorBoundsSpanMetaWithoutChangingRequestID(t *testing
 	requestID := "aaé"
 
 	interceptor := grpcmeta.NewServer(method.NewPolicy(), env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"), 3).UnaryInterceptor()
-	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("request-id", requestID))
+	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs(grpc.RequestIDKey, requestID))
 	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(ctx, "request")
 
 	_, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
@@ -306,7 +306,7 @@ func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
 
 func TestUnaryServerInterceptorPreservesIncomingRequestID(t *testing.T) {
 	interceptor := grpcmeta.NewServer(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"), 0).UnaryInterceptor()
-	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
+	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs(grpc.RequestIDKey, "caller-id"))
 
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
 		require.Equal(t, grpcmeta.String("caller-id"), meta.RequestID(ctx))
@@ -376,13 +376,13 @@ func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
 		return nil
 	})
 	require.NoError(t, err)
-	require.Equal(t, []string{"1", "v2"}, stream.Header.Get("service-version"))
-	require.Equal(t, []string{"generated-id"}, stream.Header.Get("request-id"))
+	require.Equal(t, []string{"1", "v2"}, stream.Header.Get(grpc.ServiceVersionKey))
+	require.Equal(t, []string{"generated-id"}, stream.Header.Get(grpc.RequestIDKey))
 }
 
 func TestStreamServerInterceptorPreservesIncomingRequestID(t *testing.T) {
 	interceptor := grpcmeta.NewServer(method.NewPolicy(), env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"), 0).StreamInterceptor()
-	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("request-id", "caller-id"))
+	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs(grpc.RequestIDKey, "caller-id"))
 	stream := &test.MetaServerStream{Ctx: ctx}
 
 	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/greet.v1.Greeter/SayStreamHello"}, func(_ any, stream grpc.ServerStream) error {
@@ -391,7 +391,7 @@ func TestStreamServerInterceptorPreservesIncomingRequestID(t *testing.T) {
 		return nil
 	})
 	require.NoError(t, err)
-	require.Equal(t, []string{"caller-id"}, stream.Header.Get("request-id"))
+	require.Equal(t, []string{"caller-id"}, stream.Header.Get(grpc.RequestIDKey))
 }
 
 func TestStreamServerInterceptorExtractsOperationMetadata(t *testing.T) {
@@ -399,8 +399,8 @@ func TestStreamServerInterceptorExtractsOperationMetadata(t *testing.T) {
 	policy.Operation(health.WatchFullMethodName)
 	interceptor := grpcmeta.NewServer(policy, env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"), 0).StreamInterceptor()
 	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs(
-		"authorization", "invalid",
-		"user-agent", "watch-agent",
+		grpc.AuthorizationKey, "invalid",
+		grpc.UserAgentKey, "watch-agent",
 	))
 	stream := &test.MetaServerStream{Ctx: ctx}
 
@@ -413,14 +413,14 @@ func TestStreamServerInterceptorExtractsOperationMetadata(t *testing.T) {
 }
 
 func TestExtractIncomingReturnsMutableCopy(t *testing.T) {
-	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs("request-id", "original"))
+	ctx := grpcmeta.NewIncomingContext(t.Context(), grpcmeta.Pairs(grpc.RequestIDKey, "original"))
 
 	md := grpcmeta.ExtractIncoming(ctx)
-	md.Set("request-id", "changed")
+	md.Set(grpc.RequestIDKey, "changed")
 
 	original, ok := grpcmeta.FromIncomingContext(ctx)
 	require.True(t, ok)
-	require.Equal(t, []string{"original"}, original.Get("request-id"))
+	require.Equal(t, []string{"original"}, original.Get(grpc.RequestIDKey))
 }
 
 func TestExtractIncomingReturnsEmptyMapWithoutMetadata(t *testing.T) {
@@ -431,14 +431,14 @@ func TestExtractIncomingReturnsEmptyMapWithoutMetadata(t *testing.T) {
 }
 
 func TestExtractOutgoingReturnsMutableCopy(t *testing.T) {
-	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs("request-id", "original"))
+	ctx := grpcmeta.NewOutgoingContext(t.Context(), grpcmeta.Pairs(grpc.RequestIDKey, "original"))
 
 	md := grpcmeta.ExtractOutgoing(ctx)
-	md.Set("request-id", "changed")
+	md.Set(grpc.RequestIDKey, "changed")
 
 	original, ok := grpcmeta.FromOutgoingContext(ctx)
 	require.True(t, ok)
-	require.Equal(t, []string{"original"}, original.Get("request-id"))
+	require.Equal(t, []string{"original"}, original.Get(grpc.RequestIDKey))
 }
 
 func TestExtractOutgoingReturnsEmptyMapWithoutMetadata(t *testing.T) {

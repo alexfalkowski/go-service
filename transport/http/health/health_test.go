@@ -58,8 +58,8 @@ func TestReadinessNoop(t *testing.T) {
 	)
 
 	header := http.Header{}
-	header.Add("Request-Id", "test-id")
-	header.Add("User-Agent", "test-user-agent")
+	header.Add(http.RequestIDKey, "test-id")
+	header.Add(http.UserAgentKey, "test-user-agent")
 
 	url := world.NamedServerURL("http", "readyz")
 

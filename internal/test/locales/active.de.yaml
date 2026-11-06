@@ -1,0 +1,5 @@
+page_title: Meine Aufgabenliste
+greeting: Hallo, {{.Name}}!
+tasks:
+  one: '{{.PluralCount}} Aufgabe'
+  other: '{{.PluralCount}} Aufgaben'

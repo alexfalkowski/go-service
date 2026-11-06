@@ -54,10 +54,10 @@ func TestRoundTripperAppendDoesNotOverwriteRequestID(t *testing.T) {
 		env.UserAgent("agent"),
 		test.StaticIDGenerator("request-id"),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-			req.Header.Add("User-Agent", "next-agent")
+			req.Header.Add(http.UserAgentKey, "next-agent")
 
-			require.Equal(t, []string{"agent", "next-agent"}, req.Header.Values("User-Agent"))
-			require.Equal(t, []string{"request-id"}, req.Header.Values("Request-Id"))
+			require.Equal(t, []string{"agent", "next-agent"}, req.Header.Values(http.UserAgentKey))
+			require.Equal(t, []string{"request-id"}, req.Header.Values(http.RequestIDKey))
 
 			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
 		}),
@@ -68,8 +68,8 @@ func TestRoundTripperAppendDoesNotOverwriteRequestID(t *testing.T) {
 	res, err := roundTripper.RoundTrip(req)
 	require.NoError(t, err)
 	require.NoError(t, res.Body.Close())
-	require.Empty(t, req.Header.Values("User-Agent"))
-	require.Empty(t, req.Header.Values("Request-Id"))
+	require.Empty(t, req.Header.Values(http.UserAgentKey))
+	require.Empty(t, req.Header.Values(http.RequestIDKey))
 }
 
 func TestRoundTripperSanitizesInvalidMetadata(t *testing.T) {
@@ -77,8 +77,8 @@ func TestRoundTripperSanitizesInvalidMetadata(t *testing.T) {
 		env.UserAgent("fallback-agent"),
 		test.StaticIDGenerator("generated-id"),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-			require.Equal(t, "fallback-agent", req.Header.Get("User-Agent"))
-			require.Equal(t, "generated-id", req.Header.Get("Request-Id"))
+			require.Equal(t, "fallback-agent", req.Header.Get(http.UserAgentKey))
+			require.Equal(t, "generated-id", req.Header.Get(http.RequestIDKey))
 			require.Equal(t, "aa\x01bb", meta.UserAgent(req.Context()).Value())
 			require.Equal(t, "aa\x01bb", meta.RequestID(req.Context()).Value())
 
@@ -87,8 +87,8 @@ func TestRoundTripperSanitizesInvalidMetadata(t *testing.T) {
 	)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
 	require.NoError(t, err)
-	req.Header.Set("User-Agent", "aa\x01bb")
-	req.Header.Set("Request-Id", "aa\x01bb")
+	req.Header.Set(http.UserAgentKey, "aa\x01bb")
+	req.Header.Set(http.RequestIDKey, "aa\x01bb")
 
 	res, err := roundTripper.RoundTrip(req)
 	require.NoError(t, err)
@@ -100,14 +100,14 @@ func TestRoundTripperOmitsInvalidUserAgentFallback(t *testing.T) {
 		env.UserAgent("fallback-\x01agent"),
 		test.StaticIDGenerator("generated-id"),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-			require.Equal(t, []string{strings.Empty}, req.Header.Values("User-Agent"))
+			require.Equal(t, []string{strings.Empty}, req.Header.Values(http.UserAgentKey))
 
 			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
 		}),
 	)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
 	require.NoError(t, err)
-	req.Header.Set("User-Agent", "aa\x01bb")
+	req.Header.Set(http.UserAgentKey, "aa\x01bb")
 
 	res, err := roundTripper.RoundTrip(req)
 	require.NoError(t, err)
@@ -117,7 +117,7 @@ func TestRoundTripperOmitsInvalidUserAgentFallback(t *testing.T) {
 func TestRoundTripperOmitsInvalidUserAgentFallbackOnWire(t *testing.T) {
 	userAgent := make(chan string, 1)
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		userAgent <- req.Header.Get("User-Agent")
+		userAgent <- req.Header.Get(http.UserAgentKey)
 		res.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
@@ -137,16 +137,16 @@ func TestRoundTripperKeepsHighByteMetadata(t *testing.T) {
 		env.UserAgent("fallback-agent"),
 		test.StaticIDGenerator("generated-id"),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-			require.Equal(t, "aaé", req.Header.Get("User-Agent"))
-			require.Equal(t, "aaé", req.Header.Get("Request-Id"))
+			require.Equal(t, "aaé", req.Header.Get(http.UserAgentKey))
+			require.Equal(t, "aaé", req.Header.Get(http.RequestIDKey))
 
 			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
 		}),
 	)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
 	require.NoError(t, err)
-	req.Header.Set("User-Agent", "aaé")
-	req.Header.Set("Request-Id", "aaé")
+	req.Header.Set(http.UserAgentKey, "aaé")
+	req.Header.Set(http.RequestIDKey, "aaé")
 
 	res, err := roundTripper.RoundTrip(req)
 	require.NoError(t, err)
@@ -158,8 +158,8 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 		env.UserAgent("agent"),
 		test.StaticIDGenerator("request-id"),
 		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-			require.Equal(t, "agent", req.Header.Get("User-Agent"))
-			require.Equal(t, "request-id", req.Header.Get("Request-Id"))
+			require.Equal(t, "agent", req.Header.Get(http.UserAgentKey))
+			require.Equal(t, "request-id", req.Header.Get(http.RequestIDKey))
 
 			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
 		}),
@@ -201,10 +201,10 @@ func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req, func(res http.ResponseWriter, _ *http.Request) {
-		res.Header().Add("Service-Version", "v2")
+		res.Header().Add(http.ServiceVersionKey, "v2")
 
-		require.Equal(t, []string{"1", "v2"}, res.Header().Values("Service-Version"))
-		require.Equal(t, []string{"request-id"}, res.Header().Values("Request-Id"))
+		require.Equal(t, []string{"1", "v2"}, res.Header().Values(http.ServiceVersionKey))
+		require.Equal(t, []string{"request-id"}, res.Header().Values(http.RequestIDKey))
 	})
 }
 
@@ -238,7 +238,7 @@ func TestHandlerBoundsSpanMetaWithoutChangingRequestID(t *testing.T) {
 	ctx, span := tracer.GetProvider().Tracer(test.Name.String()).Start(t.Context(), "request")
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "/users/123", http.NoBody)
 	require.NoError(t, err)
-	req.Header.Set("Request-Id", requestID)
+	req.Header.Set(http.RequestIDKey, requestID)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
@@ -255,7 +255,7 @@ func TestHandlerBoundsSpanMetaWithoutChangingRequestID(t *testing.T) {
 	}
 	require.Equal(t, "aa", values[meta.RequestIDKey])
 	require.True(t, utf8.ValidString(values[meta.RequestIDKey]))
-	require.Equal(t, requestID, res.Header().Get("Request-Id"))
+	require.Equal(t, requestID, res.Header().Get(http.RequestIDKey))
 }
 
 func TestHandlerStoresServiceMethodFromPath(t *testing.T) {
@@ -292,7 +292,7 @@ func TestHandlerTrimsForwardedIPAddr(t *testing.T) {
 	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil, 1024)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
-	req.Header.Set("X-Forwarded-For", " 203.0.113.7 , 70.41.3.18")
+	req.Header.Set(http.XForwardedForKey, " 203.0.113.7 , 70.41.3.18")
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {
@@ -305,7 +305,7 @@ func TestHandlerStoresGeolocationAsIgnored(t *testing.T) {
 	handler := httpmeta.NewHandler(env.UserAgent("agent"), env.Version("v1"), test.StaticIDGenerator("request-id"), nil, 1024)
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
-	req.Header.Set("Geolocation", "geo:47,11")
+	req.Header.Set(http.GeolocationKey, "geo:47,11")
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req, func(_ http.ResponseWriter, req *http.Request) {

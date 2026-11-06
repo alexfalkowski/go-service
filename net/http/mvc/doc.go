@@ -18,4 +18,21 @@
 //
 // Construct views during startup or route registration so template read and parse failures fail fast before
 // the server starts handling requests.
+//
+// Localization:
+//
+// Provide an application-owned *[github.com/alexfalkowski/go-service/v2/i18n.Catalog]
+// alongside the filesystem and layout to enable [Template.Localizer]. Each render
+// selects a language from [WithLanguage], then Accept-Language, then the catalog
+// default. Set WithLanguage in middleware before the MVC handler runs; a
+// controller cannot replace its caller's context by deriving a new one.
+// Full, partial, error, and not-found views share this behavior. Localized
+// responses add Vary: Accept-Language and Content-Language for the selected
+// catalog language. User-specific language preferences also require an
+// application-appropriate cache policy, such as Cache-Control: private.
+//
+// Localizer methods return plain text, which html/template escapes. Missing
+// translations fall back to the default language; missing messages or variable
+// errors fail rendering before the response body is written. Without a catalog,
+// Localizer is nil and localization does not change response headers.
 package mvc

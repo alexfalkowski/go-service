@@ -1,12 +1,13 @@
 package otlp_test
 
 import (
-	"net/http"
+	nethttp "net/http"
 	"net/http/httptest"
 	"testing"
 
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -17,7 +18,7 @@ func TestNewHTTPClientUsesConfiguredTimeoutAndTLS(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, time.Second.Duration(), client.Timeout)
 
-	transport, ok := client.Transport.(*http.Transport)
+	transport, ok := client.Transport.(*nethttp.Transport)
 	require.True(t, ok)
 	require.NotNil(t, transport.TLSClientConfig)
 	require.Equal(t, "collector.example.com", transport.TLSClientConfig.ServerName)
@@ -30,6 +31,8 @@ func TestNewHTTPClientRejectsInvalidTLSConfig(t *testing.T) {
 }
 
 func TestNewHTTPClientReturnsRedirectWithoutFollowingIt(t *testing.T) {
+	const headerName = "X-Api-Key"
+
 	trustedHeaders := make(chan string, 1)
 	attackerRequests := make(chan struct{}, 1)
 	attacker := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
@@ -38,15 +41,15 @@ func TestNewHTTPClientReturnsRedirectWithoutFollowingIt(t *testing.T) {
 	t.Cleanup(attacker.Close)
 
 	trusted := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		trustedHeaders <- req.Header.Get("X-Api-Key")
-		res.Header().Set("Location", attacker.URL+"/v1/traces")
+		trustedHeaders <- req.Header.Get(headerName)
+		res.Header().Set(http.LocationKey, attacker.URL+"/v1/traces")
 		res.WriteHeader(http.StatusTemporaryRedirect)
 	}))
 	t.Cleanup(trusted.Close)
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, trusted.URL+"/v1/traces", http.NoBody)
 	require.NoError(t, err)
-	req.Header.Set("X-Api-Key", "token")
+	req.Header.Set(headerName, "token")
 
 	client, err := otlp.NewHTTPClient(test.FS, nil, 0)
 	require.NoError(t, err)

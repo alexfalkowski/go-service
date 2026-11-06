@@ -1,11 +1,11 @@
 package mvc
 
 import (
-	"io/fs"
-
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/i18n"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
@@ -35,7 +35,7 @@ type ServerParams struct {
 	// FileSystem is the filesystem used to load template files and static files.
 	//
 	// It is optional: when nil, MVC is considered not defined and routing helpers return false.
-	FileSystem fs.FS `optional:"true"`
+	FileSystem io.FS `optional:"true"`
 
 	// Pool is the shared buffer pool used to reduce allocations while rendering views and buffering static files.
 	Pool *sync.BufferPool
@@ -45,6 +45,10 @@ type ServerParams struct {
 	// It is optional: when nil or invalid (see Layout.IsValid), MVC is considered not defined and
 	// routing helpers return false.
 	Layout *Layout `optional:"true"`
+
+	// Catalog enables request-localized messages in templates through .Localizer.
+	// Applications provide a catalog during startup; omitting it leaves .Localizer nil.
+	Catalog *i18n.Catalog `optional:"true"`
 }
 
 // NewServer constructs a Server from params.
@@ -67,6 +71,7 @@ func NewServer(params ServerParams) *Server {
 		fileSystem: params.FileSystem,
 		pool:       params.Pool,
 		layout:     params.Layout,
+		catalog:    params.Catalog,
 	}
 }
 
@@ -74,9 +79,10 @@ func NewServer(params ServerParams) *Server {
 type Server struct {
 	router             *http.Router
 	fmap               sprout.FunctionMap
-	fileSystem         fs.FS
+	fileSystem         io.FS
 	pool               *sync.BufferPool
 	layout             *Layout
+	catalog            *i18n.Catalog
 	notFoundController func(ctx context.Context) (*View, any)
 }
 

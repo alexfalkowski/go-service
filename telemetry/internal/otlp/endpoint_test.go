@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
 	"github.com/stretchr/testify/require"
 )
 
 func TestValidateEndpoint(t *testing.T) {
-	headers := map[string]string{"Authorization": "Bearer token"}
+	headers := map[string]string{http.AuthorizationKey: "Bearer token"}
 
 	tests := []struct {
 		endpoint otlp.Endpoint
@@ -47,7 +48,7 @@ func TestValidateEndpointInvalidURL(t *testing.T) {
 	err := otlp.ValidateEndpoint(otlp.Endpoint{
 		Protocol: "http",
 		Address:  "http://%",
-		Headers:  map[string]string{"Authorization": "Bearer token"},
+		Headers:  map[string]string{http.AuthorizationKey: "Bearer token"},
 	})
 
 	require.Error(t, err)
@@ -92,7 +93,7 @@ func TestValidateEndpointRejectsInvalidEndpoint(t *testing.T) {
 }
 
 func TestValidateEndpointRequiresEndpoint(t *testing.T) {
-	headers := map[string]string{"Authorization": "Bearer token"}
+	headers := map[string]string{http.AuthorizationKey: "Bearer token"}
 
 	require.ErrorIs(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Headers: headers}), otlp.ErrMissingEndpoint)
 	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "https://collector.example.com/v1/traces", Headers: headers}))
@@ -113,7 +114,7 @@ func TestValidateEndpointIgnoresEnv(t *testing.T) {
 
 	err := otlp.ValidateEndpoint(otlp.Endpoint{
 		Protocol: "http",
-		Headers:  map[string]string{"Authorization": "Bearer token"},
+		Headers:  map[string]string{http.AuthorizationKey: "Bearer token"},
 	})
 	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
 }

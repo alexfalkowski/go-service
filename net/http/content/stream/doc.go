@@ -10,8 +10,9 @@
 // [NewHandler] creates a send-only streaming response handler and works over HTTP/1.x or HTTP/2.
 // [NewRequestHandler] creates a bidirectional request/response handler and requires HTTP/2 (including
 // h2c). Use one goroutine at a time with [Stream.Send]; for [RequestStream], the supported pattern is
-// one goroutine calling Send and one calling Recv. See the executable streaming examples in
-// `net/http/rest` and `net/http/client` for complete server and client calls.
+// one goroutine calling Send and one calling Recv. Server route helpers live in
+// [github.com/alexfalkowski/go-service/v2/net/http/rest]; client callbacks use
+// [github.com/alexfalkowski/go-service/v2/net/http/client.Client.RequestStream].
 //
 // # Limits and lifecycle
 //

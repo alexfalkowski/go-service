@@ -262,7 +262,7 @@ func TestDoDefaultRedirectRejectsCrossOriginCredentialRoundTrip(t *testing.T) {
 		urls = append(urls, req.URL.String())
 		return &http.Response{
 			StatusCode: http.StatusTemporaryRedirect,
-			Header:     http.Header{"Location": []string{"https://other.example.com/target"}},
+			Header:     http.Header{http.LocationKey: []string{"https://other.example.com/target"}},
 			Body:       http.NoBody,
 			Request:    req,
 		}, nil
@@ -296,7 +296,7 @@ func TestDoRedirectSameOriginRejectsCrossOriginCredentialRoundTrip(t *testing.T)
 		urls = append(urls, req.URL.String())
 		return &http.Response{
 			StatusCode: http.StatusTemporaryRedirect,
-			Header:     http.Header{"Location": []string{"https://other.example.com/target"}},
+			Header:     http.Header{http.LocationKey: []string{"https://other.example.com/target"}},
 			Body:       http.NoBody,
 			Request:    req,
 		}, nil
@@ -334,7 +334,7 @@ func TestDoRedirectIgnoreRejectsRedirectRoundTrip(t *testing.T) {
 		urls = append(urls, req.URL.String())
 		return &http.Response{
 			StatusCode: http.StatusTemporaryRedirect,
-			Header:     http.Header{"Location": []string{"https://example.com/target"}},
+			Header:     http.Header{http.LocationKey: []string{"https://example.com/target"}},
 			Body:       http.NoBody,
 			Request:    req,
 		}, nil
@@ -484,7 +484,7 @@ type authRoundTripper struct {
 
 func (r authRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	cloned := req.Clone(req.Context())
-	cloned.Header.Set("Authorization", "Bearer secret")
+	cloned.Header.Set(http.AuthorizationKey, "Bearer secret")
 	return r.RoundTripper.RoundTrip(cloned)
 }
 
@@ -496,13 +496,13 @@ func redirectingAuthRoundTripper(t *testing.T, urls *[]string, target string) ht
 		if len(*urls) == 1 {
 			return &http.Response{
 				StatusCode: http.StatusTemporaryRedirect,
-				Header:     http.Header{"Location": []string{target}},
+				Header:     http.Header{http.LocationKey: []string{target}},
 				Body:       http.NoBody,
 				Request:    req,
 			}, nil
 		}
 
-		require.Equal(t, "Bearer secret", req.Header.Get("Authorization"))
+		require.Equal(t, "Bearer secret", req.Header.Get(http.AuthorizationKey))
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Header:     http.Header{http.ContentTypeKey: []string{media.Text}},

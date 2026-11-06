@@ -37,7 +37,7 @@ func TestUnaryCallSucceedsWithoutTLS(t *testing.T) {
 	resp, err := client.SayHello(ctx, req, grpc.Header(&header))
 	require.NoError(t, err)
 
-	h := header.Get("service-version")
+	h := header.Get(grpc.ServiceVersionKey)
 	require.NotEmpty(t, h)
 	require.Equal(t, "1.0.0", h[0])
 	require.Equal(t, "Hello test", resp.GetMessage())
