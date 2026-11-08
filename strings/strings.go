@@ -139,6 +139,21 @@ func Trim(s, cutset string) string {
 	return strings.Trim(s, cutset)
 }
 
+// TrimFunc wraps [strings.TrimFunc] without changing its semantics.
+func TrimFunc(s string, f func(rune) bool) string {
+	return strings.TrimFunc(s, f)
+}
+
+// TrimLeft wraps [strings.TrimLeft] without changing its semantics.
+func TrimLeft(s, cutset string) string {
+	return strings.TrimLeft(s, cutset)
+}
+
+// TrimLeftFunc wraps [strings.TrimLeftFunc] without changing its semantics.
+func TrimLeftFunc(s string, f func(rune) bool) string {
+	return strings.TrimLeftFunc(s, f)
+}
+
 // TrimPrefix wraps [strings.TrimPrefix] without changing its semantics.
 func TrimPrefix(s, prefix string) string {
 	return strings.TrimPrefix(s, prefix)
@@ -149,6 +164,11 @@ func TrimRight(s, cutset string) string {
 	return strings.TrimRight(s, cutset)
 }
 
+// TrimRightFunc wraps [strings.TrimRightFunc] without changing its semantics.
+func TrimRightFunc(s string, f func(rune) bool) string {
+	return strings.TrimRightFunc(s, f)
+}
+
 // TrimSpace returns s with all leading and trailing white space removed.
 //
 // White space is defined by Unicode.
@@ -156,6 +176,11 @@ func TrimRight(s, cutset string) string {
 // This is a thin wrapper around [strings.TrimSpace] and does not change semantics.
 func TrimSpace(s string) string {
 	return strings.TrimSpace(s)
+}
+
+// TrimSuffix wraps [strings.TrimSuffix] without changing its semantics.
+func TrimSuffix(s, suffix string) string {
+	return strings.TrimSuffix(s, suffix)
 }
 
 // IsEmpty reports whether s is empty.

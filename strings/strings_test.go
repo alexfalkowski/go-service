@@ -57,10 +57,142 @@ func TestTrimPrefixRemovesLeadingPrefix(t *testing.T) {
 	require.Equal(t, "env:CONFIG", strings.TrimPrefix("env:env:CONFIG", "env:"))
 }
 
+func TestTrimFuncRemovesMatchingRunesFromBothEnds(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		s    string
+		want string
+	}{
+		{name: "matching ends", s: "/éservice/éadminé/", want: "service/éadmin"},
+		{name: "missing match", s: "service", want: "service"},
+		{name: "nonmatching ends", s: " /service/ ", want: " /service/ "},
+		{name: "all matching", s: "/é/", want: ""},
+		{name: "empty input", s: "", want: ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := strings.TrimFunc(test.s, func(r rune) bool { return r == '/' || r == 'é' })
+
+			require.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestTrimLeftRemovesLeadingCutset(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		s      string
+		cutset string
+		want   string
+	}{
+		{name: "leading cutset", s: "///service/admin///", cutset: "/", want: "service/admin///"},
+		{name: "unicode cutset", s: "/é/éservice/éadminé/", cutset: "é/", want: "service/éadminé/"},
+		{name: "missing cutset", s: "service/", cutset: "/", want: "service/"},
+		{name: "empty cutset", s: "/service/", cutset: "", want: "/service/"},
+		{name: "all matching", s: "///", cutset: "/", want: ""},
+		{name: "empty input", s: "", cutset: "/", want: ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, test.want, strings.TrimLeft(test.s, test.cutset))
+		})
+	}
+}
+
+func TestTrimLeftFuncRemovesLeadingMatchingRunes(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		s    string
+		want string
+	}{
+		{name: "matching ends", s: "/éservice/éadminé/", want: "service/éadminé/"},
+		{name: "missing match", s: "serviceé/", want: "serviceé/"},
+		{name: "nonmatching ends", s: " /service/ ", want: " /service/ "},
+		{name: "all matching", s: "/é/", want: ""},
+		{name: "empty input", s: "", want: ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := strings.TrimLeftFunc(test.s, func(r rune) bool { return r == '/' || r == 'é' })
+
+			require.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestTrimRightRemovesTrailingCutset(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, "/service/admin", strings.TrimRight("/service/admin///", "/"))
+}
+
+func TestTrimRightFuncRemovesTrailingMatchingRunes(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		s    string
+		want string
+	}{
+		{name: "matching ends", s: "/éservice/éadminé/", want: "/éservice/éadmin"},
+		{name: "missing match", s: "/éservice", want: "/éservice"},
+		{name: "nonmatching ends", s: " /service/ ", want: " /service/ "},
+		{name: "all matching", s: "/é/", want: ""},
+		{name: "empty input", s: "", want: ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := strings.TrimRightFunc(test.s, func(r rune) bool { return r == '/' || r == 'é' })
+
+			require.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestTrimSuffixRemovesSingleTrailingSuffix(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		s      string
+		suffix string
+		want   string
+	}{
+		{name: "matching suffix", s: "config.yaml", suffix: ".yaml", want: "config"},
+		{name: "repeated suffix", s: "config.yaml.yaml", suffix: ".yaml", want: "config.yaml"},
+		{name: "prefix only", s: ".yaml.config", suffix: ".yaml", want: ".yaml.config"},
+		{name: "partial suffix", s: "config.yml", suffix: ".yaml", want: "config.yml"},
+		{name: "unicode suffix", s: "serviceé", suffix: "é", want: "service"},
+		{name: "entire input", s: ".yaml", suffix: ".yaml", want: ""},
+		{name: "empty suffix", s: "config.yaml", suffix: "", want: "config.yaml"},
+		{name: "empty input", s: "", suffix: ".yaml", want: ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, test.want, strings.TrimSuffix(test.s, test.suffix))
+		})
+	}
 }
 
 func TestBytesConvertsStringsToEqualBytes(t *testing.T) {
