@@ -1,13 +1,13 @@
-// Package slices provides small, generic helpers for working with slices.
+// Package slices wraps the standard library [slices] package and provides
+// additional generic helpers for working with slices.
 //
 // The helpers in this package are intentionally lightweight and are designed to
 // reduce repetitive boilerplate in common slice-manipulation patterns used across
 // go-service.
 //
-// This package complements the Go standard library [slices] package rather than
-// replacing it. Prefer the standard library first when it provides what you need,
-// and use these helpers when they improve readability or avoid repeated nil/zero
-// checks.
+// Standard library operations are available through thin wrappers so callers can
+// use this package for sorting, searching, iteration, and slice manipulation.
+// Additional helpers avoid repeated nil/zero checks.
 //
 // # Conditional append helpers
 //

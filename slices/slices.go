@@ -108,3 +108,163 @@ func ContainsFunc[S ~[]E, E any](slice S, f func(E) bool) bool {
 func DeleteFunc[S ~[]E, E any](slice S, del func(E) bool) S {
 	return slices.DeleteFunc(slice, del)
 }
+
+// All wraps [slices.All] to keep iteration on the project-owned surface.
+func All[S ~[]E, E any](slice S) iter.Seq2[int, E] {
+	return slices.All(slice)
+}
+
+// AppendSeq wraps [slices.AppendSeq] to keep appending on the project-owned surface.
+func AppendSeq[S ~[]E, E any](slice S, seq iter.Seq[E]) S {
+	return slices.AppendSeq(slice, seq)
+}
+
+// BinarySearch wraps [slices.BinarySearch] to keep searching on the project-owned surface.
+func BinarySearch[S ~[]E, E cmp.Ordered](slice S, target E) (int, bool) {
+	return slices.BinarySearch(slice, target)
+}
+
+// BinarySearchFunc wraps [slices.BinarySearchFunc] to keep searching on the project-owned surface.
+func BinarySearchFunc[S ~[]E, E, T any](slice S, target T, compare func(E, T) int) (int, bool) {
+	return slices.BinarySearchFunc(slice, target, compare)
+}
+
+// Chunk wraps [slices.Chunk] to keep iteration on the project-owned surface.
+func Chunk[S ~[]E, E any](slice S, n int) iter.Seq[S] {
+	return slices.Chunk(slice, n)
+}
+
+// Compact wraps [slices.Compact] to keep compaction on the project-owned surface.
+func Compact[S ~[]E, E comparable](slice S) S {
+	return slices.Compact(slice)
+}
+
+// CompactFunc wraps [slices.CompactFunc] to keep compaction on the project-owned surface.
+func CompactFunc[S ~[]E, E any](slice S, equal func(E, E) bool) S {
+	return slices.CompactFunc(slice, equal)
+}
+
+// Compare wraps [slices.Compare] to keep comparison on the project-owned surface.
+func Compare[S ~[]E, E cmp.Ordered](first, second S) int {
+	return slices.Compare(first, second)
+}
+
+// CompareFunc wraps [slices.CompareFunc] to keep comparison on the project-owned surface.
+func CompareFunc[S1 ~[]E1, S2 ~[]E2, E1, E2 any](first S1, second S2, compare func(E1, E2) int) int {
+	return slices.CompareFunc(first, second, compare)
+}
+
+// Concat wraps [slices.Concat] to keep concatenation on the project-owned surface.
+func Concat[S ~[]E, E any](all ...S) S {
+	return slices.Concat(all...)
+}
+
+// Delete wraps [slices.Delete] to keep deletion on the project-owned surface.
+func Delete[S ~[]E, E any](slice S, i, j int) S {
+	return slices.Delete(slice, i, j)
+}
+
+// Equal wraps [slices.Equal] to keep equality checks on the project-owned surface.
+func Equal[S ~[]E, E comparable](first, second S) bool {
+	return slices.Equal(first, second)
+}
+
+// EqualFunc wraps [slices.EqualFunc] to keep equality checks on the project-owned surface.
+func EqualFunc[S1 ~[]E1, S2 ~[]E2, E1, E2 any](first S1, second S2, equal func(E1, E2) bool) bool {
+	return slices.EqualFunc(first, second, equal)
+}
+
+// Grow wraps [slices.Grow] to keep capacity management on the project-owned surface.
+func Grow[S ~[]E, E any](slice S, n int) S {
+	return slices.Grow(slice, n)
+}
+
+// Index wraps [slices.Index] to keep searching on the project-owned surface.
+func Index[S ~[]E, E comparable](slice S, value E) int {
+	return slices.Index(slice, value)
+}
+
+// IndexFunc wraps [slices.IndexFunc] to keep searching on the project-owned surface.
+func IndexFunc[S ~[]E, E any](slice S, f func(E) bool) int {
+	return slices.IndexFunc(slice, f)
+}
+
+// Insert wraps [slices.Insert] to keep insertion on the project-owned surface.
+func Insert[S ~[]E, E any](slice S, i int, values ...E) S {
+	return slices.Insert(slice, i, values...)
+}
+
+// IsSorted wraps [slices.IsSorted] to keep sort checks on the project-owned surface.
+func IsSorted[S ~[]E, E cmp.Ordered](slice S) bool {
+	return slices.IsSorted(slice)
+}
+
+// IsSortedFunc wraps [slices.IsSortedFunc] to keep sort checks on the project-owned surface.
+func IsSortedFunc[S ~[]E, E any](slice S, compare func(E, E) int) bool {
+	return slices.IsSortedFunc(slice, compare)
+}
+
+// Max wraps [slices.Max] to keep extrema selection on the project-owned surface.
+func Max[S ~[]E, E cmp.Ordered](slice S) E {
+	return slices.Max(slice)
+}
+
+// MaxFunc wraps [slices.MaxFunc] to keep extrema selection on the project-owned surface.
+func MaxFunc[S ~[]E, E any](slice S, compare func(E, E) int) E {
+	return slices.MaxFunc(slice, compare)
+}
+
+// Min wraps [slices.Min] to keep extrema selection on the project-owned surface.
+func Min[S ~[]E, E cmp.Ordered](slice S) E {
+	return slices.Min(slice)
+}
+
+// MinFunc wraps [slices.MinFunc] to keep extrema selection on the project-owned surface.
+func MinFunc[S ~[]E, E any](slice S, compare func(E, E) int) E {
+	return slices.MinFunc(slice, compare)
+}
+
+// Repeat wraps [slices.Repeat] to keep repetition on the project-owned surface.
+func Repeat[S ~[]E, E any](slice S, count int) S {
+	return slices.Repeat(slice, count)
+}
+
+// Replace wraps [slices.Replace] to keep replacement on the project-owned surface.
+func Replace[S ~[]E, E any](slice S, i, j int, values ...E) S {
+	return slices.Replace(slice, i, j, values...)
+}
+
+// Reverse wraps [slices.Reverse] to keep reversal on the project-owned surface.
+func Reverse[S ~[]E, E any](slice S) {
+	slices.Reverse(slice)
+}
+
+// SortFunc wraps [slices.SortFunc] to keep sorting on the project-owned surface.
+func SortFunc[S ~[]E, E any](slice S, compare func(E, E) int) {
+	slices.SortFunc(slice, compare)
+}
+
+// SortStableFunc wraps [slices.SortStableFunc] to keep stable sorting on the project-owned surface.
+func SortStableFunc[S ~[]E, E any](slice S, compare func(E, E) int) {
+	slices.SortStableFunc(slice, compare)
+}
+
+// Sorted wraps [slices.Sorted] to keep iterator sorting on the project-owned surface.
+func Sorted[E cmp.Ordered](seq iter.Seq[E]) []E {
+	return slices.Sorted(seq)
+}
+
+// SortedFunc wraps [slices.SortedFunc] to keep iterator sorting on the project-owned surface.
+func SortedFunc[E any](seq iter.Seq[E], compare func(E, E) int) []E {
+	return slices.SortedFunc(seq, compare)
+}
+
+// SortedStableFunc wraps [slices.SortedStableFunc] to keep stable iterator sorting on the project-owned surface.
+func SortedStableFunc[E any](seq iter.Seq[E], compare func(E, E) int) []E {
+	return slices.SortedStableFunc(seq, compare)
+}
+
+// Values wraps [slices.Values] to keep iteration on the project-owned surface.
+func Values[S ~[]E, E any](slice S) iter.Seq[E] {
+	return slices.Values(slice)
+}
