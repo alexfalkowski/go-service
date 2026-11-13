@@ -1,23 +1,23 @@
 package grpc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/crypto/tls"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
 )
 
-// DialOption is an alias for [github.com/alexfalkowski/go-service/v2/net/grpc.DialOption].
+// DialOption is an alias for [github.com/alexfalkowski/go-service/v3/net/grpc.DialOption].
 //
 // It is exposed so callers can use raw dial options through the transport/grpc
 // import path when they do not need the higher-level ClientOption stack.
 type DialOption = grpc.DialOption
 
-// MethodPolicy is an alias for [github.com/alexfalkowski/go-service/v2/net/grpc.MethodPolicy].
+// MethodPolicy is an alias for [github.com/alexfalkowski/go-service/v3/net/grpc.MethodPolicy].
 type MethodPolicy = grpc.MethodPolicy
 
-// Registrar is an alias for [github.com/alexfalkowski/go-service/v2/net/grpc.Registrar].
+// Registrar is an alias for [github.com/alexfalkowski/go-service/v3/net/grpc.Registrar].
 type Registrar = grpc.Registrar
 
-// ServiceRegistrar is an alias for [github.com/alexfalkowski/go-service/v2/net/grpc.ServiceRegistrar].
+// ServiceRegistrar is an alias for [github.com/alexfalkowski/go-service/v3/net/grpc.ServiceRegistrar].
 type ServiceRegistrar = grpc.ServiceRegistrar
 
 // NewMethodPolicy constructs a gRPC method policy.
@@ -32,7 +32,7 @@ func NewRegistrar(registrar ServiceRegistrar, policy *MethodPolicy) *Registrar {
 
 // NewClientConn constructs a low-level gRPC client channel using raw dial options.
 //
-// This forwards to [github.com/alexfalkowski/go-service/v2/net/grpc.NewClient]. No I/O is performed during construction;
+// This forwards to [github.com/alexfalkowski/go-service/v3/net/grpc.NewClient]. No I/O is performed during construction;
 // the returned ClientConn connects automatically when it is used for RPCs (or
 // when Connect is called explicitly).
 //
@@ -44,7 +44,7 @@ func NewClientConn(target string, opts ...DialOption) (*ClientConn, error) {
 
 // NewInsecureCredentials returns transport credentials that disable transport security.
 //
-// This forwards to [github.com/alexfalkowski/go-service/v2/net/grpc.NewInsecureCredentials] and is intended for local
+// This forwards to [github.com/alexfalkowski/go-service/v3/net/grpc.NewInsecureCredentials] and is intended for local
 // development, tests, or deployments where transport security is handled
 // out-of-band.
 func NewInsecureCredentials() grpc.TransportCredentials {
@@ -53,15 +53,15 @@ func NewInsecureCredentials() grpc.TransportCredentials {
 
 // NewTLS constructs TLS transport credentials from c.
 //
-// This forwards to [github.com/alexfalkowski/go-service/v2/net/grpc.NewTLS].
+// This forwards to [github.com/alexfalkowski/go-service/v3/net/grpc.NewTLS].
 func NewTLS(c *tls.Config) grpc.TransportCredentials {
 	return grpc.NewTLS(c)
 }
 
 // WithTransportCredentials returns a DialOption that configures client-side transport credentials.
 //
-// This forwards to [github.com/alexfalkowski/go-service/v2/net/grpc.WithTransportCredentials]. For TLS, use NewTLS to
-// construct the credentials from a *[github.com/alexfalkowski/go-service/v2/crypto/tls.Config].
+// This forwards to [github.com/alexfalkowski/go-service/v3/net/grpc.WithTransportCredentials]. For TLS, use NewTLS to
+// construct the credentials from a *[github.com/alexfalkowski/go-service/v3/crypto/tls.Config].
 func WithTransportCredentials(creds grpc.TransportCredentials) DialOption {
 	return grpc.WithTransportCredentials(creds)
 }

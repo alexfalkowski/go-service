@@ -3,17 +3,17 @@ package server
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/slices"
+	"github.com/alexfalkowski/go-service/v3/slices"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/alexfalkowski/go-sync"
 )
 
 // RegisterParams defines dependencies for registering server services.
 type RegisterParams struct {
-	di.In
+	signal.In
 
 	// Lifecycle receives the server start and stop hooks.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 
 	// Drain tracks whether shutdown has started.
 	Drain *Drain
@@ -24,7 +24,7 @@ type RegisterParams struct {
 
 // Register wires server services into the application lifecycle.
 //
-// It appends an Fx lifecycle hook that:
+// It appends a go-signal lifecycle hook that:
 //   - OnStart: starts each provided *[Service] by calling `Start()`.
 //   - OnStop: marks the drain state, stops each provided *[Service] by calling `Stop(ctx)`,
 //     and returns the joined shutdown errors.
@@ -33,7 +33,7 @@ type RegisterParams struct {
 func Register(params RegisterParams) {
 	services := slices.Clone(params.Services)
 
-	params.Lifecycle.Append(di.Hook{
+	params.Lifecycle.Append(signal.Hook{
 		OnStart: func(context.Context) error {
 			for _, s := range services {
 				s.Start()

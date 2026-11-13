@@ -1,7 +1,7 @@
 // Package stream provides NDJSON HTTP request and response streaming on top of content codecs.
 //
 // [Content] owns a streaming codec registry that is separate from the single-value registry in
-// [github.com/alexfalkowski/go-service/v2/net/http/content/unary]. Streaming media negotiation is strict:
+// [github.com/alexfalkowski/go-service/v3/net/http/content/unary]. Streaming media negotiation is strict:
 // an unregistered or unparseable declared media type is rejected instead of falling back to another
 // representation. With no Content-Type or Accept header, response negotiation selects NDJSON.
 //
@@ -11,8 +11,8 @@
 // [NewRequestHandler] creates a bidirectional request/response handler and requires HTTP/2 (including
 // h2c). Use one goroutine at a time with [Stream.Send]; for [RequestStream], the supported pattern is
 // one goroutine calling Send and one calling Recv. Server route helpers live in
-// [github.com/alexfalkowski/go-service/v2/net/http/rest]; client callbacks use
-// [github.com/alexfalkowski/go-service/v2/net/http/client.Client.RequestStream].
+// [github.com/alexfalkowski/go-service/v3/net/http/rest]; client callbacks use
+// [github.com/alexfalkowski/go-service/v3/net/http/client.Client.RequestStream].
 //
 // # Limits and lifecycle
 //

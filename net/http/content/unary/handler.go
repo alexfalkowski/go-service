@@ -1,15 +1,15 @@
 package unary
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	encodingerrors "github.com/alexfalkowski/go-service/v2/encoding/errors"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/ptr"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	encodingerrors "github.com/alexfalkowski/go-service/v3/encoding/errors"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/ptr"
 )
 
 // RequestHandler handles a decoded request and returns a response model.
@@ -35,7 +35,7 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // If request decoding fails, NewRequestHandler converts the decode error into a 400 Bad Request using
 // net/http/status, allowing the response to be rendered consistently by [status.WriteError].
 // If response encoding fails because the response value does not satisfy the negotiated encoder's
-// required type (see [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType]), the encode
+// required type (see [github.com/alexfalkowski/go-service/v3/encoding/errors.ErrInvalidType]), the encode
 // error becomes a 406 Not Acceptable; any other encode failure keeps its default status.
 //
 // Successful responses are encoded into a pooled in-memory buffer before being written to the live

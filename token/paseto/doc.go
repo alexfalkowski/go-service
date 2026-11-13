@@ -59,7 +59,7 @@
 // signed lifetime from iat to exp does not exceed [Config.Expiration].
 //
 // On failure, PASETO parsing errors, including invalid signatures, return
-// [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidMatch]. Rule
+// [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidMatch]. Rule
 // and key-construction errors may come from the upstream PASETO library. Local
 // config, subject, and signed-lifetime checks return shared sentinel errors
 // from token/errors.
@@ -75,7 +75,7 @@
 //
 // # Relationship to the top-level token facade
 //
-// Services often use the top-level [github.com/alexfalkowski/go-service/v2/token.Token] facade (package token) which
+// Services often use the top-level [github.com/alexfalkowski/go-service/v3/token.Token] facade (package token) which
 // delegates to this implementation when [Config.Kind] == "paseto". This package
 // focuses only on the PASETO-specific format and validation rules.
 package paseto

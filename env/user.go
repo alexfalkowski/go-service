@@ -3,7 +3,7 @@ package env
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v3/os"
 )
 
 // NewUserID returns a service user identifier.

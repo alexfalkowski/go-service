@@ -1,9 +1,9 @@
 package metrics
 
 import (
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
 	prometheus "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 

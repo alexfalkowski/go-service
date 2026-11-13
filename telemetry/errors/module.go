@@ -1,10 +1,10 @@
 package errors
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires OpenTelemetry global error handling into [go.uber.org/fx].
+// Module wires OpenTelemetry global error handling into [github.com/alexfalkowski/go-signal/v2].
 //
-// Including this module in an Fx application provides:
+// Including this module in a go-signal application provides:
 //
 //   - NewHandler: constructs a *[Handler] that logs OpenTelemetry internal/SDK errors
 //     through a private stdout logger which mirrors the configured logger format
@@ -19,7 +19,7 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //
 // Note: the OpenTelemetry error handler is global; the last handler registered
 // wins.
-var Module = di.Module(
-	di.Constructor(NewHandler),
-	di.Register(Register),
+var Module = signal.Module(
+	signal.Constructor(NewHandler),
+	signal.Register(Register),
 )

@@ -3,12 +3,12 @@ package grpc_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestNewTokenWithoutSharedServerConfig(t *testing.T) {
@@ -17,7 +17,7 @@ func TestNewTokenWithoutSharedServerConfig(t *testing.T) {
 }
 
 func TestNewServerLimiterWithoutSharedServerConfig(t *testing.T) {
-	server, err := grpc.NewServerLimiter(fxtest.NewLifecycle(t), limiter.NewKeyMap(), &grpc.Config{Timeout: time.Second}, nil)
+	server, err := grpc.NewServerLimiter(signaltest.NewLifecycle(t), limiter.NewKeyMap(), &grpc.Config{Timeout: time.Second}, nil)
 
 	require.NoError(t, err)
 	require.Nil(t, server)

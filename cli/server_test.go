@@ -4,22 +4,21 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/cli"
-	"github.com/alexfalkowski/go-service/v2/config"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/module"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/net/http/rest"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/cli"
+	"github.com/alexfalkowski/go-service/v3/config"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/module"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/client"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/net/http/rest"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx"
 )
 
 func TestApplicationRunsServerCommand(t *testing.T) {
@@ -205,7 +204,7 @@ func TestApplicationServerHonorsContextCancellation(t *testing.T) {
 	}
 }
 
-func TestApplicationServerStopAfterCancellationUsesFxTimeout(t *testing.T) {
+func TestApplicationServerStopAfterCancellationUsesConfiguredTimeout(t *testing.T) {
 	test.SetupCLI("server")
 
 	started := make(chan struct{})
@@ -214,11 +213,10 @@ func TestApplicationServerStopAfterCancellationUsesFxTimeout(t *testing.T) {
 			c.AddServer(
 				"server",
 				"Start the server.",
-				di.NoLogger,
-				di.Constructor(slog.Default),
-				fx.StopTimeout((10 * time.Millisecond).Duration()),
-				di.Register(func(lc di.Lifecycle) {
-					lc.Append(di.Hook{
+				signal.Constructor(slog.Default),
+				signal.StopTimeout((10 * time.Millisecond).Duration()),
+				signal.Register(func(lc signal.Lifecycle) {
+					lc.Append(signal.Hook{
 						OnStart: func(context.Context) error {
 							go func() {
 								time.Sleep(10 * time.Millisecond)
@@ -315,9 +313,9 @@ func startDrainingApplication(t *testing.T) (context.CancelFunc, <-chan int) {
 	test.SetupCLI("server", "-config", test.FilePath("configs/config.yaml"))
 
 	started := make(chan struct{})
-	opts := []di.Option{
+	opts := []signal.Option{
 		module.Server,
-		di.Register(func(s *rest.Server) {
+		signal.Register(func(s *rest.Server) {
 			s.StreamGet("/drain", func(ctx context.Context, stream *stream.Stream[test.Response]) error {
 				if err := stream.Send(&test.Response{Greeting: "Hello Bob"}); err != nil {
 					return err
@@ -328,8 +326,8 @@ func startDrainingApplication(t *testing.T) (context.CancelFunc, <-chan int) {
 				return ctx.Err()
 			}, http.WithRouteUnauthenticated())
 		}),
-		di.Register(func(lc di.Lifecycle) {
-			lc.Append(di.Hook{
+		signal.Register(func(lc signal.Lifecycle) {
+			lc.Append(signal.Hook{
 				OnStart: func(context.Context) error {
 					go func() {
 						time.Sleep(10 * time.Millisecond)

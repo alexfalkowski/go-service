@@ -1,7 +1,7 @@
 // Package sql provides SQL database wiring and helpers for go-service.
 //
-// This package is the entrypoint for wiring SQL database support into [go.uber.org/fx]/[go.uber.org/dig]. It composes
-// driver-specific modules (for example PostgreSQL via [github.com/alexfalkowski/go-service/v2/database/sql/pg]) and exposes a small,
+// This package is the entrypoint for wiring SQL database support into [github.com/alexfalkowski/go-signal/v2]. It composes
+// driver-specific modules (for example PostgreSQL via [github.com/alexfalkowski/go-service/v3/database/sql/pg]) and exposes a small,
 // consistent configuration shape for services ([Config]).
 //
 // # Configuration and enablement

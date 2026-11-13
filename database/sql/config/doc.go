@@ -1,7 +1,7 @@
-// Package config provides shared SQL ([github.com/alexfalkowski/go-service/v2/database/sql]) configuration types for go-service.
+// Package config provides shared SQL ([github.com/alexfalkowski/go-service/v3/database/sql]) configuration types for go-service.
 //
 // This package defines configuration structs that are typically embedded into a larger service
-// configuration and then consumed by driver-specific wiring (for example [github.com/alexfalkowski/go-service/v2/database/sql/pg]).
+// configuration and then consumed by driver-specific wiring (for example [github.com/alexfalkowski/go-service/v3/database/sql/pg]).
 //
 // # Pool configuration
 //
@@ -14,7 +14,7 @@
 // # DSNs and source strings
 //
 // Reader and writer DSNs are configured through [Pool.DSNs]. Each DSN URL is expressed as a
-// go-service "source string" (resolved via [github.com/alexfalkowski/go-service/v2/os.FS.ReadSource]), so it can be:
+// go-service "source string" (resolved via [github.com/alexfalkowski/go-service/v3/os.FS.ReadSource]), so it can be:
 //   - "env:NAME" to read from an environment variable,
 //   - "file:/path/to/dsn" to read from a file, or
 //   - any other value treated as a literal DSN.

@@ -3,13 +3,13 @@ package test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/hooks"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/events"
-	transportevents "github.com/alexfalkowski/go-service/v2/transport/http/events"
-	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/hooks"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/events"
+	transportevents "github.com/alexfalkowski/go-service/v3/transport/http/events"
+	httphooks "github.com/alexfalkowski/go-service/v3/transport/http/hooks"
 	"github.com/stretchr/testify/require"
 )
 

@@ -1,10 +1,10 @@
 package compress
 
 import (
-	"github.com/alexfalkowski/go-service/v2/compress/none"
-	"github.com/alexfalkowski/go-service/v2/compress/s2"
-	"github.com/alexfalkowski/go-service/v2/compress/snappy"
-	"github.com/alexfalkowski/go-service/v2/compress/zstd"
+	"github.com/alexfalkowski/go-service/v3/compress/none"
+	"github.com/alexfalkowski/go-service/v3/compress/s2"
+	"github.com/alexfalkowski/go-service/v3/compress/snappy"
+	"github.com/alexfalkowski/go-service/v3/compress/zstd"
 )
 
 // NewMap constructs a Map with the default compressors.

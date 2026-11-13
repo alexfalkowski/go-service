@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v3/errors"
 )
 
 // MaxProcs sets the maximum number of CPUs that can execute Go code simultaneously and returns the previous setting.

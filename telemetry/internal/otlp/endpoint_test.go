@@ -3,9 +3,9 @@ package otlp_test
 import (
 	"testing"
 
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
 	"github.com/stretchr/testify/require"
 )
 

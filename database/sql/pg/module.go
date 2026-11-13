@@ -1,8 +1,8 @@
 package pg
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires PostgreSQL ([github.com/alexfalkowski/go-service/v2/database/sql]) support into [go.uber.org/fx]/[go.uber.org/dig].
+// Module wires PostgreSQL ([github.com/alexfalkowski/go-service/v3/database/sql]) support into [github.com/alexfalkowski/go-signal/v2].
 //
 // It registers the [github.com/jackc/pgx/v5/stdlib] driver under the name "pg" (with OpenTelemetry instrumentation
 // when tracing or metrics are enabled) and provides a constructor that opens writer/reader connection pools.
@@ -12,7 +12,7 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //   - Constructor: [Open]
 //
 // Disabled behavior: [Open] returns (nil, nil) when PostgreSQL configuration is disabled.
-var Module = di.Module(
-	di.Register(Register),
-	di.Constructor(Open),
+var Module = signal.Module(
+	signal.Register(Register),
+	signal.Constructor(Open),
 )

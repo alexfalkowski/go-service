@@ -1,23 +1,23 @@
 package debug
 
 import (
-	"github.com/alexfalkowski/go-service/v2/debug/http"
-	"github.com/alexfalkowski/go-service/v2/debug/internal/fgprof"
-	"github.com/alexfalkowski/go-service/v2/debug/internal/pprof"
-	"github.com/alexfalkowski/go-service/v2/debug/internal/statsviz"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v3/debug/http"
+	"github.com/alexfalkowski/go-service/v3/debug/internal/fgprof"
+	"github.com/alexfalkowski/go-service/v3/debug/internal/pprof"
+	"github.com/alexfalkowski/go-service/v3/debug/internal/statsviz"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // RegisterParams defines dependencies for registering built-in debug endpoints.
 //
-// It is an Fx parameter struct ([di.In]) used to install the built-in debug handlers
+// It is a go-signal parameter struct ([signal.In]) used to install the built-in debug handlers
 // on the debug mux when debug is enabled.
 type RegisterParams struct {
-	di.In
+	signal.In
 
 	// Lifecycle owns endpoint resources that need shutdown, such as statsviz.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 
 	// Config enables or disables debug endpoint registration.
 	Config *Config

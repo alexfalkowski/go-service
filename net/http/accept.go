@@ -4,8 +4,8 @@ import (
 	"mime"
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // AcceptItems splits an Accept header value into its items.

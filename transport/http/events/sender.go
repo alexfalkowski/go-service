@@ -1,16 +1,16 @@
 package events
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/events"
-	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/events"
+	"github.com/alexfalkowski/go-service/v3/transport/http/hooks"
 )
 
 // NewSender constructs a CloudEvents HTTP client that can sign outbound requests with the webhook hook.
 //
 // The constructed client uses the go-service CloudEvents HTTP transport. Outbound requests are wrapped with the
-// webhook signing RoundTripper (see [github.com/alexfalkowski/go-service/v2/transport/http/hooks]) so each request is signed before being sent
+// webhook signing RoundTripper (see [github.com/alexfalkowski/go-service/v3/transport/http/hooks]) so each request is signed before being sent
 // when hook is non-nil. Each Send uses one generated Webhook-Id so retries retain the same id while refreshing
 // their timestamp and signature. When hook is nil, the signing RoundTripper behaves as a pass-through wrapper
 // and requests are sent unsigned.
@@ -24,7 +24,7 @@ import (
 // of being followed so webhook signatures are not minted for redirected origins.
 //
 // Note: the provided hook must be configured for signing use, including the expected secret and a non-nil
-// id generator passed to [github.com/alexfalkowski/go-service/v2/transport/http/hooks.NewWebhook].
+// id generator passed to [github.com/alexfalkowski/go-service/v3/transport/http/hooks.NewWebhook].
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) *Sender {
 	resolved := options(opts...)
 	rt := hooks.NewRoundTripper(hook, resolved.roundTripper)
@@ -45,7 +45,7 @@ type Sender struct {
 // Send transmits event using the configured CloudEvents HTTP encoding.
 //
 // ctx must carry the destination URL set via
-// [github.com/alexfalkowski/go-service/v2/net/http/events.ContextWithTarget]: Sender has no per-call target
+// [github.com/alexfalkowski/go-service/v3/net/http/events.ContextWithTarget]: Sender has no per-call target
 // parameter, so a ctx without a target makes Send fail immediately with a "not initialized" protocol error
 // rather than issuing a request.
 func (s *Sender) Send(ctx context.Context, event events.Event) events.Result {

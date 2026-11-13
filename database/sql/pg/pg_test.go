@@ -3,14 +3,14 @@ package pg_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/database/sql/config"
-	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
-	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/database/sql/config"
+	"github.com/alexfalkowski/go-service/v3/database/sql/driver"
+	"github.com/alexfalkowski/go-service/v3/database/sql/pg"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestDriverConnectRejectsUnknownDriver(t *testing.T) {
@@ -49,7 +49,7 @@ func TestConfigIsDisabledWhenNilOrEmpty(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lc := fxtest.NewLifecycle(t)
+			lc := signaltest.NewLifecycle(t)
 
 			db, err := pg.Connect(test.FS, tt.config)
 			require.NoError(t, err)
@@ -143,7 +143,7 @@ func TestConnectUsesPostgreSQLTelemetryOptions(t *testing.T) {
 
 func TestOpenClosesDBsOnStop(t *testing.T) {
 	cfg := test.NewPGConfig()
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 
 	pg.Register()
 
@@ -360,7 +360,7 @@ func TestRejectsInvalidSQLPort(t *testing.T) {
 		Writer: newPool(test.FilePath("secrets/pg_invalid")),
 	}}
 
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	_, err := test.NewLogger(lc, test.NewTextLoggerConfig())
 	require.NoError(t, err)
 	tc := test.NewOTLPTracerConfig()

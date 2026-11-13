@@ -4,11 +4,11 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
-	config "github.com/alexfalkowski/go-service/v2/transport/retry"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
+	config "github.com/alexfalkowski/go-service/v3/transport/retry"
 )
 
 const (

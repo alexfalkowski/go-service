@@ -1,6 +1,6 @@
 package sql
 
-import "github.com/alexfalkowski/go-service/v2/database/sql/pg"
+import "github.com/alexfalkowski/go-service/v3/database/sql/pg"
 
 // Config is the root SQL database configuration for a go-service based service.
 //

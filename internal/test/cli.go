@@ -3,12 +3,12 @@ package test
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/cli"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/cli"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // SetupCLI configures process arguments and CLI identity for tests.
@@ -19,11 +19,11 @@ func SetupCLI(args ...string) {
 }
 
 // LifecycleOption returns a DI option that reports lifecycle start and stop events.
-func LifecycleOption(started chan<- struct{}, stopped chan<- error) di.Option {
-	return di.Module(
-		di.Constructor(slog.Default),
-		di.Register(func(lc di.Lifecycle) {
-			lc.Append(di.Hook{
+func LifecycleOption(started chan<- struct{}, stopped chan<- error) signal.Option {
+	return signal.Module(
+		signal.Constructor(slog.Default),
+		signal.Register(func(lc signal.Lifecycle) {
+			lc.Append(signal.Hook{
 				OnStart: func(context.Context) error {
 					// Signal readiness after Start has had a chance to return so cancellation
 					// exercises the post-start shutdown path instead of racing startup.
@@ -43,16 +43,15 @@ func LifecycleOption(started chan<- struct{}, stopped chan<- error) di.Option {
 }
 
 // ShutdownExitCodeOption returns a DI option that requests shutdown with code.
-func ShutdownExitCodeOption(code int) di.Option {
-	return di.Module(
-		di.NoLogger,
-		di.Constructor(slog.Default),
-		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
-			lc.Append(di.Hook{
+func ShutdownExitCodeOption(code int) signal.Option {
+	return signal.Module(
+		signal.Constructor(slog.Default),
+		signal.Register(func(lc signal.Lifecycle, sh signal.Shutdowner) {
+			lc.Append(signal.Hook{
 				OnStart: func(context.Context) error {
 					go func() {
 						time.Sleep(10 * time.Millisecond)
-						_ = sh.Shutdown(di.ExitCode(code))
+						sh.Shutdown(code)
 					}()
 					return nil
 				},
@@ -62,14 +61,14 @@ func ShutdownExitCodeOption(code int) di.Option {
 }
 
 // ShutdownExitCodeAndStopErrorOption returns a DI option that requests shutdown with code and fails on stop.
-func ShutdownExitCodeAndStopErrorOption(code int) di.Option {
-	return di.Module(
-		di.NoLogger,
-		di.Constructor(slog.Default),
-		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
-			lc.Append(di.Hook{
+func ShutdownExitCodeAndStopErrorOption(code int) signal.Option {
+	return signal.Module(
+		signal.Constructor(slog.Default),
+		signal.Register(func(lc signal.Lifecycle, sh signal.Shutdowner) {
+			lc.Append(signal.Hook{
 				OnStart: func(context.Context) error {
-					return sh.Shutdown(di.ExitCode(code))
+					sh.Shutdown(code)
+					return nil
 				},
 				OnStop: func(context.Context) error {
 					return ErrFailed
@@ -80,11 +79,10 @@ func ShutdownExitCodeAndStopErrorOption(code int) di.Option {
 }
 
 // ServerFailureOption returns a DI option that registers a server whose Serve method fails.
-func ServerFailureOption() di.Option {
-	return di.Module(
-		di.NoLogger,
-		di.Constructor(slog.Default),
-		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
+func ServerFailureOption() signal.Option {
+	return signal.Module(
+		signal.Constructor(slog.Default),
+		signal.Register(func(lc signal.Lifecycle, sh signal.Shutdowner) {
 			server.Register(server.RegisterParams{
 				Lifecycle: lc,
 				Drain:     server.NewDrain(),

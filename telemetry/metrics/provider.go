@@ -1,11 +1,11 @@
 package metrics
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/alexfalkowski/go-sync"
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
@@ -19,14 +19,14 @@ var (
 
 // MeterProviderParams declares the dependencies required by NewMeterProvider.
 //
-// It is intended for Fx/Dig injection and includes service identity fields used to
+// It is intended for go-signal injection and includes service identity fields used to
 // populate OpenTelemetry resource attributes.
 type MeterProviderParams struct {
-	di.In
+	signal.In
 
 	// Lifecycle is used to start runtime instrumentation and to shut down the meter
 	// provider with the application.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 
 	// Reader is the SDK reader/exporter that NewMeterProvider will attach to the provider.
 	// A nil reader disables metrics even when Config is set.
@@ -88,7 +88,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	provider := sdk.NewMeterProvider(options...)
 	setMeterProvider(provider, true)
 
-	params.Lifecycle.Append(di.Hook{
+	params.Lifecycle.Append(signal.Hook{
 		OnStart: func(_ context.Context) error {
 			err := errors.Join(
 				runtime.Start(runtime.WithMeterProvider(provider)),

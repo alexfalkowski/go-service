@@ -1,9 +1,9 @@
 package keys
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/crypto/pem"
-	"github.com/alexfalkowski/go-service/v2/token/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v3/crypto/pem"
+	"github.com/alexfalkowski/go-service/v3/token/errors"
 	"github.com/alexfalkowski/go-sync"
 )
 
@@ -34,7 +34,7 @@ type Config struct {
 // subsequent calls. Only a successful load is cached, so a transient read or
 // parse failure is retried on the next call rather than being cached forever.
 //
-// It returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig]
+// It returns [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig]
 // when k is nil, its embedded key config is nil, or decoder is nil.
 func (k *Config) Signer(decoder *pem.Decoder) (*ed25519.Signer, error) {
 	if k == nil || k.Config == nil || decoder == nil {
@@ -63,7 +63,7 @@ func (k *Config) Signer(decoder *pem.Decoder) (*ed25519.Signer, error) {
 // subsequent calls. Only a successful load is cached, so a transient read or
 // parse failure is retried on the next call rather than being cached forever.
 //
-// It returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig]
+// It returns [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig]
 // when k is nil, its embedded key config is nil, or decoder is nil.
 func (k *Config) Verifier(decoder *pem.Decoder) (*ed25519.Verifier, error) {
 	if k == nil || k.Config == nil || decoder == nil {

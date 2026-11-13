@@ -3,9 +3,9 @@ package http
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/net/url"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/net/url"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // ParseServiceMethod derives a logical "service" and "method" name from an HTTP request.

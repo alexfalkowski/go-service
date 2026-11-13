@@ -1,15 +1,15 @@
 package grpc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/config/options"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
-	"github.com/alexfalkowski/go-service/v2/net/url"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/config/options"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/crypto/tls"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/method"
+	"github.com/alexfalkowski/go-service/v3/net/url"
+	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -239,7 +239,7 @@ func ChainStreamInterceptor(interceptors ...StreamServerInterceptor) ServerOptio
 // Creds returns a ServerOption that configures server-side transport credentials.
 //
 // It forwards to [grpc.Creds]. For TLS, use NewTLS to create
-// [credentials.TransportCredentials] from a go-service [github.com/alexfalkowski/go-service/v2/crypto/tls.Config].
+// [credentials.TransportCredentials] from a go-service [github.com/alexfalkowski/go-service/v3/crypto/tls.Config].
 func Creds(c credentials.TransportCredentials) ServerOption {
 	return grpc.Creds(c)
 }
@@ -274,7 +274,7 @@ func NewInsecureCredentials() credentials.TransportCredentials {
 // NewTLS constructs TLS transport credentials from c.
 //
 // This is a thin wrapper around [credentials.NewTLS]. The provided
-// [github.com/alexfalkowski/go-service/v2/crypto/tls.Config] is used by the gRPC transport for handshake and peer
+// [github.com/alexfalkowski/go-service/v3/crypto/tls.Config] is used by the gRPC transport for handshake and peer
 // verification.
 func NewTLS(c *tls.Config) credentials.TransportCredentials {
 	return credentials.NewTLS(c)
@@ -380,7 +380,7 @@ func WithUserAgent(s string) DialOption {
 //
 // This forwards to [grpc.WithTransportCredentials]. For TLS, use NewTLS to
 // create [credentials.TransportCredentials] from a go-service
-// [github.com/alexfalkowski/go-service/v2/crypto/tls.Config].
+// [github.com/alexfalkowski/go-service/v3/crypto/tls.Config].
 func WithTransportCredentials(creds credentials.TransportCredentials) DialOption {
 	return grpc.WithTransportCredentials(creds)
 }

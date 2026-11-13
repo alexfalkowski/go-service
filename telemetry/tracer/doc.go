@@ -35,7 +35,7 @@
 // transport metadata.
 //
 // This package does not configure propagation. Propagation is configured at the top-level
-// telemetry package ([github.com/alexfalkowski/go-service/v2/telemetry.RegisterPropagation]), which sets the global
+// telemetry package ([github.com/alexfalkowski/go-service/v3/telemetry.RegisterPropagation]), which sets the global
 // TextMapPropagator used for context extraction/injection on supported transports
 // (HTTP/gRPC) when instrumentation uses the global propagator.
 //
@@ -67,8 +67,8 @@
 //
 // The exporter request headers are provided by [Config.Headers]. Header values may be
 // configured as go-service "source strings" (for example "env:NAME", "file:/path", or a
-// literal value) and are resolved by [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.Secrets] or
-// [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.MustSecrets] by the consumer that projects configuration before
+// literal value) and are resolved by [github.com/alexfalkowski/go-service/v3/telemetry/header.Map.Secrets] or
+// [github.com/alexfalkowski/go-service/v3/telemetry/header.Map.MustSecrets] by the consumer that projects configuration before
 // constructing exporters.
 //
 // When [Config.Headers] is non-empty, non-loopback "http://" OTLP endpoints are

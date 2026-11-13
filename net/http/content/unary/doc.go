@@ -28,14 +28,14 @@
 // media type parsing fails or the subtype is unknown, this package falls back to JSON.
 //
 // Inbound request-body decoding ([Content.NewFromRequestBody] and its streaming counterpart
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewFromContentType]) narrows this:
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewFromContentType]) narrows this:
 // an absent Content-Type still defaults to JSON,
 // since the caller asserted nothing, but an unparseable or unregistered Content-Type is rejected
 // instead of silently decoded as a different format the caller did not send.
 //
 // # Forward-compatible payloads
 //
-// HTTP request handlers decode with [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown],
+// HTTP request handlers decode with [github.com/alexfalkowski/go-service/v3/encoding/codec.WithDiscardUnknown],
 // so a newly added field does not break an older service during a rolling deployment. Message framing,
 // syntax, types, and request-size limits remain enforced.
 //
@@ -49,7 +49,7 @@
 // only, so they do not mitigate amplification and are not a substitute for these bounds.
 //
 // json, yaml and protobuf satisfy this rule. toml, msgpack and gob do not, so [Media.CanDecodeRequest] and
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewFromContentType] rejects them for
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewFromContentType] rejects them for
 // request decoding even though both remain valid
 // media types and valid response codecs (see [Content.NewFromMedia] and the go-service HTTP client,
 // which decodes responses through the same registries without this restriction).

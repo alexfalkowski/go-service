@@ -3,7 +3,7 @@ package attributes_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
 	"github.com/stretchr/testify/require"
 )
 

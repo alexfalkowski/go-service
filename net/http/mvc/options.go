@@ -1,6 +1,6 @@
 package mvc
 
-import "github.com/alexfalkowski/go-service/v2/net/http"
+import "github.com/alexfalkowski/go-service/v3/net/http"
 
 // RouteOption configures MVC route registration.
 type RouteOption interface {

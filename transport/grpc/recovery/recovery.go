@@ -1,7 +1,7 @@
 package recovery
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 )
 
@@ -14,7 +14,7 @@ import (
 // callback invokes a nil func value when a panic is recovered, which panics again with a nil pointer
 // dereference; that second panic happens outside the interceptor's own recover and propagates uncaught, so a
 // nil handler crashes the process on any recovered panic instead of returning a safe error. Return a
-// client-safe error from handler, for example via [github.com/alexfalkowski/go-service/v2/net/grpc/status.SafeError],
+// client-safe error from handler, for example via [github.com/alexfalkowski/go-service/v3/net/grpc/status.SafeError],
 // since gRPC renders an unwrapped handler error as the client-visible status message.
 func NewServer(handler func(any) error) *Server {
 	return &Server{handler: handler}

@@ -1,17 +1,17 @@
 package hooks
 
 import (
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/transport/http/hooks"
 )
 
 // ErrBinaryEncoding is returned when a webhook-protected event uses binary HTTP encoding.
 var ErrBinaryEncoding = errors.New("events: binary encoding is not supported for webhooks")
 
-// Webhook is an alias for [github.com/alexfalkowski/go-service/v2/transport/http/hooks.Webhook].
+// Webhook is an alias for [github.com/alexfalkowski/go-service/v3/transport/http/hooks.Webhook].
 //
 // It is re-exported from this package to provide a CloudEvents-focused import path while still using the
 // shared webhook implementation.

@@ -7,7 +7,7 @@
 // The size passed to [Compressor.Compress] limits the uncompressed input. The
 // size passed to [Compressor.Decompress] limits the decompressed output. When a
 // size limit is exceeded, implementations return
-// [github.com/alexfalkowski/go-service/v2/compress/errors.ErrTooLarge].
+// [github.com/alexfalkowski/go-service/v3/compress/errors.ErrTooLarge].
 //
 // # Registry
 //
@@ -24,7 +24,7 @@
 //   - "snappy"
 //   - "none"
 //
-// [Module] provides the default *[Map] for Fx applications.
+// [Module] provides the default *[Map] for go-signal applications.
 //
 // You can extend or override supported kinds by calling [Map.Register] after construction.
 //

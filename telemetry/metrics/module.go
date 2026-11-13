@@ -1,8 +1,8 @@
 package metrics
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires metrics construction into [go.uber.org/fx].
+// Module wires metrics construction into [github.com/alexfalkowski/go-signal/v2].
 //
 // It provides constructors for:
 //
@@ -12,11 +12,11 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //
 // When metrics are disabled (*[Config] is nil), [NewReader] returns a nil reader and
 // [NewMeterProvider] installs and returns the package noop provider.
-var Module = di.Module(
-	di.Constructor(NewReader),
-	di.Constructor(NewMeterProvider),
-	di.Constructor(NewMeter),
-	di.Register(registerMeterProvider),
+var Module = signal.Module(
+	signal.Constructor(NewReader),
+	signal.Constructor(NewMeterProvider),
+	signal.Constructor(NewMeter),
+	signal.Register(registerMeterProvider),
 )
 
 func registerMeterProvider(_ MeterProvider) {}

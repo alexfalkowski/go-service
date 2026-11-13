@@ -1,6 +1,6 @@
 package config
 
-import "github.com/alexfalkowski/go-service/v2/errors"
+import "github.com/alexfalkowski/go-service/v3/errors"
 
 var (
 	// ErrNoEncoder is returned when the configuration kind cannot be decoded because there is no

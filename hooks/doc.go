@@ -6,7 +6,7 @@
 //   - configuration for the named webhook secret set used by Standard Webhooks
 //     signers/verifiers (see [Config]), loaded via the
 //     go-service "source string" pattern (resolved by
-//     [github.com/alexfalkowski/go-service/v2/os.FS.ReadSource]), and
+//     [github.com/alexfalkowski/go-service/v3/os.FS.ReadSource]), and
 //
 //   - constructors for creating Standard Webhooks hooks (see [NewHook]) and generating new secrets (see [Generator]).
 //
@@ -30,7 +30,7 @@
 //
 // # Downstream integrations
 //
-// Transport integrations (for example [github.com/alexfalkowski/go-service/v2/transport/http/hooks])
+// Transport integrations (for example [github.com/alexfalkowski/go-service/v3/transport/http/hooks])
 // build on top of this package to verify incoming webhook signatures and/or sign outbound webhook
 // requests.
 package hooks

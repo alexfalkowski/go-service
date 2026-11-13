@@ -1,8 +1,8 @@
 package events
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // SenderEncoding selects the CloudEvents HTTP encoding used by a sender.

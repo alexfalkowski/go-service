@@ -3,7 +3,7 @@ package policy_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/net/http/content/policy"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/policy"
 	"github.com/stretchr/testify/require"
 )
 

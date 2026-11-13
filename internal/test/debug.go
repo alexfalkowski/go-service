@@ -1,14 +1,14 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/debug"
-	"github.com/alexfalkowski/go-service/v2/debug/http"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/debug"
+	"github.com/alexfalkowski/go-service/v3/debug/http"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // NewDebugServer returns a debug server with the standard debug handlers registered.
-func NewDebugServer(lc di.Lifecycle, config *debug.Config, logger *logger.Logger) (*debug.Server, error) {
+func NewDebugServer(lc signal.Lifecycle, config *debug.Config, logger *logger.Logger) (*debug.Server, error) {
 	mux := http.NewServeMux()
 	server, err := debug.NewServer(debug.ServerParams{
 		Shutdowner: NewShutdowner(),

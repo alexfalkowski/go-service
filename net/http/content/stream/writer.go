@@ -1,8 +1,8 @@
 package stream
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/net/http"
 )
 
 // commitWriter buffers writes until commit is called, after which writes go straight to the live

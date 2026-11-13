@@ -3,17 +3,17 @@ package driver
 import (
 	"database/sql"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/database/sql/config"
-	"github.com/alexfalkowski/go-service/v2/database/sql/telemetry"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/database/sql/config"
+	"github.com/alexfalkowski/go-service/v3/database/sql/telemetry"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
-// Connect opens writer/reader [github.com/alexfalkowski/go-service/v2/database/sql] connection pools for a previously
+// Connect opens writer/reader [github.com/alexfalkowski/go-service/v3/database/sql] connection pools for a previously
 // registered driver name.
 //
 // It resolves DSNs from cfg using the provided filesystem (DSNs are configured
@@ -40,7 +40,7 @@ func Connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Optio
 	return connect(name, fs, cfg, opts...)
 }
 
-// Open opens writer/reader [github.com/alexfalkowski/go-service/v2/database/sql] connection pools for a previously
+// Open opens writer/reader [github.com/alexfalkowski/go-service/v3/database/sql] connection pools for a previously
 // registered driver name.
 //
 // Open delegates the connection work to [Connect] and then appends an OnStop hook
@@ -48,17 +48,17 @@ func Connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Optio
 //
 // Preconditions:
 //   - cfg must be non-nil and already treated as enabled/validated by the caller.
-//   - driver-specific wrappers, such as [github.com/alexfalkowski/go-service/v2/database/sql/pg.Open], own nil/disabled
+//   - driver-specific wrappers, such as [github.com/alexfalkowski/go-service/v3/database/sql/pg.Open], own nil/disabled
 //     config semantics before delegating here.
 //
 // The returned type is the same go-service [DBs] wrapper returned by [Connect].
-func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Option) (*DBs, error) {
+func Open(lc signal.Lifecycle, name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Option) (*DBs, error) {
 	db, err := Connect(name, fs, cfg, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	lc.Append(di.Hook{
+	lc.Append(signal.Hook{
 		OnStop: func(_ context.Context) error {
 			return db.Destroy()
 		},
@@ -67,7 +67,7 @@ func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config, opts ...t
 	return db, nil
 }
 
-// ConnectWritersReaders opens writer/reader [github.com/alexfalkowski/go-service/v2/database/sql] connection pools for a
+// ConnectWritersReaders opens writer/reader [github.com/alexfalkowski/go-service/v3/database/sql] connection pools for a
 // previously registered driver name.
 //
 // It is a low-level helper for callers that already have resolved literal DSNs.

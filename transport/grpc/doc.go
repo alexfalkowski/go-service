@@ -1,17 +1,17 @@
 // Package grpc contains gRPC transport wiring for services built with go-service.
 //
-// It provides constructors, interceptors, and Fx module wiring for:
+// It provides constructors, interceptors, and go-signal module wiring for:
 //   - gRPC servers ([NewServer]) with standardized interceptors (metadata, unary timeout, logging, auth, rate limiting, etc.).
 //   - gRPC clients ([NewClient]) with standardized dial options and client interceptors (metadata, auth,
 //     logging, unary timeout/retry/breaker policy, etc.).
 //
 // The primary entrypoint for DI wiring is [Module], which composes this package with supporting subpackages:
 // breaker, retry, limiter, metadata extraction/injection, token auth, and the gRPC health wiring in
-// [github.com/alexfalkowski/go-service/v2/transport/grpc/health]. In typical service applications this happens through [github.com/alexfalkowski/go-service/v2/module.Server] and
+// [github.com/alexfalkowski/go-service/v3/transport/grpc/health]. In typical service applications this happens through [github.com/alexfalkowski/go-service/v3/module.Server] and
 // `go-service-template`, so most consumers do not need to wire this package manually.
 //
 // Lower-level gRPC primitives and shared helpers live under sibling net/grpc/... packages. This package
-// focuses on higher-level server/client composition, middleware policy, and Fx wiring.
+// focuses on higher-level server/client composition, middleware policy, and go-signal wiring.
 //
 // # Server wiring
 //
@@ -36,11 +36,11 @@
 // # Manual composition note (TLS filesystem)
 //
 // This package uses package-level registration to inject filesystem access used when constructing TLS configuration.
-// The registered filesystem is used by [github.com/alexfalkowski/go-service/v2/config/server.NewConfig] and [github.com/alexfalkowski/go-service/v2/config/client.NewConfig]
+// The registered filesystem is used by [github.com/alexfalkowski/go-service/v3/config/server.NewConfig] and [github.com/alexfalkowski/go-service/v3/config/client.NewConfig]
 // to resolve TLS "source strings" (for example `file:<path>`
 // or `env:VAR`) during TLS configuration.
 //
-// When you use [Module] (directly or through higher-level bundles such as [github.com/alexfalkowski/go-service/v2/module.Server]), DI performs
+// When you use [Module] (directly or through higher-level bundles such as [github.com/alexfalkowski/go-service/v3/module.Server]), DI performs
 // this registration for you. Call [Register] yourself only when you intentionally compose the gRPC transport
 // package manually outside the standard module graph.
 package grpc

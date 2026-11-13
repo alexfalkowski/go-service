@@ -1,4 +1,4 @@
-// Package pg provides PostgreSQL ([github.com/alexfalkowski/go-service/v2/database/sql]) wiring and helpers for go-service.
+// Package pg provides PostgreSQL ([github.com/alexfalkowski/go-service/v3/database/sql]) wiring and helpers for go-service.
 //
 // This package integrates the [github.com/jackc/pgx/v5/stdlib] PostgreSQL driver with go-service SQL wiring by:
 //
@@ -24,11 +24,11 @@
 //
 // Pool creation follows the [database/sql.Open] contract and does not ping the
 // database or prove network reachability. Use the returned DBs Ping helpers or
-// [github.com/alexfalkowski/go-service/v2/health/checker.NewDBChecker] when
+// [github.com/alexfalkowski/go-service/v3/health/checker.NewDBChecker] when
 // startup/readiness should verify connectivity.
 //
-// The package returns [github.com/alexfalkowski/go-service/v2/database/sql/driver.DBs], which is aliased by the root
-// [github.com/alexfalkowski/go-service/v2/database/sql] package as [github.com/alexfalkowski/go-service/v2/database/sql.DBs].
+// The package returns [github.com/alexfalkowski/go-service/v3/database/sql/driver.DBs], which is aliased by the root
+// [github.com/alexfalkowski/go-service/v3/database/sql] package as [github.com/alexfalkowski/go-service/v3/database/sql.DBs].
 //
 // Start with [Config], [Register], and [Open].
 package pg

@@ -3,8 +3,8 @@ package bytes_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	encoding "github.com/alexfalkowski/go-service/v2/encoding/bytes"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	encoding "github.com/alexfalkowski/go-service/v3/encoding/bytes"
 	"github.com/stretchr/testify/require"
 )
 

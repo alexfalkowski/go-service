@@ -1,6 +1,6 @@
 package breaker
 
-import "github.com/alexfalkowski/go-service/v2/transport/breaker"
+import "github.com/alexfalkowski/go-service/v3/transport/breaker"
 
 // NewConfig returns an HTTP breaker config from shared breaker mechanics.
 //

@@ -1,14 +1,14 @@
 package token
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	token "github.com/alexfalkowski/go-service/v2/token/errors"
-	"github.com/alexfalkowski/go-service/v2/token/jwt"
-	"github.com/alexfalkowski/go-service/v2/token/paseto"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	token "github.com/alexfalkowski/go-service/v3/token/errors"
+	"github.com/alexfalkowski/go-service/v3/token/jwt"
+	"github.com/alexfalkowski/go-service/v3/token/paseto"
 )
 
 // NewToken constructs a Token facade that can generate and verify tokens for multiple kinds.
@@ -23,10 +23,10 @@ import (
 // be nil when their nested configuration is nil.
 //
 // A nil cfg is treated as disabled and returns nil. If Kind selects an implementation whose
-// nested config is missing, Generate/Verify return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig] instead of panicking.
+// nested config is missing, Generate/Verify return [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig] instead of panicking.
 //
 // Unknown kinds are treated as invalid configuration by the facade methods: Generate and Verify
-// return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
+// return [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig].
 func NewToken(cfg *Config, fs *os.FS, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
@@ -56,7 +56,7 @@ type Token struct {
 //   - "jwt" and "paseto": the token is minted for the provided audience (aud) and
 //     subject (sub).
 //
-// If the configured kind is unknown, Generate returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
+// If the configured kind is unknown, Generate returns [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig].
 //
 // The returned bytes should be treated as read-only. Generate may return a
 // zero-allocation byte view over the generated token string. Callers that need
@@ -87,7 +87,7 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 //   - "jwt" and "paseto": verifies the token for the provided audience (aud) and
 //     returns the subject ("sub") claim.
 //
-// If the configured kind is unknown, Verify returns [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
+// If the configured kind is unknown, Verify returns [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig].
 func (t *Token) Verify(tkn []byte, aud string) (string, error) {
 	switch t.cfg.Kind {
 	case "jwt":

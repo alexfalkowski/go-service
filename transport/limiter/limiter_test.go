@@ -6,14 +6,14 @@ import (
 	"math"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestConfigRejectsNegativeInterval(t *testing.T) {
@@ -40,7 +40,7 @@ func TestConfigGetMaxKeys(t *testing.T) {
 }
 
 func TestLimiterAllowsRequestsWithinQuota(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
 
@@ -52,7 +52,7 @@ func TestLimiterAllowsRequestsWithinQuota(t *testing.T) {
 }
 
 func TestNewLimiterRejectsTooLargeInterval(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Duration(math.MaxInt64)}
 
@@ -62,7 +62,7 @@ func TestNewLimiterRejectsTooLargeInterval(t *testing.T) {
 }
 
 func TestTakeRejectsRequestsBeyondQuota(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
 
@@ -94,7 +94,7 @@ func TestTakeRejectsRequestsBeyondQuota(t *testing.T) {
 }
 
 func TestTakeDecisionIncludesRateLimitHeaders(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 2, Interval: 1500 * time.Millisecond}
 
@@ -116,7 +116,7 @@ func TestTakeDecisionIncludesRateLimitHeaders(t *testing.T) {
 }
 
 func TestTakeCapsActiveKeys(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 2, Interval: time.Second, MaxKeys: 1}
 
@@ -159,7 +159,7 @@ func TestTakeCapsActiveKeys(t *testing.T) {
 }
 
 func TestTakeSupportsCustomKeyKind(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{
 		"tenant": meta.UserID,
 	}
@@ -198,7 +198,7 @@ func TestTakeSupportsCustomKeyKind(t *testing.T) {
 }
 
 func TestTakeRefillsBucketAfterConfiguredInterval(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: 25 * time.Millisecond}
 
@@ -236,7 +236,7 @@ func TestTakeRefillsBucketAfterConfiguredInterval(t *testing.T) {
 }
 
 func TestTakeUsesSingleBucketForEmptyKeys(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
 
@@ -264,7 +264,7 @@ func TestTakeUsesSingleBucketForEmptyKeys(t *testing.T) {
 }
 
 func TestTakeSupportsOversizedKeys(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
 
@@ -295,7 +295,7 @@ func TestTakeSupportsOversizedKeys(t *testing.T) {
 }
 
 func TestTakeDoesNotCollideOversizedKeysWithRawHashKeys(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
 
@@ -369,7 +369,7 @@ func TestNewKeyMapReturnsIndependentLimiters(t *testing.T) {
 }
 
 func TestLifecycleStopsLimiter(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 1, Interval: time.Second}
 
@@ -385,7 +385,7 @@ func TestLifecycleStopsLimiter(t *testing.T) {
 }
 
 func TestLimiterHandlesMissingConfiguration(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
 
@@ -394,7 +394,7 @@ func TestLimiterHandlesMissingConfiguration(t *testing.T) {
 }
 
 func TestNewLimiterRejectsNilKeyFunction(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": nil}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
 
@@ -403,7 +403,7 @@ func TestNewLimiterRejectsNilKeyFunction(t *testing.T) {
 }
 
 func TestLimiterAllowsRequestsWhenDisabled(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 
 	limiter, err := limiter.NewLimiter(lc, m, nil)
@@ -412,7 +412,7 @@ func TestLimiterAllowsRequestsWhenDisabled(t *testing.T) {
 }
 
 func TestClosedLimiter(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
 	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
 

@@ -1,6 +1,6 @@
 package config
 
-import "github.com/alexfalkowski/go-service/v2/bytes"
+import "github.com/alexfalkowski/go-service/v3/bytes"
 
 // DefaultMaxEntries is the default maximum number of entries for bounded in-memory cache drivers.
 const DefaultMaxEntries = 1024
@@ -15,8 +15,8 @@ type Config struct {
 	// Kind selects the cache backend implementation.
 	//
 	// The built-in driver kinds are "redis" and "ttlcache". Unknown kinds cause
-	// [github.com/alexfalkowski/go-service/v2/cache/driver.NewDriver] to return
-	// [github.com/alexfalkowski/go-service/v2/cache/driver/errors.ErrNotFound].
+	// [github.com/alexfalkowski/go-service/v3/cache/driver.NewDriver] to return
+	// [github.com/alexfalkowski/go-service/v3/cache/driver/errors.ErrNotFound].
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 
 	// Compressor selects the compression algorithm used for cached values (if supported by the implementation).

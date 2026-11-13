@@ -1,10 +1,10 @@
 package quota
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
 )
 
 // ErrExceeded is the sentinel [Reader.Read] latches, and [Reader.Err] returns, once a value's bytes
@@ -13,8 +13,8 @@ import (
 // ErrExceeded carries no data of its own: the quota's limit is already known to whichever caller
 // constructed the [Reader] with it, so that caller builds whatever concrete, contract-specific error it
 // needs to return (for example a
-// [github.com/alexfalkowski/go-service/v2/net/http.MaxBytesError] carrying the limit, or a
-// [github.com/alexfalkowski/go-service/v2/net/http/status.SafeError]) once [Reader.Err] or
+// [github.com/alexfalkowski/go-service/v3/net/http.MaxBytesError] carrying the limit, or a
+// [github.com/alexfalkowski/go-service/v3/net/http/status.SafeError]) once [Reader.Err] or
 // [Reader.Exceeds] tells it the quota was spent, rather than asking Reader to build that error itself.
 var ErrExceeded = errors.New("quota: exceeded")
 

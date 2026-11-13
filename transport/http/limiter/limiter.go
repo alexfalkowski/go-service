@@ -3,11 +3,11 @@ package limiter
 import (
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // KeyMap is an alias for [limiter.KeyMap].
@@ -22,7 +22,7 @@ type KeyMap = limiter.KeyMap
 //
 // The returned limiter is backed by [limiter.NewLimiter] and is registered with the provided lifecycle.
 // The `keys` map controls how request contexts are turned into limiter keys (for example, per user-agent).
-func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
+func NewServerLimiter(lc signal.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
@@ -106,7 +106,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 //
 // The returned limiter is backed by [limiter.NewLimiter] and is registered with the provided lifecycle.
 // The `keys` map controls how request contexts are turned into limiter keys.
-func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
+func NewClientLimiter(lc signal.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}

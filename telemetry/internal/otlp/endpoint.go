@@ -3,12 +3,12 @@ package otlp
 import (
 	"net/netip"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/url"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/context"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/url"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // ProtocolGRPC selects OTLP/gRPC exporters.

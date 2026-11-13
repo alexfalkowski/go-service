@@ -5,19 +5,19 @@ import (
 	"testing/synctest"
 
 	"github.com/alexfalkowski/go-health/v2/server"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/health"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/health"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestNewServerStopsWithLifecycle(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		checker := newLifecycleChecker()
 		reg := server.NewRegistration("lifecycle", time.Millisecond.Duration(), checker)
-		lc := fxtest.NewLifecycle(t)
+		lc := signaltest.NewLifecycle(t)
 		srv := health.NewServer(lc)
 
 		srv.Register("test", reg)

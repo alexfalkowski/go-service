@@ -4,9 +4,9 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/alexfalkowski/go-service/v2/i18n"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/i18n"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/io"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/text/language"
 )

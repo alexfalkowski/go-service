@@ -1,7 +1,7 @@
 package nanoid
 
 import (
-	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v3/runtime"
 	nanoid "github.com/matoous/go-nanoid"
 )
 

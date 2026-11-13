@@ -1,6 +1,6 @@
 package access
 
-import "github.com/alexfalkowski/go-service/v2/os"
+import "github.com/alexfalkowski/go-service/v3/os"
 
 // Config configures access-control model and policy loading for the access Controller.
 //

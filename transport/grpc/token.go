@@ -1,9 +1,9 @@
 package grpc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/token"
 )
 
 // NewToken constructs a token service for gRPC transport integration.

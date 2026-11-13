@@ -1,7 +1,7 @@
 package breaker
 
 import (
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/time"
 	breaker "github.com/sony/gobreaker"
 )
 

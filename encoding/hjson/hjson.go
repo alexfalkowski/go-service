@@ -1,9 +1,9 @@
 package hjson
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/io"
 	hjson "github.com/hjson/hjson-go/v4"
 )
 
@@ -12,7 +12,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs an HJSON encoder.
 //
 // This encoder is a thin adapter around [github.com/hjson/hjson-go] that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
@@ -21,7 +21,7 @@ func NewEncoder() *Encoder {
 type Encoder struct{}
 
 // Encode writes v to w as HJSON. HJSON has no required-field concept, so
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithAllowPartial] has no effect.
 func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	data, err := hjson.Marshal(v)
 	if err != nil {
@@ -36,7 +36,7 @@ func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
 // Decode rejects duplicate object keys and unknown destination fields unless
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithDiscardUnknown] is
 // supplied.
 // Decode buffers all remaining input from r before decoding; callers should bound
 // untrusted or potentially large readers before calling it.

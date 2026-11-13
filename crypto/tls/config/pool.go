@@ -3,7 +3,7 @@ package config
 import (
 	"crypto/x509"
 
-	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v3/os"
 )
 
 // NewCertPool resolves and parses cfg's configured CA bundle.

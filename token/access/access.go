@@ -1,10 +1,10 @@
 package access
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/os"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	persist "github.com/casbin/casbin/v2/persist/string-adapter"

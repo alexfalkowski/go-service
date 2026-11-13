@@ -22,17 +22,17 @@
 //     configuration.
 //   - NewPropagator and RegisterPropagation: construction and registration for
 //     global OpenTelemetry propagation.
-//   - Module: an Fx module that composes telemetry submodules and applies RegisterPropagation.
+//   - Module: a go-signal module that composes telemetry submodules and applies RegisterPropagation.
 //
 // # Configuration
 //
 // Config is a convenience root used by services to configure telemetry in one
 // place. It contains pointers to per-signal configs:
 //
-//   - Logger (*[github.com/alexfalkowski/go-service/v2/telemetry/logger.Config])
-//   - Metrics (*[github.com/alexfalkowski/go-service/v2/telemetry/metrics.Config])
+//   - Logger (*[github.com/alexfalkowski/go-service/v3/telemetry/logger.Config])
+//   - Metrics (*[github.com/alexfalkowski/go-service/v3/telemetry/metrics.Config])
 //   - Propagation (*[PropagationConfig])
-//   - Tracer (*[github.com/alexfalkowski/go-service/v2/telemetry/tracer.Config])
+//   - Tracer (*[github.com/alexfalkowski/go-service/v3/telemetry/tracer.Config])
 //
 // A nil Config typically means "telemetry disabled" at the top level, while
 // subpackages may also support their own enable/disable semantics (for example
@@ -80,7 +80,7 @@
 //
 // # Dependency injection (Module)
 //
-// Module is an Fx module that wires the telemetry submodules into an
+// Module is a go-signal module that wires the telemetry submodules into an
 // application. In particular it composes the logger/metrics/tracer/error-handler
 // modules, constructs NewPropagator, and registers RegisterPropagation so
 // propagation is configured as part of application startup.

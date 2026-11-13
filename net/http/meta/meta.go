@@ -1,9 +1,9 @@
 package meta
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http"
 )
 
 const requestResponseKey = context.Key("request-response")
@@ -67,9 +67,9 @@ func WithRequestResponse(ctx context.Context, req *http.Request, res http.Respon
 
 // RateLimiter is the minimal per-message load-control interface a streaming handler charges against.
 //
-// It is deliberately narrower than [github.com/alexfalkowski/go-service/v2/transport/limiter.Limiter]'s
+// It is deliberately narrower than [github.com/alexfalkowski/go-service/v3/transport/limiter.Limiter]'s
 // concrete type and defined locally: net/... packages must not import transport/... (see AGENTS.md).
-// *[github.com/alexfalkowski/go-service/v2/transport/limiter.Limiter] already satisfies this interface
+// *[github.com/alexfalkowski/go-service/v3/transport/limiter.Limiter] already satisfies this interface
 // structurally via its Take method, so [transport/http/limiter.Handler.ServeHTTP] can pass it to
 // WithLimiter without an adapter.
 type RateLimiter interface {

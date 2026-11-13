@@ -2,24 +2,24 @@ package health
 
 import (
 	health "github.com/alexfalkowski/go-health/v2/server"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/net/server"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // RegisterParams defines dependencies for registering HTTP health endpoints.
 //
-// It is an Fx parameter struct ([di.In]) used to wire standard Kubernetes-style health endpoints:
+// It is a go-signal parameter struct ([signal.In]) used to wire standard Kubernetes-style health endpoints:
 //
 //   - `/healthz` (general health)
 //   - `/livez` (liveness)
 //   - `/readyz` (readiness)
 //
-// Server and Router are required. Register assumes both are already constructed by the surrounding Fx graph.
+// Server and Router are required. Register assumes both are already constructed by the surrounding go-signal graph.
 type RegisterParams struct {
-	di.In
+	signal.In
 
 	// Server stores the named health observers queried by the HTTP handlers.
 	Server *health.Server

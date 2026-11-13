@@ -6,26 +6,28 @@ import (
 	"testing"
 	"testing/synctest"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/cache"
-	"github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
-	compresserrors "github.com/alexfalkowski/go-service/v2/compress/errors"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/encoding/base64"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/ptr"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/cache"
+	"github.com/alexfalkowski/go-service/v3/cache/config"
+	"github.com/alexfalkowski/go-service/v3/cache/driver"
+	drivererrors "github.com/alexfalkowski/go-service/v3/cache/driver/errors"
+	"github.com/alexfalkowski/go-service/v3/compress"
+	compresserrors "github.com/alexfalkowski/go-service/v3/compress/errors"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/encoding"
+	"github.com/alexfalkowski/go-service/v3/encoding/base64"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	v1 "github.com/alexfalkowski/go-service/v3/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/ptr"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestCacheRoundTripsSupportedFormats(t *testing.T) {
@@ -393,24 +395,14 @@ func TestModuleRegistersGenericCache(t *testing.T) {
 		cache.Register(nil)
 	})
 
-	app := di.New(
-		di.NoLogger,
+	_, err := signal.NewApp(
 		cache.Module,
-		di.Constructor(func() *logger.Logger { return nil }),
-		fx.Supply(
-			test.NewCacheConfig("ttlcache", "none", "json", "redis"),
-			test.FS,
-			test.Encoder,
-			test.Pool,
-			test.Compressor,
-		),
+		signal.Constructor(func() *logger.Logger { return nil }),
+		signal.Constructor(func() (*config.Config, *os.FS, *encoding.Map, *sync.BufferPool, *compress.Map) {
+			return test.NewCacheConfig("ttlcache", "none", "json", "redis"), test.FS, test.Encoder, test.Pool, test.Compressor
+		}),
 	)
-	require.NoError(t, app.Err())
-
-	require.NoError(t, app.Start(t.Context()))
-	t.Cleanup(func() {
-		require.NoError(t, app.Stop(context.Background()))
-	})
+	require.NoError(t, err)
 
 	require.NoError(t, cache.Persist(t.Context(), "test", new("hello?"), time.Minute))
 
@@ -625,7 +617,7 @@ func TestNewDriverRejectsInvalidCacheConfiguration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := driver.NewDriver(driver.DriverParams{
-				Lifecycle: fxtest.NewLifecycle(t),
+				Lifecycle: signaltest.NewLifecycle(t),
 				FS:        test.FS,
 				Config:    tt.config,
 			})
@@ -637,7 +629,7 @@ func TestNewDriverRejectsInvalidCacheConfiguration(t *testing.T) {
 func TestNewDriverAndCacheSupportDisabledConfiguration(t *testing.T) {
 	t.Run("driver", func(t *testing.T) {
 		_, err := driver.NewDriver(driver.DriverParams{
-			Lifecycle: fxtest.NewLifecycle(t),
+			Lifecycle: signaltest.NewLifecycle(t),
 			FS:        test.FS,
 		})
 		require.NoError(t, err)
@@ -734,7 +726,7 @@ func TestGetValidEmptyBufferCache(t *testing.T) {
 }
 
 func TestGetMissingCache(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &config.Config{Kind: "ttlcache", MaxEntries: config.DefaultMaxEntries}
 
 	d, err := driver.NewDriver(driver.DriverParams{

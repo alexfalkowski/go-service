@@ -3,12 +3,12 @@ package i18n
 import (
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
-	"github.com/alexfalkowski/go-service/v2/encoding/toml"
-	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/json"
+	"github.com/alexfalkowski/go-service/v3/encoding/toml"
+	"github.com/alexfalkowski/go-service/v3/encoding/yaml"
+	"github.com/alexfalkowski/go-service/v3/io"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 )

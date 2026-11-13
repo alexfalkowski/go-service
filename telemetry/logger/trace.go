@@ -3,8 +3,8 @@ package logger
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
 )
 
 const (

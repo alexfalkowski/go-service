@@ -5,25 +5,25 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/header"
-	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/encoding/json"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/header"
+	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestLoggerEmitsRecordsWithoutPanic(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	log, err := test.NewLogger(lc, test.NewTextLoggerConfig())
 	require.NoError(t, err)
 
@@ -38,7 +38,7 @@ func TestLoggerEmitsRecordsWithoutPanic(t *testing.T) {
 }
 
 func TestLoggerAllowsUserLevelAttr(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	log, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
 	require.NoError(t, err)
 
@@ -208,7 +208,7 @@ func TestTraceHandlerWithoutSpanLeavesRecordUnchanged(t *testing.T) {
 func TestStdoutLoggerLogsUnderSpan(t *testing.T) {
 	test.EnableIsolatedSpanExporter(t)
 
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	log, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
 	require.NoError(t, err)
 
@@ -221,7 +221,7 @@ func TestStdoutLoggerLogsUnderSpan(t *testing.T) {
 }
 
 func TestRejectsInvalidLogger(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{Kind: "wrong", Level: "debug"}
 	params := logger.LoggerParams{
 		Lifecycle:   lc,
@@ -292,7 +292,7 @@ func TestLogAddsMetadataAndError(t *testing.T) {
 }
 
 func TestNewLoggerRejectsInvalidLevel(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{Kind: "text", Level: "bob"}
 	params := logger.LoggerParams{
 		Lifecycle:   lc,
@@ -308,7 +308,7 @@ func TestNewLoggerRejectsInvalidLevel(t *testing.T) {
 }
 
 func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind: "otlp",
 		URL:  "http://collector.example.com/v1/logs",
@@ -330,7 +330,7 @@ func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
 }
 
 func TestOTLPOverGRPCLogger(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
@@ -352,7 +352,7 @@ func TestOTLPOverGRPCLogger(t *testing.T) {
 }
 
 func TestRejectsInvalidOTLPOverGRPCEndpoint(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
@@ -375,7 +375,7 @@ func TestRejectsInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 }
 
 func TestOTLPOverGRPCLoggerWithTLSHeaders(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
@@ -405,7 +405,7 @@ func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 	t.Setenv("OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "http://collector.example.com/v1/logs")
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://collector.example.com")
 
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind: "otlp",
 		Headers: header.Map{
@@ -426,7 +426,7 @@ func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 }
 
 func TestOTLPOverGRPCLoggerWithBatchTuning(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:               "otlp",
 		Protocol:           "grpc",
@@ -452,7 +452,7 @@ func TestOTLPOverGRPCLoggerWithBatchTuning(t *testing.T) {
 }
 
 func TestOTLPLoggerUsesConfiguredLevel(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{
 		Kind:  "otlp",
 		Level: "error",

@@ -1,11 +1,11 @@
 package pg
 
-import "github.com/alexfalkowski/go-service/v2/database/sql/config"
+import "github.com/alexfalkowski/go-service/v3/database/sql/config"
 
 // Config contains PostgreSQL SQL database configuration.
 //
-// It embeds [github.com/alexfalkowski/go-service/v2/database/sql/config.Config] to reuse common
-// [github.com/alexfalkowski/go-service/v2/database/sql] writer and reader pool settings.
+// It embeds [github.com/alexfalkowski/go-service/v3/database/sql/config.Config] to reuse common
+// [github.com/alexfalkowski/go-service/v3/database/sql] writer and reader pool settings.
 // PostgreSQL connection options, including TLS and sslmode settings, belong in the configured DSNs
 // and are passed through to pgx unchanged.
 //

@@ -4,8 +4,8 @@ import (
 	"crypto/rsa"
 	"crypto/sha512"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/message"
-	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v3/crypto/message"
+	"github.com/alexfalkowski/go-service/v3/crypto/rand"
 )
 
 // EncryptOAEP encrypts msg.Data using RSA-OAEP with SHA-512.

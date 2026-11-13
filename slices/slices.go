@@ -5,7 +5,7 @@ import (
 	"iter"
 	"slices"
 
-	"github.com/alexfalkowski/go-service/v2/reflect"
+	"github.com/alexfalkowski/go-service/v3/reflect"
 )
 
 // AppendNotZero appends elems to slice, skipping nil and zero elements.

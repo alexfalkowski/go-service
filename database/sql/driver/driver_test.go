@@ -3,24 +3,24 @@ package driver_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/database/sql"
-	"github.com/alexfalkowski/go-service/v2/database/sql/config"
-	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
-	"github.com/alexfalkowski/go-service/v2/database/sql/telemetry"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/database/sql"
+	"github.com/alexfalkowski/go-service/v3/database/sql/config"
+	"github.com/alexfalkowski/go-service/v3/database/sql/driver"
+	"github.com/alexfalkowski/go-service/v3/database/sql/telemetry"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestOpenUnregistersDBStatsMetrics(t *testing.T) {
 	reader := test.EnableMetricsReader(t)
 	driverName := test.RegisterBenchmarkSQLDriver(t, "test-sql-")
 
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	db, err := driver.Open(lc, driverName, test.FS, &config.Config{
 		Writer: newPool(1),
 	})
@@ -38,7 +38,7 @@ func TestOpenUnregistersDBStatsMetrics(t *testing.T) {
 }
 
 func TestOpenReturnsConnectError(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	db, err := driver.Open(lc, "missing-dsns", test.FS, &config.Config{})
 
 	require.Nil(t, db)

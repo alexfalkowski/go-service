@@ -1,8 +1,8 @@
 package health
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires HTTP health endpoints into [go.uber.org/fx].
-var Module = di.Module(
-	di.Register(Register),
+// Module wires HTTP health endpoints into [github.com/alexfalkowski/go-signal/v2].
+var Module = signal.Module(
+	signal.Register(Register),
 )

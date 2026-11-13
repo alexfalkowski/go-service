@@ -1,6 +1,6 @@
 package rest
 
-import http "github.com/alexfalkowski/go-service/v2/net/http/client"
+import http "github.com/alexfalkowski/go-service/v3/net/http/client"
 
 // Options is an alias for [client.Options].
 type Options = http.Options

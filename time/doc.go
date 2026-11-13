@@ -68,9 +68,9 @@
 // Provider implementations may wrap and prefix errors to provide clearer context
 // (for example "ntp: ..." or "nts: ...").
 //
-// # Dependency injection (Fx)
+// # Dependency injection (go-signal)
 //
-// [Module] wires [NewNetwork] into Fx as a constructor so applications can optionally
+// [Module] wires [NewNetwork] into go-signal as a constructor so applications can optionally
 // depend on a Network provider when configured.
 //
 // # Notes

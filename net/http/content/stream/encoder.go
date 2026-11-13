@@ -1,6 +1,6 @@
 package stream
 
-import "github.com/alexfalkowski/go-service/v2/encoding/stream"
+import "github.com/alexfalkowski/go-service/v3/encoding/stream"
 
 // requestEncoder keeps bidirectional stream finalization on the response stream while closing both codecs.
 type requestEncoder struct {

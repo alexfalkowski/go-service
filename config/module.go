@@ -1,17 +1,17 @@
 package config
 
 import (
-	"github.com/alexfalkowski/go-service/v2/config/validate"
-	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v3/config/validate"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
-// Module wires the configuration subsystem into [go.uber.org/fx]/[go.uber.org/dig].
+// Module wires the configuration subsystem into [github.com/alexfalkowski/go-signal/v2].
 //
 // It provides the core configuration components:
 //   - [validate.Validator] ([validate.Module]) used to validate decoded config structs. The
 //     `config_size`, `duration_second_precision`, `otlp_cadence`, and `otlp_batch_config` validation
 //     tags are contributed by `bytes`, `time`, and `telemetry/otlp`'s own `Module`s, composed via
-//     [github.com/alexfalkowski/go-service/v2/module.Library] rather than here, so this package does
+//     [github.com/alexfalkowski/go-service/v3/module.Library] rather than here, so this package does
 //     not need to know about their rules by name.
 //   - Decoder (NewDecoder) that dispatches config loading based on the "-config" / "-c" flag.
 //   - *[Config] ([NewConfig]) as the standard top-level configuration.
@@ -24,18 +24,18 @@ import (
 // config pointer is nil), the projection returns nil so downstream modules treat that subsystem as disabled.
 //
 // Telemetry logger, metrics, and tracer projections also resolve configured header source strings by calling
-// [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.MustSecrets]. Missing environment variables or
+// [github.com/alexfalkowski/go-service/v3/telemetry/header.Map.MustSecrets]. Missing environment variables or
 // unreadable files therefore fail fast during startup projection rather than later exporter construction.
-var Module = di.Module(
+var Module = signal.Module(
 	validate.Module,
-	di.Constructor(NewDecoder), di.Constructor(NewConfig[Config]),
-	di.Constructor(cryptoAESConfig), di.Constructor(cryptoED25519Config),
-	di.Constructor(cryptoHMACConfig), di.Constructor(cryptoRSAConfig),
-	di.Constructor(environmentConfig), di.Constructor(cacheConfig),
-	di.Constructor(debugConfig), di.Constructor(idConfig), di.Constructor(timeConfig),
-	di.Constructor(pgConfig), di.Constructor(featureConfig), di.Constructor(hooksConfig),
-	di.Constructor(attributeMap), di.Constructor(metadataLimit),
-	di.Constructor(loggerConfig), di.Constructor(tracerConfig), di.Constructor(metricsConfig),
-	di.Constructor(propagationConfig),
-	di.Constructor(accessConfig), di.Constructor(grpcConfig), di.Constructor(httpConfig),
+	signal.Constructor(NewDecoder), signal.Constructor(NewConfig[Config]),
+	signal.Constructor(cryptoAESConfig), signal.Constructor(cryptoED25519Config),
+	signal.Constructor(cryptoHMACConfig), signal.Constructor(cryptoRSAConfig),
+	signal.Constructor(environmentConfig), signal.Constructor(cacheConfig),
+	signal.Constructor(debugConfig), signal.Constructor(idConfig), signal.Constructor(timeConfig),
+	signal.Constructor(pgConfig), signal.Constructor(featureConfig), signal.Constructor(hooksConfig),
+	signal.Constructor(attributeMap), signal.Constructor(metadataLimit),
+	signal.Constructor(loggerConfig), signal.Constructor(tracerConfig), signal.Constructor(metricsConfig),
+	signal.Constructor(propagationConfig),
+	signal.Constructor(accessConfig), signal.Constructor(grpcConfig), signal.Constructor(httpConfig),
 )

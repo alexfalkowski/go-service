@@ -5,13 +5,13 @@ import (
 	"crypto/x509"
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/errors"
-	"github.com/alexfalkowski/go-service/v2/crypto/pem"
+	"github.com/alexfalkowski/go-service/v3/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/pem"
 )
 
 // Config configures RSA key loading for the RSA-OAEP encryptor/decryptor wired by this package.
 //
-// Public and Private are "source strings" resolved by [github.com/alexfalkowski/go-service/v2/crypto/pem.Decoder] (for example "env:NAME", "file:/path",
+// Public and Private are "source strings" resolved by [github.com/alexfalkowski/go-service/v3/crypto/pem.Decoder] (for example "env:NAME", "file:/path",
 // or a literal PEM value).
 //
 // Expected key formats:

@@ -1,13 +1,13 @@
 ![Gopher](assets/gopher.png)
 [![CircleCI](https://circleci.com/gh/alexfalkowski/go-service.svg?style=shield)](https://circleci.com/gh/alexfalkowski/go-service)
 [![codecov](https://codecov.io/gh/alexfalkowski/go-service/graph/badge.svg?token=AGP01JOTM0)](https://codecov.io/gh/alexfalkowski/go-service)
-[![Go Report Card](https://goreportcard.com/badge/github.com/alexfalkowski/go-service/v2)](https://goreportcard.com/report/github.com/alexfalkowski/go-service/v2)
-[![Go Reference](https://pkg.go.dev/badge/github.com/alexfalkowski/go-service/v2.svg)](https://pkg.go.dev/github.com/alexfalkowski/go-service/v2)
+[![Go Report Card](https://goreportcard.com/badge/github.com/alexfalkowski/go-service/v3)](https://goreportcard.com/report/github.com/alexfalkowski/go-service/v3)
+[![Go Reference](https://pkg.go.dev/badge/github.com/alexfalkowski/go-service/v3.svg)](https://pkg.go.dev/github.com/alexfalkowski/go-service/v3)
 [![Stability: Active](https://masterminds.github.io/stability/active.svg)](https://masterminds.github.io/stability/active.html)
 
 # 🧰 Go Service
 
-`github.com/alexfalkowski/go-service/v2` is an opinionated framework/library for building Go services with consistent wiring for configuration, DI, transports, telemetry, crypto, etc.
+`github.com/alexfalkowski/go-service/v3` is an opinionated framework/library for building Go services with consistent wiring for configuration, DI, transports, telemetry, crypto, etc.
 
 This repo is primarily a **library of packages** (no top-level `cmd/` binary). Services built on top typically define their own `main` package elsewhere and import this module.
 
@@ -22,18 +22,31 @@ For a new long-running service, start from `go-service-template` so the applicat
 For direct package use in an existing module, add the library dependency with the versioned module path:
 
 ```sh
-go get github.com/alexfalkowski/go-service/v2
+go get github.com/alexfalkowski/go-service/v3
 ```
 
 Use the Go version declared in `go.mod` or newer when installing or building this module.
 
 ---
 
-## 🧩 Dependency Injection (Fx)
+## 🧩 Dependency Injection (go-signal)
 
-The framework is designed around dependency injection and uses [Uber Fx](https://github.com/uber-go/fx) (and Dig under the hood). Most subsystems expose Fx modules that you compose into your service.
+The framework uses [go-signal v2](https://github.com/alexfalkowski/go-signal) directly for dependency injection and application lifecycle management, with Dig resolving dependencies. Import `github.com/alexfalkowski/go-signal/v2` as `signal` to compose subsystem modules. Server commands use `App.Serve`; client commands use `App.Run`.
 
-If you are new to Fx, their docs/examples are worth reading first.
+### Migrating from v2 to v3
+
+This is a breaking major release. Change service imports from
+`github.com/alexfalkowski/go-service/v2` to
+`github.com/alexfalkowski/go-service/v3` and update the dependency to v3.
+The DI and lifecycle changes below require source changes; v2 consumers must
+migrate explicitly to use v3.
+
+- The `github.com/alexfalkowski/go-service/v2/di` package has been removed. Import `github.com/alexfalkowski/go-signal/v2` and replace `di.Module`, `di.Constructor`, `di.Register`, `di.Decorate`, `di.In`, and `di.Out` with their `signal` equivalents. Replace `di.Option` and direct Fx options with `signal.Option` and go-signal options. The existing `cli.Option` alias remains available.
+- Replace `di.New(opts...)` with `signal.NewApp(opts...)`, which returns `(*signal.App, error)`. Handle construction errors directly, then use `app.Serve(ctx)` for servers or `app.Run(ctx)` for short-lived commands. These methods own startup, rollback, and cleanup; the former `Err`, `Start`, `Stop`, and `Wait` methods are no longer available. Create a fresh application for each execution. `cli.Application` does this for every command run.
+- Request shutdown with `shutdowner.Shutdown(code)`, which returns no value. Remove `di.ExitCode` and `di.ShutdownOption`; inspect `*signal.ExitError` with `errors.As` when using applications directly. `cli.Application.RunCode` preserves non-zero requested codes, including when joined with startup or cleanup errors. Replace `di.RootCause` with `signal.RootCause` when reporting construction errors.
+- Remove `di.Recover()` and `di.NoLogger`. Construction and hook panics are recovered automatically, and go-signal does not install an application logger.
+- Use `signal.StartTimeout` and `signal.StopTimeout` with standard `time.Duration` values. Both default to 15 seconds and reject non-positive values during construction. Cleanup gets a fresh deadline after cancellation or startup failure. Hooks must honor cancellation; a hook that outlives startup's deadline is cleaned up after it completes.
+- Replace `fxtest.NewLifecycle` with `signaltest.NewLifecycle` from `github.com/alexfalkowski/go-signal/v2/signaltest`.
 
 ### Module bundles
 
@@ -53,10 +66,10 @@ This repository is a library, so your binary is usually in another module. A typ
 package main
 
 import (
-    "github.com/alexfalkowski/go-service/v2/cli"
-    "github.com/alexfalkowski/go-service/v2/context"
-    "github.com/alexfalkowski/go-service/v2/module"
-    "github.com/alexfalkowski/go-service/v2/os"
+    "github.com/alexfalkowski/go-service/v3/cli"
+    "github.com/alexfalkowski/go-service/v3/context"
+    "github.com/alexfalkowski/go-service/v3/module"
+    "github.com/alexfalkowski/go-service/v3/os"
 )
 
 func main() {
@@ -95,7 +108,7 @@ Services commonly expose two command shapes:
 - **Server**: long-running daemon process
 - **Client**: short-lived control/admin process
 
-The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `main` typically wires Fx modules + commands.
+The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `main` typically wires go-signal modules + commands.
 
 > This repo intentionally does not ship a ready-to-run `main` — it provides the building blocks. In normal usage server applications consume them through `go-service-template` plus `module.Server`, while short-lived commands use `go-client-template` plus `module.Client`, rather than wiring every subsystem manually.
 
@@ -105,9 +118,9 @@ The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `
 
 The repo is intentionally split between high-level service composition and lower-level reusable helpers:
 
-- `module/` exposes the opinionated Fx bundles (`Library`, `Server`, `Client`)
+- `module/` exposes the opinionated go-signal bundles (`Library`, `Server`, `Client`)
 - `config/` defines the standard top-level config shape plus projections used by module wiring
-- feature packages such as `cache/`, `crypto/`, `database/sql/`, `feature/`, `telemetry/`, `time/`, and `id/` provide config, constructors, and Fx modules for a subsystem
+- feature packages such as `cache/`, `crypto/`, `database/sql/`, `feature/`, `telemetry/`, `time/`, and `id/` provide config, constructors, and go-signal modules for a subsystem
 - `net/...` contains lower-level protocol helpers and reusable primitives (`net/http`, `net/grpc`, metadata/header helpers, gRPC health protocol aliases, and `net/server`)
 - `transport/...` contains the higher-level service transport layer: composed HTTP/gRPC stacks, policy middleware, operational endpoints, and transport-specific modules
 - `internal/test/` contains the shared test world and fixtures used across packages
@@ -212,10 +225,10 @@ func workerConfig(cfg *AppConfig) *WorkerConfig {
     return cfg.Worker
 }
 
-var AppConfigModule = di.Module(
-    di.Constructor(config.NewConfig[AppConfig]),
-    di.Decorate(sharedConfig),
-    di.Constructor(workerConfig),
+var AppConfigModule = signal.Module(
+    signal.Constructor(config.NewConfig[AppConfig]),
+    signal.Decorate(sharedConfig),
+    signal.Constructor(workerConfig),
 )
 ```
 
@@ -365,7 +378,7 @@ Server commands created through `cli.Application.AddServer` include `runtime.Mod
 - [automemlimit](https://github.com/KimMachineGun/automemlimit)
 
 > [!NOTE]
-> This registration is best-effort and does not fail startup if a memory limit cannot be applied. When automemlimit detects an unlimited cgroup and `GOMEMLIMIT` is not already configured, it sets Go's runtime memory limit to `math.MaxInt64`, replacing any programmatic limit applied before startup. Direct Fx compositions and client-style commands should include `runtime.Module` explicitly when they want this behavior.
+> This registration is best-effort and does not fail startup if a memory limit cannot be applied. When automemlimit detects an unlimited cgroup and `GOMEMLIMIT` is not already configured, it sets Go's runtime memory limit to `math.MaxInt64`, replacing any programmatic limit applied before startup. Direct go-signal compositions and client-style commands should include `runtime.Module` explicitly when they want this behavior.
 
 ---
 
@@ -440,7 +453,7 @@ negative values are invalid.
 
 `i18n` provides application-owned translation catalogs with named variables, plural forms, and fallback messages. Catalogs are independent of HTTP and can be shared by MVC views, workers, and CLI commands.
 
-See [docs/i18n.md](docs/i18n.md) for catalog formats, standalone use, language selection, Fx wiring, and MVC integration.
+See [docs/i18n.md](docs/i18n.md) for catalog formats, standalone use, language selection, go-signal wiring, and MVC integration.
 
 ---
 

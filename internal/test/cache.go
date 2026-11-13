@@ -3,16 +3,16 @@ package test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/cache"
-	"github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/cache"
+	"github.com/alexfalkowski/go-service/v3/cache/config"
+	"github.com/alexfalkowski/go-service/v3/cache/driver"
+	"github.com/alexfalkowski/go-service/v3/context"
+	v1 "github.com/alexfalkowski/go-service/v3/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -128,7 +128,7 @@ func (*WriteToOnly) WriteTo(io.Writer) (int64, error) {
 	return 0, nil
 }
 
-func redisCache(lc di.Lifecycle) (*cache.Cache, cache.Pinger, error) {
+func redisCache(lc signal.Lifecycle) (*cache.Cache, cache.Pinger, error) {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
 	drv, err := driver.NewDriver(driver.DriverParams{
@@ -151,7 +151,7 @@ func redisCache(lc di.Lifecycle) (*cache.Cache, cache.Pinger, error) {
 	return cache.NewCache(params), cache.NewPinger(drv), nil
 }
 
-func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *options) (*cache.Cache, cache.Pinger) {
+func newWorldCache(tb testing.TB, lc signal.Lifecycle, opts *options) (*cache.Cache, cache.Pinger) {
 	tb.Helper()
 
 	var kind *cache.Cache
@@ -174,7 +174,7 @@ func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *options) (*cache.Cache,
 	return kind, pinger
 }
 
-func createWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldCacheOptions) (*cache.Cache, cache.Pinger) {
+func createWorldCache(tb testing.TB, lc signal.Lifecycle, opts *worldCacheOptions) (*cache.Cache, cache.Pinger) {
 	tb.Helper()
 
 	drv := opts.driver

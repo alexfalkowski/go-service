@@ -3,13 +3,13 @@ package logger
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/config/client"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
-	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-service/v3/config/client"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-signal/v2"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
@@ -43,7 +43,7 @@ func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
 	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(exporter, batchProcessorOptions(params.Config)...)), log.WithResource(attrs))
 	otel.SetLoggerProvider(provider)
 
-	params.Lifecycle.Append(di.Hook{
+	params.Lifecycle.Append(signal.Hook{
 		OnStop: func(ctx context.Context) error {
 			// Do not return error as this will stop all others.
 			_ = provider.Shutdown(ctx)

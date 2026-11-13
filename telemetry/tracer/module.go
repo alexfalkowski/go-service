@@ -1,11 +1,11 @@
 package tracer
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires tracer registration into [go.uber.org/fx].
+// Module wires tracer registration into [github.com/alexfalkowski/go-signal/v2].
 //
 // It registers [Register], which configures and installs a global OpenTelemetry
 // TracerProvider when tracing is enabled.
-var Module = di.Module(
-	di.Register(Register),
+var Module = signal.Module(
+	signal.Register(Register),
 )

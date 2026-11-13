@@ -3,8 +3,8 @@ package net
 import (
 	"net"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // Addr is an alias for [net.Addr].

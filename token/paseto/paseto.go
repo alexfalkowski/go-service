@@ -2,13 +2,13 @@ package paseto
 
 import (
 	"aidanwoods.dev/go-paseto"
-	"github.com/alexfalkowski/go-service/v2/crypto/pem"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
-	tokenerrors "github.com/alexfalkowski/go-service/v2/token/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/pem"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
+	tokenerrors "github.com/alexfalkowski/go-service/v3/token/errors"
 )
 
 // NewToken constructs a Token that issues and validates PASETO v4 public (asymmetric) tokens.
@@ -29,7 +29,7 @@ func NewToken(cfg *Config, fs *os.FS, gen id.Generator) *Token {
 //
 // Issued tokens set common PASETO claims and identity fields (jti/iat/nbf/exp/iss/aud/sub).
 //
-// Missing generation or verification dependencies are reported as [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
+// Missing generation or verification dependencies are reported as [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig].
 type Token struct {
 	cfg       *Config
 	decoder   *pem.Decoder
@@ -98,7 +98,7 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 //   - audience matches aud (aud)
 //   - the signed lifetime (exp - iat) does not exceed cfg.Expiration
 //
-// On failure, PASETO parsing errors, including invalid signatures, return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidMatch].
+// On failure, PASETO parsing errors, including invalid signatures, return [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidMatch].
 // Rule and key-construction errors may come from the upstream PASETO library.
 // Local config, subject, and signed-lifetime checks return shared sentinel errors from token/errors.
 func (t *Token) Verify(token, aud string) (string, error) {

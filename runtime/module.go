@@ -1,10 +1,10 @@
 package runtime
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires runtime integrations into [go.uber.org/fx].
+// Module wires runtime integrations into [github.com/alexfalkowski/go-signal/v2].
 //
-// Including this module in an Fx application enables optional runtime tuning
+// Including this module in a go-signal application enables optional runtime tuning
 // provided by this package.
 //
 // Currently, Module registers RegisterMemLimit, which attempts to configure
@@ -15,6 +15,6 @@ import "github.com/alexfalkowski/go-service/v2/di"
 // Note: RegisterMemLimit is best-effort and intentionally ignores errors, so
 // including this module will not fail application startup if a memory limit
 // cannot be determined or applied.
-var Module = di.Module(
-	di.Register(RegisterMemLimit),
+var Module = signal.Module(
+	signal.Register(RegisterMemLimit),
 )

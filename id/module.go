@@ -1,15 +1,15 @@
 package id
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/id/ksuid"
-	"github.com/alexfalkowski/go-service/v2/id/nanoid"
-	"github.com/alexfalkowski/go-service/v2/id/ulid"
-	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/id/xid"
+	"github.com/alexfalkowski/go-service/v3/id/ksuid"
+	"github.com/alexfalkowski/go-service/v3/id/nanoid"
+	"github.com/alexfalkowski/go-service/v3/id/ulid"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/id/xid"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
-// Module wires ID generation into [go.uber.org/fx]/[go.uber.org/dig].
+// Module wires ID generation into [github.com/alexfalkowski/go-signal/v2].
 //
 // It provides constructors for the built-in generator implementations:
 //   - *[ksuid.Generator] via [ksuid.NewGenerator] (kind "ksuid")
@@ -24,16 +24,16 @@ import (
 // Default behavior: when *[Config] is nil/disabled, [NewGenerator] returns the "uuid" generator so
 // downstream consumers always have a usable ID source.
 //
-// The ULID generator requires [github.com/alexfalkowski/go-service/v2/crypto/rand.Reader]. Standard
-// top-level wiring supplies that dependency through [github.com/alexfalkowski/go-service/v2/module.Library]
-// via [github.com/alexfalkowski/go-service/v2/crypto.Module]. Direct lower-level composition of
+// The ULID generator requires [github.com/alexfalkowski/go-service/v3/crypto/rand.Reader]. Standard
+// top-level wiring supplies that dependency through [github.com/alexfalkowski/go-service/v3/module.Library]
+// via [github.com/alexfalkowski/go-service/v3/crypto.Module]. Direct lower-level composition of
 // Module must provide the same reader dependency.
-var Module = di.Module(
-	di.Constructor(ksuid.NewGenerator),
-	di.Constructor(nanoid.NewGenerator),
-	di.Constructor(ulid.NewGenerator),
-	di.Constructor(uuid.NewGenerator),
-	di.Constructor(xid.NewGenerator),
-	di.Constructor(NewMap),
-	di.Constructor(NewGenerator),
+var Module = signal.Module(
+	signal.Constructor(ksuid.NewGenerator),
+	signal.Constructor(nanoid.NewGenerator),
+	signal.Constructor(ulid.NewGenerator),
+	signal.Constructor(uuid.NewGenerator),
+	signal.Constructor(xid.NewGenerator),
+	signal.Constructor(NewMap),
+	signal.Constructor(NewGenerator),
 )

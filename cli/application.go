@@ -3,16 +3,15 @@ package cli
 import (
 	"maps"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/slices"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/slices"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/cristalhq/acmd"
 )
 
@@ -58,7 +57,7 @@ type Application struct {
 //   - build a DI application with panic recovery, a fresh copy of the provided options, plus the
 //     command's module and runtime.Module
 //   - start the DI application
-//   - block until the DI application shuts down or ctx is canceled
+//   - block until shutdown is requested, SIGINT/SIGTERM arrives, or ctx is canceled
 //   - stop the DI application
 //
 // Any start/stop error or non-zero shutdown request is wrapped with the subcommand name for easier attribution.
@@ -74,20 +73,12 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 			}
 
 			opts := append(slices.Clone(opts), server.module(), runtime.Module)
-			app := di.New(opts...)
-
-			if err := a.start(ctx, app); err != nil {
+			app, err := signal.NewApp(opts...)
+			if err != nil {
 				return a.prefix(name, err)
 			}
 
-			var code int
-			select {
-			case signal := <-app.Wait():
-				code = signal.ExitCode
-			case <-ctx.Done():
-			}
-
-			return a.shutdownError(name, a.stop(ctx, app), code)
+			return a.prefix(name, app.Serve(ctx))
 		},
 	}
 	runtime.Must(a.register(command))
@@ -112,7 +103,7 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 // before startup returns and the graph is stopped. Constructors and invocations should wire dependencies
 // and register lifecycle hooks rather than perform the command action while the DI graph is being built.
 //
-// Any start/stop error is wrapped with the subcommand name for easier attribution.
+// Any construction, start/stop error, or non-zero shutdown request is wrapped with the subcommand name for easier attribution.
 func (a *Application) AddClient(name, description string, opts ...Option) *Command {
 	opts = slices.Clone(opts)
 	client := NewCommand(name)
@@ -125,20 +116,12 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 			}
 
 			opts := append(slices.Clone(opts), client.module())
-			app := di.New(opts...)
-
-			if err := a.start(ctx, app); err != nil {
+			app, err := signal.NewApp(opts...)
+			if err != nil {
 				return a.prefix(name, err)
 			}
 
-			var code int
-			select {
-			case signal := <-app.Wait():
-				code = signal.ExitCode
-			default:
-			}
-
-			return a.shutdownError(name, a.stop(ctx, app), code)
+			return a.prefix(name, app.Run(ctx))
 		},
 	}
 	runtime.Must(a.register(command))
@@ -199,43 +182,13 @@ func (a *Application) register(command acmd.Command) error {
 }
 
 func (a *Application) prefix(name string, err error) error {
-	return errors.Prefix(name+": failed to run", di.RootCause(err))
-}
-
-func (a *Application) shutdownError(name string, err error, code int) error {
-	if code != os.ExitCodeSuccess {
-		err = errors.Join(err, shutdownError(code))
-	}
-
-	return a.prefix(name, err)
+	return errors.Prefix(name+": failed to run", signal.RootCause(err))
 }
 
 func (a *Application) code(err error) int {
-	if codeErr, ok := errors.AsType[shutdownError](err); ok && codeErr.code() != os.ExitCodeSuccess {
-		return codeErr.code()
+	if codeErr, ok := errors.AsType[*signal.ExitError](err); ok && codeErr.Code != os.ExitCodeSuccess {
+		return codeErr.Code
 	}
 
 	return os.ExitCodeFailure
-}
-
-func (a *Application) start(ctx context.Context, app *di.App) error {
-	startCtx, cancel := context.WithTimeout(ctx, time.Duration(app.StartTimeout()))
-	defer cancel()
-
-	return app.Start(startCtx)
-}
-
-func (a *Application) stop(ctx context.Context, app *di.App) error {
-	stopCtx, cancel := a.stopContext(ctx, app)
-	defer cancel()
-
-	return app.Stop(stopCtx)
-}
-
-func (a *Application) stopContext(ctx context.Context, app *di.App) (context.Context, context.CancelFunc) {
-	if ctx.Err() != nil {
-		ctx = context.WithoutCancel(ctx)
-	}
-
-	return context.WithTimeout(ctx, time.Duration(app.StopTimeout()))
 }

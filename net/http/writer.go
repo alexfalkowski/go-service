@@ -3,7 +3,7 @@ package http
 import (
 	"maps"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v3/bytes"
 	"github.com/alexfalkowski/go-sync"
 )
 

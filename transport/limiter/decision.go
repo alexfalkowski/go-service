@@ -1,6 +1,6 @@
 package limiter
 
-import "github.com/alexfalkowski/go-service/v2/time"
+import "github.com/alexfalkowski/go-service/v3/time"
 
 // Decision describes the result of one limiter take attempt.
 type Decision struct {

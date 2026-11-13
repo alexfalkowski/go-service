@@ -4,9 +4,9 @@ import (
 	"crypto/hmac"
 	"crypto/sha512"
 
-	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	crypto "github.com/alexfalkowski/go-service/v3/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // Size is the HMAC-SHA-512 signature size in bytes.
@@ -61,7 +61,7 @@ func (s *Signer) Sign(msg []byte) ([]byte, error) {
 //
 // Verification uses [crypto/hmac.Equal] to compare MACs in constant time.
 //
-// It returns [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidMatch] when verification fails.
+// It returns [github.com/alexfalkowski/go-service/v3/crypto/errors.ErrInvalidMatch] when verification fails.
 func (s *Signer) Verify(sig, msg []byte) error {
 	mac := hmac.New(sha512.New, s.key)
 	mac.Write(msg)

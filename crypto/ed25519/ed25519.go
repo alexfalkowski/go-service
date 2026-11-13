@@ -4,7 +4,7 @@ import (
 	"crypto/ed25519"
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/errors"
 )
 
 // PrivateKeySize is the size, in bytes, of an Ed25519 private key.

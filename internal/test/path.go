@@ -1,6 +1,6 @@
 package test
 
-import "github.com/alexfalkowski/go-service/v2/runtime"
+import "github.com/alexfalkowski/go-service/v3/runtime"
 
 // Path resolves a fixture path relative to the repository's `test/` directory.
 //

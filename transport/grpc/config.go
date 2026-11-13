@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/config/server"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/config/server"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // Config configures the gRPC transport stack.

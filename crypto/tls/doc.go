@@ -10,8 +10,8 @@
 // parsed certificates, protocol-version constants, or helpers such as
 // [X509KeyPair].
 //
-// Use [github.com/alexfalkowski/go-service/v2/crypto/tls/config] when working with go-service TLS configuration
+// Use [github.com/alexfalkowski/go-service/v3/crypto/tls/config] when working with go-service TLS configuration
 // values that resolve certificate and key "source strings". Runtime TLS configs
-// are materialized by the role-specific constructors [github.com/alexfalkowski/go-service/v2/config/client.NewConfig]
-// and [github.com/alexfalkowski/go-service/v2/config/server.NewConfig].
+// are materialized by the role-specific constructors [github.com/alexfalkowski/go-service/v3/config/client.NewConfig]
+// and [github.com/alexfalkowski/go-service/v3/config/server.NewConfig].
 package tls

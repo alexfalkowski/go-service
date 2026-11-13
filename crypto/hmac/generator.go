@@ -1,8 +1,8 @@
 package hmac
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/rand"
-	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/rand"
+	"github.com/alexfalkowski/go-service/v3/errors"
 )
 
 // NewGenerator constructs a Generator that produces HMAC secret material.

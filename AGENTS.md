@@ -7,7 +7,7 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 ## Repo Snapshot
 
 - Library repo; check `go.mod` for module and toolchain details.
-- DI is under `di/`; CLI helpers are under `cli/`.
+- DI uses `github.com/alexfalkowski/go-signal/v2` directly; CLI helpers are under `cli/`.
 - Many `make` targets come from the `bin/` submodule.
 
 ## Setup
@@ -28,7 +28,7 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
 ## Layout And Wiring
 
 - Feature packages usually use `config.go`, `module.go`, plus implementation files.
-- `module/` exports the main Fx bundles.
+- `module/` exports the main go-signal bundles.
 - `config/` owns top-level config plus projections into transport, SQL, and telemetry config.
 - `net/` holds lower-level HTTP/gRPC, metadata, header, and server helpers.
 - `transport/` holds the higher-level HTTP/gRPC stacks, middleware, and ops endpoints.
@@ -37,7 +37,7 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   Use `make -C internal/test generate` / `stale` when changing them, but do
   not treat the inherited `breaking` target as applicable there; the shared
   Buf target assumes an `api/` contract directory.
-- Modules are composed with `di.Module(...)`; many constructors use `di.In`.
+- Modules are composed with `signal.Module(...)`; many constructors use `signal.In`.
 
 ## Configuration
 
@@ -81,7 +81,7 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   or `module.ClientWithConfig[T]` as a feature gap solely because services need
   custom typed config. Report only concrete bugs where the documented/template
   pattern fails, duplicate config decoding is forced by supported wiring,
-  projections cannot be supplied through `di.Decorate`, or the support boundary
+  projections cannot be supplied through `signal.Decorate`, or the support boundary
   changes.
 - Standard module wiring is the supported path. Do not flag hypothetical failures that require hand-wiring an incomplete DI graph unless the public API explicitly promises that custom construction mode.
 - An exported constructor, setter, helper, option, or other symbol does not
@@ -92,7 +92,7 @@ Use `bin/AGENTS.md` for shared skills and cross-repository defaults.
   of nil, zero, invalid, or defensive branches do not establish supported usage
   by themselves. If no supported path supplies the triggering input, reject the
   candidate as unsupported misuse.
-- Recommend Fx `optional:"true"` dependency tags only with concrete evidence
+- Recommend go-signal `optional:"true"` dependency tags only with concrete evidence
   that a supported DI graph may omit that dependency. A nil check, "optional"
   prose, or guarded hook installation is a lead, not enough by itself; verify
   standard `module.Server`/`module.Client` wiring, CLI/server application
@@ -137,7 +137,7 @@ without checking the relevant area files first.
   package. Prefer extending current fixture/table/assertion helpers over adding
   standalone tests for behavior already exercised nearby.
 - Config tests usually use fixture-driven `config.NewConfig` coverage plus
-  `verifyConfig`; do not add separate decoder-routing or Fx projection tests
+  `verifyConfig`; do not add separate decoder-routing or go-signal projection tests
   unless they cover a distinct repository-owned behavior not already exercised
   by those fixture tests.
 - Do not add build-tagged or architecture-specific tests unless CI actually

@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"github.com/alexfalkowski/go-service/v2/compress/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/compress/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
 )
 
 // maxSizeWriter enforces the cache encoded-size limit at the writer boundary.

@@ -3,34 +3,34 @@ package http
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/v2/config/server"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/compress"
-	"github.com/alexfalkowski/go-service/v2/net/http/config"
-	httpmeta "github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
-	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/transport/http/body"
-	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/http/token"
+	"github.com/alexfalkowski/go-service/v3/config/server"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/compress"
+	"github.com/alexfalkowski/go-service/v3/net/http/config"
+	httpmeta "github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http/mvc"
+	httpserver "github.com/alexfalkowski/go-service/v3/net/http/server"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/token/access"
+	"github.com/alexfalkowski/go-service/v3/transport/http/body"
+	"github.com/alexfalkowski/go-service/v3/transport/http/limiter"
+	"github.com/alexfalkowski/go-service/v3/transport/http/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/transport/http/token"
+	"github.com/alexfalkowski/go-signal/v2"
 	sync "github.com/alexfalkowski/go-sync"
 )
 
 // ServerParams defines dependencies for constructing an HTTP transport [Server].
 //
-// It is an Fx parameter struct ([di.In]) that collects the configuration and optional dependencies used
+// It is a go-signal parameter struct ([signal.In]) that collects the configuration and optional dependencies used
 // to build and run the HTTP server.
 //
 // Optional fields:
@@ -40,10 +40,10 @@ import (
 //   - `Access`: enables server-side access control middleware when non-nil.
 //   - `Handlers`: allows callers to inject additional chained middleware (and is optional in DI).
 type ServerParams struct {
-	di.In
+	signal.In
 
 	// Shutdowner is used by the underlying *[server.Service] to coordinate shutdown.
-	Shutdowner di.Shutdowner
+	Shutdowner signal.Shutdowner
 
 	// ID generates request IDs when one is not already present.
 	ID id.Generator
@@ -104,29 +104,29 @@ type ServerParams struct {
 //
 // The server is built using Negroni and composes middleware in this order inside that instrumentation wrapper
 // (first listed runs first):
-//   - metadata extraction/injection, route-pattern resolution, and response headers ([github.com/alexfalkowski/go-service/v2/net/http/meta])
+//   - metadata extraction/injection, route-pattern resolution, and response headers ([github.com/alexfalkowski/go-service/v3/net/http/meta])
 //   - the unary request timeout from `params.Config.GetTimeout()`; routes marked request- or
 //     response-streaming in `params.RoutePolicy` are exempt and keep their stream-specific lifecycle
 //     controls instead
-//   - optional logging ([github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger]) when `params.Logger` is non-nil
+//   - optional logging ([github.com/alexfalkowski/go-service/v3/transport/http/telemetry/logger]) when `params.Logger` is non-nil
 //   - panic recovery that converts a downstream panic into a safe `500 Internal Server Error` response when the
 //     response has not already been committed
-//   - optional token verification ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Verifier` is non-nil
-//   - optional rate limiting ([github.com/alexfalkowski/go-service/v2/transport/http/limiter]) when `params.Limiter` is non-nil
-//   - optional access control ([github.com/alexfalkowski/go-service/v2/transport/http/token]) when `params.Access` is non-nil
-//   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v2/transport/http/body]);
+//   - optional token verification ([github.com/alexfalkowski/go-service/v3/transport/http/token]) when `params.Verifier` is non-nil
+//   - optional rate limiting ([github.com/alexfalkowski/go-service/v3/transport/http/limiter]) when `params.Limiter` is non-nil
+//   - optional access control ([github.com/alexfalkowski/go-service/v3/transport/http/token]) when `params.Access` is non-nil
+//   - inbound request body size limiting ([github.com/alexfalkowski/go-service/v3/transport/http/body]);
 //     bidirectional streaming routes (see `params.RoutePolicy`) are never buffered by this middleware and
 //     cap each decoded request value independently at the content layer instead (see
-//     [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv])
+//     [github.com/alexfalkowski/go-service/v3/net/http/content/stream.RequestStream.Recv])
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - gzip compression wrapping the final mux handler, including not-found fallbacks
-//     ([github.com/alexfalkowski/go-service/v2/net/http/compress.GzipHandler] with [http.NewNotFoundHandler])
+//     ([github.com/alexfalkowski/go-service/v3/net/http/compress.GzipHandler] with [http.NewNotFoundHandler])
 //
 // Route policy from `params.RoutePolicy` controls middleware bypasses. Registered operation routes
 // (health/metrics/etc.) bypass logging, token verification, rate limiting, and access control.
 // Registered unauthenticated routes bypass token verification and access control only. Registered
 // bidirectional streaming routes are never buffered by the inbound body middleware (see
-// [github.com/alexfalkowski/go-service/v2/transport/http/body.NewHandler]); they keep the
+// [github.com/alexfalkowski/go-service/v3/transport/http/body.NewHandler]); they keep the
 // declared-Content-Length short-circuit but no cumulative mid-stream limit. Response-only streaming
 // routes retain the normal cumulative request-body limit.
 //
@@ -207,7 +207,7 @@ type Server struct {
 //
 // It returns nil if s is nil (for example, when the transport is disabled).
 // This method is commonly used by higher-level wiring to collect enabled server services for lifecycle
-// registration (see [github.com/alexfalkowski/go-service/v2/transport.NewServers] and [github.com/alexfalkowski/go-service/v2/net/server.Register]).
+// registration (see [github.com/alexfalkowski/go-service/v3/transport.NewServers] and [github.com/alexfalkowski/go-service/v3/net/server.Register]).
 func (s *Server) GetService() *httpserver.Service {
 	if s == nil {
 		return nil

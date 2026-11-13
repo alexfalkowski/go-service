@@ -3,59 +3,59 @@ package test
 import (
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-health/v2/server"
-	"github.com/alexfalkowski/go-service/v2/cache"
-	"github.com/alexfalkowski/go-service/v2/config"
-	"github.com/alexfalkowski/go-service/v2/crypto/aes"
-	"github.com/alexfalkowski/go-service/v2/crypto/bcrypt"
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
-	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	"github.com/alexfalkowski/go-service/v2/database/sql"
-	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/feature"
-	"github.com/alexfalkowski/go-service/v2/health"
-	healthchecker "github.com/alexfalkowski/go-service/v2/health/checker"
-	"github.com/alexfalkowski/go-service/v2/hooks"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/module"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token/access"
-	grpctoken "github.com/alexfalkowski/go-service/v2/transport/grpc/token"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
-	"github.com/alexfalkowski/go-service/v2/transport/http/events"
-	httptoken "github.com/alexfalkowski/go-service/v2/transport/http/token"
+	"github.com/alexfalkowski/go-service/v3/cache"
+	"github.com/alexfalkowski/go-service/v3/config"
+	"github.com/alexfalkowski/go-service/v3/crypto/aes"
+	"github.com/alexfalkowski/go-service/v3/crypto/bcrypt"
+	"github.com/alexfalkowski/go-service/v3/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v3/crypto/hmac"
+	"github.com/alexfalkowski/go-service/v3/crypto/rsa"
+	"github.com/alexfalkowski/go-service/v3/database/sql"
+	"github.com/alexfalkowski/go-service/v3/database/sql/pg"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/feature"
+	"github.com/alexfalkowski/go-service/v3/health"
+	healthchecker "github.com/alexfalkowski/go-service/v3/health/checker"
+	"github.com/alexfalkowski/go-service/v3/hooks"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/module"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/token/access"
+	grpctoken "github.com/alexfalkowski/go-service/v3/transport/grpc/token"
+	"github.com/alexfalkowski/go-service/v3/transport/http"
+	"github.com/alexfalkowski/go-service/v3/transport/http/events"
+	httptoken "github.com/alexfalkowski/go-service/v3/transport/http/token"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/open-feature/go-sdk/openfeature"
 )
 
-// NoopLifecycle is a [di.Lifecycle] test double that ignores appended hooks.
+// NoopLifecycle is a [signal.Lifecycle] test double that ignores appended hooks.
 type NoopLifecycle struct{}
 
-// Append implements [di.Lifecycle].
-func (NoopLifecycle) Append(di.Hook) {}
+// Append implements [signal.Lifecycle].
+func (NoopLifecycle) Append(signal.Hook) {}
 
 // Options returns the DI options used by tests that exercise the full server module wiring.
 //
 // The option set decorates config, registers health checks and observers, and
-// forces construction of the major infrastructure components so Fx-based tests
+// forces construction of the major infrastructure components so go-signal tests
 // can verify end-to-end module composition.
-func Options() []di.Option {
-	return []di.Option{
+func Options() []signal.Option {
+	return []signal.Option{
 		module.Server,
-		di.Decorate(decorateConfig),
-		di.Constructor(registrations),
-		di.Register(healthRegister), di.Register(healthObserver),
-		di.Register(livenessObserver), di.Register(readinessObserver),
-		di.Register(grpcObserver), di.Register(invokeServiceRegistrar),
-		di.Register(shutdown), di.Register(invokeFeatureClient), di.Register(invokeWebhooks), di.Register(invokeConfigs),
-		di.Register(invokeMeter), di.Register(invokeNetwork), di.Register(invokeCache),
-		di.Register(invokeCrypt), di.Register(invokeEnvironment), di.Register(invokeTokens),
-		di.Register(invokeAccessController), di.Register(invokeDB),
+		signal.Decorate(decorateConfig),
+		signal.Constructor(registrations),
+		signal.Register(healthRegister), signal.Register(healthObserver),
+		signal.Register(livenessObserver), signal.Register(readinessObserver),
+		signal.Register(grpcObserver), signal.Register(invokeServiceRegistrar),
+		signal.Register(shutdown), signal.Register(invokeFeatureClient), signal.Register(invokeWebhooks), signal.Register(invokeConfigs),
+		signal.Register(invokeMeter), signal.Register(invokeNetwork), signal.Register(invokeCache),
+		signal.Register(invokeCrypt), signal.Register(invokeEnvironment), signal.Register(invokeTokens),
+		signal.Register(invokeAccessController), signal.Register(invokeDB),
 	}
 }
 
@@ -177,10 +177,10 @@ func invokeCrypt(
 	return nil
 }
 
-func shutdown(s di.Shutdowner) {
-	go func(s di.Shutdowner) {
+func shutdown(s signal.Shutdowner) {
+	go func(s signal.Shutdowner) {
 		time.Sleep(time.Second)
 
-		_ = s.Shutdown()
+		s.Shutdown(0)
 	}(s)
 }

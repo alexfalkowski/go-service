@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	telemetryerrors "github.com/alexfalkowski/go-service/v2/telemetry/errors"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	v1 "github.com/alexfalkowski/go-service/v3/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	telemetryerrors "github.com/alexfalkowski/go-service/v3/telemetry/errors"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	transportgrpc "github.com/alexfalkowski/go-service/v3/transport/grpc"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -155,7 +156,7 @@ func benchmarkGRPCStream(b *testing.B, logging, trace, tlsEnabled bool, messageC
 func startBenchmarkGRPC(b *testing.B, logging, trace, tlsEnabled bool) (v1.GreeterServiceClient, func()) {
 	b.Helper()
 
-	lc := test.QuietLifecycle(b)
+	lc := signaltest.NewLifecycle(b)
 	cfg := test.NewInsecureTransportConfig()
 	if tlsEnabled {
 		cfg = test.NewSecureTransportConfig()

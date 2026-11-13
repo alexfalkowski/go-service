@@ -1,7 +1,7 @@
 package i18n
 
 import (
-	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v3/errors"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/nicksnyder/go-i18n/v2/i18n/template"
 	"golang.org/x/text/language"

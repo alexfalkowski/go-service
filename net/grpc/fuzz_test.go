@@ -3,8 +3,8 @@ package grpc_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/url"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/url"
 	"github.com/stretchr/testify/require"
 )
 

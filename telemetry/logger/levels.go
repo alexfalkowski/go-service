@@ -3,7 +3,7 @@ package logger
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 var levels = map[string]slog.Level{

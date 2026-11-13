@@ -3,7 +3,7 @@ package url
 import (
 	"net/url"
 
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // URL is an alias for [net/url.URL].

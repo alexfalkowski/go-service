@@ -1,11 +1,11 @@
 // Package server provides HTTP server adapters and lifecycle wiring for go-service.
 //
-// This package contains helpers used to run an internal HTTP server consistently within an Fx/Dig
+// This package contains helpers used to run an internal HTTP server consistently within a go-signal
 // application. It bridges between:
 //
-//   - a configured `*net/http.Server` (from [github.com/alexfalkowski/go-service/v2/net/http]),
+//   - a configured `*net/http.Server` (from [github.com/alexfalkowski/go-service/v3/net/http]),
 //   - a bind address (via `net.Listen`), and
-//   - the transport-agnostic server lifecycle manager in [github.com/alexfalkowski/go-service/v2/net/server].
+//   - the transport-agnostic server lifecycle manager in [github.com/alexfalkowski/go-service/v3/net/server].
 //
 // # Listener and address semantics
 //
@@ -22,7 +22,7 @@
 //
 // # Error normalization
 //
-// [Server.Serve] wraps the underlying serve error using [github.com/alexfalkowski/go-service/v2/net/http/errors.ServerError] so callers can
+// [Server.Serve] wraps the underlying serve error using [github.com/alexfalkowski/go-service/v3/net/http/errors.ServerError] so callers can
 // treat expected shutdown errors consistently.
 //
 // # Service wiring

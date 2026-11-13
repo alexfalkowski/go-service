@@ -1,8 +1,8 @@
 package retry
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/transport/retry"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v3/transport/retry"
 )
 
 // NewConfig returns a gRPC retry config from shared retry mechanics.

@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v3/context"
+	v1 "github.com/alexfalkowski/go-service/v3/internal/test/greet/v1"
 )
 
 // NewService returns the example Greeter gRPC service used by transport tests.

@@ -1,6 +1,6 @@
 package meta
 
-import "github.com/alexfalkowski/go-service/v2/context"
+import "github.com/alexfalkowski/go-service/v3/context"
 
 // ExtractIncoming extracts incoming gRPC metadata from ctx.
 //

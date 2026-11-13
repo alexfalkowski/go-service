@@ -1,20 +1,20 @@
 package logger
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
 )
 
-// LevelError is an alias of [github.com/alexfalkowski/go-service/v2/telemetry/logger.LevelError].
+// LevelError is an alias of [github.com/alexfalkowski/go-service/v3/telemetry/logger.LevelError].
 const LevelError = logger.LevelError
 
-// Logger is an alias of [github.com/alexfalkowski/go-service/v2/telemetry/logger.Logger].
+// Logger is an alias of [github.com/alexfalkowski/go-service/v3/telemetry/logger.Logger].
 //
 // It is re-exported here so transport-layer code can depend on a single logger type when composing
 // interceptors.
 type Logger = logger.Logger
 
-// CodeToLevel translates a gRPC status code to a [github.com/alexfalkowski/go-service/v2/telemetry/logger.Level].
+// CodeToLevel translates a gRPC status code to a [github.com/alexfalkowski/go-service/v3/telemetry/logger.Level].
 //
 // The mapping is intentionally coarse-grained:
 //

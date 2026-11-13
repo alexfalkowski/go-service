@@ -3,32 +3,32 @@ package breaker
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/transport/breaker"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/transport/breaker"
 	"github.com/alexfalkowski/go-sync"
 )
 
-// Counts is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.Counts].
+// Counts is an alias for [github.com/alexfalkowski/go-service/v3/transport/breaker.Counts].
 //
 // Counts is used by [github.com/sony/gobreaker.Settings.ReadyToTrip] to decide whether the breaker should open.
 type Counts = breaker.Counts
 
-// ErrOpenState is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.ErrOpenState].
+// ErrOpenState is an alias for [github.com/alexfalkowski/go-service/v3/transport/breaker.ErrOpenState].
 //
 // It is returned by [github.com/sony/gobreaker.CircuitBreaker.Execute] when the breaker is open.
 var ErrOpenState = breaker.ErrOpenState
 
-// ErrTooManyRequests is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.ErrTooManyRequests].
+// ErrTooManyRequests is an alias for [github.com/alexfalkowski/go-service/v3/transport/breaker.ErrTooManyRequests].
 //
 // It is returned by [github.com/sony/gobreaker.CircuitBreaker.Execute] when the breaker is half-open and MaxRequests
 // would be exceeded.
 var ErrTooManyRequests = breaker.ErrTooManyRequests
 
-// Settings is an alias for [github.com/alexfalkowski/go-service/v2/transport/breaker.Settings].
+// Settings is an alias for [github.com/alexfalkowski/go-service/v3/transport/breaker.Settings].
 //
 // It is re-exported from this package so callers can configure circuit breaker behavior (trip thresholds,
 // timeouts, half-open probing, etc.) without importing the lower-level breaker package directly.

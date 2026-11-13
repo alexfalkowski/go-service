@@ -1,14 +1,14 @@
 package server
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/errors"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/config"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/errors"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // Service is an alias for [server.Service].
@@ -36,7 +36,7 @@ type Service = server.Service
 //   - sh: a shutdown coordinator used to signal application shutdown.
 //
 // Returns an error if the listener cannot be created.
-func NewService(name string, grpcServer *grpc.Server, cfg *config.Config, logger *logger.Logger, sh di.Shutdowner) (*Service, error) {
+func NewService(name string, grpcServer *grpc.Server, cfg *config.Config, logger *logger.Logger, sh signal.Shutdowner) (*Service, error) {
 	serv, err := NewServer(grpcServer, cfg)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ type Server struct {
 // Serve starts serving requests on the configured listener.
 //
 // Serve normalizes [grpc.ErrServerStopped] through
-// [github.com/alexfalkowski/go-service/v2/net/grpc/errors.ServerError], so a
+// [github.com/alexfalkowski/go-service/v3/net/grpc/errors.ServerError], so a
 // graceful shutdown that occurs before serving is treated as normal completion.
 // Other errors, including listener failures, are returned unchanged.
 func (s *Server) Serve() error {

@@ -3,19 +3,19 @@ package test
 import (
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-health/v2/server"
-	"github.com/alexfalkowski/go-service/v2/health"
-	healthchecker "github.com/alexfalkowski/go-service/v2/health/checker"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	netserver "github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/time"
-	grpchealth "github.com/alexfalkowski/go-service/v2/transport/grpc/health"
-	httphealth "github.com/alexfalkowski/go-service/v2/transport/http/health"
+	"github.com/alexfalkowski/go-service/v3/health"
+	healthchecker "github.com/alexfalkowski/go-service/v3/health/checker"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	netserver "github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/time"
+	grpchealth "github.com/alexfalkowski/go-service/v3/transport/grpc/health"
+	httphealth "github.com/alexfalkowski/go-service/v3/transport/http/health"
 	"github.com/stretchr/testify/require"
 )
 
 // RegisterHealth wires the standard HTTP health routes onto router for tests.
 //
-// It delegates to [github.com/alexfalkowski/go-service/v2/transport/http/health.Register] using the shared test service name and the
+// It delegates to [github.com/alexfalkowski/go-service/v3/transport/http/health.Register] using the shared test service name and the
 // provided health server so integration-style tests can exercise the same route registration
 // path used in production wiring.
 func RegisterHealth(router *http.Router, server *server.Server, drain *netserver.Drain) {

@@ -3,8 +3,9 @@ package test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,8 +13,8 @@ import (
 func ResetTelemetry(tb testing.TB) {
 	tb.Helper()
 
-	require.NoError(tb, tracer.Register(tracer.TracerParams{Lifecycle: QuietLifecycle(tb)}))
-	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: QuietLifecycle(tb)})
+	require.NoError(tb, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(tb)}))
+	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(tb)})
 }
 
 // EnableMetrics installs the shared test meter provider.
@@ -25,7 +26,7 @@ func EnableMetrics(tb testing.TB) {
 	tb.Helper()
 
 	metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   QuietLifecycle(tb),
+		Lifecycle:   signaltest.NewLifecycle(tb),
 		Config:      &metrics.Config{},
 		Reader:      metrics.NewManualReader(),
 		ID:          ID,
@@ -44,7 +45,7 @@ func EnableTracer(tb testing.TB) {
 	tb.Helper()
 
 	require.NoError(tb, tracer.Register(tracer.TracerParams{
-		Lifecycle:   QuietLifecycle(tb),
+		Lifecycle:   signaltest.NewLifecycle(tb),
 		Config:      &tracer.Config{Kind: "otlp", URL: otlpHTTPSURL + "/v1/traces"},
 		ID:          ID,
 		Name:        Name,

@@ -1,11 +1,11 @@
 package stream
 
 import (
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/policy"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/policy"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/alexfalkowski/go-sync"
 )
 
@@ -65,7 +65,7 @@ func (c *Content) NewFromMedia(mediaType string) (Media, error) {
 // Per RFC 9110 §12.5.1, the most specific reference present controls
 // regardless of list order: an exact subtype match takes precedence over any wildcard, and a "type/*"
 // wildcard takes precedence over the bare "*/*" wildcard. Only that controlling reference's explicit
-// q=0 exclusion (see [github.com/alexfalkowski/go-service/v2/net/http.IsAcceptZeroQuality]) decides
+// q=0 exclusion (see [github.com/alexfalkowski/go-service/v3/net/http.IsAcceptZeroQuality]) decides
 // satisfiability — a q=0 on a less specific reference elsewhere in the list has no effect once a more
 // specific reference is present, and conversely a q=0 on the controlling reference cannot be overridden
 // by a less specific, non-excluded reference. A satisfiable list resolves to its exact match if the

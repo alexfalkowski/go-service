@@ -4,32 +4,32 @@ import (
 	"testing"
 
 	health "github.com/alexfalkowski/go-health/v2/server"
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/cache"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/database/sql"
-	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http/events"
-	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
-	"github.com/alexfalkowski/go-service/v2/net/http/rest"
-	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/net/url"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
-	transportevents "github.com/alexfalkowski/go-service/v2/transport/http/events"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/cache"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/database/sql"
+	"github.com/alexfalkowski/go-service/v3/database/sql/pg"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http/events"
+	"github.com/alexfalkowski/go-service/v3/net/http/mvc"
+	"github.com/alexfalkowski/go-service/v3/net/http/rest"
+	"github.com/alexfalkowski/go-service/v3/net/http/rpc"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/net/url"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc"
+	"github.com/alexfalkowski/go-service/v3/transport/http"
+	transportevents "github.com/alexfalkowski/go-service/v3/transport/http/events"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func init() {
@@ -45,7 +45,7 @@ func init() {
 // NewWorld builds a shared integration test harness around the repository's transport,
 // telemetry, cache, database, and event helpers.
 //
-// The returned World owns a fresh Fx test lifecycle, HTTP mux, server/client
+// The returned World owns a fresh go-signal test lifecycle, HTTP mux, server/client
 // builders, telemetry config, cache handle, database config, and optional REST
 // client.
 //
@@ -63,7 +63,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	policy := http.NewRoutePolicy()
 	router := http.NewRouter(mux, policy)
 	grpcPolicy := grpc.NewMethodPolicy()
-	lc := QuietLifecycle(tb)
+	lc := signaltest.NewLifecycle(tb)
 	tracer := NewOTLPTracerConfig()
 	generator := uuid.NewGenerator()
 	drain := server.NewDrain()
@@ -163,7 +163,7 @@ func NewStartedWorld(tb testing.TB, opts ...WorldOption) *World {
 type World struct {
 	t testing.TB
 	// Lifecycle controls startup and shutdown hooks for the test world.
-	*fxtest.Lifecycle
+	*signaltest.Lifecycle
 	// Router registers HTTP handlers with route policy used by transport middleware.
 	*http.Router
 	// Logger is the test logger shared by world components.

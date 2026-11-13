@@ -1,8 +1,8 @@
 package transport
 
 import (
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/token/access"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/token/access"
 )
 
 // NewAccessController constructs the shared transport access controller.

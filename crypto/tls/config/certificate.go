@@ -1,17 +1,17 @@
 package config
 
 import (
-	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	crypto "github.com/alexfalkowski/go-service/v3/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/tls"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // NewKeyPair resolves and parses cfg's configured leaf certificate/private-key pair.
 //
-// It returns [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrMissingKey] when cfg is nil, either source
+// It returns [github.com/alexfalkowski/go-service/v3/crypto/errors.ErrMissingKey] when cfg is nil, either source
 // string is missing, or either source resolves to empty bytes. Otherwise it returns source-resolution
-// errors or [github.com/alexfalkowski/go-service/v2/crypto/tls.X509KeyPair] parsing errors.
+// errors or [github.com/alexfalkowski/go-service/v3/crypto/tls.X509KeyPair] parsing errors.
 func NewKeyPair(fs *os.FS, cfg *Config) (tls.Certificate, error) {
 	if cfg == nil || strings.IsEmpty(cfg.Cert) || strings.IsEmpty(cfg.Key) {
 		return tls.Certificate{}, crypto.ErrMissingKey

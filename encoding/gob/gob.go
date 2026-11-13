@@ -3,10 +3,10 @@ package gob
 import (
 	"encoding/gob"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
 )
 
 var defaultEncoder = &Encoder{}
@@ -14,7 +14,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs a gob encoder.
 //
 // This encoder is a thin adapter around the standard library [encoding/gob] package that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
@@ -27,7 +27,7 @@ type Encoder struct{}
 // Encode writes v to w as gob.
 //
 // This is a thin wrapper around `gob.NewEncoder(w).Encode(v)`. gob has no required-field
-// concept, so [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+// concept, so [github.com/alexfalkowski/go-service/v3/encoding/codec.WithAllowPartial] has no effect.
 func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	return gob.NewEncoder(w).Encode(v)
 }

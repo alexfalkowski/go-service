@@ -2,16 +2,16 @@ package msgpack
 
 import (
 	"github.com/Basekick-Labs/msgpack/v6"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/io"
 )
 
 // Encoder streams MessagePack values to a writer bound at construction.
 //
 // Encoder embeds the [github.com/Basekick-Labs/msgpack/v6.Encoder], so [Encoder.Encode] is the
 // embedded encoder's own method. Encoder satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding/stream.Encoder] structurally, without this
-// package importing that package: [github.com/alexfalkowski/go-service/v2/encoding/stream.NewMap]
+// [github.com/alexfalkowski/go-service/v3/encoding/stream.Encoder] structurally, without this
+// package importing that package: [github.com/alexfalkowski/go-service/v3/encoding/stream.NewMap]
 // imports this package to pre-register the default "msgpack" kind, and this package importing that
 // one back would be a compile-time import cycle.
 type Encoder struct {
@@ -32,7 +32,7 @@ func (e *Encoder) Close() error {
 //
 // Decoder embeds the [github.com/Basekick-Labs/msgpack/v6.Decoder], so [Decoder.Decode] is the
 // embedded decoder's own method. Decoder satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding/stream.Decoder] structurally, without this
+// [github.com/alexfalkowski/go-service/v3/encoding/stream.Decoder] structurally, without this
 // package importing that package.
 type Decoder struct {
 	*msgpack.Decoder
@@ -40,11 +40,11 @@ type Decoder struct {
 
 // NewDecoder constructs a streaming MessagePack [Decoder] bound to r.
 //
-// Unlike [github.com/alexfalkowski/go-service/v2/encoding/msgpack.Encoder]'s Decode, the returned
+// Unlike [github.com/alexfalkowski/go-service/v3/encoding/msgpack.Encoder]'s Decode, the returned
 // decoder allows additional MessagePack values after the first: it does not enforce single-value
 // trailing-data rejection, since a stream is expected to carry many values. Decode rejects unknown
 // destination fields unless
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is supplied.
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithDiscardUnknown] is supplied.
 func NewDecoder(r io.Reader, opts ...codec.Option) *Decoder {
 	resolved := codec.Apply(opts...)
 

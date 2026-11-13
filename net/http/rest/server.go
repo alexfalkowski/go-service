@@ -1,10 +1,10 @@
 package rest
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/unary"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // NewServer constructs a Server that registers REST routes on router using unaryContent and streamContent
@@ -19,8 +19,8 @@ func NewServer(router *http.Router, unaryContent *unary.Content, streamContent *
 //
 // The streaming options are passed unchanged to this type's streaming route helpers (StreamRoute, StreamGet,
 // StreamRouteRequest, StreamPost, StreamPut, StreamPatch) via
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewHandler] and
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler]; see those
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewHandler] and
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewRequestHandler]; see those
 // constructors for the timeout and per-value receive-size semantics.
 type Server struct {
 	router        *http.Router
@@ -78,7 +78,7 @@ func (s *Server) Patch[Req any, Res any](pattern string, handler unary.RequestHa
 
 // RouteRequest registers a handler under pattern that decodes a request and encodes a response.
 //
-// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewRequestHandler], which:
+// The handler is built using [github.com/alexfalkowski/go-service/v3/net/http/content/unary.NewRequestHandler], which:
 //   - decodes the request body using Content-Type, falling back to JSON when Content-Type is absent and
 //     rejecting it with 415 when it is unparseable, unregistered, or intentionally undecodable,
 //   - decodes the request body into a newly allocated request model, and
@@ -93,7 +93,7 @@ func (s *Server) RouteRequest[Req any, Res any](pattern string, handler unary.Re
 
 // Route registers a handler under pattern that encodes a response.
 //
-// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewHandler], which:
+// The handler is built using [github.com/alexfalkowski/go-service/v3/net/http/content/unary.NewHandler], which:
 //   - selects an encoder based on the first Accept media type, falling back to Content-Type when
 //     Accept is absent, and
 //   - encodes the returned response model using the negotiated media type.
@@ -112,7 +112,7 @@ func (s *Server) Route[Res any](pattern string, handler unary.Handler[Res], opts
 // This method delegates to StreamRoute.
 //
 // HEAD: the underlying mux also matches a HEAD request against this GET pattern. See
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewHandler] for HEAD's negotiated-headers,
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewHandler] for HEAD's negotiated-headers,
 // handler-skipped behavior.
 func (s *Server) StreamGet[Res any](pattern string, handler stream.Handler[Res], opts ...http.RouteOption) {
 	s.StreamRoute(strings.Join(strings.Space, http.MethodGet, pattern), handler, opts...)
@@ -156,7 +156,7 @@ func (s *Server) StreamPatch[Req any, Res any](pattern string, handler stream.Re
 // and response bodies stream incrementally rather than being buffered whole.
 //
 // The handler is built using
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler], which:
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewRequestHandler], which:
 //   - resolves the request decoder from Content-Type, rejecting an unregistered or unparseable
 //     streaming media type with 415, and
 //   - resolves the response encoder from Accept (falling back to Content-Type), rejecting an Accept
@@ -172,7 +172,7 @@ func (s *Server) StreamPatch[Req any, Res any](pattern string, handler stream.Re
 // Registration:
 // The resulting handler is registered on the configured router, and the route is marked streaming on
 // the router's route policy (see
-// [github.com/alexfalkowski/go-service/v2/net/http.WithRouteStreaming]) so inbound request body
+// [github.com/alexfalkowski/go-service/v3/net/http.WithRouteStreaming]) so inbound request body
 // limiting is applied lazily instead of buffering the whole body.
 // Options are additive to the route's bidirectional streaming policy.
 //
@@ -186,7 +186,7 @@ func (s *Server) StreamRouteRequest[Req any, Res any](pattern string, handler st
 // StreamRoute registers a handler under pattern for a send-only streaming response: the response
 // streams incrementally rather than being buffered whole; the request body is not streamed.
 //
-// The handler is built using [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewHandler], which:
+// The handler is built using [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewHandler], which:
 //   - selects a streaming encoder based on Accept, falling back to Content-Type when Accept is absent,
 //     via the streaming media registry, and
 //   - rejects an Accept that cannot be satisfied with 406.
@@ -196,13 +196,13 @@ func (s *Server) StreamRouteRequest[Req any, Res any](pattern string, handler st
 //
 // HEAD: when pattern is method-qualified with GET (as StreamGet registers it), the underlying mux also
 // matches a HEAD request against it. See
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewHandler] for HEAD's
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewHandler] for HEAD's
 // negotiated-headers, handler-skipped behavior.
 //
 // Registration:
 // The resulting handler is registered on the configured router, and the route is marked streaming on
 // the router's route policy (see
-// [github.com/alexfalkowski/go-service/v2/net/http.WithRouteResponseStreaming]). Its request body
+// [github.com/alexfalkowski/go-service/v3/net/http.WithRouteResponseStreaming]). Its request body
 // retains the usual cumulative request-body limit because it is not streamed.
 // Options are additive to the route's response streaming policy.
 func (s *Server) StreamRoute[Res any](pattern string, handler stream.Handler[Res], opts ...http.RouteOption) {

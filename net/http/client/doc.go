@@ -1,8 +1,8 @@
 // Package client provides a content-aware HTTP client wrapper used by go-service.
 //
-// This package wraps [github.com/alexfalkowski/go-service/v2/net/http.Client] to provide a higher-level API for making HTTP requests with:
-//   - request/response body encoding/decoding via [github.com/alexfalkowski/go-service/v2/net/http/content/unary.Content], and
-//   - consistent error handling via [github.com/alexfalkowski/go-service/v2/net/http/status].
+// This package wraps [github.com/alexfalkowski/go-service/v3/net/http.Client] to provide a higher-level API for making HTTP requests with:
+//   - request/response body encoding/decoding via [github.com/alexfalkowski/go-service/v3/net/http/content/unary.Content], and
+//   - consistent error handling via [github.com/alexfalkowski/go-service/v3/net/http/status].
 //
 // The wrapper is intended for service-to-service HTTP calls where request payload format is selected
 // explicitly via Content-Type and response payload format can be requested separately via Accept.
@@ -32,7 +32,7 @@
 //   - If the response body exceeds the configured maximum response size, a 413 status error is returned
 //     before any response decoding or error-body interpretation.
 //   - If the response Content-Type indicates an error payload (text/error), the body is treated as a
-//     message and returned as a [github.com/alexfalkowski/go-service/v2/net/http/status] error.
+//     message and returned as a [github.com/alexfalkowski/go-service/v3/net/http/status] error.
 //   - If the status code is in the 4xx/5xx range and the response is not an error media type,
 //     a generic status error is returned.
 //   - Otherwise, the response body is decoded into Response (if provided).

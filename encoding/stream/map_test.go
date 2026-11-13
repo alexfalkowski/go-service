@@ -4,16 +4,16 @@ import (
 	"reflect"
 	"testing"
 
-	encodingcodec "github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream/gob"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream/json"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream/msgpack"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream/yaml"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	encodingcodec "github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream/gob"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream/json"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream/msgpack"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream/yaml"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx"
 )
 
 func TestNewMapRegistersDefaultEncodersAndDecoders(t *testing.T) {
@@ -114,13 +114,12 @@ func TestModuleProvidesDefaultMap(t *testing.T) {
 
 	var m *stream.Map
 
-	app := fx.New(
+	_, err := signal.NewApp(
 		stream.Module,
-		fx.Populate(&m),
-		fx.NopLogger,
+		signal.Register(func(value *stream.Map) { m = value }),
 	)
 
-	require.NoError(t, app.Err())
+	require.NoError(t, err)
 	for _, kind := range []string{"json", "msgpack", "gob", "yaml"} {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()

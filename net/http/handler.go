@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/alexfalkowski/go-sync"
 	snoop "github.com/felixge/httpsnoop"
 )

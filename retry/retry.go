@@ -1,8 +1,8 @@
 package retry
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/time"
 	retry "github.com/sethvargo/go-retry"
 )
 

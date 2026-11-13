@@ -1,13 +1,13 @@
 package none
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/compress/errors"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/compress/errors"
 )
 
 // NewCompressor constructs a no-op compressor implementation.
 //
-// The returned value implements [github.com/alexfalkowski/go-service/v2/compress.Compressor] and is
+// The returned value implements [github.com/alexfalkowski/go-service/v3/compress.Compressor] and is
 // typically registered under kind "none" to represent "no compression".
 func NewCompressor() *Compressor {
 	return &Compressor{}
@@ -16,7 +16,7 @@ func NewCompressor() *Compressor {
 // Compressor implements a no-op compression codec.
 //
 // Compress and Decompress return the input unchanged when it is within the configured size limit.
-// They return [github.com/alexfalkowski/go-service/v2/compress/errors.ErrTooLarge] when the input exceeds that limit.
+// They return [github.com/alexfalkowski/go-service/v3/compress/errors.ErrTooLarge] when the input exceeds that limit.
 // This is useful when you want to disable compression while still satisfying the common compression interface.
 type Compressor struct{}
 

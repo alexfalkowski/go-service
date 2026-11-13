@@ -3,8 +3,8 @@ package mvc
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/go-sprout/sprout"
 	"github.com/go-sprout/sprout/registry/conversion"
 	"github.com/go-sprout/sprout/registry/maps"
@@ -18,7 +18,7 @@ import (
 
 // FunctionMapParams defines dependencies used to build a [sprout.FunctionMap].
 type FunctionMapParams struct {
-	di.In
+	signal.In
 
 	// Logger records sprout function map events.
 	Logger *slog.Logger

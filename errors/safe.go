@@ -1,6 +1,6 @@
 package errors
 
-import "github.com/alexfalkowski/go-service/v2/strings"
+import "github.com/alexfalkowski/go-service/v3/strings"
 
 // SafeMessenger allows an error to expose a message that is safe to send outside the process.
 //

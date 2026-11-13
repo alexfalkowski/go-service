@@ -1,8 +1,8 @@
 package otlp
 
 import (
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // ErrInvalidCadence is returned when an OTLP export cadence is neither zero nor

@@ -1,20 +1,20 @@
 package http
 
 import (
-	"github.com/alexfalkowski/go-service/v2/config/client"
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/compress"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
-	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
-	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/http/token"
+	"github.com/alexfalkowski/go-service/v3/config/client"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/compress"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/transport/http/breaker"
+	"github.com/alexfalkowski/go-service/v3/transport/http/limiter"
+	"github.com/alexfalkowski/go-service/v3/transport/http/retry"
+	"github.com/alexfalkowski/go-service/v3/transport/http/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/transport/http/token"
 )
 
 // ClientOption configures HTTP client construction.
@@ -55,7 +55,7 @@ func (f clientOptionFunc) apply(o *clientOptions) {
 // When enabled, the composed RoundTripper will advertise support for gzip and transparently decompress
 // gzipped responses when the server sends them.
 //
-// This option uses [github.com/alexfalkowski/go-service/v2/net/http/compress] and wraps the underlying transport.
+// This option uses [github.com/alexfalkowski/go-service/v3/net/http/compress] and wraps the underlying transport.
 func WithClientCompression() ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.compression = true
@@ -143,7 +143,7 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 
 // WithClientUserAgent sets the user agent value used for metadata injection.
 //
-// The value is injected into outbound requests by the metadata RoundTripper ([github.com/alexfalkowski/go-service/v2/net/http/meta]).
+// The value is injected into outbound requests by the metadata RoundTripper ([github.com/alexfalkowski/go-service/v3/net/http/meta]).
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.userAgent = userAgent

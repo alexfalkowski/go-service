@@ -1,11 +1,11 @@
 package config
 
 import (
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
-// Config contains shared [github.com/alexfalkowski/go-service/v2/database/sql] connection pool settings.
+// Config contains shared [github.com/alexfalkowski/go-service/v3/database/sql] connection pool settings.
 //
 // It is intended to be embedded by driver-specific configuration types (for example PostgreSQL)
 // and consumed by the SQL wiring in this repository.

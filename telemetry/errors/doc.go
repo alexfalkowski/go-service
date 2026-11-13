@@ -32,15 +32,15 @@
 // If Register is called with nil, it is a no-op and the current global handler is
 // preserved.
 //
-// # Dependency injection (Fx)
+// # Dependency injection (go-signal)
 //
 // This package also exports [Module], which wires:
 //   - construction of the Handler (NewHandler), and
 //   - registration of the handler (Register)
 //
-// into an Fx application.
+// into a go-signal application.
 //
-// Including [github.com/alexfalkowski/go-service/v2/telemetry/errors.Module] (or the top-level [github.com/alexfalkowski/go-service/v2/telemetry.Module]) wires this
+// Including [github.com/alexfalkowski/go-service/v3/telemetry/errors.Module] (or the top-level [github.com/alexfalkowski/go-service/v3/telemetry.Module]) wires this
 // handler into your service, so OpenTelemetry internal errors are written to the
 // handler's private stdout sink regardless of the application logger
 // configuration.

@@ -3,11 +3,11 @@ package test
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/errors"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/alexfalkowski/go-sync"
 )
 
@@ -68,7 +68,7 @@ func (h *CaptureHandler) WithGroup(string) slog.Handler {
 }
 
 // NewLogger constructs a test logger bound to the supplied lifecycle and logger config.
-func NewLogger(lc di.Lifecycle, config *logger.Config) (*logger.Logger, error) {
+func NewLogger(lc signal.Lifecycle, config *logger.Config) (*logger.Logger, error) {
 	return logger.NewLogger(logger.LoggerParams{Lifecycle: lc, Config: config, Version: Version})
 }
 
@@ -76,7 +76,7 @@ func (w *World) registerTelemetry() {
 	errors.Register(errors.NewHandler(nil))
 }
 
-func createLogger(lc di.Lifecycle, os *options) (*logger.Logger, error) {
+func createLogger(lc signal.Lifecycle, os *options) (*logger.Logger, error) {
 	if os.logger != nil {
 		return os.logger, nil
 	}

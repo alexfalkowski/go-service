@@ -3,9 +3,9 @@ package status
 import (
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v3/strings"
 	"google.golang.org/grpc/status"
 )
 
@@ -19,7 +19,7 @@ type Status = status.Status
 // Code returns the gRPC status code for err as a go-service [codes.Code].
 //
 // This is a thin wrapper around [google.golang.org/grpc/status.Code], returning
-// the code as [github.com/alexfalkowski/go-service/v2/net/grpc/codes.Code] (which aliases [google.golang.org/grpc/codes.Code]).
+// the code as [github.com/alexfalkowski/go-service/v3/net/grpc/codes.Code] (which aliases [google.golang.org/grpc/codes.Code]).
 //
 // Behavior is defined by the upstream gRPC implementation. In particular:
 //

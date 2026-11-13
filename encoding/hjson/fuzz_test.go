@@ -3,7 +3,7 @@ package hjson_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
+	"github.com/alexfalkowski/go-service/v3/encoding/hjson"
 	"github.com/stretchr/testify/require"
 )
 

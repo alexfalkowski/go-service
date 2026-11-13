@@ -3,28 +3,28 @@ package debug
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/v2/config/server"
-	debug "github.com/alexfalkowski/go-service/v2/debug/http"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/body"
-	"github.com/alexfalkowski/go-service/v2/net/http/config"
-	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/config/server"
+	debug "github.com/alexfalkowski/go-service/v3/debug/http"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/body"
+	"github.com/alexfalkowski/go-service/v3/net/http/config"
+	httpserver "github.com/alexfalkowski/go-service/v3/net/http/server"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // ServerParams defines dependencies for constructing the debug server.
 //
-// It is intended for dependency injection (Fx/Dig). [NewServer] uses these dependencies to build an
+// It is intended for dependency injection (go-signal). [NewServer] uses these dependencies to build an
 // HTTP debug service and register lifecycle/shutdown behavior.
 type ServerParams struct {
-	di.In
+	signal.In
 
 	// Shutdowner coordinates process shutdown from the debug service.
-	Shutdowner di.Shutdowner
+	Shutdowner signal.Shutdowner
 
 	// Mux registers debug HTTP endpoints.
 	Mux *debug.ServeMux

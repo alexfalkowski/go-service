@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/database/sql/telemetry"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/database/sql/telemetry"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
 )
 
 func register(dbs []*sql.DB, role string, opts ...telemetry.Option) []metrics.Registration {

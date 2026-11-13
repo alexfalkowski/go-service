@@ -1,10 +1,10 @@
 package bytes
 
 import (
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/reflect"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/reflect"
 )
 
 // NewEncoder constructs a passthrough encoder for stream-capable types.
@@ -30,9 +30,9 @@ type Encoder struct{}
 
 // Encode writes v to w when v implements [io.WriterTo].
 //
-// If v does not implement [io.WriterTo], Encode returns [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType].
+// If v does not implement [io.WriterTo], Encode returns [github.com/alexfalkowski/go-service/v3/encoding/errors.ErrInvalidType].
 // Any error returned by WriteTo is returned. This encoder has no required-field concept, so
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithAllowPartial] has no effect.
 func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	to, err := writerTo(v)
 	if err != nil {
@@ -45,7 +45,7 @@ func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 
 // Decode reads from r into v when v implements [io.ReaderFrom].
 //
-// If v does not implement [io.ReaderFrom], Decode returns [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType].
+// If v does not implement [io.ReaderFrom], Decode returns [github.com/alexfalkowski/go-service/v3/encoding/errors.ErrInvalidType].
 // If v also implements [io.Resetter], Decode resets it before reading so the
 // destination is repopulated rather than appended to.
 // Any error returned by ReadFrom is returned.

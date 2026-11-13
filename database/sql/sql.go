@@ -3,7 +3,7 @@ package sql
 import (
 	"database/sql"
 
-	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
+	"github.com/alexfalkowski/go-service/v3/database/sql/driver"
 )
 
 // DB aliases [database/sql.DB].

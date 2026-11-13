@@ -1,6 +1,6 @@
 package stream
 
-import "github.com/alexfalkowski/go-service/v2/errors"
+import "github.com/alexfalkowski/go-service/v3/errors"
 
 // ErrUnsupportedMedia is returned when a streaming media type has no registered streaming codec.
 var ErrUnsupportedMedia = errors.New("stream: unsupported media")

@@ -3,7 +3,7 @@ package transport_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/transport"
+	"github.com/alexfalkowski/go-service/v3/transport"
 	"github.com/stretchr/testify/require"
 )
 

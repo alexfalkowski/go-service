@@ -3,7 +3,7 @@ package context
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // CancelCauseFunc is an alias for [context.CancelCauseFunc].

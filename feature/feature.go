@@ -1,24 +1,24 @@
 package feature
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-signal/v2"
 	hooks "github.com/open-feature/go-sdk-contrib/hooks/open-telemetry/pkg"
 	"github.com/open-feature/go-sdk/openfeature"
 )
 
 // ProviderParams defines dependencies used to register an OpenFeature provider.
 //
-// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The FeatureProvider dependency is marked as optional
+// It is intended for dependency injection ([github.com/alexfalkowski/go-signal/v2]). The FeatureProvider dependency is marked as optional
 // so services may include feature wiring without necessarily providing a concrete provider.
 type ProviderParams struct {
-	di.In
+	signal.In
 
 	// Lifecycle is used to register start/stop hooks that set the OpenFeature provider and shut down the SDK.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 
 	// MetricProvider is an optional OpenTelemetry meter provider used to install OpenFeature telemetry hooks.
 	// Hooks are installed only when MetricProvider and FeatureProvider are both present.
@@ -64,7 +64,7 @@ func Register(params ProviderParams) {
 		openfeature.AddHooks(h, hooks.NewTracesHook())
 	}
 
-	params.Lifecycle.Append(di.Hook{
+	params.Lifecycle.Append(signal.Hook{
 		OnStart: func(ctx context.Context) error {
 			return openfeature.SetProviderWithContextAndWait(ctx, params.FeatureProvider)
 		},

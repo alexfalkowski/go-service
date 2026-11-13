@@ -3,8 +3,8 @@ package gob_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream/gob"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream/gob"
 	"github.com/stretchr/testify/require"
 )
 

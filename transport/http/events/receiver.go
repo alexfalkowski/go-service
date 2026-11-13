@@ -1,13 +1,13 @@
 package events
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/events"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/transport/http/events/hooks"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/events"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/transport/http/events/hooks"
 )
 
 // ReceiverFunc is invoked for each received CloudEvent.
@@ -20,7 +20,7 @@ type ReceiverFunc = events.ReceiverFunc
 // Receiver registers HTTP handlers that receive CloudEvents.
 //
 // It wires CloudEvents receive handlers onto a router and optionally wraps them with webhook verification
-// middleware (see [github.com/alexfalkowski/go-service/v2/transport/http/events/hooks]).
+// middleware (see [github.com/alexfalkowski/go-service/v3/transport/http/events/hooks]).
 type Receiver struct {
 	router *http.Router
 	hook   *hooks.Webhook

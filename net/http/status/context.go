@@ -1,6 +1,6 @@
 package status
 
-import "github.com/alexfalkowski/go-service/v2/context"
+import "github.com/alexfalkowski/go-service/v3/context"
 
 const requestErrorKey = context.Key("http-status-request-error")
 

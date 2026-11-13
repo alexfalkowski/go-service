@@ -1,12 +1,12 @@
 package server
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // NewService constructs a [Service] that manages the lifetime of server.
@@ -22,12 +22,12 @@ import (
 //
 // NewService does not validate its arguments and does not start serving. Call
 // [Service.Start] to launch [server.Serve] in the background.
-func NewService(name string, server Server, logger *logger.Logger, sh di.Shutdowner) *Service {
+func NewService(name string, server Server, logger *logger.Logger, sh signal.Shutdowner) *Service {
 	return &Service{name: name, server: server, logger: logger, sh: sh}
 }
 
 // Service manages starting and stopping a [Server] with optional logging and
-// Fx shutdown integration.
+// go-signal shutdown integration.
 //
 // Service is a thin lifecycle adapter. It does not own listener construction or
 // startup readiness checks; it only calls [Server.Serve], [Server.Shutdown], and
@@ -36,13 +36,13 @@ func NewService(name string, server Server, logger *logger.Logger, sh di.Shutdow
 // Concurrency and lifecycle semantics:
 //   - [Service.Start] launches [Server.Serve] in a new goroutine and returns immediately.
 //   - [Service.Start] does not report Serve errors to its caller. A non-nil Serve error is
-//     logged and triggers [di.Shutdowner] with [os.ExitCodeServeFailure].
+//     logged and triggers [signal.Shutdowner] with [os.ExitCodeServeFailure].
 //   - A nil Serve return is treated as normal termination and does not trigger shutdown.
 //   - [Service.Stop] calls [Server.Shutdown] synchronously with the provided context.
 //   - Service does not guard against repeated or concurrent Start/Stop calls; callers should coordinate lifecycle transitions.
 type Service struct {
 	server Server
-	sh     di.Shutdowner
+	sh     signal.Shutdowner
 	logger *logger.Logger
 	name   string
 }
@@ -53,7 +53,7 @@ type Service struct {
 // address and then calls [Server.Serve].
 //
 // If Serve returns a non-nil error, Start requests application shutdown via the
-// configured [di.Shutdowner] and logs the failure. Because Start is
+// configured [signal.Shutdowner] and logs the failure. Because Start is
 // asynchronous, it never returns that Serve error directly.
 //
 // Start performs no deduplication or synchronization. Calling it more than once
@@ -69,7 +69,7 @@ func (s *Service) start() {
 
 	if err := s.server.Serve(); err != nil {
 		// ExitCodeServeFailure distinguishes serve-loop failures from external shutdown requests.
-		_ = s.sh.Shutdown(di.ExitCode(os.ExitCodeServeFailure))
+		s.sh.Shutdown(os.ExitCodeServeFailure)
 		s.logger.Error("could not start server", logger.String(meta.SystemKey, s.name), addr, logger.Error(err))
 	}
 }
@@ -84,7 +84,7 @@ func (s *Service) start() {
 // error wrapped with [errors.Prefix] using the service name for attribution. A
 // successful shutdown returns nil.
 //
-// Stop does not trigger [di.Shutdowner]; that mechanism is reserved for
+// Stop does not trigger [signal.Shutdowner]; that mechanism is reserved for
 // unexpected Serve failures observed by [Service.Start].
 func (s *Service) Stop(ctx context.Context) error {
 	s.logger.Info("stopping server", logger.String(meta.SystemKey, s.name))

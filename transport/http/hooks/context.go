@@ -1,6 +1,6 @@
 package hooks
 
-import "github.com/alexfalkowski/go-service/v2/context"
+import "github.com/alexfalkowski/go-service/v3/context"
 
 const webhookIDKey = context.Key("webhook-id")
 

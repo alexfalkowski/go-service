@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"math/rand/v2"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
 )
 
 // DBs contains writer and reader SQL connection pools.

@@ -3,7 +3,7 @@
 //
 // [Validator] is built by [NewValidator], which starts from a base validator and registers every [Validation]
 // contributed to the "validations" group. Packages that own a validation rule (such as `bytes`,
-// `time`, or `telemetry/otlp`) contribute their own [Validation] through their own [go.uber.org/fx]
+// `time`, or `telemetry/otlp`) contribute their own [Validation] through their own [github.com/alexfalkowski/go-signal/v2]
 // module, tagging the result with [ValidationResult], so this package never needs to know about
 // their rules by name.
 package validate

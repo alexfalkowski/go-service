@@ -1,6 +1,6 @@
 package errors
 
-import "github.com/alexfalkowski/go-service/v2/errors"
+import "github.com/alexfalkowski/go-service/v3/errors"
 
 // ErrInvalidMatch indicates that a cryptographic verification check failed.
 //

@@ -3,9 +3,9 @@ package http
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	config "github.com/alexfalkowski/go-service/v2/config/options"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	config "github.com/alexfalkowski/go-service/v3/config/options"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // NewServer constructs an HTTP server with common timeout defaults and supported protocol settings.

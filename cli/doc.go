@@ -1,7 +1,7 @@
 // Package cli provides helpers for building command-line applications with go-service.
 //
 // This package wraps the command framework used by this module ([github.com/cristalhq/acmd]) and provides
-// a small layer of conveniences for wiring subcommands using go-service DI (Fx/Dig via the `di` package).
+// a small layer of conveniences for wiring subcommands using [github.com/alexfalkowski/go-signal/v2].
 //
 // In typical service applications, this package is used together with `go-service-template` and the
 // high-level module bundles from the `module` package.

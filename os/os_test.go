@@ -3,7 +3,7 @@ package os_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v3/os"
 	"github.com/stretchr/testify/require"
 )
 

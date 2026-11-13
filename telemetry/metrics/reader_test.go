@@ -3,21 +3,21 @@ package metrics_test
 import (
 	"testing"
 
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/telemetry/header"
-	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/time"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/telemetry/header"
+	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/metric"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestRejectsInvalidReader(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{Kind: "wrong"}
 
 	_, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
@@ -35,7 +35,7 @@ func TestConfigRejectsNegativeHTTPTimeout(t *testing.T) {
 }
 
 func TestReaderShutdownIgnoresAlreadyShutdownReader(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	reader, err := metrics.NewReader(metrics.ReaderParams{
 		Lifecycle: lc,
 		Config:    &metrics.Config{Kind: "prometheus"},
@@ -52,10 +52,10 @@ func TestReaderShutdownIgnoresAlreadyShutdownReader(t *testing.T) {
 
 func TestPrometheusReaderShapesOutput(t *testing.T) {
 	t.Cleanup(func() {
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	})
 
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind: "prometheus",
 		Prometheus: &metrics.PrometheusConfig{
@@ -99,10 +99,10 @@ func TestPrometheusReaderShapesOutput(t *testing.T) {
 
 func TestPrometheusReaderKeepsDefaultOutput(t *testing.T) {
 	t.Cleanup(func() {
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	})
 
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{Kind: "prometheus"}
 
 	reader, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
@@ -146,7 +146,7 @@ func gatherFamilyNames(t *testing.T) []string {
 }
 
 func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind: "otlp",
 		URL:  "http://collector.example.com/v1/metrics",
@@ -160,7 +160,7 @@ func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
 }
 
 func TestOTLPOverGRPCReader(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
@@ -174,7 +174,7 @@ func TestOTLPOverGRPCReader(t *testing.T) {
 }
 
 func TestRejectsInvalidOTLPOverGRPCEndpoint(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
@@ -189,7 +189,7 @@ func TestRejectsInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 }
 
 func TestOTLPOverGRPCReaderWithTLSHeaders(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
@@ -210,7 +210,7 @@ func TestMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 	t.Setenv("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", "http://collector.example.com/v1/metrics")
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://collector.example.com")
 
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind: "otlp",
 		Headers: header.Map{

@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v3/cache/driver"
+	"github.com/alexfalkowski/go-service/v3/context"
 )
 
 // Pinger verifies cache backend connectivity.

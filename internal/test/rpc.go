@@ -3,13 +3,13 @@ package test
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	g "github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	h "github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/context"
+	v1 "github.com/alexfalkowski/go-service/v3/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	g "github.com/alexfalkowski/go-service/v3/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	h "github.com/alexfalkowski/go-service/v3/net/http/status"
 )
 
 // Request is the simple RPC request payload used by HTTP RPC and REST helper handlers.

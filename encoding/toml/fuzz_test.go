@@ -3,7 +3,7 @@ package toml_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/toml"
+	"github.com/alexfalkowski/go-service/v3/encoding/toml"
 	"github.com/stretchr/testify/require"
 )
 

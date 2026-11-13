@@ -1,8 +1,8 @@
 package retry
 
 import (
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // DefaultBackoff is the shared retry backoff used when [Config.Backoff] is unset.

@@ -1,23 +1,23 @@
 package driver
 
 import (
-	"github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/cache/driver/errors"
-	"github.com/alexfalkowski/go-service/v2/cache/driver/internal/redis"
-	"github.com/alexfalkowski/go-service/v2/cache/driver/internal/ttlcache"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/cache/config"
+	"github.com/alexfalkowski/go-service/v3/cache/driver/errors"
+	"github.com/alexfalkowski/go-service/v3/cache/driver/internal/redis"
+	"github.com/alexfalkowski/go-service/v3/cache/driver/internal/ttlcache"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // DriverParams defines dependencies for constructing a [Driver].
 type DriverParams struct {
-	di.In
+	signal.In
 
 	// Lifecycle registers backend shutdown hooks.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 
 	// FS resolves backend source-string options.
 	FS *os.FS
@@ -44,13 +44,13 @@ type DriverParams struct {
 //
 // The URL is read via [os.FS.ReadSource], parsed using
 // [github.com/redis/go-redis/v9.ParseURL], and then the client is instrumented for tracing and metrics via
-// [github.com/alexfalkowski/go-service/v2/cache/telemetry]
+// [github.com/alexfalkowski/go-service/v3/cache/telemetry]
 // when those telemetry providers are enabled.
 //
-// The Redis client is closed from the supplied lifecycle's [di.Hook.OnStop] hook.
+// The Redis client is closed from the supplied lifecycle's [signal.Hook.OnStop] hook.
 //
 // Instrumentation errors are treated as fatal configuration/runtime errors and
-// are converted into panics via [github.com/alexfalkowski/go-service/v2/runtime.Must], matching the existing repository
+// are converted into panics via [github.com/alexfalkowski/go-service/v3/runtime.Must], matching the existing repository
 // convention for mandatory telemetry wiring in internal constructors.
 //
 // # Backends
@@ -62,7 +62,7 @@ type DriverParams struct {
 // The built-in "ttlcache" backend stores values in process memory and expires entries lazily on access.
 //
 // If [config.Config.Kind] is unknown, [NewDriver] returns
-// [github.com/alexfalkowski/go-service/v2/cache/driver/errors.ErrNotFound].
+// [github.com/alexfalkowski/go-service/v3/cache/driver/errors.ErrNotFound].
 func NewDriver(params DriverParams) (Driver, error) {
 	cfg := params.Config
 	if !cfg.IsEnabled() {

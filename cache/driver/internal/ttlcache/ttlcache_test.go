@@ -4,12 +4,12 @@ import (
 	"testing"
 	"testing/synctest"
 
-	"github.com/alexfalkowski/go-service/v2/cache"
-	"github.com/alexfalkowski/go-service/v2/cache/config"
-	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
-	cachettl "github.com/alexfalkowski/go-service/v2/cache/driver/internal/ttlcache"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/cache"
+	"github.com/alexfalkowski/go-service/v3/cache/config"
+	drivererrors "github.com/alexfalkowski/go-service/v3/cache/driver/errors"
+	cachettl "github.com/alexfalkowski/go-service/v3/cache/driver/internal/ttlcache"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/stretchr/testify/require"
 )
 

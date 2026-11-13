@@ -1,16 +1,16 @@
 package stream
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/quota"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/ptr"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http/quota"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/ptr"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // Stream is a send-only streaming response handle.
@@ -48,7 +48,7 @@ type Stream[Res any] struct {
 // Load control:
 // If a limiter was captured at construction (see [NewHandler]), Send charges one limiter token
 // before doing any work, mirroring gRPC's per-SendMsg charge (see
-// [github.com/alexfalkowski/go-service/v2/transport/grpc/limiter.serverStream.SendMsg]). Before the first
+// [github.com/alexfalkowski/go-service/v3/transport/grpc/limiter.serverStream.SendMsg]). Before the first
 // successful Send this surfaces as an ordinary 429 [status.Error] through the pre-commit error path;
 // after commit it aborts the response the same way any other post-commit Send error does,
 // since a mid-stream 429 cannot be written once headers are sent. A denial or a limiter error is sticky
@@ -99,7 +99,7 @@ func (s *Stream[Res]) Send(res *Res) error {
 }
 
 // takeLimiterToken charges one limiter token for one Send or Recv message, on top of the token already
-// charged when the stream opened (see [github.com/alexfalkowski/go-service/v2/transport/http/limiter.Handler.ServeHTTP]).
+// charged when the stream opened (see [github.com/alexfalkowski/go-service/v3/transport/http/limiter.Handler.ServeHTTP]).
 //
 // It is a no-op, with no overhead beyond the nil check, when no limiter was captured at construction — the
 // common case, since most routes have no limiter configured, or reach a stream handler outside that
@@ -184,15 +184,15 @@ type RequestStream[Req any, Res any] struct {
 //
 // Recv is bounded independently by the per-value cap configured on [NewRequestHandler]: the cap
 // resets before every Recv rather than accumulating across the whole request stream (see
-// [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader]). A value over the cap surfaces as a
+// [github.com/alexfalkowski/go-service/v3/net/http/quota.Reader]). A value over the cap surfaces as a
 // [http.MaxBytesError], the same error type
-// [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s buffered path already produces,
-// so it maps to the same 413 through [github.com/alexfalkowski/go-service/v2/net/http/status.Code].
+// [github.com/alexfalkowski/go-service/v3/net/http/body.NewHandler]'s buffered path already produces,
+// so it maps to the same 413 through [github.com/alexfalkowski/go-service/v3/net/http/status.Code].
 //
 // Errors:
 // A decode failure other than the terminal io.EOF is classified with
-// [github.com/alexfalkowski/go-service/v2/net/http/status.BadRequestError], the same way
-// [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewRequestHandler] classifies its
+// [github.com/alexfalkowski/go-service/v3/net/http/status.BadRequestError], the same way
+// [github.com/alexfalkowski/go-service/v3/net/http/content/unary.NewRequestHandler] classifies its
 // equivalent request-decode failure, so malformed or type-invalid client input maps to 400 instead of
 // the default 500. [ErrDraining] and an over-cap value's [http.MaxBytesError] are unaffected: decode's
 // earlier guard clauses return them before this classification runs.
@@ -208,7 +208,7 @@ type RequestStream[Req any, Res any] struct {
 // Load control:
 // If a limiter was captured at construction, Recv charges one limiter token after a value decodes
 // successfully and within the per-value cap, mirroring gRPC's per-RecvMsg charge (see
-// [github.com/alexfalkowski/go-service/v2/transport/grpc/limiter.serverStream.RecvMsg]) — a stream-end
+// [github.com/alexfalkowski/go-service/v3/transport/grpc/limiter.serverStream.RecvMsg]) — a stream-end
 // io.EOF or an oversized value is not a received message and is never charged. See [Stream.Send] for how
 // a denial or limiter error is mapped and surfaced.
 //

@@ -1,4 +1,4 @@
-module github.com/alexfalkowski/go-service/v2
+module github.com/alexfalkowski/go-service/v3
 
 go 1.27.0
 
@@ -9,6 +9,7 @@ require (
 	github.com/KimMachineGun/automemlimit v1.0.1
 	github.com/XSAM/otelsql v0.44.0
 	github.com/alexfalkowski/go-health/v2 v2.43.0
+	github.com/alexfalkowski/go-signal/v2 v2.0.0
 	github.com/alexfalkowski/go-sync v1.39.0
 	github.com/arl/statsviz v0.8.2
 	github.com/avfs/avfs v0.35.0
@@ -69,8 +70,6 @@ require (
 	go.opentelemetry.io/otel/sdk/log v1.47.0
 	go.opentelemetry.io/otel/sdk/metric v1.47.0
 	go.opentelemetry.io/otel/trace v1.47.0
-	go.uber.org/dig v1.19.0
-	go.uber.org/fx v1.24.0
 	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/crypto v0.59.0
 	golang.org/x/net v0.62.0
@@ -129,6 +128,7 @@ require (
 	go.opentelemetry.io/otel/log v1.47.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.11.1 // indirect
 	go.uber.org/atomic v1.12.0 // indirect
+	go.uber.org/dig v1.19.0 // indirect
 	go.uber.org/mock v0.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect

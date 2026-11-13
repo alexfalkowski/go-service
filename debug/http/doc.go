@@ -1,6 +1,6 @@
 // Package http provides debug HTTP routing helpers for go-service.
 //
-// This package provides a small wrapper around go-service's [github.com/alexfalkowski/go-service/v2/net/http] primitives to build a
+// This package provides a small wrapper around go-service's [github.com/alexfalkowski/go-service/v3/net/http] primitives to build a
 // dedicated debug endpoint router. The root debug package registers its built-in
 // endpoint handlers on the mux returned by [NewServeMux].
 //

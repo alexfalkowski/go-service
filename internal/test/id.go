@@ -1,13 +1,13 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/rand"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/id/ksuid"
-	"github.com/alexfalkowski/go-service/v2/id/nanoid"
-	"github.com/alexfalkowski/go-service/v2/id/ulid"
-	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/id/xid"
+	"github.com/alexfalkowski/go-service/v3/crypto/rand"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/id/ksuid"
+	"github.com/alexfalkowski/go-service/v3/id/nanoid"
+	"github.com/alexfalkowski/go-service/v3/id/ulid"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/id/xid"
 )
 
 // Generators contains the standard ID generators exercised by tests.

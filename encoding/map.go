@@ -3,27 +3,27 @@ package encoding
 import (
 	"maps"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/gob"
-	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
-	"github.com/alexfalkowski/go-service/v2/encoding/msgpack"
-	"github.com/alexfalkowski/go-service/v2/encoding/proto"
-	"github.com/alexfalkowski/go-service/v2/encoding/toml"
-	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
-	"github.com/alexfalkowski/go-service/v2/slices"
+	"github.com/alexfalkowski/go-service/v3/encoding/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/gob"
+	"github.com/alexfalkowski/go-service/v3/encoding/hjson"
+	"github.com/alexfalkowski/go-service/v3/encoding/json"
+	"github.com/alexfalkowski/go-service/v3/encoding/msgpack"
+	"github.com/alexfalkowski/go-service/v3/encoding/proto"
+	"github.com/alexfalkowski/go-service/v3/encoding/toml"
+	"github.com/alexfalkowski/go-service/v3/encoding/yaml"
+	"github.com/alexfalkowski/go-service/v3/slices"
 )
 
 // NewMap constructs a Map with the default encoders.
 //
 // The returned registry includes these kinds, each registered under exactly one canonical name (no
-// aliases, matching [github.com/alexfalkowski/go-service/v2/encoding/stream.Map]'s design):
+// aliases, matching [github.com/alexfalkowski/go-service/v3/encoding/stream.Map]'s design):
 // "json", "hjson", "yaml", "toml", "msgpack", "protobuf", "prototext", "protojson", "gob", "bytes".
 //
 // Callers that need to accept alternate spellings of these kinds (for example HTTP media subtypes such
 // as "pb" or "octet-stream") are expected to translate them to the canonical kind above before calling
-// [Map.Get]; see [github.com/alexfalkowski/go-service/v2/net/http/content/unary]'s unaryKind.
+// [Map.Get]; see [github.com/alexfalkowski/go-service/v3/net/http/content/unary]'s unaryKind.
 //
 // Callers can add additional kinds or override existing kinds via [Map.Register].
 func NewMap() *Map {

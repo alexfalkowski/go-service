@@ -1,16 +1,16 @@
 package tracer
 
 import (
-	"github.com/alexfalkowski/go-service/v2/config/client"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
-	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-service/v3/config/client"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/alexfalkowski/go-sync"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -116,13 +116,13 @@ func NewNoopProvider() Provider {
 
 // TracerParams declares the dependencies required by Register.
 //
-// It is intended for Fx/Dig injection and includes service identity fields used to
+// It is intended for go-signal injection and includes service identity fields used to
 // populate OpenTelemetry resource attributes.
 type TracerParams struct {
-	di.In
+	signal.In
 
 	// Lifecycle is used to start and stop the exporter/provider with the application.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 
 	// Config enables tracing when non-nil and supplies exporter settings.
 	Config *Config
@@ -205,7 +205,7 @@ func Register(params TracerParams) error {
 		provider := NewProvider(params.Limit, providerOpts...)
 		setProvider(provider, true)
 
-		params.Lifecycle.Append(di.Hook{
+		params.Lifecycle.Append(signal.Hook{
 			OnStart: func(ctx context.Context) error {
 				return prefix(exporter.Start(ctx))
 			},

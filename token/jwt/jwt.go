@@ -1,12 +1,12 @@
 package jwt
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/pem"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/pem"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/token/errors"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -47,7 +47,7 @@ func NewToken(cfg *Config, fs *os.FS, gen id.Generator) *Token {
 // Issued tokens use standard registered claims ([github.com/golang-jwt/jwt/v4.RegisteredClaims]) and include a
 // "kid" header to bind the token to a configured key identity.
 //
-// Missing generation or verification dependencies are reported as [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
+// Missing generation or verification dependencies are reported as [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig].
 type Token struct {
 	cfg       *Config
 	decoder   *pem.Decoder
