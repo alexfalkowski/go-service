@@ -1,9 +1,9 @@
 package http
 
 import (
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/transport/http/token"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/transport/http/token"
 )
 
 // NewToken constructs a token service for HTTP transport integration.

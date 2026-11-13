@@ -1,8 +1,8 @@
 package encoding
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
 // Module provides the default encoder registry as a *[Map].
-var Module = di.Module(
-	di.Constructor(NewMap),
+var Module = signal.Module(
+	signal.Constructor(NewMap),
 )

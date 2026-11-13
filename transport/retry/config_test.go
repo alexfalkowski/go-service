@@ -3,9 +3,9 @@ package retry_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/retry"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/transport/retry"
 	"github.com/stretchr/testify/require"
 )
 

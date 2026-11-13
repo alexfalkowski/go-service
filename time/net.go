@@ -1,6 +1,6 @@
 package time
 
-import "github.com/alexfalkowski/go-service/v2/errors"
+import "github.com/alexfalkowski/go-service/v3/errors"
 
 // ErrNotFound is returned when [Config.Kind] does not match a supported network
 // time provider.

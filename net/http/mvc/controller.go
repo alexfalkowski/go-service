@@ -1,6 +1,6 @@
 package mvc
 
-import "github.com/alexfalkowski/go-service/v2/context"
+import "github.com/alexfalkowski/go-service/v3/context"
 
 // Controller executes an MVC action and returns a View, a model, and an error.
 //

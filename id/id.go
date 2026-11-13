@@ -1,13 +1,13 @@
 package id
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/id/ksuid"
-	"github.com/alexfalkowski/go-service/v2/id/nanoid"
-	"github.com/alexfalkowski/go-service/v2/id/ulid"
-	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/id/xid"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/id/ksuid"
+	"github.com/alexfalkowski/go-service/v3/id/nanoid"
+	"github.com/alexfalkowski/go-service/v3/id/ulid"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/id/xid"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // ErrNotFound is returned when generator selection fails because the configured kind is unknown.
@@ -17,9 +17,9 @@ var ErrNotFound = errors.New("id: generator not found")
 
 // MapParams defines dependencies used to construct a generator Map.
 //
-// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The default wiring is provided by [Module].
+// It is intended for dependency injection ([github.com/alexfalkowski/go-signal/v2]). The default wiring is provided by [Module].
 type MapParams struct {
-	di.In
+	signal.In
 
 	// KSUID is the KSUID generator registered under kind "ksuid".
 	KSUID *ksuid.Generator

@@ -2,25 +2,25 @@
 package redis
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/cache/config"
-	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
-	"github.com/alexfalkowski/go-service/v2/cache/telemetry"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/cache/config"
+	drivererrors "github.com/alexfalkowski/go-service/v3/cache/driver/errors"
+	"github.com/alexfalkowski/go-service/v3/cache/telemetry"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/redis/go-redis/v9"
 	notifications "github.com/redis/go-redis/v9/maintnotifications"
 )
 
 // NewDriver constructs a Redis cache driver.
-func NewDriver(lc di.Lifecycle, fs *os.FS, cfg *config.Config, log *logger.Logger) (*Driver, error) {
+func NewDriver(lc signal.Lifecycle, fs *os.FS, cfg *config.Config, log *logger.Logger) (*Driver, error) {
 	data, err := fs.ReadSource(cfg.Options["url"].(string))
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func NewDriver(lc di.Lifecycle, fs *os.FS, cfg *config.Config, log *logger.Logge
 		runtime.Must(telemetry.InstrumentMetrics(client, metricsClose))
 	}
 
-	lc.Append(di.Hook{
+	lc.Append(signal.Hook{
 		OnStop: func(context.Context) error {
 			if metricsClose != nil {
 				close(metricsClose)

@@ -3,11 +3,11 @@ package keys_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/crypto/pem"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/token/errors"
-	"github.com/alexfalkowski/go-service/v2/token/keys"
+	"github.com/alexfalkowski/go-service/v3/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v3/crypto/pem"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/token/errors"
+	"github.com/alexfalkowski/go-service/v3/token/keys"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 )

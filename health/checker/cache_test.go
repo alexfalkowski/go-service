@@ -3,10 +3,10 @@ package checker_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/health/checker"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/health/checker"
+	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/stretchr/testify/require"
 )
 

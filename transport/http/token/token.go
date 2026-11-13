@@ -1,17 +1,17 @@
 package token
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/net/header"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/token"
-	"github.com/alexfalkowski/go-service/v2/token/access"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/net/header"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/token"
+	"github.com/alexfalkowski/go-service/v3/token/access"
 )
 
 // NewToken constructs a token service when token auth is enabled.
@@ -27,7 +27,7 @@ func NewToken(cfg *token.Config, fs *os.FS, gen id.Generator) *Token {
 	return &Token{Token: token.NewToken(cfg, fs, gen)}
 }
 
-// Token wraps *[github.com/alexfalkowski/go-service/v2/token.Token] for HTTP transport integration.
+// Token wraps *[github.com/alexfalkowski/go-service/v3/token.Token] for HTTP transport integration.
 //
 // It exists so transport-level wiring can keep a distinct type for HTTP token functionality while still
 // delegating generation and verification to the underlying token implementation.
@@ -70,7 +70,7 @@ type Handler struct {
 // Registered operation paths (health/metrics/etc.) and registered unauthenticated routes bypass verification.
 //
 // The handler expects an Authorization value to be available in the request context (typically injected by
-// [github.com/alexfalkowski/go-service/v2/net/http/meta.Handler]). It verifies the token using verifier, scoping verification to the request method and path.
+// [github.com/alexfalkowski/go-service/v3/net/http/meta.Handler]). It verifies the token using verifier, scoping verification to the request method and path.
 //
 // Behavior:
 //   - If verification fails, it writes an HTTP 401 error response and does not call next.

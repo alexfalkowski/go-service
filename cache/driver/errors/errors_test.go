@@ -3,8 +3,8 @@ package errors_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/cache/driver/errors"
-	goerrors "github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v3/cache/driver/errors"
+	goerrors "github.com/alexfalkowski/go-service/v3/errors"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
 )

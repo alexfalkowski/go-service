@@ -3,11 +3,12 @@ package test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	httpmetrics "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	httpmetrics "github.com/alexfalkowski/go-service/v3/transport/http/telemetry/metrics"
+	"github.com/alexfalkowski/go-signal/v2"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 )
 
 var errInvalid = errors.New("invalid")
@@ -91,17 +92,17 @@ func (InvalidMeter) RegisterCallback(metrics.Callback, ...metrics.Observable) (m
 }
 
 // NewOTLPMeter returns a meter backed by the shared OTLP metrics config.
-func NewOTLPMeter(lc di.Lifecycle) (metrics.Meter, error) {
+func NewOTLPMeter(lc signal.Lifecycle) (metrics.Meter, error) {
 	return NewMeter(lc, NewOTLPMetricsConfig())
 }
 
 // NewPrometheusMeter returns a meter backed by the shared Prometheus metrics config.
-func NewPrometheusMeter(lc di.Lifecycle) (metrics.Meter, error) {
+func NewPrometheusMeter(lc signal.Lifecycle) (metrics.Meter, error) {
 	return NewMeter(lc, NewPrometheusMetricsConfig())
 }
 
 // NewMeter returns a repository meter scoped to the shared test name and version.
-func NewMeter(lc di.Lifecycle, c *metrics.Config) (metrics.Meter, error) {
+func NewMeter(lc signal.Lifecycle, c *metrics.Config) (metrics.Meter, error) {
 	provider, err := NewMeterProvider(lc, c)
 	if err != nil {
 		return nil, err
@@ -111,17 +112,17 @@ func NewMeter(lc di.Lifecycle, c *metrics.Config) (metrics.Meter, error) {
 }
 
 // NewOTLPMeterProvider returns a meter provider backed by the shared OTLP metrics config.
-func NewOTLPMeterProvider(lc di.Lifecycle) (metrics.MeterProvider, error) {
+func NewOTLPMeterProvider(lc signal.Lifecycle) (metrics.MeterProvider, error) {
 	return NewMeterProvider(lc, NewOTLPMetricsConfig())
 }
 
 // NewPrometheusMeterProvider returns a meter provider backed by the shared Prometheus metrics config.
-func NewPrometheusMeterProvider(lc di.Lifecycle) (metrics.MeterProvider, error) {
+func NewPrometheusMeterProvider(lc signal.Lifecycle) (metrics.MeterProvider, error) {
 	return NewMeterProvider(lc, NewPrometheusMetricsConfig())
 }
 
 // NewMeterProvider creates a meter provider with a reader registered on the supplied lifecycle.
-func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) (metrics.MeterProvider, error) {
+func NewMeterProvider(lc signal.Lifecycle, config *metrics.Config) (metrics.MeterProvider, error) {
 	r, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: config, FS: FS, Name: Name})
 	if err != nil {
 		return nil, err
@@ -154,7 +155,7 @@ func EnableMetricsReader(tb testing.TB) metrics.Reader {
 
 	reader := metrics.NewManualReader()
 	metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   QuietLifecycle(tb),
+		Lifecycle:   signaltest.NewLifecycle(tb),
 		Config:      &metrics.Config{},
 		Reader:      reader,
 		ID:          ID,
@@ -166,7 +167,7 @@ func EnableMetricsReader(tb testing.TB) metrics.Reader {
 	return reader
 }
 
-func meter(lc di.Lifecycle, router *http.Router, os *options) (metrics.Meter, error) {
+func meter(lc signal.Lifecycle, router *http.Router, os *options) (metrics.Meter, error) {
 	if os.telemetry == "otlp" {
 		return NewMeter(lc, NewOTLPMetricsConfig())
 	}

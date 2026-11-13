@@ -1,9 +1,9 @@
 package retry
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/time"
-	config "github.com/alexfalkowski/go-service/v2/transport/retry"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v3/time"
+	config "github.com/alexfalkowski/go-service/v3/transport/retry"
 )
 
 func retryInfoDelayExceedsBackoff(err error, backoff time.Duration) bool {

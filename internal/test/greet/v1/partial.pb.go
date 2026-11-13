@@ -73,7 +73,7 @@ const file_greet_v1_partial_proto_rawDesc = "" +
 	"\n" +
 	"\x16greet/v1/partial.proto\x12\bgreet.v1\"$\n" +
 	"\x0ePartialMessage\x12\x12\n" +
-	"\x04name\x18\x01 \x02(\tR\x04nameB6Z4github.com/alexfalkowski/go-service/v2/test/greet/v1"
+	"\x04name\x18\x01 \x02(\tR\x04nameB6Z4github.com/alexfalkowski/go-service/v3/test/greet/v1"
 
 var (
 	file_greet_v1_partial_proto_rawDescOnce sync.Once

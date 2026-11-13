@@ -21,7 +21,7 @@
 //
 // Localization:
 //
-// Provide an application-owned *[github.com/alexfalkowski/go-service/v2/i18n.Catalog]
+// Provide an application-owned *[github.com/alexfalkowski/go-service/v3/i18n.Catalog]
 // alongside the filesystem and layout to enable [Template.Localizer]. Each render
 // selects a language from [WithLanguage], then Accept-Language, then the catalog
 // default. Set WithLanguage in middleware before the MVC handler runs; a

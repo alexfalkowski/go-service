@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/BurntSushi/toml"
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/io"
 )
 
 var defaultEncoder = &Encoder{}
@@ -14,7 +14,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs a TOML encoder.
 //
 // This encoder is a thin adapter around [github.com/BurntSushi/toml] that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
@@ -27,7 +27,7 @@ type Encoder struct{}
 // Encode writes v to w as TOML.
 //
 // This is a thin wrapper around `toml.NewEncoder(w).Encode(v)`. TOML has no required-field
-// concept, so [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+// concept, so [github.com/alexfalkowski/go-service/v3/encoding/codec.WithAllowPartial] has no effect.
 func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	return toml.NewEncoder(w).Encode(v)
 }
@@ -37,7 +37,7 @@ func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
 //
 // This method rejects keys that do not decode into v unless
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithDiscardUnknown] is
 // supplied.
 func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	meta, err := toml.NewDecoder(r).Decode(v)

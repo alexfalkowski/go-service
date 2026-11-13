@@ -1,13 +1,13 @@
 package sync
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/alexfalkowski/go-sync"
 )
 
-// Module wires the upstream go-sync buffer pool into [go.uber.org/fx].
+// Module wires the upstream go-sync buffer pool into [github.com/alexfalkowski/go-signal/v2].
 //
-// Including this module in an Fx application provides a single shared buffer
+// Including this module in a go-signal application provides a single shared buffer
 // pool dependency, [github.com/alexfalkowski/go-sync.BufferPool], constructed
 // via [github.com/alexfalkowski/go-sync.NewBufferPool].
 //
@@ -24,6 +24,6 @@ import (
 //
 // The provided type and its lifecycle/usage contract are defined by the
 // upstream [github.com/alexfalkowski/go-sync] package.
-var Module = di.Module(
-	di.Constructor(sync.NewBufferPool),
+var Module = signal.Module(
+	signal.Constructor(sync.NewBufferPool),
 )

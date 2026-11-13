@@ -4,19 +4,19 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	grpcmeta "github.com/alexfalkowski/go-service/v2/net/grpc/meta"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/time"
-	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	v1 "github.com/alexfalkowski/go-service/v3/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	grpcmeta "github.com/alexfalkowski/go-service/v3/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/method"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v3/time"
+	grpclimiter "github.com/alexfalkowski/go-service/v3/transport/grpc/limiter"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestServerLimiterUnary(t *testing.T) {
@@ -65,7 +65,7 @@ func TestServerLimiterStream(t *testing.T) {
 }
 
 func TestServerLimiterStreamHeader(t *testing.T) {
-	limiter, err := grpclimiter.NewServer(fxtest.NewLifecycle(t), limiter.NewKeyMap(), test.NewLimiterConfig("user-agent", "1s", 0), method.NewPolicy())
+	limiter, err := grpclimiter.NewServer(signaltest.NewLifecycle(t), limiter.NewKeyMap(), test.NewLimiterConfig("user-agent", "1s", 0), method.NewPolicy())
 	require.NoError(t, err)
 	ctx := grpcmeta.WithAttributes(t.Context(), grpcmeta.WithUserAgent(grpcmeta.String("test-agent")))
 	interceptor := limiter.StreamInterceptor()

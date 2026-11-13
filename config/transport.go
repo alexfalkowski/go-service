@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v3/token/access"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc"
+	"github.com/alexfalkowski/go-service/v3/transport/http"
 )
 
 func grpcConfig(cfg *Config) *grpc.Config {

@@ -3,8 +3,8 @@ package logger
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/meta"
 )
 
 // Meta extracts context metadata and returns it as slog attributes.

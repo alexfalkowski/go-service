@@ -5,13 +5,13 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	httpmeta "github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	httpmeta "github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
 	"github.com/stretchr/testify/require"
 )
 

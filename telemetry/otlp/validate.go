@@ -1,8 +1,8 @@
 package otlp
 
 import (
-	"github.com/alexfalkowski/go-service/v2/config/validate"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/config/validate"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // newCadenceValidation declares the `otlp_cadence` validation rule owned by this package.

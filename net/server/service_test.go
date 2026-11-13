@@ -4,18 +4,18 @@ import (
 	"testing"
 	"testing/synctest"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestStartRequestsShutdownOnServeError(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		lc := fxtest.NewLifecycle(t)
+		lc := signaltest.NewLifecycle(t)
 		l, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
 		require.NoError(t, err)
 		sh := test.NewShutdowner()

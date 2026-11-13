@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	compress "github.com/alexfalkowski/go-service/v2/compress/errors"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	compress "github.com/alexfalkowski/go-service/v3/compress/errors"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
 	"github.com/klauspost/compress/zstd"
 )
 
@@ -24,14 +24,14 @@ var ErrWindowSizeExceeded = zstd.ErrWindowSizeExceeded
 
 // NewCompressor constructs a Zstandard (zstd) compressor implementation.
 //
-// The returned value implements [github.com/alexfalkowski/go-service/v2/compress.Compressor].
+// The returned value implements [github.com/alexfalkowski/go-service/v3/compress.Compressor].
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }
 
 // Compressor implements Zstandard (zstd) compression.
 //
-// It satisfies the [github.com/alexfalkowski/go-service/v2/compress.Compressor] interface.
+// It satisfies the [github.com/alexfalkowski/go-service/v3/compress.Compressor] interface.
 type Compressor struct{}
 
 // Compress returns the zstd-compressed representation of data.
@@ -57,9 +57,9 @@ func (c *Compressor) Compress(data []byte, size bytes.Size) ([]byte, error) {
 //
 // An error is returned if data is not valid zstd-encoded content or the
 // decompressed data exceeds size. The zstd decoder also uses the repository
-// [github.com/alexfalkowski/go-service/v2/bytes.MaxConfigSize] cap as its
+// [github.com/alexfalkowski/go-service/v3/bytes.MaxConfigSize] cap as its
 // maximum decoder memory/window limit. This implementation also returns
-// [github.com/alexfalkowski/go-service/v2/compress/errors.ErrTooLarge] for
+// [github.com/alexfalkowski/go-service/v3/compress/errors.ErrTooLarge] for
 // negative limits, math.MaxInt64 limits, and zstd decoder size/window limit
 // errors.
 func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {

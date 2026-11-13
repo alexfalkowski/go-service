@@ -1,8 +1,8 @@
 package token
 
 import (
-	"github.com/alexfalkowski/go-service/v2/token/jwt"
-	"github.com/alexfalkowski/go-service/v2/token/paseto"
+	"github.com/alexfalkowski/go-service/v3/token/jwt"
+	"github.com/alexfalkowski/go-service/v3/token/paseto"
 )
 
 // Config configures token generation and verification for a go-service application.
@@ -30,7 +30,7 @@ import (
 //
 // Config validation rejects unknown Kind values. If validation is bypassed, the
 // token facade treats the configuration as invalid and [Token.Generate]/[Token.Verify]
-// return [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig].
+// return [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig].
 type Config struct {
 	// JWT configures the JWT token implementation.
 	//

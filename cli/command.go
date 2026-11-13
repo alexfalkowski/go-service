@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/flag"
+	"github.com/alexfalkowski/go-service/v3/flag"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // NewCommand creates a new CLI Command with the given name.
@@ -18,7 +18,7 @@ func NewCommand(name string) *Command {
 //
 // The embedded FlagSet is intended to be configured with flags by the caller, then parsed by the
 // subcommand execution path. The `module` method exposes providers for the filesystem/name/version
-// metadata and the command's FlagSet, and enables DI panic recovery.
+// metadata and the command's FlagSet.
 type Command struct {
 	*flag.FlagSet
 }
@@ -27,11 +27,9 @@ func (c *Command) provide() *flag.FlagSet {
 	return c.FlagSet
 }
 
-func (c *Command) module() di.Option {
-	return di.Module(
-		di.Constructor(provide),
-		di.Constructor(c.provide),
-		di.Recover(),
-		di.NoLogger,
+func (c *Command) module() signal.Option {
+	return signal.Module(
+		signal.Constructor(provide),
+		signal.Constructor(c.provide),
 	)
 }

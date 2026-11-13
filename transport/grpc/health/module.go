@@ -1,9 +1,9 @@
 package health
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires gRPC health server and registrations into [go.uber.org/fx].
-var Module = di.Module(
-	di.Constructor(NewServer),
-	di.Register(Register),
+// Module wires gRPC health server and registrations into [github.com/alexfalkowski/go-signal/v2].
+var Module = signal.Module(
+	signal.Constructor(NewServer),
+	signal.Register(Register),
 )

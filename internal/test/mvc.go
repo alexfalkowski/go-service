@@ -3,7 +3,7 @@ package test
 import (
 	"embed"
 
-	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
+	"github.com/alexfalkowski/go-service/v3/net/http/mvc"
 )
 
 // Todo is the view model for a single todo item in the embedded MVC fixtures.

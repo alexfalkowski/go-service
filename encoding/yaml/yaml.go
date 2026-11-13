@@ -1,10 +1,10 @@
 package yaml
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
 	yaml "go.yaml.in/yaml/v3"
 )
 
@@ -13,7 +13,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs a YAML encoder.
 //
 // This encoder is a thin adapter around go-yaml v3 (imported as [go.yaml.in/yaml/v3]) that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder].
 func NewEncoder() *Encoder {
 	return defaultEncoder
 }
@@ -27,7 +27,7 @@ type Encoder struct{}
 //
 // Encode closes the upstream YAML encoder after writing so final buffered data and
 // finalization errors are handled. YAML has no required-field concept, so
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithAllowPartial] has no effect.
 func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	encoder := yaml.NewEncoder(w)
 	if err := encoder.Encode(v); err != nil {
@@ -41,7 +41,7 @@ func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
 // Decode reads one YAML document and rejects unknown fields unless
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithDiscardUnknown] is
 // supplied. It always rejects additional documents in the same stream.
 func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	resolved := codec.Apply(opts...)

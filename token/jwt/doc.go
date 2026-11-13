@@ -80,7 +80,7 @@
 //
 // # Relationship to the top-level token facade
 //
-// Services often use the top-level [github.com/alexfalkowski/go-service/v2/token.Token] facade (package token) which delegates
+// Services often use the top-level [github.com/alexfalkowski/go-service/v3/token.Token] facade (package token) which delegates
 // to this implementation when [Config.Kind] == "jwt". This package focuses only on the
 // JWT-specific format and validation rules.
 package jwt

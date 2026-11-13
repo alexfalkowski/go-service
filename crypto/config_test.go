@@ -3,7 +3,7 @@ package crypto_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/crypto"
+	"github.com/alexfalkowski/go-service/v3/crypto"
 	"github.com/stretchr/testify/require"
 )
 

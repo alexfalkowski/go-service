@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/os"
 )
 
 // FS is the filesystem used by CLI helpers for configuration lookup and reading sources.

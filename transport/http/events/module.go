@@ -1,12 +1,12 @@
 package events
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
+	"github.com/alexfalkowski/go-service/v3/transport/http/hooks"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
-// Module wires HTTP event receiver and hooks into [go.uber.org/fx].
-var Module = di.Module(
-	di.Constructor(NewReceiver),
+// Module wires HTTP event receiver and hooks into [github.com/alexfalkowski/go-signal/v2].
+var Module = signal.Module(
+	signal.Constructor(NewReceiver),
 	hooks.Module,
 )

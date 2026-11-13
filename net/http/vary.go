@@ -1,6 +1,6 @@
 package http
 
-import "github.com/alexfalkowski/go-service/v2/strings"
+import "github.com/alexfalkowski/go-service/v3/strings"
 
 // AddVary appends the given request header fields to Vary without duplicating existing fields.
 //

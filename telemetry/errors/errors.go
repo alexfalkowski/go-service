@@ -3,7 +3,7 @@ package errors
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
 )
 
 // Register installs handler as the global OpenTelemetry error handler.
@@ -12,7 +12,7 @@ import (
 // handler is process-wide; the last handler registered wins.
 //
 // Register is typically invoked once during service startup (for example via an
-// Fx module) so that OpenTelemetry SDK/internal errors (exporter failures,
+// go-signal module) so that OpenTelemetry SDK/internal errors (exporter failures,
 // dropped data warnings, etc.) are surfaced through the handler's independent
 // diagnostic sink.
 //

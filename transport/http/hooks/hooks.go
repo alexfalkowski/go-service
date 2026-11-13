@@ -3,12 +3,12 @@ package hooks
 import (
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/hooks"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/body"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/hooks"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/body"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/time"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
@@ -115,7 +115,7 @@ func (h *Webhook) Sign(req *http.Request) error {
 //
 // Security note:
 // This method intentionally does not add a second local size cap. Supported inbound use goes through
-// [github.com/alexfalkowski/go-service/v2/transport/http.NewServer], whose body middleware enforces Config.MaxReceiveSize before mux handlers and
+// [github.com/alexfalkowski/go-service/v3/transport/http.NewServer], whose body middleware enforces Config.MaxReceiveSize before mux handlers and
 // webhook verification run. Callers that bypass the transport server are responsible for applying the same
 // request-level cap before invoking Verify.
 //

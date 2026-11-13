@@ -1,13 +1,13 @@
 package bcrypt
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires the bcrypt subsystem into [go.uber.org/fx]/[go.uber.org/dig].
+// Module wires the bcrypt subsystem into [github.com/alexfalkowski/go-signal/v2].
 //
 // It provides a constructor for [*Signer] via [NewSigner], which can be used for password hashing
 // and verification using bcrypt with the default cost.
 //
 // This module does not require configuration.
-var Module = di.Module(
-	di.Constructor(NewSigner),
+var Module = signal.Module(
+	signal.Constructor(NewSigner),
 )

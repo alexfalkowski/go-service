@@ -1,6 +1,6 @@
 package aes
 
-import "github.com/alexfalkowski/go-service/v2/os"
+import "github.com/alexfalkowski/go-service/v3/os"
 
 // Config configures AES key material used by the AES-GCM cipher wired by this package.
 type Config struct {

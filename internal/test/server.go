@@ -1,29 +1,29 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/debug"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/id"
-	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/token"
-	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/transport"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
-	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/debug"
+	"github.com/alexfalkowski/go-service/v3/id"
+	v1 "github.com/alexfalkowski/go-service/v3/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v3/net/http/mvc"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/token"
+	"github.com/alexfalkowski/go-service/v3/token/access"
+	"github.com/alexfalkowski/go-service/v3/transport"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc"
+	grpclimiter "github.com/alexfalkowski/go-service/v3/transport/grpc/limiter"
+	"github.com/alexfalkowski/go-service/v3/transport/http"
+	httplimiter "github.com/alexfalkowski/go-service/v3/transport/http/limiter"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // Server bundles the dependencies required to build HTTP, gRPC, and debug servers for tests.
 type Server struct {
 	// Lifecycle receives server start and stop hooks.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 	// Meter provides metrics instrumentation for servers.
 	Meter metrics.Meter
 	// Verifier verifies inbound transport tokens.

@@ -1,17 +1,17 @@
 package crypto
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/aes"
-	"github.com/alexfalkowski/go-service/v2/crypto/bcrypt"
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
-	"github.com/alexfalkowski/go-service/v2/crypto/pem"
-	"github.com/alexfalkowski/go-service/v2/crypto/rand"
-	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v3/crypto/aes"
+	"github.com/alexfalkowski/go-service/v3/crypto/bcrypt"
+	"github.com/alexfalkowski/go-service/v3/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v3/crypto/hmac"
+	"github.com/alexfalkowski/go-service/v3/crypto/pem"
+	"github.com/alexfalkowski/go-service/v3/crypto/rand"
+	"github.com/alexfalkowski/go-service/v3/crypto/rsa"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
-// Module wires cryptographic subpackages into [go.uber.org/fx]/[go.uber.org/dig].
+// Module wires cryptographic subpackages into [github.com/alexfalkowski/go-signal/v2].
 //
 // It composes the modules from the crypto subpackages so services can include a single
 // [Module] to register the supported crypto primitives and helpers.
@@ -28,7 +28,7 @@ import (
 //
 // Note: this module only wires constructors; feature enablement is typically controlled via
 // configuration in the consuming subsystems (for example nil/disabled sub-configs).
-var Module = di.Module(
+var Module = signal.Module(
 	pem.Module,
 	rand.Module,
 	aes.Module,

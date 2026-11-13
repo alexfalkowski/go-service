@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v3/env"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/embedded"

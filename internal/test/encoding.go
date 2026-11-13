@@ -1,14 +1,14 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
-	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/encoding"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	encodingstream "github.com/alexfalkowski/go-service/v3/encoding/stream"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
+	contentstream "github.com/alexfalkowski/go-service/v3/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/unary"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // Encoder contains the real encoders exercised by config, cache, and transport tests.
@@ -93,7 +93,7 @@ func (d *OpaqueErrorDecoder) Close() error {
 
 // TripleReadDecoder is a [stream.Decoder] test double that reads R one byte at a time exactly three
 // times per Decode call, regardless of intervening errors, exercising a
-// [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader]'s sticky repeat-Read guard: a Read
+// [github.com/alexfalkowski/go-service/v3/net/http/quota.Reader]'s sticky repeat-Read guard: a Read
 // call made after the reader has already latched a size-limit error from a previous call.
 type TripleReadDecoder struct {
 	R io.Reader
@@ -121,9 +121,9 @@ func (d *TripleReadDecoder) Close() error {
 // and always reports a successful decode, regardless of how many bytes that Read actually consumed.
 // A real streaming decoder's internal buffering strategy can vary by Go toolchain (for example under
 // GOEXPERIMENT=jsonv2), which can make it read incrementally and trip a
-// [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader]'s live per-Read cap check before
+// [github.com/alexfalkowski/go-service/v3/net/http/quota.Reader]'s live per-Read cap check before
 // Decode ever returns success. SingleReadDecoder bypasses that variability so a
-// [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader] post-decode size check can be
+// [github.com/alexfalkowski/go-service/v3/net/http/quota.Reader] post-decode size check can be
 // exercised deterministically.
 type SingleReadDecoder struct {
 	R io.Reader

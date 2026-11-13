@@ -8,8 +8,8 @@
 // for the requested type.
 //
 // Byte-size helpers parse the same human-readable decimal size strings as
-// [github.com/alexfalkowski/go-service/v2/bytes.ParseSize]. They do not apply
-// the typed configuration cap [github.com/alexfalkowski/go-service/v2/bytes.MaxConfigSize];
+// [github.com/alexfalkowski/go-service/v3/bytes.ParseSize]. They do not apply
+// the typed configuration cap [github.com/alexfalkowski/go-service/v3/bytes.MaxConfigSize];
 // callers that need a repository-owned bound should use typed config fields
 // validated with the config package's `config_size` rule.
 package options

@@ -1,10 +1,10 @@
 package rpc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/unary"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // NewServer constructs a Server that registers RPC routes on router using unaryContent and streamContent
@@ -18,7 +18,7 @@ func NewServer(router *http.Router, unaryContent *unary.Content, streamContent *
 // Server registers RPC-style HTTP handlers on a router.
 //
 // The streaming options are passed unchanged to StreamRoute via
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler]; see that
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewRequestHandler]; see that
 // constructor for the timeout and per-value receive-size semantics.
 type Server struct {
 	router        *http.Router
@@ -37,7 +37,7 @@ type Server struct {
 //
 //	server.Route("/greet.v1.Greeter/SayHello", handler) // registers "POST /greet.v1.Greeter/SayHello"
 //
-// The handler is constructed using [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewRequestHandler], which:
+// The handler is constructed using [github.com/alexfalkowski/go-service/v3/net/http/content/unary.NewRequestHandler], which:
 //   - decodes the request body using Content-Type, falling back to JSON when Content-Type is absent and
 //     rejecting it with 415 when it is unparseable, unregistered, or intentionally undecodable,
 //   - decodes the request body into a newly allocated request model, and
@@ -66,7 +66,7 @@ func (s *Server) Route[Req any, Res any](pattern string, handler unary.RequestHa
 // how [Server.Route] is already POST-only.
 //
 // The handler is built using
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler], which:
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewRequestHandler], which:
 //   - resolves the request decoder from Content-Type, rejecting an unregistered or unparseable
 //     streaming media type with 415, and
 //   - resolves the response encoder from Accept (falling back to Content-Type), rejecting an Accept
@@ -82,7 +82,7 @@ func (s *Server) Route[Req any, Res any](pattern string, handler unary.RequestHa
 // Registration:
 // The resulting handler is registered on the configured router, and the route is marked streaming on
 // the router's route policy (see
-// [github.com/alexfalkowski/go-service/v2/net/http.WithRouteStreaming]) so inbound request body
+// [github.com/alexfalkowski/go-service/v3/net/http.WithRouteStreaming]) so inbound request body
 // limiting is applied lazily instead of buffering the whole body.
 // Options are additive to the route's bidirectional streaming policy.
 //

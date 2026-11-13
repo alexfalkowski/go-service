@@ -3,8 +3,8 @@ package test
 import (
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/alexfalkowski/go-sync"
 )
 

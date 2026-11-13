@@ -1,7 +1,7 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v3/env"
 )
 
 const (

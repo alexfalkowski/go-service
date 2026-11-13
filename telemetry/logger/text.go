@@ -3,7 +3,7 @@ package logger
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v3/os"
 )
 
 func newTextLogger(params LoggerParams) *slog.Logger {

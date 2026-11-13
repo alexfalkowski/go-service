@@ -4,10 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/recovery"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/recovery"
 	"github.com/stretchr/testify/require"
 )
 

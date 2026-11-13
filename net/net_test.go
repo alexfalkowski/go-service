@@ -3,7 +3,7 @@ package net_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v3/net"
 	"github.com/stretchr/testify/require"
 )
 

@@ -5,8 +5,8 @@ import (
 	"database/sql/driver"
 
 	"github.com/XSAM/otelsql"
-	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
 )
 
 // Option is an alias of [otelsql.Option].

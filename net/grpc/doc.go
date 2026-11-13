@@ -20,7 +20,7 @@
 // NewServer builds a *grpc.Server with keepalive enforcement and server
 // parameters. Configuration values are sourced from an options.Map using the
 // following duration keys. When a duration key is absent,
-// [github.com/alexfalkowski/go-service/v2/time.DefaultTimeout] applies to:
+// [github.com/alexfalkowski/go-service/v3/time.DefaultTimeout] applies to:
 //
 //   - keepalive_enforcement_policy_ping_min_time
 //   - keepalive_max_connection_idle

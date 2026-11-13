@@ -1,6 +1,6 @@
 package otlp
 
-import "github.com/alexfalkowski/go-service/v2/errors"
+import "github.com/alexfalkowski/go-service/v3/errors"
 
 // DefaultMaxQueueSize is the OpenTelemetry SDK default queue size.
 const DefaultMaxQueueSize = 2048

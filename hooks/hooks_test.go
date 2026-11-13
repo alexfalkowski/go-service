@@ -4,11 +4,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/rand"
-	"github.com/alexfalkowski/go-service/v2/hooks"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/crypto/rand"
+	"github.com/alexfalkowski/go-service/v3/hooks"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/time"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"github.com/stretchr/testify/require"
 )

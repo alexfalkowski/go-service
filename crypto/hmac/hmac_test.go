@@ -3,11 +3,11 @@ package hmac_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/errors"
-	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
-	"github.com/alexfalkowski/go-service/v2/crypto/rand"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/hmac"
+	"github.com/alexfalkowski/go-service/v3/crypto/rand"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/stretchr/testify/require"
 )
 

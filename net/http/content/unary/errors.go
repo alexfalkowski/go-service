@@ -1,6 +1,6 @@
 package unary
 
-import "github.com/alexfalkowski/go-service/v2/errors"
+import "github.com/alexfalkowski/go-service/v3/errors"
 
 // ErrUnsupportedRequestMedia is returned when a request Content-Type cannot be decoded from a public
 // HTTP request body. This covers three causes: the media type is intentionally denied (see the

@@ -3,7 +3,7 @@ package yaml_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
+	"github.com/alexfalkowski/go-service/v3/encoding/yaml"
 	"github.com/stretchr/testify/require"
 )
 

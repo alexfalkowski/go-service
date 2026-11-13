@@ -3,10 +3,10 @@ package none_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/compress/errors"
-	"github.com/alexfalkowski/go-service/v2/compress/none"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/compress/errors"
+	"github.com/alexfalkowski/go-service/v3/compress/none"
+	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/stretchr/testify/require"
 )
 

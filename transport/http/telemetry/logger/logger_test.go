@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	httplogger "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/http/token"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	httplogger "github.com/alexfalkowski/go-service/v3/transport/http/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/transport/http/token"
 	"github.com/stretchr/testify/require"
 )
 

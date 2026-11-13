@@ -1,6 +1,6 @@
 package config
 
-import "github.com/alexfalkowski/go-service/v2/errors"
+import "github.com/alexfalkowski/go-service/v3/errors"
 
 type invalidSourceDecoder struct {
 	source string

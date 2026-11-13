@@ -3,15 +3,14 @@ package cli_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/cli"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/cli"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx"
 )
 
 func TestApplicationClientRunCodeOnSuccess(t *testing.T) {
@@ -19,7 +18,7 @@ func TestApplicationClientRunCodeOnSuccess(t *testing.T) {
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
-			c.AddClient("client", "Start the client.", di.NoLogger)
+			c.AddClient("client", "Start the client.")
 		},
 	)
 
@@ -42,10 +41,9 @@ func TestApplicationClientRunWithInvalidFlag(t *testing.T) {
 func TestApplicationRunsClientCommand(t *testing.T) {
 	test.SetupCLI("client")
 
-	opts := []di.Option{di.NoLogger}
 	app := cli.NewApplication(
 		func(c cli.Commander) {
-			cmd := c.AddClient("client", "Start the client.", opts...)
+			cmd := c.AddClient("client", "Start the client.")
 			cmd.AddConfig(strings.Empty)
 		},
 	)
@@ -57,7 +55,7 @@ func TestApplicationClientCanRunTwice(t *testing.T) {
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
-			c.AddClient("client", "Start the client.", di.NoLogger)
+			c.AddClient("client", "Start the client.")
 		},
 	)
 
@@ -73,10 +71,10 @@ func TestApplicationClientRecoversFromPanic(t *testing.T) {
 			c.AddClient(
 				"client",
 				"Start the client.",
-				di.Constructor(func() string {
+				signal.Constructor(func() string {
 					panic("bad client")
 				}),
-				di.Register(func(string) {}),
+				signal.Register(func(string) {}),
 			)
 		},
 	)
@@ -86,7 +84,7 @@ func TestApplicationClientRecoversFromPanic(t *testing.T) {
 	require.ErrorContains(t, err, `panic: "bad client"`)
 }
 
-func TestApplicationClientStartUsesFxTimeout(t *testing.T) {
+func TestApplicationClientStartUsesConfiguredTimeout(t *testing.T) {
 	test.SetupCLI("client")
 
 	app := cli.NewApplication(
@@ -94,10 +92,9 @@ func TestApplicationClientStartUsesFxTimeout(t *testing.T) {
 			c.AddClient(
 				"client",
 				"Start the client.",
-				di.NoLogger,
-				fx.StartTimeout((10 * time.Millisecond).Duration()),
-				di.Register(func(lc di.Lifecycle) {
-					lc.Append(di.Hook{
+				signal.StartTimeout((10 * time.Millisecond).Duration()),
+				signal.Register(func(lc signal.Lifecycle) {
+					lc.Append(signal.Hook{
 						OnStart: func(ctx context.Context) error {
 							<-ctx.Done()
 
@@ -120,10 +117,11 @@ func TestApplicationClientShutdownExitCodeIsReturned(t *testing.T) {
 			c.AddClient(
 				"client",
 				"Start the client.",
-				di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
-					lc.Append(di.Hook{
+				signal.Register(func(lc signal.Lifecycle, sh signal.Shutdowner) {
+					lc.Append(signal.Hook{
 						OnStart: func(context.Context) error {
-							return sh.Shutdown(di.ExitCode(3))
+							sh.Shutdown(3)
+							return nil
 						},
 					})
 				}),

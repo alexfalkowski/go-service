@@ -1,14 +1,14 @@
 package cli
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Option is an alias for [di.Option].
-type Option = di.Option
+// Option is an alias for [signal.Option].
+type Option = signal.Option
 
 // Commander registers CLI subcommands on an application.
 //
-// Implementations typically add subcommands that build and run a DI application using go-service's
-// `di` package. The returned *[Command] embeds a `*flag.FlagSet` so you can define command-specific
+// Implementations typically add subcommands that build and run a go-signal application.
+// The returned *[Command] embeds a `*flag.FlagSet` so you can define command-specific
 // flags before execution.
 type Commander interface {
 	// AddServer registers a long-running server-style subcommand.

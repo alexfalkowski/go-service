@@ -3,12 +3,12 @@ package transport_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/debug"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/transport"
-	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
-	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v3/debug"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/transport"
+	transportgrpc "github.com/alexfalkowski/go-service/v3/transport/grpc"
+	transporthttp "github.com/alexfalkowski/go-service/v3/transport/http"
 	"github.com/stretchr/testify/require"
 )
 

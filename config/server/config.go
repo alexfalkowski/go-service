@@ -1,14 +1,14 @@
 package server
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/config/options"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
-	tlsconfig "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/token"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/config/options"
+	"github.com/alexfalkowski/go-service/v3/crypto/tls"
+	tlsconfig "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/token"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
 )
 
 // ErrMissingKeyPair is returned when server TLS is configured without a complete certificate/key pair.

@@ -4,8 +4,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/crypto/tls"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // Transport constructs a tuned *[http.Transport] with reasonable defaults and an optional TLS config.

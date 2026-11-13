@@ -3,11 +3,11 @@ package json
 import (
 	"encoding/json"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // Marshaler aliases the standard library JSON marshaler interface.
@@ -39,7 +39,7 @@ var defaultEncoder = &Encoder{}
 // NewEncoder constructs a JSON encoder.
 //
 // NewEncoder returns an [Encoder] that satisfies
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder] while delegating to
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder] while delegating to
 // the standard library's [encoding/json] implementation with readable indented
 // encoding and strict decoding.
 func NewEncoder() *Encoder {
@@ -57,7 +57,7 @@ type Encoder struct{}
 // Encode is equivalent to calling `json.NewEncoder(w).SetIndent("", "  ")`
 // before encoding v. As with the standard library, the encoded output is
 // terminated with a trailing newline. JSON has no required-field concept, so
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithAllowPartial] has no effect.
 func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent(strings.Empty, "  ")
@@ -70,7 +70,7 @@ func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 // In most cases v should be a pointer to the destination value, such as
 // `*MyStruct` or `*map[string]any`. Decode is equivalent to calling
 // `json.NewDecoder(r).Decode(v)` with unknown fields rejected unless
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithDiscardUnknown] is
 // supplied, then requiring the stream to contain no additional JSON values.
 //
 // Duplicate JSON object keys keep the standard library's last-wins behavior.

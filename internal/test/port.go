@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 const (

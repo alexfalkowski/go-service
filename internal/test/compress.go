@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/compress"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/compress"
 )
 
 // Compressor contains the real compressor implementations exercised by tests.

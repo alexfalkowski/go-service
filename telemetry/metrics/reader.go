@@ -1,15 +1,15 @@
 package metrics
 
 import (
-	"github.com/alexfalkowski/go-service/v2/config/client"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-service/v3/config/client"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/prometheus/otlptranslator"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
@@ -22,13 +22,13 @@ var ErrNotFound = errors.New("metrics: reader not found")
 
 // ReaderParams declares the dependencies required by NewReader.
 //
-// It is intended for Fx/Dig injection. OTLP/gRPC readers use FS to resolve TLS
+// It is intended for go-signal injection. OTLP/gRPC readers use FS to resolve TLS
 // source strings when TLS is configured.
 type ReaderParams struct {
-	di.In
+	signal.In
 
 	// Lifecycle is used to shut down the reader with the application.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 
 	// Config enables metrics when non-nil and selects the reader/exporter kind.
 	Config *Config
@@ -55,7 +55,7 @@ func NewReader(params ReaderParams) (metric.Reader, error) {
 		return nil, err
 	}
 
-	params.Lifecycle.Append(di.Hook{
+	params.Lifecycle.Append(signal.Hook{
 		OnStop: func(ctx context.Context) error {
 			if err := reader.Shutdown(ctx); err != nil {
 				if errors.Is(err, metric.ErrReaderShutdown) {

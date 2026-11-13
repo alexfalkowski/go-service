@@ -1,22 +1,22 @@
 package snappy
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	compress "github.com/alexfalkowski/go-service/v2/compress/errors"
-	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	compress "github.com/alexfalkowski/go-service/v3/compress/errors"
+	"github.com/alexfalkowski/go-service/v3/errors"
 	"github.com/klauspost/compress/snappy"
 )
 
 // NewCompressor constructs a Snappy compressor implementation.
 //
-// The returned value implements [github.com/alexfalkowski/go-service/v2/compress.Compressor].
+// The returned value implements [github.com/alexfalkowski/go-service/v3/compress.Compressor].
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }
 
 // Compressor implements Snappy compression.
 //
-// It satisfies the [github.com/alexfalkowski/go-service/v2/compress.Compressor] interface.
+// It satisfies the [github.com/alexfalkowski/go-service/v3/compress.Compressor] interface.
 type Compressor struct{}
 
 // Compress returns the Snappy-compressed representation of data.

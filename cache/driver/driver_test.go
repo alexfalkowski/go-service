@@ -3,9 +3,9 @@ package driver_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
+	"github.com/alexfalkowski/go-service/v3/cache/config"
+	"github.com/alexfalkowski/go-service/v3/cache/driver"
+	drivererrors "github.com/alexfalkowski/go-service/v3/cache/driver/errors"
 	"github.com/stretchr/testify/require"
 )
 

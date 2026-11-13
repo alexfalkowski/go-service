@@ -1,11 +1,11 @@
 package metrics
 
 import (
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/header"
-	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
-	"github.com/alexfalkowski/go-service/v2/time"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/header"
+	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // Config configures OpenTelemetry metrics export.

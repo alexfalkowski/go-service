@@ -1,6 +1,6 @@
 package time
 
-import "github.com/alexfalkowski/go-service/v2/config/validate"
+import "github.com/alexfalkowski/go-service/v3/config/validate"
 
 // newValidation declares the `duration_second_precision` validation rule owned by this package.
 func newValidation() validate.ValidationResult {

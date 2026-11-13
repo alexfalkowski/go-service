@@ -1,16 +1,16 @@
 package stream
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/compress"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/quota"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/compress"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http/quota"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
 )
 
 // NewHandler builds a handler for a send-only streaming response using content to resolve streaming codecs and
@@ -45,7 +45,7 @@ import (
 //
 // Load control:
 // If the request context carries a limiter (see [meta.WithLimiter], populated by
-// [github.com/alexfalkowski/go-service/v2/transport/http/limiter.Handler] for a request that was already
+// [github.com/alexfalkowski/go-service/v3/transport/http/limiter.Handler] for a request that was already
 // allowed to open the stream), every Send charges one additional token against that same limiter — see
 // [Stream.Send]. A route reached without that middleware, or with no limiter configured, sees no
 // per-message charging.
@@ -133,11 +133,11 @@ type Handler[Res any] func(ctx context.Context, stream *Stream[Res]) error
 //
 // Inbound size limiting:
 // opts.MaxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a
-// whole (see [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader]): a request with many small
+// whole (see [github.com/alexfalkowski/go-service/v3/net/http/quota.Reader]): a request with many small
 // values is never rejected for its cumulative size, only
 // for a single value that exceeds opts.MaxReceiveSize. A value over the limit is a normal terminal
 // [http.MaxBytesError] surfaced from Recv; the deviation is that no total byte ceiling exists for a
-// streaming route the way [github.com/alexfalkowski/go-service/v2/net/http/body.NewHandler]'s buffered
+// streaming route the way [github.com/alexfalkowski/go-service/v3/net/http/body.NewHandler]'s buffered
 // path enforces one. opts.MaxReceiveSize <= 0 disables the per-value cap entirely.
 //
 // Timeout:

@@ -3,9 +3,9 @@ package stream
 import (
 	"mime"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
 )
 
 // ndjsonType is the parsed form of [media.NDJSON], the only streaming media type this package currently

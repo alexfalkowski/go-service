@@ -4,19 +4,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	sync "github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestIsEnabledReflectsInstalledMeterProvider(t *testing.T) {
 	t.Cleanup(func() {
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	})
 
 	metrics.SetMeterProvider(metrics.NewNoopMeterProvider())
@@ -26,7 +26,7 @@ func TestIsEnabledReflectsInstalledMeterProvider(t *testing.T) {
 	require.False(t, metrics.IsEnabled())
 
 	manualProvider := metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   fxtest.NewLifecycle(t),
+		Lifecycle:   signaltest.NewLifecycle(t),
 		Config:      &metrics.Config{},
 		Reader:      metrics.NewManualReader(),
 		ID:          test.ID,
@@ -45,11 +45,11 @@ func TestIsEnabledReflectsInstalledMeterProvider(t *testing.T) {
 	metrics.SetMeterProvider(metrics.NewNoopMeterProvider())
 	require.False(t, metrics.IsEnabled())
 
-	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	require.False(t, metrics.IsEnabled())
 
 	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   fxtest.NewLifecycle(t),
+		Lifecycle:   signaltest.NewLifecycle(t),
 		Config:      &metrics.Config{},
 		Reader:      metrics.NewManualReader(),
 		ID:          test.ID,
@@ -60,16 +60,16 @@ func TestIsEnabledReflectsInstalledMeterProvider(t *testing.T) {
 	require.NotNil(t, provider)
 	require.True(t, metrics.IsEnabled())
 
-	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	require.False(t, metrics.IsEnabled())
 }
 
 func TestMeterProviderStopResetsGlobalState(t *testing.T) {
 	t.Cleanup(func() {
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	})
 
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
 		Lifecycle:   lc,
 		Config:      &metrics.Config{},
@@ -91,12 +91,12 @@ func TestMeterProviderStopResetsGlobalState(t *testing.T) {
 
 func TestMeterProviderAttributes(t *testing.T) {
 	t.Cleanup(func() {
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	})
 
 	reader := metrics.NewManualReader()
 	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config:    &metrics.Config{},
 		Reader:    reader,
 		Attributes: attributes.Map{
@@ -129,13 +129,13 @@ func TestMeterProviderAttributes(t *testing.T) {
 
 func TestMeterProviderViews(t *testing.T) {
 	t.Cleanup(func() {
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	})
 
 	boundaries := []float64{0.1, 0.5, 1}
 	reader := metrics.NewManualReader()
 	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &metrics.Config{Views: []metrics.ViewConfig{
 			{Pattern: "test.duration", Boundaries: boundaries},
 		}},
@@ -158,12 +158,12 @@ func TestMeterProviderViews(t *testing.T) {
 
 func TestMeterProviderViewsKeepNonHistogramInstrumentsDefault(t *testing.T) {
 	t.Cleanup(func() {
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	})
 
 	reader := metrics.NewManualReader()
 	provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &metrics.Config{Views: []metrics.ViewConfig{
 			{Pattern: "test.*", Boundaries: []float64{0.1, 0.5, 1}},
 		}},
@@ -197,7 +197,7 @@ func TestMeterProviderViewsKeepNonHistogramInstrumentsDefault(t *testing.T) {
 
 func TestMeterProviderViewsUseConfiguredOrder(t *testing.T) {
 	t.Cleanup(func() {
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	})
 
 	tests := map[string]struct {
@@ -236,7 +236,7 @@ func TestMeterProviderViewsUseConfiguredOrder(t *testing.T) {
 			for range 20 {
 				reader := metrics.NewManualReader()
 				provider := metrics.NewMeterProvider(metrics.MeterProviderParams{
-					Lifecycle:   fxtest.NewLifecycle(t),
+					Lifecycle:   signaltest.NewLifecycle(t),
 					Config:      &metrics.Config{Views: tt.views},
 					Reader:      reader,
 					ID:          test.ID,
@@ -261,7 +261,7 @@ func TestMeterProviderViewsUseConfiguredOrder(t *testing.T) {
 
 func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
 	t.Cleanup(func() {
-		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
+		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: signaltest.NewLifecycle(t)})
 	})
 
 	var exports sync.Int64
@@ -271,7 +271,7 @@ func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind:     "otlp",
 		URL:      server.URL,

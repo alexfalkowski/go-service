@@ -3,8 +3,8 @@ package otlp_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/telemetry/otlp"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/telemetry/otlp"
+	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/stretchr/testify/require"
 )
 

@@ -3,14 +3,14 @@ package http_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
-	"github.com/alexfalkowski/go-service/v2/transport/http/token"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/transport/http"
+	"github.com/alexfalkowski/go-service/v3/transport/http/token"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestNewTokenUsesDefaultConfiguration(t *testing.T) {
@@ -39,21 +39,21 @@ func TestNewServerLimiter(t *testing.T) {
 	cfg := test.NewHTTPTransportConfig()
 	cfg.Limiter = test.NewLimiterConfig("user-agent", "1s", 1)
 
-	server, err := http.NewServerLimiter(fxtest.NewLifecycle(t), limiter.NewKeyMap(), cfg)
+	server, err := http.NewServerLimiter(signaltest.NewLifecycle(t), limiter.NewKeyMap(), cfg)
 
 	require.NoError(t, err)
 	require.NotNil(t, server)
 }
 
 func TestNewServerLimiterWithoutSharedServerConfig(t *testing.T) {
-	server, err := http.NewServerLimiter(fxtest.NewLifecycle(t), limiter.NewKeyMap(), &http.Config{Timeout: time.Second})
+	server, err := http.NewServerLimiter(signaltest.NewLifecycle(t), limiter.NewKeyMap(), &http.Config{Timeout: time.Second})
 
 	require.NoError(t, err)
 	require.Nil(t, server)
 }
 
 func TestNewServerLimiterDisabled(t *testing.T) {
-	server, err := http.NewServerLimiter(fxtest.NewLifecycle(t), limiter.NewKeyMap(), nil)
+	server, err := http.NewServerLimiter(signaltest.NewLifecycle(t), limiter.NewKeyMap(), nil)
 
 	require.NoError(t, err)
 	require.Nil(t, server)

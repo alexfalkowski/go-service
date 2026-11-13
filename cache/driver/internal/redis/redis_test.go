@@ -3,23 +3,23 @@ package redis_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/cache"
-	"github.com/alexfalkowski/go-service/v2/cache/config"
-	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
-	cacheredis "github.com/alexfalkowski/go-service/v2/cache/driver/internal/redis"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/cache"
+	"github.com/alexfalkowski/go-service/v3/cache/config"
+	drivererrors "github.com/alexfalkowski/go-service/v3/cache/driver/errors"
+	cacheredis "github.com/alexfalkowski/go-service/v3/cache/driver/internal/redis"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 var _ cache.Pinger = (*cacheredis.Driver)(nil)
 
 func TestClientClosesOnStop(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := redisConfig("redis://localhost:6379")
 
 	d, err := cacheredis.NewDriver(lc, test.FS, cfg, nil)
@@ -33,7 +33,7 @@ func TestClientClosesOnStop(t *testing.T) {
 }
 
 func TestDriverPingsRedis(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := redisConfig("redis://localhost:6379")
 
 	d, err := cacheredis.NewDriver(lc, test.FS, cfg, nil)
@@ -45,7 +45,7 @@ func TestDriverPingsRedis(t *testing.T) {
 }
 
 func TestDriverGetOrSave(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := redisConfig("redis://localhost:6379")
 
 	d, err := cacheredis.NewDriver(lc, test.FS, cfg, nil)
@@ -77,7 +77,7 @@ func TestParseURLDoesNotLeakCredentials(t *testing.T) {
 	url := "redis://user:" + "secret%zz@localhost:6379"
 	cfg := redisConfig(url)
 
-	_, err := cacheredis.NewDriver(fxtest.NewLifecycle(t), test.FS, cfg, nil)
+	_, err := cacheredis.NewDriver(signaltest.NewLifecycle(t), test.FS, cfg, nil)
 
 	require.ErrorIs(t, err, drivererrors.ErrInvalidURL)
 	require.NotContains(t, err.Error(), "secret")
@@ -86,7 +86,7 @@ func TestParseURLDoesNotLeakCredentials(t *testing.T) {
 
 func TestMetricsUnregisterOnStop(t *testing.T) {
 	reader := test.EnableMetricsReader(t)
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	cfg := redisConfig("redis://localhost:6379")
 
 	_, err := cacheredis.NewDriver(lc, test.FS, cfg, nil)

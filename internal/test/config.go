@@ -1,45 +1,45 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	cache "github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/config"
-	configoptions "github.com/alexfalkowski/go-service/v2/config/options"
-	"github.com/alexfalkowski/go-service/v2/config/server"
-	"github.com/alexfalkowski/go-service/v2/config/validate"
-	"github.com/alexfalkowski/go-service/v2/crypto/aes"
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
-	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	sql "github.com/alexfalkowski/go-service/v2/database/sql/config"
-	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	"github.com/alexfalkowski/go-service/v2/debug"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/flag"
-	"github.com/alexfalkowski/go-service/v2/hooks"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/telemetry/header"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/otlp"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token"
-	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/token/jwt"
-	"github.com/alexfalkowski/go-service/v2/token/keys"
-	"github.com/alexfalkowski/go-service/v2/token/paseto"
-	"github.com/alexfalkowski/go-service/v2/transport"
-	"github.com/alexfalkowski/go-service/v2/transport/breaker"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	grpcretry "github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
-	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
-	httpretry "github.com/alexfalkowski/go-service/v2/transport/http/retry"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/retry"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	cache "github.com/alexfalkowski/go-service/v3/cache/config"
+	"github.com/alexfalkowski/go-service/v3/config"
+	configoptions "github.com/alexfalkowski/go-service/v3/config/options"
+	"github.com/alexfalkowski/go-service/v3/config/server"
+	"github.com/alexfalkowski/go-service/v3/config/validate"
+	"github.com/alexfalkowski/go-service/v3/crypto/aes"
+	"github.com/alexfalkowski/go-service/v3/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v3/crypto/hmac"
+	"github.com/alexfalkowski/go-service/v3/crypto/rsa"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	sql "github.com/alexfalkowski/go-service/v3/database/sql/config"
+	"github.com/alexfalkowski/go-service/v3/database/sql/pg"
+	"github.com/alexfalkowski/go-service/v3/debug"
+	"github.com/alexfalkowski/go-service/v3/flag"
+	"github.com/alexfalkowski/go-service/v3/hooks"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/telemetry/header"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/telemetry/otlp"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/token"
+	"github.com/alexfalkowski/go-service/v3/token/access"
+	"github.com/alexfalkowski/go-service/v3/token/jwt"
+	"github.com/alexfalkowski/go-service/v3/token/keys"
+	"github.com/alexfalkowski/go-service/v3/token/paseto"
+	"github.com/alexfalkowski/go-service/v3/transport"
+	"github.com/alexfalkowski/go-service/v3/transport/breaker"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc"
+	grpcretry "github.com/alexfalkowski/go-service/v3/transport/grpc/retry"
+	transporthttp "github.com/alexfalkowski/go-service/v3/transport/http"
+	httpretry "github.com/alexfalkowski/go-service/v3/transport/http/retry"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/transport/retry"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 const (
@@ -53,18 +53,17 @@ var Validator = newValidator()
 
 // newValidator builds a Validator with every repository-owned validation rule registered, by composing
 // the same contributing modules as [config.Module] plus [time.Module] (which [config.Module] relies on
-// [github.com/alexfalkowski/go-service/v2/module.Library] to provide in real applications), outside of
+// [github.com/alexfalkowski/go-service/v3/module.Library] to provide in real applications), outside of
 // a full server/client app.
 func newValidator() *validate.Validator {
 	var v *validate.Validator
 
-	app := di.New(
+	_, err := signal.NewApp(
 		bytes.Module, time.Module, otlp.Module,
-		di.Constructor(validate.NewValidator),
-		di.Register(func(validator *validate.Validator) { v = validator }),
-		di.NoLogger,
+		signal.Constructor(validate.NewValidator),
+		signal.Register(func(validator *validate.Validator) { v = validator }),
 	)
-	runtime.Must(app.Err())
+	runtime.Must(err)
 
 	return v
 }

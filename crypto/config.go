@@ -1,16 +1,16 @@
 package crypto
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/aes"
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
-	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
+	"github.com/alexfalkowski/go-service/v3/crypto/aes"
+	"github.com/alexfalkowski/go-service/v3/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v3/crypto/hmac"
+	"github.com/alexfalkowski/go-service/v3/crypto/rsa"
 )
 
 // Config is the root crypto configuration for a go-service based service.
 //
 // It composes configuration for multiple cryptographic subsystems that are implemented in subpackages
-// under `github.com/alexfalkowski/go-service/v2/crypto/*`.
+// under `github.com/alexfalkowski/go-service/v3/crypto/*`.
 //
 // # Optional pointers and "enabled" semantics
 //
@@ -21,7 +21,7 @@ import (
 // # Key material sources
 //
 // Many crypto subpackages support "source string" values (for example `env:NAME`, `file:/path`, or a
-// raw literal) for secrets and key material. Those source strings are resolved by [github.com/alexfalkowski/go-service/v2/os.FS.ReadSource]
+// raw literal) for secrets and key material. Those source strings are resolved by [github.com/alexfalkowski/go-service/v3/os.FS.ReadSource]
 // during construction or use, depending on the subsystem.
 type Config struct {
 	// AES configures AES key material used by AES-based primitives (for example encrypt/decrypt helpers).

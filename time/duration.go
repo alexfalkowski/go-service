@@ -3,9 +3,9 @@ package time
 import (
 	"time"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v3/encoding/json"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/runtime"
 )
 
 // Hour is the go-service representation of the standard library [time.Hour]

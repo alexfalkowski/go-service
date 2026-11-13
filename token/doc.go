@@ -38,8 +38,8 @@
 // The [Token] facade is intentionally conservative when [Config.Kind] is
 // unknown:
 //
-//   - [Token.Generate] returns (nil, [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig]).
-//   - [Token.Verify] returns ([strings.Empty], [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig]).
+//   - [Token.Generate] returns (nil, [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig]).
+//   - [Token.Verify] returns ([strings.Empty], [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig]).
 //
 // This makes "unknown token kind" fail closed instead of behaving like "feature
 // disabled" in wiring scenarios. Callers should treat ErrInvalidConfig as a
@@ -48,10 +48,10 @@
 // # Configuration and enablement
 //
 // The standard startup path through
-// [github.com/alexfalkowski/go-service/v2/config.NewConfig] validates that the
+// [github.com/alexfalkowski/go-service/v3/config.NewConfig] validates that the
 // nested JWT or PASETO block matching [Config.Kind] is present. Direct
 // callers that construct [Config] without validation remain fail-closed:
 // [Token.Generate] and [Token.Verify] return
-// [github.com/alexfalkowski/go-service/v2/token/errors.ErrInvalidConfig] when
+// [github.com/alexfalkowski/go-service/v3/token/errors.ErrInvalidConfig] when
 // the selected nested configuration is missing.
 package token

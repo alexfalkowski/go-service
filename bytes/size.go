@@ -3,8 +3,8 @@ package bytes
 import (
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/runtime"
 	units "github.com/docker/go-units"
 )
 

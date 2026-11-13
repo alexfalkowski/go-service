@@ -1,10 +1,10 @@
 package debug
 
-import "github.com/alexfalkowski/go-service/v2/config/server"
+import "github.com/alexfalkowski/go-service/v3/config/server"
 
 // Config configures the debug server.
 //
-// It embeds [github.com/alexfalkowski/go-service/v2/config/server.Config] to reuse common server settings such as address,
+// It embeds [github.com/alexfalkowski/go-service/v3/config/server.Config] to reuse common server settings such as address,
 // TLS configuration, maximum inbound request-body size, and server-specific options.
 //
 // # Optional pointers and "enabled" semantics

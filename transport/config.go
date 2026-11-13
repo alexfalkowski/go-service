@@ -1,9 +1,9 @@
 package transport
 
 import (
-	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v3/token/access"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc"
+	"github.com/alexfalkowski/go-service/v3/transport/http"
 )
 
 // Config configures server-side transport wiring for a service.
@@ -14,7 +14,7 @@ import (
 // server is created.
 //
 // Client construction uses explicit client options and client-side config types such as
-// [github.com/alexfalkowski/go-service/v2/config/client.Config]; transport.http and
+// [github.com/alexfalkowski/go-service/v3/config/client.Config]; transport.http and
 // transport.grpc are the server-side config trees.
 //
 // The struct tags are compatible with the repository's config decoder (YAML/JSON/TOML).
@@ -30,13 +30,13 @@ type Config struct {
 	// GRPC configures the gRPC server transport stack.
 	//
 	// When nil, gRPC transport wiring is effectively
-	// turned off and constructors such as [github.com/alexfalkowski/go-service/v2/transport/grpc.NewServer] typically return nil.
+	// turned off and constructors such as [github.com/alexfalkowski/go-service/v3/transport/grpc.NewServer] typically return nil.
 	GRPC *grpc.Config `yaml:"grpc,omitempty" json:"grpc,omitempty" toml:"grpc,omitempty"`
 
 	// HTTP configures the HTTP server transport stack.
 	//
 	// When nil, HTTP transport wiring is effectively
-	// turned off and constructors such as [github.com/alexfalkowski/go-service/v2/transport/http.NewServer] typically return nil.
+	// turned off and constructors such as [github.com/alexfalkowski/go-service/v3/transport/http.NewServer] typically return nil.
 	HTTP *http.Config `yaml:"http,omitempty" json:"http,omitempty" toml:"http,omitempty"`
 }
 

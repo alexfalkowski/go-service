@@ -5,16 +5,16 @@ and carry the same mandatory weight.
 
 - Manual server lifecycle wiring should use `net/server.Register(...)`.
 - Module-related behavior is tested through CLI/server application wiring. Do
-  not flag missing direct package tests for Fx module provider inventory,
+  not flag missing direct package tests for go-signal module provider inventory,
   module composition, or `transport.Module` lifecycle registration solely
   because they are not asserted in the package that declares the module. Report
   only concrete broken behavior through the CLI or supported `module.Server`
   path, or an explicit public promise of lower-level standalone module use.
 - `cli.RunCode` returns `os.ExitCodeSuccess` on success, preserves non-zero
-  shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
+  shutdown exit codes requested through `signal.Shutdowner.Shutdown(code)`, and otherwise
   returns `os.ExitCodeFailure`.
 - `cli.Application.AddClient` intentionally models short-lived client command
-  work as DI/Fx startup work. Client commands perform their main action from a
+  work as DI startup work. Client commands perform their main action from a
   lifecycle `OnStart` hook, then stop the graph immediately after startup
   completes. Constructors and invocations only wire dependencies and register
   lifecycle hooks; they do not perform the command action while the graph is
@@ -32,7 +32,7 @@ and carry the same mandatory weight.
   breakage in a supported CLI contract or an explicit public promise to
   preserve `-test.*` command flags.
 - `net/server.Service` intentionally logs asynchronous `Server.Serve` errors
-  and requests shutdown with `di.ExitCode(os.ExitCodeServeFailure)`; it does not
+  and requests shutdown with `signal.Shutdowner.Shutdown(os.ExitCodeServeFailure)`; it does not
   return the raw serve error from `Stop`.
 - gRPC `Server.Serve` returns `nil` when `Stop` or `GracefulStop` is called
   after serving has started. `grpc.ErrServerStopped` is only returned when

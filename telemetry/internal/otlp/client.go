@@ -3,11 +3,11 @@ package otlp
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/v2/config/client"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/config/client"
+	"github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // NewHTTPClient constructs an OTLP HTTP client that returns redirect responses

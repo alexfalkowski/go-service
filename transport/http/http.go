@@ -1,10 +1,10 @@
 package http
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/net/http"
 )
 
 // MethodDelete is an alias of [http.MethodDelete].
@@ -67,10 +67,10 @@ type MaxBytesError = http.MaxBytesError
 // Handler is an alias for [net/http.Handler].
 type Handler = http.Handler
 
-// ChainedHandler is an alias for [github.com/alexfalkowski/go-service/v2/net/http.ChainedHandler].
+// ChainedHandler is an alias for [github.com/alexfalkowski/go-service/v3/net/http.ChainedHandler].
 type ChainedHandler = http.ChainedHandler
 
-// ChainedHandlers is an alias for [github.com/alexfalkowski/go-service/v2/net/http.ChainedHandlers].
+// ChainedHandlers is an alias for [github.com/alexfalkowski/go-service/v3/net/http.ChainedHandlers].
 type ChainedHandlers = http.ChainedHandlers
 
 // HandlerFunc is an alias for [net/http.HandlerFunc].
@@ -94,10 +94,10 @@ type RoundTripper = http.RoundTripper
 // ServeMux is an alias for [net/http.ServeMux].
 type ServeMux = http.ServeMux
 
-// RoutePolicy is an alias for [github.com/alexfalkowski/go-service/v2/net/http.RoutePolicy].
+// RoutePolicy is an alias for [github.com/alexfalkowski/go-service/v3/net/http.RoutePolicy].
 type RoutePolicy = http.RoutePolicy
 
-// Router is an alias for [github.com/alexfalkowski/go-service/v2/net/http.Router].
+// Router is an alias for [github.com/alexfalkowski/go-service/v3/net/http.Router].
 type Router = http.Router
 
 // DefaultTransport is an alias for [http.DefaultTransport].

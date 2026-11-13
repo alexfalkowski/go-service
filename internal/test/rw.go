@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // BadReaderWriter is an [os.ReaderWriter] test double whose read and write operations fail.

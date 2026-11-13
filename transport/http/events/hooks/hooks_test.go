@@ -4,12 +4,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/hooks"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/events"
-	eventhooks "github.com/alexfalkowski/go-service/v2/transport/http/events/hooks"
-	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
+	"github.com/alexfalkowski/go-service/v3/hooks"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/events"
+	eventhooks "github.com/alexfalkowski/go-service/v3/transport/http/events/hooks"
+	httphooks "github.com/alexfalkowski/go-service/v3/transport/http/hooks"
 	"github.com/stretchr/testify/require"
 )
 

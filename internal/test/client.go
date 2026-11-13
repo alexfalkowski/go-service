@@ -1,32 +1,32 @@
 package test
 
 import (
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token"
-	"github.com/alexfalkowski/go-service/v2/transport"
-	"github.com/alexfalkowski/go-service/v2/transport/breaker"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	grpcbreaker "github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
-	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
-	grpcretry "github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
-	httpbreaker "github.com/alexfalkowski/go-service/v2/transport/http/breaker"
-	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
-	httpretry "github.com/alexfalkowski/go-service/v2/transport/http/retry"
-	"github.com/alexfalkowski/go-service/v2/transport/retry"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/token"
+	"github.com/alexfalkowski/go-service/v3/transport"
+	"github.com/alexfalkowski/go-service/v3/transport/breaker"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc"
+	grpcbreaker "github.com/alexfalkowski/go-service/v3/transport/grpc/breaker"
+	grpclimiter "github.com/alexfalkowski/go-service/v3/transport/grpc/limiter"
+	grpcretry "github.com/alexfalkowski/go-service/v3/transport/grpc/retry"
+	"github.com/alexfalkowski/go-service/v3/transport/http"
+	httpbreaker "github.com/alexfalkowski/go-service/v3/transport/http/breaker"
+	httplimiter "github.com/alexfalkowski/go-service/v3/transport/http/limiter"
+	httpretry "github.com/alexfalkowski/go-service/v3/transport/http/retry"
+	"github.com/alexfalkowski/go-service/v3/transport/retry"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // Client bundles the dependencies needed to construct instrumented HTTP and gRPC clients for tests.
 type Client struct {
 	// Lifecycle receives client-related lifecycle hooks.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 	// Logger logs client activity.
 	Logger *logger.Logger
 	// Tracer is retained for world configuration symmetry. Client tracing follows

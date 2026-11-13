@@ -3,15 +3,15 @@ package limiter_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
-	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/meta"
+	grpclimiter "github.com/alexfalkowski/go-service/v3/transport/grpc/limiter"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestClientStreamInterceptorCancelsContextOnTerminalError(t *testing.T) {
@@ -55,7 +55,7 @@ func TestClientStreamInterceptorCancelsContextOnTerminalError(t *testing.T) {
 func newClient(t *testing.T) *grpclimiter.Client {
 	t.Helper()
 
-	client, err := grpclimiter.NewClient(fxtest.NewLifecycle(t), limiter.NewKeyMap(), test.NewLimiterConfig("user-agent", "1s", 10))
+	client, err := grpclimiter.NewClient(signaltest.NewLifecycle(t), limiter.NewKeyMap(), test.NewLimiterConfig("user-agent", "1s", 10))
 	require.NoError(t, err)
 
 	return client

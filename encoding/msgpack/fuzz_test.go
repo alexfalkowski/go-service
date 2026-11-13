@@ -3,7 +3,7 @@ package msgpack_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/msgpack"
+	"github.com/alexfalkowski/go-service/v3/encoding/msgpack"
 	"github.com/stretchr/testify/require"
 )
 

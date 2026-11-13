@@ -1,8 +1,8 @@
 package mvc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/i18n"
-	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v3/i18n"
+	"github.com/alexfalkowski/go-service/v3/meta"
 )
 
 // Template is the composite model rendered by View templates.

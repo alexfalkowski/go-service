@@ -3,11 +3,11 @@ package encoding_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v3/encoding"
+	"github.com/alexfalkowski/go-service/v3/encoding/json"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx"
 )
 
 func TestMapReturnsRegisteredEncoders(t *testing.T) {
@@ -27,13 +27,12 @@ func TestMapReturnsRegisteredEncoders(t *testing.T) {
 func TestModuleProvidesDefaultEncoders(t *testing.T) {
 	var encoders *encoding.Map
 
-	app := fx.New(
+	_, err := signal.NewApp(
 		encoding.Module,
-		fx.Populate(&encoders),
-		fx.NopLogger,
+		signal.Register(func(value *encoding.Map) { encoders = value }),
 	)
 
-	require.NoError(t, app.Err())
+	require.NoError(t, err)
 	for _, kind := range []string{"json", "hjson", "yaml", "toml", "msgpack", "protobuf", "prototext", "protojson", "gob", "bytes"} {
 		t.Run(kind, func(t *testing.T) {
 			require.NotNil(t, encoders.Get(kind))
@@ -42,13 +41,10 @@ func TestModuleProvidesDefaultEncoders(t *testing.T) {
 }
 
 func TestModuleDoesNotProvideJSONEncoder(t *testing.T) {
-	var encoder *json.Encoder
-
-	app := fx.New(
+	_, err := signal.NewApp(
 		encoding.Module,
-		fx.Populate(&encoder),
-		fx.NopLogger,
+		signal.Register(func(*json.Encoder) {}),
 	)
 
-	require.Error(t, app.Err())
+	require.Error(t, err)
 }

@@ -1,6 +1,6 @@
 package test
 
-import "github.com/alexfalkowski/go-service/v2/io"
+import "github.com/alexfalkowski/go-service/v3/io"
 
 // ErrReaderCloser is an [io.ReadCloser] test double whose methods fail with ErrFailed.
 type ErrReaderCloser struct{}

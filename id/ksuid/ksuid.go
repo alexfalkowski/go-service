@@ -1,7 +1,7 @@
 package ksuid
 
 import (
-	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v3/runtime"
 	"github.com/segmentio/ksuid"
 )
 

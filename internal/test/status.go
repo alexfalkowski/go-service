@@ -3,8 +3,8 @@ package test
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // StatusURL returns the status service URL for the supplied status name.

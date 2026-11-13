@@ -3,21 +3,21 @@ package cache
 import (
 	"math"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	drivererrors "github.com/alexfalkowski/go-service/v2/cache/driver/errors"
-	"github.com/alexfalkowski/go-service/v2/compress"
-	compresserrors "github.com/alexfalkowski/go-service/v2/compress/errors"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/base64"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/proto"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/cache/config"
+	"github.com/alexfalkowski/go-service/v3/cache/driver"
+	drivererrors "github.com/alexfalkowski/go-service/v3/cache/driver/errors"
+	"github.com/alexfalkowski/go-service/v3/compress"
+	compresserrors "github.com/alexfalkowski/go-service/v3/compress/errors"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/encoding"
+	"github.com/alexfalkowski/go-service/v3/encoding/base64"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/proto"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/alexfalkowski/go-sync"
 )
 
@@ -30,9 +30,9 @@ const (
 
 // CacheParams defines dependencies for constructing a [Cache].
 //
-// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The constructor will typically be wired via [Module].
+// It is intended for dependency injection ([github.com/alexfalkowski/go-signal/v2]). The constructor will typically be wired via [Module].
 type CacheParams struct {
-	di.In
+	signal.In
 
 	// Config configures cache encoding, compression, and limits.
 	Config *config.Config

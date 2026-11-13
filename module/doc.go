@@ -1,7 +1,7 @@
-// Package module provides top-level Fx module composition for go-service.
+// Package module provides top-level go-signal module composition for go-service.
 //
 // This package defines opinionated, high-level module bundles that compose multiple lower-level
-// feature modules into a single `di.Option` suitable for inclusion in an Fx/Dig application graph.
+// feature modules into a single `signal.Option` suitable for inclusion in a go-signal application graph.
 // These bundles are the primary supported entrypoints for applications and are the defaults used by
 // `go-service-template` for long-running servers and `go-client-template` for short-lived commands.
 //

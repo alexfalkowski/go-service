@@ -1,20 +1,20 @@
 package transport
 
 import (
-	"github.com/alexfalkowski/go-service/v2/debug"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/slices"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v3/debug"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/slices"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc"
+	"github.com/alexfalkowski/go-service/v3/transport/http"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // ServersParams defines dependencies used to collect transport servers.
 //
-// It is an Fx parameter struct that gathers the transport server constructors that may or may not be enabled
+// It is a go-signal parameter struct that gathers the transport server constructors that may or may not be enabled
 // at runtime (for example, HTTP disabled in config). Each field may be nil depending on configuration.
 type ServersParams struct {
-	di.In
+	signal.In
 
 	// HTTP is the HTTP transport server, if enabled.
 	HTTP *http.Server

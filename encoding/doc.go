@@ -1,11 +1,11 @@
 // Package encoding provides value encoding/decoding helpers and DI wiring used by go-service.
 //
 // This package provides a registry ([Map]) that selects
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder] implementations by kind at runtime.
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder] implementations by kind at runtime.
 //
 // # Registry
 //
-// Map is a kind-to-[github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder] lookup. It is commonly used by configuration loading and transport layers to
+// Map is a kind-to-[github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder] lookup. It is commonly used by configuration loading and transport layers to
 // choose a decoder/encoder based on either:
 //   - a file extension (for example "yaml", "toml", "json"), or
 //   - a content kind / media subtype (for example "protobuf", "bytes").
@@ -21,17 +21,17 @@
 //
 // Decoding rejects unknown members by default where the format supports that distinction. Callers at
 // a forward-compatible API boundary can pass
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] to
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder.Decode]; framing,
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithDiscardUnknown] to
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder.Decode]; framing,
 // syntax, and type validation remain unchanged.
 //
 // # Partial options
 //
 // Encoding and decoding both reject messages with missing required fields by default where the
 // format supports that distinction (currently the protobuf variants). Callers can pass
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] to
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder.Encode] or
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder.Decode] to encode or decode such a
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithAllowPartial] to
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder.Encode] or
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder.Decode] to encode or decode such a
 // message instead of returning an error. It may be combined with WithDiscardUnknown.
 //
 // # Wiring
@@ -43,8 +43,8 @@
 //   - gob
 //   - "bytes" passthrough for [io.ReaderFrom]/[io.WriterTo] payloads
 //
-// Module provides the default *[Map] for Fx applications.
+// Module provides the default *[Map] for go-signal applications.
 //
 // Start with [Map], [NewMap], [Module], and
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.Encoder].
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.Encoder].
 package encoding

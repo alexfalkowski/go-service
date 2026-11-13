@@ -4,26 +4,27 @@ import (
 	"fmt"
 	"testing"
 
-	configclient "github.com/alexfalkowski/go-service/v2/config/client"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
-	"github.com/alexfalkowski/go-service/v2/net/http/rest"
-	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/time"
-	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
+	configclient "github.com/alexfalkowski/go-service/v3/config/client"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	v1 "github.com/alexfalkowski/go-service/v3/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/client"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/net/http/mvc"
+	"github.com/alexfalkowski/go-service/v3/net/http/rest"
+	"github.com/alexfalkowski/go-service/v3/net/http/rpc"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/errors"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/time"
+	transporthttp "github.com/alexfalkowski/go-service/v3/transport/http"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -293,7 +294,7 @@ func BenchmarkHTTPStream(b *testing.B) {
 // BenchmarkRPCStream measures RPC bidirectional streaming (StreamRoute) round-trip overhead.
 //
 // rpc.Client has no streaming method (only Post), so this benchmarks a raw
-// [github.com/alexfalkowski/go-service/v2/net/http/client.Client] directly against the world's server
+// [github.com/alexfalkowski/go-service/v3/net/http/client.Client] directly against the world's server
 // URL, matching the correctness test this benchmark mirrors.
 func BenchmarkRPCStream(b *testing.B) {
 	b.ReportAllocs()
@@ -475,7 +476,7 @@ func startBenchmarkHTTPServer(b *testing.B, logging, trace, tlsEnabled bool, reg
 	mux := transporthttp.NewServeMux()
 	policy := transporthttp.NewRoutePolicy()
 	router := transporthttp.NewRouter(mux, policy)
-	lc := test.QuietLifecycle(b)
+	lc := signaltest.NewLifecycle(b)
 	cfg := test.NewInsecureTransportConfig()
 	if tlsEnabled {
 		cfg = test.NewSecureTransportConfig()

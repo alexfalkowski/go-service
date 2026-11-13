@@ -3,9 +3,9 @@ package bcrypt_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/bcrypt"
-	"github.com/alexfalkowski/go-service/v2/crypto/errors"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/crypto/bcrypt"
+	"github.com/alexfalkowski/go-service/v3/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/stretchr/testify/require"
 )
 

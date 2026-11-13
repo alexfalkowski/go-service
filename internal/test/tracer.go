@@ -3,10 +3,10 @@ package test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +17,7 @@ import (
 // telemetry/tracer registration. The supplied lifecycle owns provider shutdown.
 //
 // It panics through [runtime.Must] if tracer registration fails.
-func RegisterTracer(lc di.Lifecycle, config *tracer.Config) {
+func RegisterTracer(lc signal.Lifecycle, config *tracer.Config) {
 	params := tracer.TracerParams{
 		Lifecycle:   lc,
 		Environment: Environment,

@@ -1,8 +1,8 @@
 package bcrypt
 
 import (
-	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
-	"github.com/alexfalkowski/go-service/v2/errors"
+	crypto "github.com/alexfalkowski/go-service/v3/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -44,7 +44,7 @@ func (s *Signer) Sign(msg []byte) ([]byte, error) {
 // Verify checks that sig is a valid bcrypt hash for msg.
 //
 // This is a thin wrapper around [golang.org/x/crypto/bcrypt.CompareHashAndPassword].
-// It returns nil if the hash matches, otherwise it returns [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidMatch]
+// It returns nil if the hash matches, otherwise it returns [github.com/alexfalkowski/go-service/v3/crypto/errors.ErrInvalidMatch]
 // joined with the bcrypt package error.
 func (s *Signer) Verify(sig, msg []byte) error {
 	err := bcrypt.CompareHashAndPassword(sig, msg)

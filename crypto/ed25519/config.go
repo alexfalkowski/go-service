@@ -5,13 +5,13 @@ import (
 	"crypto/x509"
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/errors"
-	"github.com/alexfalkowski/go-service/v2/crypto/pem"
+	"github.com/alexfalkowski/go-service/v3/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/pem"
 )
 
 // Config configures Ed25519 key loading.
 //
-// Public and Private are "source strings" that are read by [github.com/alexfalkowski/go-service/v2/crypto/pem.Decoder] (for example "env:NAME", "file:/path",
+// Public and Private are "source strings" that are read by [github.com/alexfalkowski/go-service/v3/crypto/pem.Decoder] (for example "env:NAME", "file:/path",
 // or a literal PEM value).
 //
 // Expected key formats:
@@ -19,7 +19,7 @@ import (
 //   - Private: PEM block "PRIVATE KEY" containing PKCS#8-encoded bytes ([crypto/x509.ParsePKCS8PrivateKey]).
 //
 // If the decoded key material is well-formed but not an Ed25519 key, the key
-// parsing helpers return [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType].
+// parsing helpers return [github.com/alexfalkowski/go-service/v3/crypto/errors.ErrInvalidKeyType].
 type Config struct {
 	// Public is a "source string" for the Ed25519 public key PEM.
 	//
@@ -47,11 +47,11 @@ func (c *Config) IsEnabled() bool {
 // ([crypto/x509.ParsePKIXPublicKey]).
 //
 // If the decoded key is not an [ed25519.PublicKey], PublicKey returns
-// [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType]. This can happen if the PEM data is a valid
+// [github.com/alexfalkowski/go-service/v3/crypto/errors.ErrInvalidKeyType]. This can happen if the PEM data is a valid
 // "PUBLIC KEY" block but contains a different key type (for example RSA or
 // ECDSA).
 //
-// The returned error wraps [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType], so callers can use
+// The returned error wraps [github.com/alexfalkowski/go-service/v3/crypto/errors.ErrInvalidKeyType], so callers can use
 // [errors.Is] to distinguish this case from PEM decoding or X.509 parsing errors.
 func (c *Config) PublicKey(decoder *pem.Decoder) (ed25519.PublicKey, error) {
 	d, err := decoder.Decode(c.Public, "PUBLIC KEY")
@@ -78,10 +78,10 @@ func (c *Config) PublicKey(decoder *pem.Decoder) (ed25519.PublicKey, error) {
 // ([crypto/x509.ParsePKCS8PrivateKey]).
 //
 // If the decoded key is not an [ed25519.PrivateKey], PrivateKey returns
-// [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType]. This can happen if the PEM data is a valid
+// [github.com/alexfalkowski/go-service/v3/crypto/errors.ErrInvalidKeyType]. This can happen if the PEM data is a valid
 // "PRIVATE KEY" block but contains a different key type.
 //
-// The returned error wraps [github.com/alexfalkowski/go-service/v2/crypto/errors.ErrInvalidKeyType], so callers can use
+// The returned error wraps [github.com/alexfalkowski/go-service/v3/crypto/errors.ErrInvalidKeyType], so callers can use
 // [errors.Is] to distinguish this case from PEM decoding or PKCS#8 parsing errors.
 func (c *Config) PrivateKey(decoder *pem.Decoder) (ed25519.PrivateKey, error) {
 	d, err := decoder.Decode(c.Private, "PRIVATE KEY")

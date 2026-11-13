@@ -1,8 +1,8 @@
 package breaker
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/transport/breaker"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v3/transport/breaker"
 )
 
 // NewConfig returns a gRPC breaker config from shared breaker mechanics.

@@ -1,9 +1,9 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // Connect retries dialing address for up to one second until it succeeds.

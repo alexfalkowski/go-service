@@ -1,6 +1,6 @@
 package limiter
 
-import "github.com/alexfalkowski/go-service/v2/time"
+import "github.com/alexfalkowski/go-service/v3/time"
 
 // DefaultMaxKeys is the default maximum number of caller-derived keys with independent limiter buckets.
 const DefaultMaxKeys uint64 = 4096

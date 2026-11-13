@@ -5,18 +5,18 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/header"
-	"github.com/alexfalkowski/go-service/v2/telemetry/internal/otlp"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/header"
+	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestMetaConvertsContextAttributesToTraceAttributes(t *testing.T) {
@@ -84,7 +84,7 @@ func TestMetaSpanProcessorStampsChildSpans(t *testing.T) {
 
 func TestIsEnabledReflectsInstalledTracerProvider(t *testing.T) {
 	t.Cleanup(func() {
-		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(t)}))
 	})
 
 	tracer.SetProvider(tracer.NewNoopProvider())
@@ -101,17 +101,17 @@ func TestIsEnabledReflectsInstalledTracerProvider(t *testing.T) {
 	tracer.SetProvider(tracer.NewNoopProvider())
 	require.False(t, tracer.IsEnabled())
 
-	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(t)}))
 	require.False(t, tracer.IsEnabled())
 
 	require.NoError(t, tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config:    &tracer.Config{},
 	}))
 	require.False(t, tracer.IsEnabled())
 
 	require.NoError(t, tracer.Register(tracer.TracerParams{
-		Lifecycle:   fxtest.NewLifecycle(t),
+		Lifecycle:   signaltest.NewLifecycle(t),
 		Config:      &tracer.Config{Kind: "otlp", URL: "https://localhost:4318/v1/traces"},
 		ID:          test.ID,
 		Name:        test.Name,
@@ -120,7 +120,7 @@ func TestIsEnabledReflectsInstalledTracerProvider(t *testing.T) {
 	}))
 	require.True(t, tracer.IsEnabled())
 
-	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(t)}))
 	require.False(t, tracer.IsEnabled())
 }
 
@@ -142,11 +142,11 @@ func TestConfigRejectsNegativeHTTPTimeout(t *testing.T) {
 
 func TestRegisterStopResetsGlobalProvider(t *testing.T) {
 	t.Cleanup(func() {
-		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(t)}))
 	})
 
 	tracer.SetProvider(tracer.NewNoopProvider())
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	require.NoError(t, tracer.Register(tracer.TracerParams{
 		Lifecycle:   lc,
 		Config:      &tracer.Config{Kind: "otlp", URL: "https://localhost:4318/v1/traces"},
@@ -165,7 +165,7 @@ func TestRegisterStopResetsGlobalProvider(t *testing.T) {
 
 func TestRegisterSampler(t *testing.T) {
 	t.Cleanup(func() {
-		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(t)}))
 	})
 
 	tests := []struct {
@@ -230,7 +230,7 @@ func TestRegisterInvalidSampler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tracer.Register(tracer.TracerParams{
-				Lifecycle: fxtest.NewLifecycle(t),
+				Lifecycle: signaltest.NewLifecycle(t),
 				Config: &tracer.Config{
 					Kind:    "otlp",
 					URL:     "https://localhost:4318/v1/traces",
@@ -250,7 +250,7 @@ func TestRegisterInvalidSampler(t *testing.T) {
 
 func TestRegisterInvalidKind(t *testing.T) {
 	err := tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config:    &tracer.Config{Kind: "wrong"},
 	})
 
@@ -259,7 +259,7 @@ func TestRegisterInvalidKind(t *testing.T) {
 
 func TestRegisterInvalidOTLPEndpoint(t *testing.T) {
 	err := tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &tracer.Config{
 			Kind: "otlp",
 			URL:  "http://collector.example.com/v1/traces",
@@ -287,9 +287,9 @@ func TestRegisterOTLPOverHTTPExporterDoesNotFollowRedirects(t *testing.T) {
 	}))
 	t.Cleanup(trusted.Close)
 
-	lifecycle := fxtest.NewLifecycle(t)
+	lifecycle := signaltest.NewLifecycle(t)
 	t.Cleanup(func() {
-		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(t)}))
 	})
 	require.NoError(t, tracer.Register(tracer.TracerParams{
 		Lifecycle: lifecycle,
@@ -327,11 +327,11 @@ func TestRegisterOTLPOverHTTPExporterDoesNotFollowRedirects(t *testing.T) {
 
 func TestRegisterOTLPOverGRPCExporter(t *testing.T) {
 	t.Cleanup(func() {
-		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(t)}))
 	})
 
 	err := tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &tracer.Config{
 			Kind:     "otlp",
 			Protocol: "grpc",
@@ -349,7 +349,7 @@ func TestRegisterOTLPOverGRPCExporter(t *testing.T) {
 
 func TestRegisterInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 	err := tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &tracer.Config{
 			Kind:     "otlp",
 			Protocol: "grpc",
@@ -365,11 +365,11 @@ func TestRegisterInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 
 func TestRegisterOTLPOverGRPCExporterWithTLSHeaders(t *testing.T) {
 	t.Cleanup(func() {
-		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(t)}))
 	})
 
 	err := tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &tracer.Config{
 			Kind:     "otlp",
 			Protocol: "grpc",
@@ -404,7 +404,7 @@ func TestRegisterOTLPEndpointAddressSecurity(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lc := fxtest.NewLifecycle(t)
+			lc := signaltest.NewLifecycle(t)
 			err := tracer.Register(tracer.TracerParams{
 				Lifecycle: lc,
 				Config: &tracer.Config{
@@ -434,7 +434,7 @@ func TestRegisterMissingOTLPEndpointIgnoresEnv(t *testing.T) {
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://collector.example.com")
 
 	err := tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &tracer.Config{
 			Kind: "otlp",
 			Headers: header.Map{
@@ -459,7 +459,7 @@ func requireSamplerRecording(t *testing.T, sampler *tracer.SamplerConfig, ctx co
 	t.Helper()
 
 	require.NoError(t, tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &tracer.Config{
 			Kind:    "otlp",
 			URL:     "https://localhost:4318/v1/traces",
@@ -479,11 +479,11 @@ func requireSamplerRecording(t *testing.T, sampler *tracer.SamplerConfig, ctx co
 
 func TestRegisterOTLPOverGRPCExporterWithBatchTuning(t *testing.T) {
 	t.Cleanup(func() {
-		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: signaltest.NewLifecycle(t)}))
 	})
 
 	err := tracer.Register(tracer.TracerParams{
-		Lifecycle: fxtest.NewLifecycle(t),
+		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &tracer.Config{
 			Kind:               "otlp",
 			Protocol:           "grpc",

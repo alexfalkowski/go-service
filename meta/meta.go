@@ -3,8 +3,8 @@ package meta
 import (
 	"unicode/utf8"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/context"
 )
 
 // contextKey is the package-private type used for metadata context storage.

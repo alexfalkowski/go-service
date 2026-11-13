@@ -1,7 +1,6 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-sync"
 )
 
@@ -10,7 +9,7 @@ func NewShutdowner() *Shutdowner {
 	return &Shutdowner{ch: make(chan struct{})}
 }
 
-// Shutdowner is a [di.Shutdowner] test double that exposes shutdown state to callers.
+// Shutdowner is a test double that exposes application shutdown state to callers.
 type Shutdowner struct {
 	ch     chan struct{}
 	m      sync.RWMutex
@@ -31,8 +30,8 @@ func (s *Shutdowner) Done() <-chan struct{} {
 	return s.ch
 }
 
-// Shutdown implements [di.Shutdowner] and closes Done on first call.
-func (s *Shutdowner) Shutdown(...di.ShutdownOption) error {
+// Shutdown records a shutdown request and closes Done on first call.
+func (s *Shutdowner) Shutdown(int) {
 	s.m.Lock()
 	defer s.m.Unlock()
 
@@ -40,6 +39,4 @@ func (s *Shutdowner) Shutdown(...di.ShutdownOption) error {
 	s.once.Do(func() {
 		close(s.ch)
 	})
-
-	return nil
 }

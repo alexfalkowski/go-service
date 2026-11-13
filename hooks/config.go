@@ -1,6 +1,6 @@
 package hooks
 
-import "github.com/alexfalkowski/go-service/v2/time"
+import "github.com/alexfalkowski/go-service/v3/time"
 
 // Config configures Standard Webhooks secret loading.
 type Config struct {

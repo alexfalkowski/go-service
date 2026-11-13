@@ -5,9 +5,9 @@
 // concurrency-safe containers should import the standard library sync package or
 // [github.com/alexfalkowski/go-sync] directly.
 //
-// # Dependency injection (Fx)
+// # Dependency injection (go-signal)
 //
-// Module registers [github.com/alexfalkowski/go-sync.NewBufferPool] with the Fx
+// Module registers [github.com/alexfalkowski/go-sync.NewBufferPool] with the go-signal
 // graph so packages can share a single
 // [github.com/alexfalkowski/go-sync.BufferPool] instance.
 //
@@ -16,7 +16,7 @@
 //
 // # When to import this package
 //
-// Import this package when composing go-service Fx modules and you want the
+// Import this package when composing go-service go-signal modules and you want the
 // standard buffer pool wiring.
 //
 // The standard module.Library, module.Server, and module.Client bundles already

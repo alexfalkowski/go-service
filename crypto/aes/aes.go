@@ -5,12 +5,12 @@ import (
 	"crypto/cipher"
 	"fmt"
 
-	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
-	"github.com/alexfalkowski/go-service/v2/crypto/message"
-	"github.com/alexfalkowski/go-service/v2/crypto/rand"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	crypto "github.com/alexfalkowski/go-service/v3/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/message"
+	"github.com/alexfalkowski/go-service/v3/crypto/rand"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // ErrInvalidLength is returned when a ciphertext is too short to contain the required nonce prefix.

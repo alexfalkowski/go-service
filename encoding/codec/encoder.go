@@ -1,7 +1,7 @@
 // Package codec defines the common contract implemented by supported encodings.
 package codec
 
-import "github.com/alexfalkowski/go-service/v2/io"
+import "github.com/alexfalkowski/go-service/v3/io"
 
 // Encoder encodes values to a writer and decodes values from a reader.
 //
@@ -19,10 +19,10 @@ import "github.com/alexfalkowski/go-service/v2/io"
 //
 // Decode must read from r and populate v. In most cases v is expected to be a pointer to the target
 // value so the decoder can mutate it (e.g. *MyStruct). Implementations may return an error if v is not
-// a supported type (for example [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrInvalidType]).
+// a supported type (for example [github.com/alexfalkowski/go-service/v3/encoding/errors.ErrInvalidType]).
 //
 // Structured single-value decoders should reject additional encoded values after the first payload,
-// either by consuming the whole input or by returning [github.com/alexfalkowski/go-service/v2/encoding/errors.ErrTrailingData]. Stream or
+// either by consuming the whole input or by returning [github.com/alexfalkowski/go-service/v3/encoding/errors.ErrTrailingData]. Stream or
 // passthrough encoders may delegate full-consumption semantics to the concrete value they decode into.
 //
 // Some implementations buffer the remaining contents of r before decoding. When r contains untrusted

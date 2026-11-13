@@ -1,9 +1,9 @@
 package body
 
 import (
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
 )
 
 // ReadAll reads and buffers req.Body.
@@ -83,7 +83,7 @@ func NewHandler(handler http.Handler, limit int64) http.Handler {
 // nothing in this handler enforces a limit mid-read.
 //
 // Callers that need a per-decoded-value cap on a lazily-limited body must apply it themselves at the
-// point a value boundary is known, the way [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv]
+// point a value boundary is known, the way [github.com/alexfalkowski/go-service/v3/net/http/content/stream.RequestStream.Recv]
 // does; that per-value cap produces a [http.MaxBytesError] from Recv, not from this handler.
 func NewLazyHandler(handler http.Handler, limit int64) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {

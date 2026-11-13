@@ -5,9 +5,9 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // Map contains string key-value pairs used to represent transport- or feature-specific options.

@@ -1,6 +1,6 @@
 package feature
 
-import "github.com/alexfalkowski/go-service/v2/config/client"
+import "github.com/alexfalkowski/go-service/v3/config/client"
 
 // Config carries optional settings for service-owned OpenFeature integrations.
 //

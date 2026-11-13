@@ -3,13 +3,13 @@ package logger
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // LevelError is the error log level.
@@ -81,17 +81,17 @@ func String(key, value string) Attr {
 
 // LoggerParams declares the dependencies required by NewLogger.
 //
-// It is intended for Fx/Dig injection. Stdout-oriented logger kinds attach the
+// It is intended for go-signal injection. Stdout-oriented logger kinds attach the
 // identity fields as static slog attributes, while the OTLP logger kind maps
 // them into OpenTelemetry resource attributes.
 type LoggerParams struct {
-	di.In
+	signal.In
 
 	// Lifecycle is used by logger kinds that need shutdown hooks.
 	//
 	// For example, the OTLP logger appends an OnStop hook that shuts down its
 	// OpenTelemetry logger provider and exporter.
-	Lifecycle di.Lifecycle
+	Lifecycle signal.Lifecycle
 
 	// Config enables logging when non-nil and selects the logger kind and level.
 	//

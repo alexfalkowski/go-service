@@ -1,10 +1,10 @@
 package rpc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	http "github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/reflect"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	http "github.com/alexfalkowski/go-service/v3/net/http/client"
+	"github.com/alexfalkowski/go-service/v3/reflect"
 )
 
 // ErrInvalidRequest is returned when the request payload is nil.

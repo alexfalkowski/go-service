@@ -1,9 +1,9 @@
 package proto
 
 import (
-	"github.com/alexfalkowski/go-service/v2/encoding/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/reflect"
+	"github.com/alexfalkowski/go-service/v3/encoding/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/reflect"
 	"google.golang.org/protobuf/proto"
 )
 

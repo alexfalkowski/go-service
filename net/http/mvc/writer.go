@@ -1,8 +1,8 @@
 package mvc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/net/http"
 )
 
 // bufferedWriter captures a mux-generated response until Handler decides whether to replay it.

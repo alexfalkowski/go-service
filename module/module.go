@@ -1,30 +1,30 @@
 package module
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/cache"
-	"github.com/alexfalkowski/go-service/v2/compress"
-	"github.com/alexfalkowski/go-service/v2/config"
-	"github.com/alexfalkowski/go-service/v2/crypto"
-	"github.com/alexfalkowski/go-service/v2/database/sql"
-	"github.com/alexfalkowski/go-service/v2/debug"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/feature"
-	"github.com/alexfalkowski/go-service/v2/health"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/sync"
-	"github.com/alexfalkowski/go-service/v2/telemetry"
-	"github.com/alexfalkowski/go-service/v2/telemetry/otlp"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport"
-	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/cache"
+	"github.com/alexfalkowski/go-service/v3/compress"
+	"github.com/alexfalkowski/go-service/v3/config"
+	"github.com/alexfalkowski/go-service/v3/crypto"
+	"github.com/alexfalkowski/go-service/v3/database/sql"
+	"github.com/alexfalkowski/go-service/v3/debug"
+	"github.com/alexfalkowski/go-service/v3/encoding"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/feature"
+	"github.com/alexfalkowski/go-service/v3/health"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/sync"
+	"github.com/alexfalkowski/go-service/v3/telemetry"
+	"github.com/alexfalkowski/go-service/v3/telemetry/otlp"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/transport"
+	"github.com/alexfalkowski/go-service/v3/transport/http/hooks"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
-// Library provides a baseline Fx module intended for reuse by both servers and clients.
+// Library provides a baseline go-signal module intended for reuse by both servers and clients.
 //
 // It wires common, transport-agnostic dependencies that many subsystems build upon:
 //   - [env.Module] (ID/UserAgent/UserID constructors; Name and Version are supplied by CLI wiring or custom callers)
@@ -40,7 +40,7 @@ import (
 //
 // Library does not wire config decoding, transports, servers, or request handling; it is intended to
 // be a common foundation that both the [Server] and [Client] bundles build upon.
-var Library = di.Module(
+var Library = signal.Module(
 	env.Module,
 	compress.Module,
 	encoding.Module,
@@ -53,7 +53,7 @@ var Library = di.Module(
 	id.Module,
 )
 
-// Server provides the standard Fx module composition for a go-service server.
+// Server provides the standard go-signal module composition for a go-service server.
 //
 // It builds on [Library] and adds server-oriented wiring commonly needed by services:
 //   - [debug.Module] (debug server + diagnostic endpoints)
@@ -72,7 +72,7 @@ var Library = di.Module(
 // supplied to the graph.
 //
 // This is the primary entrypoint for server applications built from `go-service-template`.
-var Server = di.Module(
+var Server = signal.Module(
 	Library,
 	debug.Module,
 	config.Module,
@@ -85,7 +85,7 @@ var Server = di.Module(
 	health.Module,
 )
 
-// Client provides the standard Fx module composition for a go-service client.
+// Client provides the standard go-signal module composition for a go-service client.
 //
 // It builds on [Library] and adds client-oriented wiring commonly needed by client processes
 // and batch jobs:
@@ -99,11 +99,11 @@ var Server = di.Module(
 //
 // Unlike [Server], Client does not wire debug endpoints, transports, HTTP/gRPC health endpoints, or
 // HTTP hook transport adapters by default. Those can be added explicitly by composing additional
-// modules, such as [transport.Module] or [github.com/alexfalkowski/go-service/v2/transport/http/hooks.Module],
+// modules, such as [transport.Module] or [github.com/alexfalkowski/go-service/v3/transport/http/hooks.Module],
 // on top of Client if needed.
 //
 // This is the primary entrypoint for client-style applications built from `go-client-template`.
-var Client = di.Module(
+var Client = signal.Module(
 	Library,
 	config.Module,
 	telemetry.Module,

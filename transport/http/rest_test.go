@@ -3,16 +3,16 @@ package http_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/config/options"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/net/http/rest"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/config/options"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/client"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/net/http/rest"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/stretchr/testify/require"
 )
 

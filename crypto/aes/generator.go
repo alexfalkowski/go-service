@@ -1,6 +1,6 @@
 package aes
 
-import "github.com/alexfalkowski/go-service/v2/crypto/rand"
+import "github.com/alexfalkowski/go-service/v3/crypto/rand"
 
 // NewGenerator constructs a Generator that produces AES key material.
 //

@@ -1,8 +1,8 @@
 package feature
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires OpenFeature into [go.uber.org/fx]/[go.uber.org/dig].
+// Module wires OpenFeature into [github.com/alexfalkowski/go-signal/v2].
 //
 // It provides:
 //   - an OpenFeature client constructor ([NewClient]), and
@@ -17,7 +17,7 @@ import "github.com/alexfalkowski/go-service/v2/di"
 // When a provider is present, [Register] appends lifecycle hooks to set the provider during startup and
 // shut down the OpenFeature SDK during stop. If a metrics provider is also available, [Register]
 // immediately installs OpenTelemetry hooks for metrics and traces.
-var Module = di.Module(
-	di.Constructor(NewClient),
-	di.Register(Register),
+var Module = signal.Module(
+	signal.Constructor(NewClient),
+	signal.Register(Register),
 )

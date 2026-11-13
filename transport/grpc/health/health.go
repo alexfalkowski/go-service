@@ -1,19 +1,19 @@
 package health
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/health"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // RegisterParams defines dependencies for registering the gRPC health service.
 //
-// It is an Fx parameter struct ([di.In]) used to wire the standard gRPC health protocol service
+// It is a go-signal parameter struct ([signal.In]) used to wire the standard gRPC health protocol service
 // (`grpc.health.v1.Health`) into a server.
 //
 // Fields may be nil depending on configuration/wiring; [Register] is a no-op unless both are provided.
 type RegisterParams struct {
-	di.In
+	signal.In
 
 	// Registrar is the gRPC service registrar used to register the health service implementation.
 	Registrar *grpc.Registrar

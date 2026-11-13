@@ -3,17 +3,17 @@ package encoding_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/gob"
-	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
-	"github.com/alexfalkowski/go-service/v2/encoding/msgpack"
-	"github.com/alexfalkowski/go-service/v2/encoding/proto"
-	"github.com/alexfalkowski/go-service/v2/encoding/toml"
-	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v3/encoding"
+	"github.com/alexfalkowski/go-service/v3/encoding/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/gob"
+	"github.com/alexfalkowski/go-service/v3/encoding/hjson"
+	"github.com/alexfalkowski/go-service/v3/encoding/json"
+	"github.com/alexfalkowski/go-service/v3/encoding/msgpack"
+	"github.com/alexfalkowski/go-service/v3/encoding/proto"
+	"github.com/alexfalkowski/go-service/v3/encoding/toml"
+	"github.com/alexfalkowski/go-service/v3/encoding/yaml"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
 	"github.com/stretchr/testify/require"
 )
 

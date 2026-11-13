@@ -1,19 +1,19 @@
 package config
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/flag"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/encoding"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/flag"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // DecoderParams defines the dependencies used to construct a Decoder.
 //
-// It is intended for dependency injection ([go.uber.org/fx]/[go.uber.org/dig]). The default wiring is provided by [Module].
+// It is intended for dependency injection ([github.com/alexfalkowski/go-signal/v2]). The default wiring is provided by [Module].
 type DecoderParams struct {
-	di.In
+	signal.In
 
 	// Flags is the parsed flag set used to select the configuration source.
 	// NewDecoder reads the "-config" / "-c" flag via Flags.GetConfig.

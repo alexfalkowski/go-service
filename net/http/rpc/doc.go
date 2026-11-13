@@ -1,6 +1,6 @@
 // Package rpc provides RPC-style HTTP handler registration and client helpers for go-service.
 //
-// This package is built on top of [github.com/alexfalkowski/go-service/v2/net/http/content/unary].
+// This package is built on top of [github.com/alexfalkowski/go-service/v3/net/http/content/unary].
 //
 // # Server-side routing
 //
@@ -12,7 +12,7 @@
 // For example, calling server.Route("/greet.v1.Greeter/SayHello", handler) registers the route pattern
 // "POST /greet.v1.Greeter/SayHello".
 //
-// Handlers are constructed using [github.com/alexfalkowski/go-service/v2/net/http/content/unary.NewRequestHandler], which:
+// Handlers are constructed using [github.com/alexfalkowski/go-service/v3/net/http/content/unary.NewRequestHandler], which:
 //   - decodes the request body into a request model from Content-Type, falling back to JSON when
 //     Content-Type is absent, and rejecting it with 415 when it is unparseable, unregistered, or
 //     intentionally undecodable, and

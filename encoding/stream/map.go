@@ -3,13 +3,13 @@ package stream
 import (
 	"maps"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream/gob"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream/json"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream/msgpack"
-	"github.com/alexfalkowski/go-service/v2/encoding/stream/yaml"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/slices"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream/gob"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream/json"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream/msgpack"
+	"github.com/alexfalkowski/go-service/v3/encoding/stream/yaml"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/slices"
 )
 
 // NewMap constructs a Map with the default streaming codecs.
@@ -62,7 +62,7 @@ type Codec struct {
 
 // Map provides lookup and registration of streaming codecs by kind.
 //
-// Unlike [github.com/alexfalkowski/go-service/v2/encoding.Map], which registers ready-to-use
+// Unlike [github.com/alexfalkowski/go-service/v3/encoding.Map], which registers ready-to-use
 // encoder instances, Map registers constructor functions. Each streaming Encode/Decode call needs a
 // fresh [Encoder] or [Decoder] bound to its own writer or reader, so the registry stores how to build
 // one rather than a shared instance.

@@ -3,16 +3,16 @@ package debug_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/debug"
-	debughttp "github.com/alexfalkowski/go-service/v2/debug/http"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/debug"
+	debughttp "github.com/alexfalkowski/go-service/v3/debug/http"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 var debugPaths = []struct {
@@ -63,7 +63,7 @@ func TestDebugServerRejectsBodiesOverMaxReceiveSize(t *testing.T) {
 		Address:        test.RandomAddress(),
 		MaxReceiveSize: 1,
 	}
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	debugServer, err := debug.NewServer(debug.ServerParams{
 		Shutdowner: test.NewShutdowner(),
 		Mux:        mux,

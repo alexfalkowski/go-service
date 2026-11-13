@@ -5,7 +5,7 @@
 //   - panic recovery conversion helpers ([ConvertRecover] and [ErrRecovered]),
 //   - build/runtime metadata helpers ([Version]),
 //   - optional runtime tuning integration ([RegisterMemLimit]), and
-//   - an Fx wiring module ([Module]) to register runtime integrations.
+//   - a go-signal wiring module ([Module]) to register runtime integrations.
 //
 // # Error handling helpers
 //
@@ -55,7 +55,7 @@
 //
 // # Dependency injection
 //
-// [Module] is an Fx module that registers [RegisterMemLimit], allowing services
+// [Module] is a go-signal module that registers [RegisterMemLimit], allowing services
 // that include the runtime module to apply the optional runtime tuning
 // automatically.
 //

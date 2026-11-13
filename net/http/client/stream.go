@@ -1,23 +1,23 @@
 package client
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	encodingstream "github.com/alexfalkowski/go-service/v2/encoding/stream"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	contentstream "github.com/alexfalkowski/go-service/v2/net/http/content/stream"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/net/http/quota"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	encodingstream "github.com/alexfalkowski/go-service/v3/encoding/stream"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	contentstream "github.com/alexfalkowski/go-service/v3/net/http/content/stream"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/net/http/quota"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // StreamHandler handles a client-side receive-only stream: the response streams, the request does
 // not. It is the client-side counterpart of a call to a send-only streaming route (see
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.Handler]).
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.Handler]).
 //
 // Like [Options.Response], a streamed value has no static Go type known to this package: handle it by
 // calling [ResponseStream.Recv] with a pointer to whatever type the caller expects, the same way
@@ -26,7 +26,7 @@ type StreamHandler func(ctx context.Context, stream *ResponseStream) error
 
 // RequestStreamHandler handles a client-side bidirectional stream: both the request and the response
 // stream. It is the client-side counterpart of a call to a bidirectional streaming route (see
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestHandler]).
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.RequestHandler]).
 type RequestStreamHandler func(ctx context.Context, stream *RequestResponseStream) error
 
 // StreamGet issues a send-only streaming HTTP GET request to url using opts.
@@ -77,7 +77,7 @@ func (c *Client) StreamPatch(ctx context.Context, url string, opts Options, hand
 //
 // Error contract:
 // Before handler is called, the initial response is checked exactly as [Client.Do] checks it: a
-// text/error response or a 4xx/5xx status code is returned as a [github.com/alexfalkowski/go-service/v2/net/http/status.Error]
+// text/error response or a 4xx/5xx status code is returned as a [github.com/alexfalkowski/go-service/v3/net/http/status.Error]
 // and handler is never called (see [Client.checkResponseStatus]). Once handler is called, any error it
 // returns is returned as-is by Stream: there is no separate abort signal on the client side, since the
 // client is not committing an HTTP response of its own. The response body is always closed before
@@ -86,7 +86,7 @@ func (c *Client) StreamPatch(ctx context.Context, url string, opts Options, hand
 // Retries:
 // Stream has no retry logic of its own, but its request is an ordinary [Client.Do]-shaped request with
 // no streamed body, so a retry-capable [http.RoundTripper] configured via [WithRoundTripper] (for
-// example [github.com/alexfalkowski/go-service/v2/transport/http/retry]) still governs whether the
+// example [github.com/alexfalkowski/go-service/v3/transport/http/retry]) still governs whether the
 // initial request is retried, exactly as it would for Client.Do. There is no retry once handler starts
 // receiving values: a failure at that point is returned as-is, and it is the caller's responsibility to
 // retry the whole call if appropriate. Contrast [Client.RequestStream], whose pipe-backed request body
@@ -162,7 +162,7 @@ func (c *Client) Stream(ctx context.Context, method, url string, opts Options, h
 //
 // HTTP/2 requirement:
 // This mirrors the server's bidirectional streaming requirement (see
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.NewRequestHandler]): calling a bidi
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.NewRequestHandler]): calling a bidi
 // route over HTTP/1.1 hangs rather than failing, because the h1 transport buffers the request body
 // ahead of the handler. Callers must dial an HTTP/2 (including h2c) endpoint.
 //
@@ -183,7 +183,7 @@ func (c *Client) Stream(ctx context.Context, method, url string, opts Options, h
 //
 // Retries:
 // RequestStream's request body has no [http.Request.GetBody] (it is pipe-backed), so
-// [github.com/alexfalkowski/go-service/v2/transport/http/retry]'s canRetry check already excludes it —
+// [github.com/alexfalkowski/go-service/v3/transport/http/retry]'s canRetry check already excludes it —
 // streaming requests are never retried. This is a confirmed consequence, not a defect: retrying would
 // require replaying already-sent request values.
 //
@@ -278,7 +278,7 @@ type responseResult struct {
 // response without writing a request body itself.
 //
 // ResponseStream is not safe for concurrent use: Recv is expected to be called from one goroutine at a
-// time, matching [github.com/alexfalkowski/go-service/v2/net/http/content/stream.Stream]'s server-side
+// time, matching [github.com/alexfalkowski/go-service/v3/net/http/content/stream.Stream]'s server-side
 // concurrency contract.
 //
 // The response is resolved lazily, on the first call to Recv (or, if Recv is never called, when the
@@ -332,11 +332,11 @@ func (s *ResponseStream) ensure() error {
 // same convention [Client.Do] uses for opts.Response.
 //
 // Recv returns io.EOF once the response stream ends, matching
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream.Recv]'s server-side terminal
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.RequestStream.Recv]'s server-side terminal
 // behavior and the gRPC idiom. The first call to Recv resolves the underlying response if it has not
 // been resolved yet (see [ResponseStream.ensure]), including the text/error and status code checks
 // [Client.Do] applies to a non-streaming response; a response identified as an error surfaces here as
-// a [github.com/alexfalkowski/go-service/v2/net/http/status.Error], not as a decode failure.
+// a [github.com/alexfalkowski/go-service/v3/net/http/status.Error], not as a decode failure.
 //
 // Each call to Recv is bounded independently by the size configured with [WithMaxResponseSize]: the
 // cap resets for every value rather than accumulating across the whole stream (see
@@ -381,7 +381,7 @@ func (s *ResponseStream) close() error {
 //
 // RequestResponseStream is not safe for arbitrary concurrent use. The supported pattern, matching
 // gRPC's bidi streaming convention and
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.RequestStream]'s server-side contract, is
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.RequestStream]'s server-side contract, is
 // one goroutine calling Send and one goroutine calling Recv.
 type RequestResponseStream struct {
 	encoder encodingstream.Encoder
@@ -395,7 +395,7 @@ type RequestResponseStream struct {
 //
 // Send is sticky: once it returns a non-nil error, every later call returns that same error
 // immediately, matching
-// [github.com/alexfalkowski/go-service/v2/net/http/content/stream.Stream.Send]'s server-side contract — a
+// [github.com/alexfalkowski/go-service/v3/net/http/content/stream.Stream.Send]'s server-side contract — a
 // handler that ignores the error degrades to a no-op rather than writing into a broken pipe forever.
 func (s *RequestResponseStream) Send(v any) error {
 	if s.sendErr != nil {
@@ -463,7 +463,7 @@ func newResponseDecoder(c *Client, response *http.Response, opts Options) (*resp
 // truncating capped's reads, because truncating mid-read would silently drop bytes the decoder never
 // asked to give back — those bytes belong to the underlying response body, not to this one value, and
 // dropping them would desynchronize every later value in the stream. See
-// [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader] for the read-time half of the guard,
+// [github.com/alexfalkowski/go-service/v3/net/http/quota.Reader] for the read-time half of the guard,
 // which still bounds a single pathological value across repeated Read calls.
 //
 // A decoder is not guaranteed to return capped's Read-time error unwrapped: it may fold it into its own

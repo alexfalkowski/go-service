@@ -3,11 +3,11 @@ package feature_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/feature"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v3/feature"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/open-feature/go-sdk/openfeature"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestRegisterInitializesClientWithOptionalProvider(t *testing.T) {
@@ -19,7 +19,7 @@ func TestRegisterInitializesClientWithOptionalProvider(t *testing.T) {
 		{provider: openfeature.NoopProvider{}, name: "provider"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			lc := fxtest.NewLifecycle(t)
+			lc := signaltest.NewLifecycle(t)
 			meterProvider, err := test.NewPrometheusMeterProvider(lc)
 			require.NoError(t, err)
 

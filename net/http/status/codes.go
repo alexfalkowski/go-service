@@ -1,8 +1,8 @@
 package status
 
 import (
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v3/net/http"
 )
 
 // statusCodes maps gRPC status codes to HTTP status codes.

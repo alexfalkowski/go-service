@@ -3,9 +3,9 @@ package breaker_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/breaker"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/transport/breaker"
 	"github.com/stretchr/testify/require"
 )
 

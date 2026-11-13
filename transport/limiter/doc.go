@@ -60,7 +60,7 @@
 // layers can enforce limits consistently across replicas and before requests
 // spend application CPU.
 //
-// When constructed via [NewLimiter], the underlying store is closed on application shutdown via an Fx/Dig
+// When constructed via [NewLimiter], the underlying store is closed on application shutdown via a go-signal
 // lifecycle hook.
 //
 // Start with [Config], [KeyMap]/[NewKeyMap], and [NewLimiter].

@@ -3,8 +3,8 @@ package config_test
 import (
 	"testing"
 
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
 	"github.com/stretchr/testify/require"
 )
 

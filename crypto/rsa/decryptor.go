@@ -3,11 +3,11 @@ package rsa
 import (
 	"crypto/rsa"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/errors"
-	"github.com/alexfalkowski/go-service/v2/crypto/message"
-	"github.com/alexfalkowski/go-service/v2/crypto/pem"
-	"github.com/alexfalkowski/go-service/v2/crypto/rand"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/crypto/errors"
+	"github.com/alexfalkowski/go-service/v3/crypto/message"
+	"github.com/alexfalkowski/go-service/v3/crypto/pem"
+	"github.com/alexfalkowski/go-service/v3/crypto/rand"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // NewDecryptor constructs an RSA Decryptor when configuration is enabled.

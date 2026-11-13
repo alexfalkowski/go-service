@@ -3,8 +3,8 @@ package http_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
 	"github.com/stretchr/testify/require"
 )
 

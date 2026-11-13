@@ -1,10 +1,10 @@
 package unary
 
 import (
-	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/policy"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/encoding"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/policy"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
 )
 
 const (

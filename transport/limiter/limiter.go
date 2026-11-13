@@ -4,11 +4,11 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/sethvargo/go-limiter"
 	"github.com/sethvargo/go-limiter/memorystore"
 )
@@ -40,7 +40,7 @@ var ErrIntervalTooLarge = errors.New("limiter: interval too large")
 //   - cfg.Interval is used directly as a typed duration decoded from config.
 //     The underlying in-memory store applies its default 1s interval when cfg.Interval is 0.
 //   - The underlying store constructor currently does not return an error (it is ignored).
-func NewLimiter(lc di.Lifecycle, keyMap KeyMap, cfg *Config) (*Limiter, error) {
+func NewLimiter(lc signal.Lifecycle, keyMap KeyMap, cfg *Config) (*Limiter, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
@@ -77,7 +77,7 @@ func NewLimiter(lc di.Lifecycle, keyMap KeyMap, cfg *Config) (*Limiter, error) {
 		},
 	}
 
-	lc.Append(di.Hook{
+	lc.Append(signal.Hook{
 		OnStop: func(ctx context.Context) error {
 			return limiter.Close(ctx)
 		},

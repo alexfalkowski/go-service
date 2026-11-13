@@ -1,8 +1,8 @@
 package paseto
 
 import (
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token/keys"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/token/keys"
 )
 
 // Config configures PASETO issuance and verification for the go-service PASETO token kind.

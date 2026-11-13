@@ -1,11 +1,11 @@
 package cache
 
 import (
-	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v3/cache/driver"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
-// Module wires the cache subsystem into [go.uber.org/fx].
+// Module wires the cache subsystem into [github.com/alexfalkowski/go-signal/v2].
 //
 // It provides, in order:
 //   - a cache [driver.Driver] (see [driver.NewDriver])
@@ -18,9 +18,9 @@ import (
 // When caching is disabled via configuration, [driver.NewDriver] returns a nil [driver.Driver] and [NewCache]
 // returns a nil *[Cache]. [Register] is still invoked with nil, which makes the package-level helpers behave as if
 // caching is disabled (no-ops / zero values) rather than failing.
-var Module = di.Module(
-	di.Constructor(driver.NewDriver),
-	di.Constructor(NewPinger),
-	di.Constructor(NewCache),
-	di.Register(Register),
+var Module = signal.Module(
+	signal.Constructor(driver.NewDriver),
+	signal.Constructor(NewPinger),
+	signal.Constructor(NewCache),
+	signal.Register(Register),
 )

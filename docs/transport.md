@@ -6,7 +6,7 @@ The transport layer provides higher-level wiring and middleware policy for commu
 
 At a high level:
 
-- `transport/...` contains the opinionated service transport layer: Fx wiring, composed HTTP/gRPC server and client stacks, retries, breakers, token middleware, health wiring, and related policy.
+- `transport/...` contains the opinionated service transport layer: go-signal wiring, composed HTTP/gRPC server and client stacks, retries, breakers, token middleware, health wiring, and related policy.
 - `net/...` contains lower-level protocol helpers and reusable primitives such as `net/http`, `net/grpc`, `net/http/meta`, `net/grpc/meta`, `net/grpc/health`, `net/header`, and `net/server`.
 
 Supported stacks include:
@@ -134,8 +134,8 @@ MVC static helpers keep their `StaticOption` signature; use
 > Replace `IsStreaming` checks with the separate `IsRequestStreaming` and `IsResponseStreaming` checks.
 
 > [!IMPORTANT]
-> Single-value helpers live in `github.com/alexfalkowski/go-service/v2/net/http/content/unary`; streaming helpers
-> live in `github.com/alexfalkowski/go-service/v2/net/http/content/stream`. Import `unary` for `Content`, `Media`,
+> Single-value helpers live in `github.com/alexfalkowski/go-service/v3/net/http/content/unary`; streaming helpers
+> live in `github.com/alexfalkowski/go-service/v3/net/http/content/stream`. Import `unary` for `Content`, `Media`,
 > `NewContent`, `NewHandler`, and `NewRequestHandler`; import `stream` for incremental request/response helpers.
 > `stream.NewHandler` and `stream.NewRequestHandler` take `*stream.Content`, while unary handlers take
 > `*unary.Content`. `rest.NewServer`, `rpc.NewServer`, and `client.NewClient` take the unary and streaming content
@@ -195,10 +195,10 @@ The raw error string remains available to templates as `mvcModelError` metadata 
 
 MVC supports application-owned translation catalogs through `i18n.NewCatalog`.
 See [Localization (i18n)](i18n.md) for message files, standalone worker and CLI
-use, catalog construction, and Fx wiring.
+use, catalog construction, and go-signal wiring.
 
 In a service composed with `module.Server`, provide a `*i18n.Catalog` from the
-service's own Fx module alongside the existing `io.FS` and `*mvc.Layout` providers.
+service's own go-signal module alongside the existing `io.FS` and `*mvc.Layout` providers.
 `io.FS` aliases the standard `io/fs.FS`, so embedded filesystems and existing
 providers remain compatible. Direct callers pass the catalog through
 `mvc.ServerParams.Catalog`. No top-level configuration block is required.

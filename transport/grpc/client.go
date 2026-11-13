@@ -1,22 +1,22 @@
 package grpc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/config/client"
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
+	"github.com/alexfalkowski/go-service/v3/config/client"
+	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/telemetry"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/breaker"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/limiter"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/retry"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/token"
 )
 
 // ClientOption configures gRPC client construction.
@@ -203,7 +203,7 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 //
 // The value is used in two places:
 //   - as the gRPC dial user agent ([grpc.WithUserAgent])
-//   - for metadata propagation via the [github.com/alexfalkowski/go-service/v2/net/grpc/meta] interceptors
+//   - for metadata propagation via the [github.com/alexfalkowski/go-service/v3/net/grpc/meta] interceptors
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.userAgent = userAgent

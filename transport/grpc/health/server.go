@@ -3,22 +3,22 @@ package health
 import (
 	healthserver "github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-health/v2/watcher"
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	netserver "github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/health"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/status"
+	netserver "github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // ServerParams defines dependencies for constructing the gRPC health [Server] implementation.
 //
-// It is an Fx parameter struct ([di.In]) that provides the underlying *[healthserver.Server]
+// It is a go-signal parameter struct ([signal.In]) that provides the underlying *[healthserver.Server]
 // from [github.com/alexfalkowski/go-health/v2/server], which maintains health observers.
 type ServerParams struct {
-	di.In
+	signal.In
 
 	// Server is the underlying health server that stores and exposes health observers.
 	//

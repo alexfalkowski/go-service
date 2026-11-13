@@ -1,8 +1,8 @@
 package validate
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -25,7 +25,7 @@ type Validation struct {
 // Packages that own a validation rule return ValidationResult from their own constructor so
 // NewValidator can register that rule without needing to know about it by name.
 type ValidationResult struct {
-	di.Out
+	signal.Out
 
 	// Validation is collected into the "validations" group.
 	Validation Validation `group:"validations"`
@@ -33,7 +33,7 @@ type ValidationResult struct {
 
 // ValidatorParams defines dependencies for NewValidator.
 type ValidatorParams struct {
-	di.In
+	signal.In
 
 	// Validations are the validation rules contributed by other packages via ValidationResult.
 	Validations []Validation `group:"validations"`

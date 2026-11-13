@@ -4,12 +4,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	httplimiter "github.com/alexfalkowski/go-service/v3/transport/http/limiter"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
 	"github.com/stretchr/testify/require"
 )
 

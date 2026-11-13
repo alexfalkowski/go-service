@@ -2,10 +2,10 @@ package msgpack
 
 import (
 	"github.com/Basekick-Labs/msgpack/v6"
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/encoding/codec"
-	"github.com/alexfalkowski/go-service/v2/encoding/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/encoding/codec"
+	"github.com/alexfalkowski/go-service/v3/encoding/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
 )
 
 var defaultEncoder = &Encoder{}
@@ -19,7 +19,7 @@ func NewEncoder() *Encoder {
 type Encoder struct{}
 
 // Encode writes v to w as MessagePack. MessagePack has no required-field concept, so
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithAllowPartial] has no effect.
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithAllowPartial] has no effect.
 func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 	return msgpack.NewEncoder(w).Encode(v)
 }
@@ -28,7 +28,7 @@ func (e *Encoder) Encode(w io.Writer, v any, _ ...codec.Option) error {
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
 // Decode rejects unknown destination fields unless
-// [github.com/alexfalkowski/go-service/v2/encoding/codec.WithDiscardUnknown] is
+// [github.com/alexfalkowski/go-service/v3/encoding/codec.WithDiscardUnknown] is
 // supplied. It also rejects trailing encoded values or malformed trailing data.
 func (e *Encoder) Decode(r io.Reader, v any, opts ...codec.Option) error {
 	resolved := codec.Apply(opts...)

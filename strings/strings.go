@@ -4,7 +4,7 @@ import (
 	"iter"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/v2/slices"
+	"github.com/alexfalkowski/go-service/v3/slices"
 )
 
 // Empty is the empty string constant.

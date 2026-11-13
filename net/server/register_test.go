@@ -4,20 +4,20 @@ import (
 	"testing"
 	"testing/synctest"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
-	grpcserver "github.com/alexfalkowski/go-service/v2/net/grpc/server"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/config"
+	grpcserver "github.com/alexfalkowski/go-service/v3/net/grpc/server"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func TestRegisterStopErrors(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	first := test.NewObservableServer(nil, test.ErrFailed)
 	secondErr := errors.New("other failed")
 	second := test.NewObservableServer(nil, secondErr)
@@ -45,7 +45,7 @@ func TestRegisterStopErrors(t *testing.T) {
 }
 
 func TestRegisterStartsAllServices(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	first := test.NewObservableServer(nil, nil)
 	second := test.NewObservableServer(nil, nil)
 	sh := test.NewShutdowner()
@@ -70,7 +70,7 @@ func TestRegisterStartsAllServices(t *testing.T) {
 
 func TestRegisterStopsServicesConcurrently(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		lc := fxtest.NewLifecycle(t)
+		lc := signaltest.NewLifecycle(t)
 		first := newBlockingShutdownServer()
 		second := newShutdownContextServer()
 		sh := test.NewShutdowner()
@@ -98,7 +98,7 @@ func TestRegisterStopsServicesConcurrently(t *testing.T) {
 }
 
 func TestRegisterStartsDrainBeforeStoppingServices(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	drain := server.NewDrain()
 	srv := &drainObservingServer{
 		Done:     make(chan struct{}),
@@ -153,7 +153,7 @@ func TestDrainDoneClosesWhenStartedBeforeDone(t *testing.T) {
 }
 
 func TestRegisterSnapshotsServices(t *testing.T) {
-	lc := fxtest.NewLifecycle(t)
+	lc := signaltest.NewLifecycle(t)
 	original := test.NewObservableServer(nil, nil)
 	replacement := test.NewObservableServer(nil, nil)
 	sh := test.NewShutdowner()
@@ -174,7 +174,7 @@ func TestRegisterSnapshotsServices(t *testing.T) {
 
 func TestRegisterImmediateGRPCStopDoesNotRequestShutdown(t *testing.T) {
 	for iteration := range 5_000 {
-		lc := fxtest.NewLifecycle(t)
+		lc := signaltest.NewLifecycle(t)
 		sh := test.NewShutdowner()
 		service, err := grpcserver.NewService(
 			"grpc",

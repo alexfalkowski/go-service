@@ -4,34 +4,34 @@ import (
 	"cmp"
 	"math"
 
-	"github.com/alexfalkowski/go-service/v2/config/server"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
-	grpcmeta "github.com/alexfalkowski/go-service/v2/net/grpc/meta"
-	grpcserver "github.com/alexfalkowski/go-service/v2/net/grpc/server"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
-	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/recovery"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
+	"github.com/alexfalkowski/go-service/v3/config/server"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/meta"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/config"
+	grpcmeta "github.com/alexfalkowski/go-service/v3/net/grpc/meta"
+	grpcserver "github.com/alexfalkowski/go-service/v3/net/grpc/server"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/telemetry"
+	"github.com/alexfalkowski/go-service/v3/os"
+	"github.com/alexfalkowski/go-service/v3/runtime"
+	"github.com/alexfalkowski/go-service/v3/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v3/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v3/token/access"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/limiter"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/recovery"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/transport/grpc/token"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // ServerParams defines dependencies for constructing a gRPC transport [Server].
 //
-// It is an Fx parameter struct ([di.In]) that collects the configuration and optional
+// It is a go-signal parameter struct ([signal.In]) that collects the configuration and optional
 // dependencies used to build and run the gRPC server.
 //
 // Optional fields:
@@ -43,10 +43,10 @@ import (
 //   - `Options`: allow callers to pass additional raw [grpc.ServerOption] values not modeled by this
 //     package (and is optional in DI).
 type ServerParams struct {
-	di.In
+	signal.In
 
 	// Shutdowner is used by the underlying *[server.Service] to coordinate shutdown.
-	Shutdowner di.Shutdowner
+	Shutdowner signal.Shutdowner
 
 	// ID generates request IDs when one is not already present.
 	ID id.Generator
@@ -174,7 +174,7 @@ func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 //
 // It returns nil if s is nil (for example, when the transport is disabled).
 // This method is commonly used by higher-level wiring to collect enabled server services for lifecycle
-// registration (see [github.com/alexfalkowski/go-service/v2/transport.NewServers] and [github.com/alexfalkowski/go-service/v2/net/server.Register]).
+// registration (see [github.com/alexfalkowski/go-service/v3/transport.NewServers] and [github.com/alexfalkowski/go-service/v3/net/server.Register]).
 func (s *Server) GetService() *grpcserver.Service {
 	if s == nil {
 		return nil

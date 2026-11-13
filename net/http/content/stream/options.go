@@ -1,8 +1,8 @@
 package stream
 
 import (
-	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v3/bytes"
+	"github.com/alexfalkowski/go-service/v3/time"
 )
 
 // Options configures the streaming route helpers built by [NewHandler] and [NewRequestHandler].
@@ -23,7 +23,7 @@ type Options struct {
 	WriteTimeout time.Duration
 
 	// MaxReceiveSize bounds each value decoded by [RequestStream.Recv], not the request stream as a
-	// whole (see [github.com/alexfalkowski/go-service/v2/net/http/quota.Reader]). Zero disables the
+	// whole (see [github.com/alexfalkowski/go-service/v3/net/http/quota.Reader]). Zero disables the
 	// per-value cap. Unused by [NewHandler]'s send-only stream.
 	MaxReceiveSize bytes.Size
 }

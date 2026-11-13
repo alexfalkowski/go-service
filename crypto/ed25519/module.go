@@ -1,8 +1,8 @@
 package ed25519
 
-import "github.com/alexfalkowski/go-service/v2/di"
+import "github.com/alexfalkowski/go-signal/v2"
 
-// Module wires the Ed25519 subsystem into [go.uber.org/fx]/[go.uber.org/dig].
+// Module wires the Ed25519 subsystem into [github.com/alexfalkowski/go-signal/v2].
 //
 // It provides constructors for:
 //   - *[Generator] (via NewGenerator), which generates Ed25519 key pairs,
@@ -11,8 +11,8 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //
 // Disabled behavior: if Ed25519 configuration is disabled (nil *[Config]), NewSigner and NewVerifier
 // return (nil, nil) so downstream consumers can treat signing/verification as optional.
-var Module = di.Module(
-	di.Constructor(NewGenerator),
-	di.Constructor(NewSigner),
-	di.Constructor(NewVerifier),
+var Module = signal.Module(
+	signal.Constructor(NewGenerator),
+	signal.Constructor(NewSigner),
+	signal.Constructor(NewVerifier),
 )

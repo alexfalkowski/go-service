@@ -3,8 +3,8 @@ package errors
 import (
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
 )
 
 // ErrInvalidType indicates that an Encoder cannot operate on the provided value type.

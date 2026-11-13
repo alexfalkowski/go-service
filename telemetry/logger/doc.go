@@ -6,7 +6,7 @@
 //
 // # Overview
 //
-// The primary entry point is [NewLogger], which is intended to be wired with Fx/Dig
+// The primary entry point is [NewLogger], which is intended to be wired with go-signal
 // using [LoggerParams]. When enabled, NewLogger:
 //
 //   - builds the configured slog logger,
@@ -58,7 +58,7 @@
 //
 // Header values may be configured using go-service "source strings" (for example
 // "env:NAME", "file:/path", or a literal value). Those values are resolved by
-// [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.Secrets] or [github.com/alexfalkowski/go-service/v2/telemetry/header.Map.MustSecrets] by the consumer
+// [github.com/alexfalkowski/go-service/v3/telemetry/header.Map.Secrets] or [github.com/alexfalkowski/go-service/v3/telemetry/header.Map.MustSecrets] by the consumer
 // that projects configuration before constructing exporters.
 //
 // When [Config.Headers] is non-empty, non-loopback "http://" OTLP endpoints are

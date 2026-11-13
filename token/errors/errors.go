@@ -1,6 +1,6 @@
 package errors
 
-import "github.com/alexfalkowski/go-service/v2/errors"
+import "github.com/alexfalkowski/go-service/v3/errors"
 
 var (
 	// ErrInvalidConfig is a sentinel error indicating token configuration is incomplete or inconsistent.
@@ -20,7 +20,7 @@ var (
 	// For claim-based token formats, this commonly corresponds to an "iss" claim
 	// mismatch. The JWT verifier returns this sentinel on issuer mismatch, so callers
 	// can detect it with errors.Is. The PASETO verifier instead surfaces issuer rule
-	// failures as an upstream [github.com/alexfalkowski/go-service/v2/token/paseto.RuleError],
+	// failures as an upstream [github.com/alexfalkowski/go-service/v3/token/paseto.RuleError],
 	// which does not match this sentinel.
 	ErrInvalidIssuer = errors.New("token: invalid issuer")
 
@@ -29,7 +29,7 @@ var (
 	// For claim-based token formats, this commonly corresponds to an "aud" claim
 	// mismatch. The JWT verifier returns this sentinel on audience mismatch, so
 	// callers can detect it with errors.Is. The PASETO verifier instead surfaces audience
-	// rule failures as an upstream [github.com/alexfalkowski/go-service/v2/token/paseto.RuleError],
+	// rule failures as an upstream [github.com/alexfalkowski/go-service/v3/token/paseto.RuleError],
 	// which does not match this sentinel.
 	ErrInvalidAudience = errors.New("token: invalid audience")
 

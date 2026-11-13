@@ -12,8 +12,8 @@
 // [Controller.HasAccess] expects a request context populated by the transport
 // metadata middleware. The Casbin request tuple is:
 //
-//   - sub: [github.com/alexfalkowski/go-service/v2/meta.UserID]
-//   - obj: [github.com/alexfalkowski/go-service/v2/meta.TransportServiceMethod]
+//   - sub: [github.com/alexfalkowski/go-service/v3/meta.UserID]
+//   - obj: [github.com/alexfalkowski/go-service/v3/meta.TransportServiceMethod]
 //   - act: "invoke"
 //
 // HTTP servers use the matched route pattern as the service-method when one is

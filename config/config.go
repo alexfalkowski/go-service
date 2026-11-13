@@ -1,21 +1,21 @@
 package config
 
 import (
-	cache "github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/config/validate"
-	"github.com/alexfalkowski/go-service/v2/crypto"
-	"github.com/alexfalkowski/go-service/v2/database/sql"
-	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	"github.com/alexfalkowski/go-service/v2/debug"
-	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/feature"
-	"github.com/alexfalkowski/go-service/v2/hooks"
-	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/ptr"
-	"github.com/alexfalkowski/go-service/v2/reflect"
-	"github.com/alexfalkowski/go-service/v2/telemetry"
-	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport"
+	cache "github.com/alexfalkowski/go-service/v3/cache/config"
+	"github.com/alexfalkowski/go-service/v3/config/validate"
+	"github.com/alexfalkowski/go-service/v3/crypto"
+	"github.com/alexfalkowski/go-service/v3/database/sql"
+	"github.com/alexfalkowski/go-service/v3/database/sql/pg"
+	"github.com/alexfalkowski/go-service/v3/debug"
+	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/feature"
+	"github.com/alexfalkowski/go-service/v3/hooks"
+	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/ptr"
+	"github.com/alexfalkowski/go-service/v3/reflect"
+	"github.com/alexfalkowski/go-service/v3/telemetry"
+	"github.com/alexfalkowski/go-service/v3/time"
+	"github.com/alexfalkowski/go-service/v3/transport"
 )
 
 // NewConfig decodes configuration into a newly allocated *T and validates it.

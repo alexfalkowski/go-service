@@ -1,16 +1,16 @@
 package server
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/config"
-	"github.com/alexfalkowski/go-service/v2/net/http/errors"
-	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/crypto/tls"
+	"github.com/alexfalkowski/go-service/v3/net"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/config"
+	"github.com/alexfalkowski/go-service/v3/net/http/errors"
+	"github.com/alexfalkowski/go-service/v3/net/server"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // Service is an alias for [server.Service].
@@ -24,10 +24,10 @@ type Service = server.Service
 // The returned service will:
 //   - start serving asynchronously (when [Service.Start] is called by upstream wiring),
 //   - log start/stop events when a logger is provided, and
-//   - trigger application shutdown via the provided [di.Shutdowner] if serving terminates unexpectedly.
+//   - trigger application shutdown via the provided [signal.Shutdowner] if serving terminates unexpectedly.
 //
 // Errors returned are from listener creation performed by NewServer.
-func NewService(name string, http *http.Server, cfg *config.Config, logger *logger.Logger, sh di.Shutdowner) (*Service, error) {
+func NewService(name string, http *http.Server, cfg *config.Config, logger *logger.Logger, sh signal.Shutdowner) (*Service, error) {
 	serv, err := NewServer(http, cfg)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func NewServer(server *http.Server, cfg *config.Config) (*Server, error) {
 	return &Server{server: server, tls: cfg.TLS, listener: l}, nil
 }
 
-// Server adapts a *[http.Server] to the [github.com/alexfalkowski/go-service/v2/net/server.Server] interface used by go-service.
+// Server adapts a *[http.Server] to the [github.com/alexfalkowski/go-service/v3/net/server.Server] interface used by go-service.
 //
 // It holds:
 //   - the underlying HTTP server,
@@ -79,7 +79,7 @@ type Server struct {
 
 // Serve starts serving requests on the configured listener.
 //
-// Serve normalizes expected shutdown errors via [github.com/alexfalkowski/go-service/v2/net/http/errors.ServerError] so callers can treat graceful
+// Serve normalizes expected shutdown errors via [github.com/alexfalkowski/go-service/v3/net/http/errors.ServerError] so callers can treat graceful
 // termination consistently.
 func (s *Server) Serve() error {
 	return errors.ServerError(s.serve())

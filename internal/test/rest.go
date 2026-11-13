@@ -3,13 +3,13 @@ package test
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/v2/context"
-	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/client"
-	"github.com/alexfalkowski/go-service/v2/net/http/content/unary"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/rest"
+	"github.com/alexfalkowski/go-service/v3/context"
+	v1 "github.com/alexfalkowski/go-service/v3/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/client"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/unary"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http/rest"
 )
 
 // RegisterHandlers registers DELETE and GET REST handlers for the service-prefixed path.

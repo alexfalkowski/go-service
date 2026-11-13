@@ -3,9 +3,9 @@ package errors_test
 import (
 	"testing"
 
-	encoding "github.com/alexfalkowski/go-service/v2/encoding/errors"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
+	encoding "github.com/alexfalkowski/go-service/v3/encoding/errors"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/io"
 	"github.com/stretchr/testify/require"
 )
 

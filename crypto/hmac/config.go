@@ -1,6 +1,6 @@
 package hmac
 
-import "github.com/alexfalkowski/go-service/v2/os"
+import "github.com/alexfalkowski/go-service/v3/os"
 
 // Config configures HMAC key material loading for the HMAC-SHA-512 signer wired by this package.
 type Config struct {

@@ -2,7 +2,7 @@
 //
 // # Overview
 //
-// This package provides constructors and Fx/Dig wiring for OpenTelemetry metrics:
+// This package provides constructors and go-signal wiring for OpenTelemetry metrics:
 //
 //   - NewReader constructs an OpenTelemetry SDK metric reader/exporter based on Config.
 //   - NewMeterProvider constructs an SDK MeterProvider, installs it globally via

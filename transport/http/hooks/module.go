@@ -1,12 +1,12 @@
 package hooks
 
 import (
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/hooks"
+	"github.com/alexfalkowski/go-service/v3/hooks"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
-// Module wires HTTP webhook handler helpers into [go.uber.org/fx].
-var Module = di.Module(
+// Module wires HTTP webhook handler helpers into [github.com/alexfalkowski/go-signal/v2].
+var Module = signal.Module(
 	hooks.Module,
-	di.Constructor(NewWebhook),
+	signal.Constructor(NewWebhook),
 )

@@ -1,6 +1,6 @@
 package retry
 
-import "github.com/alexfalkowski/go-service/v2/transport/retry"
+import "github.com/alexfalkowski/go-service/v3/transport/retry"
 
 // NewConfig returns an HTTP retry config from shared retry mechanics.
 //

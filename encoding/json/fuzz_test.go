@@ -3,7 +3,7 @@ package json_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/encoding/json"
+	"github.com/alexfalkowski/go-service/v3/encoding/json"
 	"github.com/stretchr/testify/require"
 )
 

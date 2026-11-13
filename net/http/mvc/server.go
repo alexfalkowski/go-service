@@ -1,16 +1,16 @@
 package mvc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/i18n"
-	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/errors"
+	"github.com/alexfalkowski/go-service/v3/i18n"
+	"github.com/alexfalkowski/go-service/v3/io"
+	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/media"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/strings"
+	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/go-sprout/sprout"
 )
@@ -22,7 +22,7 @@ var htmlContentType = media.MustParse(media.HTML).WithUTF8()
 // This package uses a single Server value to avoid threading commonly shared dependencies through
 // every routing helper call. These dependencies are typically provided by DI wiring.
 type ServerParams struct {
-	di.In
+	signal.In
 
 	// Router registers MVC routes (Route/Get/Post/etc.).
 	Router *http.Router
@@ -143,12 +143,12 @@ func (s *Server) Patch[Model any](pattern string, controller Controller[Model], 
 // request context (via net/http/meta) before invoking the controller.
 //
 // If controller returns an error, the handler renders the returned view using a safe Error model and writes the
-// corresponding status code (see [github.com/alexfalkowski/go-service/v2/net/http/status.Code]) only after rendering succeeds. The raw error remains
+// corresponding status code (see [github.com/alexfalkowski/go-service/v3/net/http/status.Code]) only after rendering succeeds. The raw error remains
 // available as `mvcModelError` metadata for compatibility; templates that render it can expose diagnostic details.
 // If rendering itself fails, the handler writes the render error status instead.
 //
 // Controller errors and rendering failures are recorded as request-scoped operator diagnostics via
-// [github.com/alexfalkowski/go-service/v2/net/http/status.RecordError], surfaced through the HTTP access log.
+// [github.com/alexfalkowski/go-service/v3/net/http/status.RecordError], surfaced through the HTTP access log.
 // When more than one error occurs, the first error is retained.
 func (s *Server) Route[Model any](pattern string, controller Controller[Model], opts ...RouteOption) bool {
 	if !s.IsDefined() {

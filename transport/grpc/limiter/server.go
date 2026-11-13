@@ -1,12 +1,12 @@
 package limiter
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/method"
-	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v3/context"
+	"github.com/alexfalkowski/go-service/v3/net/grpc"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v3/net/grpc/method"
+	"github.com/alexfalkowski/go-service/v3/transport/limiter"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // NewServer constructs a gRPC server-side rate limiter.
@@ -16,7 +16,7 @@ import (
 // The returned limiter is backed by [limiter.NewLimiter] and is registered with the provided lifecycle.
 // The `keys` map controls how request contexts are turned into limiter keys (for example, per user-agent),
 // and policy controls which unary methods bypass limiting.
-func NewServer(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config, policy *method.Policy) (*Server, error) {
+func NewServer(lc signal.Lifecycle, keys KeyMap, cfg *limiter.Config, policy *method.Policy) (*Server, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
