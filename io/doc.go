@@ -9,8 +9,9 @@
 // import [github.com/alexfalkowski/go-service/v3/io] without mixing direct stdlib imports across the
 // codebase.
 //
-// [ReadFile], [Glob], and [ValidPath] expose read-only filesystem helpers with
-// standard-library behavior.
+// All exports from [io/fs] are available as aliases or wrappers, including [Sub],
+// [ReadFile], [ReadDir], [Glob], [Stat], and [WalkDir], with standard-library behavior.
+// The walk sentinels are exposed as [ErrSkipAll] and [ErrSkipDir].
 //
 // This package also provides small repository-specific helpers. [Resetter] is a local abstraction
 // for values that can be reset before reuse, and [ReadAll] captures an entire stream and returns
