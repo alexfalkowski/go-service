@@ -23,6 +23,19 @@ const dbStatsMetricCount = 7
 
 var sqlDriverID sync.Uint64
 
+// BenchmarkSQLConnector is a database/sql connector test double backed by [BenchmarkSQLDriver].
+type BenchmarkSQLConnector struct{}
+
+// Connect implements [driver.Connector] using [BenchmarkSQLDriver].
+func (BenchmarkSQLConnector) Connect(context.Context) (driver.Conn, error) {
+	return BenchmarkSQLDriver{}.Open("benchmark")
+}
+
+// Driver implements [driver.Connector].
+func (BenchmarkSQLConnector) Driver() driver.Driver {
+	return BenchmarkSQLDriver{}
+}
+
 // BenchmarkSQLDriver is a database/sql driver test double that returns empty result sets.
 type BenchmarkSQLDriver struct{}
 

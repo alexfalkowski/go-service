@@ -4,6 +4,13 @@
 // driver-specific modules (for example PostgreSQL via [github.com/alexfalkowski/go-service/v3/database/sql/pg]) and exposes a small,
 // consistent configuration shape for services ([Config]).
 //
+// All exports from [database/sql] are also available as aliases or wrappers,
+// including [DB], [Tx], [TxOptions], [Stmt], [Null], and [ErrNoRows]. These preserve
+// standard-library behavior except [Register], which returns registration panics as
+// errors and wraps drivers with telemetry when tracing or metrics are enabled.
+// Use [github.com/alexfalkowski/go-service/v3/database/sql/driver.Register] to
+// supply custom telemetry options.
+//
 // # Configuration and enablement
 //
 // SQL configuration is optional. By convention across go-service config types, a nil *[Config]

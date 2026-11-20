@@ -14,11 +14,17 @@ type Driver = driver.Driver
 // Conn aliases [database/sql/driver.Conn].
 type Conn = driver.Conn
 
+// Connector aliases [database/sql/driver.Connector].
+type Connector = driver.Connector
+
 // NamedValue aliases [database/sql/driver.NamedValue].
 type NamedValue = driver.NamedValue
 
 // Rows aliases [database/sql/driver.Rows].
 type Rows = driver.Rows
+
+// ScanContext aliases [database/sql/driver.ScanContext].
+type ScanContext = driver.ScanContext
 
 // Stmt aliases [database/sql/driver.Stmt].
 type Stmt = driver.Stmt
