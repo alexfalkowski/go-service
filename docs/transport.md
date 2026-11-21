@@ -185,6 +185,24 @@ The HTTP transport wraps the mux with `net/http.NewNotFoundHandler` so generated
 - MVC missing routes can use `mvc.Server.NotFoundHandler` to render the registered MVC not-found view when the request accepts HTML (`Accept: text/html`) or is an HTMX request (`Hx-Request: true`).
 - Routes that match and write their own status are not replaced by this mux-level not-found handler.
 
+## HTTP request logs
+
+HTTP request logs include the lowercase HTTP verb in `http.request.method` and the path in `url.path`.
+Ordinary HTTP request messages also use the lowercase verb. On the server, the outcome message uses the matched
+`http.route` when available, for example `http: get /repos/{owner}/{repo}`.
+On the client, the message includes the destination and request path, for example
+`http: get api.github.com/repos/alexfalkowski/abgleich`. The `server.address` field holds the
+destination hostname. Use `net/http/meta.WithURLTemplate(ctx, "/repos/{owner}/{repo}")` with
+the context of a single outbound call to add `url.template` and use it in the client message.
+The `url.path` field still carries the request path. Redirects use their own destination and path.
+
+The HTTP RPC helpers identify calls with service-prefixed RPC paths automatically. For example,
+`POST /greet.v1.Greeter/SayHello` logs as `http: greet.v1.Greeter/SayHello` with
+`service=greet.v1.Greeter` and `method=SayHello`. Custom registrations and clients can use
+`net/http.WithRouteRPC()` and `net/http/meta.WithRPCMethod(ctx, "/greet.v1.Greeter/SayHello")`.
+For REST and MVC log filters that previously used `service` and `method`, use `http.request.method`
+with `http.route` on the server or with `server.address` and `url.template` or `url.path` on the client.
+
 ## HTTP MVC errors
 
 When an MVC controller returns an error, `mvc.Server.Route` renders the returned view with a client-safe `mvc.Error` model. The model contains the HTTP status `Code` and safe client-visible `Message`.

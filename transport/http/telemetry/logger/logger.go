@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v3/net/http"
 	"github.com/alexfalkowski/go-service/v3/net/http/status"
 	"github.com/alexfalkowski/go-service/v3/runtime"
-	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v3/time"
 	snoop "github.com/felixge/httpsnoop"
@@ -41,7 +40,9 @@ type Handler struct {
 //
 // Logged attributes include:
 //   - system: "http"
-//   - service/method: derived from the request (see [http.ParseServiceMethod])
+//   - http.request.method and url.path: lowercase HTTP verb and request path
+//   - http.route: matched route template, when available
+//   - service/method: logical names for registered RPC routes with both names in the path
 //   - duration: wall-clock elapsed time
 //   - code: HTTP response status code
 //   - error: the request diagnostic error, when present
@@ -55,14 +56,9 @@ type Handler struct {
 //   - 5xx → error
 //   - otherwise → info
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	service, method := http.ParseServiceMethod(req)
+	message, attrs := serverRequestLog(req, h.routePolicy)
 	ctx := status.WithRequestError(req.Context())
 	start := time.Now()
-
-	attrs := make([]logger.Attr, 0, 5)
-	attrs = append(attrs, logger.String(meta.SystemKey, "http"))
-	attrs = append(attrs, logger.String(meta.ServiceKey, service))
-	attrs = append(attrs, logger.String(meta.MethodKey, method))
 
 	isOperation := h.routePolicy.IsOperation(req)
 	m := snoop.Metrics{Code: http.StatusOK}
@@ -75,7 +71,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 			// gets its ordinary outcome log line, carrying the diagnostic error finalizeStream recorded.
 			if err, ok := value.(error); ok && errors.Is(err, http.ErrAbortHandler) {
 				if !isOperation {
-					h.logOutcome(ctx, attrs, method, service, m)
+					h.logOutcome(ctx, attrs, message, m)
 				}
 				panic(value)
 			}
@@ -100,7 +96,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	h.logOutcome(ctx, attrs, method, service, m)
+	h.logOutcome(ctx, attrs, message, m)
 }
 
 func (h *Handler) logPanic(ctx context.Context, attrs []logger.Attr, err error, duration string) {
@@ -111,17 +107,14 @@ func (h *Handler) logPanic(ctx context.Context, attrs []logger.Attr, err error, 
 	h.logger.LogAttrs(ctx, logger.LevelError, logger.NewMessage("http: panic", err), attrs...)
 }
 
-func (h *Handler) logOutcome(ctx context.Context, attrs []logger.Attr, method, service string, m snoop.Metrics) {
+func (h *Handler) logOutcome(ctx context.Context, attrs []logger.Attr, message string, m snoop.Metrics) {
 	attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
-	message := logger.NewMessage(httpMessage(strings.Join(strings.Space, method, service)), status.RequestError(ctx))
-
-	h.logger.LogAttrs(ctx, codeToLevel(m.Code), message, attrs...)
+	h.logger.LogAttrs(ctx, codeToLevel(m.Code), logger.NewMessage(message, status.RequestError(ctx)), attrs...)
 }
 
 // NewRoundTripper constructs HTTP client logging middleware.
 //
-// The returned RoundTripper logs request outcomes (duration and status) and then delegates to the
-// underlying transport.
+// The returned RoundTripper logs request outcomes (duration and status) after the underlying transport returns.
 func NewRoundTripper(logger *Logger, r http.RoundTripper) *RoundTripper {
 	return &RoundTripper{logger: logger, RoundTripper: r}
 }
@@ -132,11 +125,13 @@ type RoundTripper struct {
 	http.RoundTripper
 }
 
-// RoundTrip logs the request outcome and delegates to the underlying RoundTripper.
+// RoundTrip delegates to the underlying RoundTripper and logs the request outcome.
 //
 // Logged attributes include:
 //   - system: "http"
-//   - service/method: derived from the request (see [http.ParseServiceMethod])
+//   - http.request.method, server.address and url.path: lowercase HTTP verb, destination hostname and request path
+//   - url.template: path template supplied by the caller, when available
+//   - service/method: logical names for explicitly identified RPC calls
 //   - duration: wall-clock elapsed time
 //   - code: HTTP response status code, or status-bearing transport error code when no response is available
 //   - error: transport error (when present)
@@ -147,24 +142,17 @@ type RoundTripper struct {
 //   - otherwise → info
 //
 // If resp is nil and err does not carry a status code, it is treated as HTTP 500 for level selection.
-// The log message includes the derived method and service.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	service, method := http.ParseServiceMethod(req)
+	message, attrs := clientRequestLog(req)
 	start := time.Now()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 
-	attrs := make([]logger.Attr, 0, 5)
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
-	attrs = append(attrs, logger.String(meta.SystemKey, "http"))
-	attrs = append(attrs, logger.String(meta.ServiceKey, service))
-	attrs = append(attrs, logger.String(meta.MethodKey, method))
 	code := responseCode(resp, err)
 	attrs = append(attrs, logger.Int(meta.CodeKey, code))
 
-	message := logger.NewMessage(httpMessage(strings.Join(strings.Space, method, service)), err)
-
-	r.logger.LogAttrs(ctx, codeToLevel(code), message, attrs...)
+	r.logger.LogAttrs(ctx, codeToLevel(code), logger.NewMessage(message, err), attrs...)
 	return resp, err
 }
 
@@ -186,8 +174,4 @@ func codeToLevel(code int) logger.Level {
 	}
 
 	return logger.LevelInfo
-}
-
-func httpMessage(msg string) string {
-	return "http: " + msg
 }

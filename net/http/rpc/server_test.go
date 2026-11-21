@@ -47,6 +47,7 @@ func TestRouteAppliesRouteOptions(t *testing.T) {
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", http.NoBody)
 	require.True(t, policy.IsOperation(req))
 	require.True(t, policy.IsUnauthenticated(req))
+	require.True(t, policy.IsRPC(req), "unary RPC should retain its RPC identity")
 	require.False(t, policy.IsRequestStreaming(req))
 	require.False(t, policy.IsResponseStreaming(req))
 }
@@ -86,6 +87,7 @@ func TestStreamRouteRecvAndSendOverHTTP2(t *testing.T) {
 	require.Equal(t, http.StatusOK, res.Code)
 	require.True(t, policy.IsOperation(req))
 	require.True(t, policy.IsUnauthenticated(req))
+	require.True(t, policy.IsRPC(req), "streaming RPC should retain its RPC identity")
 	require.True(t, policy.IsRequestStreaming(req))
 	require.True(t, policy.IsResponseStreaming(req))
 

@@ -10,8 +10,7 @@ import (
 
 // ParseServiceMethod derives a logical "service" and "method" name from an HTTP request.
 //
-// This helper is intended for consistent telemetry naming. It attempts to derive names from the request
-// path when it follows the conventional go-service route shape:
+// It attempts to derive names from the request path when it follows the conventional go-service route shape:
 //
 //	/<service>/<method>
 //

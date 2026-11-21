@@ -77,11 +77,12 @@ and carry the same mandatory weight.
   values; report only concrete local bugs such as raw query text, credentials,
   or DSNs emitted independently by repository code, ignored explicit telemetry
   options, or a public API promise of sanitized SQL span errors.
-- HTTP telemetry logger service/method derivation may include request URL path
-  segments for non-canonical HTTP routes. This is intentional for client and
-  server debugging because HTTP clients can call arbitrary paths and route
-  patterns are not always available at the logging layer. Do not flag this as a
-  query/header/body leakage issue unless the logger starts recording
+- HTTP telemetry logs include the concrete request URL path for client and
+  server debugging. The message uses the matched server or caller-supplied
+  client route template when available. Explicitly identified HTTP RPCs can
+  also log logical service and method names. HTTP clients can call arbitrary
+  paths and route patterns are not always available at the logging layer.
+  Do not flag path logging as a query/header/body leakage issue unless the logger starts recording
   `RawQuery`, `RequestURI`, headers, cookies, or bodies, or a specific route
   places secrets in path segments contrary to service policy.
 - OpenTelemetry HTTP client instrumentation is delegated to upstream

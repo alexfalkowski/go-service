@@ -4,7 +4,10 @@ import (
 	"github.com/alexfalkowski/go-service/v3/context"
 	"github.com/alexfalkowski/go-service/v3/errors"
 	http "github.com/alexfalkowski/go-service/v3/net/http/client"
+	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/url"
 	"github.com/alexfalkowski/go-service/v3/reflect"
+	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
 // ErrInvalidRequest is returned when the request payload is nil.
@@ -51,6 +54,11 @@ func (c *Client) Post(ctx context.Context, path string, req, res any) error {
 	}
 	if reflect.IsNil(res) {
 		return ErrInvalidResponse
+	}
+
+	if route, err := url.Parse(path); err == nil {
+		method := strings.Concat("/", strings.TrimPrefix(route.EscapedPath(), "/"))
+		ctx = meta.WithRPCMethod(ctx, method)
 	}
 
 	opts := http.Options{ContentType: c.contentType, Accept: c.accept, Request: req, Response: res}

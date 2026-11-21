@@ -9,6 +9,7 @@ type RouteOption interface {
 
 type routeOptions struct {
 	operation         bool
+	rpc               bool
 	unauthenticated   bool
 	requestStreaming  bool
 	responseStreaming bool
@@ -43,6 +44,13 @@ func WithRouteOperation() RouteOption {
 func WithRouteUnauthenticated() RouteOption {
 	return routeOptionFunc(func(options *routeOptions) {
 		options.unauthenticated = true
+	})
+}
+
+// WithRouteRPC marks a route as RPC for HTTP logging. RPC server helpers set this automatically.
+func WithRouteRPC() RouteOption {
+	return routeOptionFunc(func(options *routeOptions) {
+		options.rpc = true
 	})
 }
 
@@ -96,9 +104,19 @@ type RoutePolicy struct {
 }
 
 type routePolicy struct {
+	rpc               bool
 	unauthenticated   bool
 	requestStreaming  bool
 	responseStreaming bool
+}
+
+// IsRPC reports whether req matches a route registered with [WithRouteRPC].
+func (r *RoutePolicy) IsRPC(req *Request) bool {
+	if req.Pattern != "" {
+		return r.routes[req.Pattern].rpc
+	}
+
+	return r.routes[routeRequestPattern(req)].rpc || r.routes[req.URL.Path].rpc
 }
 
 // IsOperation reports whether req targets a registered operation path.
@@ -170,8 +188,9 @@ func (r *Router) HandleRoute(pattern string, handler Handler, opts ...RouteOptio
 	if options.operation {
 		r.routePolicy.operations[routePatternPath(pattern)] = struct{}{}
 	}
-	if options.unauthenticated || options.requestStreaming || options.responseStreaming {
+	if options.rpc || options.unauthenticated || options.requestStreaming || options.responseStreaming {
 		r.routePolicy.routes[pattern] = routePolicy{
+			rpc:               options.rpc,
 			unauthenticated:   options.unauthenticated,
 			requestStreaming:  options.requestStreaming,
 			responseStreaming: options.responseStreaming,
