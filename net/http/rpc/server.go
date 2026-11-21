@@ -50,7 +50,7 @@ func (s *Server) Route[Req any, Res any](pattern string, handler unary.RequestHa
 	s.router.HandleRoute(
 		strings.Join(strings.Space, http.MethodPost, pattern),
 		unary.NewRequestHandler(s.unaryContent, handler),
-		opts...,
+		append(opts, http.WithRouteRPC())...,
 	)
 }
 
@@ -93,6 +93,6 @@ func (s *Server) StreamRoute[Req any, Res any](pattern string, handler stream.Re
 	s.router.HandleRoute(
 		strings.Join(strings.Space, http.MethodPost, pattern),
 		stream.NewRequestHandler(s.streamContent, s.opts, handler),
-		append(opts, http.WithRouteStreaming())...,
+		append(opts, http.WithRouteStreaming(), http.WithRouteRPC())...,
 	)
 }

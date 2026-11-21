@@ -192,27 +192,27 @@ func TestServerRecoversPanic(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	require.Equal(t, "http: internal server error", body)
-	requirePanicLog(t, capture, "test panic", "panic")
+	requirePanicLog(t, capture, "test panic", "/panic")
 
 	res, body, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-informational"), http.Header{})
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	require.Equal(t, "http: internal server error", body)
-	requirePanicLog(t, capture, "test panic after informational response", "panic-after-informational")
+	requirePanicLog(t, capture, "test panic after informational response", "/panic-after-informational")
 
 	_, _, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-write"), http.Header{http.AcceptEncodingKey: {"identity"}})
 	require.Error(t, err)
-	requirePanicLog(t, capture, "test panic after commit", "panic-after-write")
+	requirePanicLog(t, capture, "test panic after commit", "/panic-after-write")
 
 	res, body, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-operation"), http.Header{})
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	require.Equal(t, "http: internal server error", body)
-	requirePanicLog(t, capture, "test operation panic", "panic-operation")
+	requirePanicLog(t, capture, "test operation panic", "/panic-operation")
 
 	_, _, err = world.GetBody(t.Context(), world.PathServerURL("http", "panic-after-error"), http.Header{http.AcceptEncodingKey: {"identity"}})
 	require.Error(t, err)
-	requirePanicLog(t, capture, "test panic after error", "panic-after-error")
+	requirePanicLog(t, capture, "test panic after error", "/panic-after-error")
 
 	res, body, err = world.GetBody(t.Context(), world.PathServerURL("http", "hello"), http.Header{})
 	require.NoError(t, err)
@@ -220,7 +220,7 @@ func TestServerRecoversPanic(t *testing.T) {
 	require.Equal(t, "hello!", body)
 }
 
-func requirePanicLog(t *testing.T, capture *test.CaptureHandler, panicMessage, service string) {
+func requirePanicLog(t *testing.T, capture *test.CaptureHandler, panicMessage, route string) {
 	t.Helper()
 
 	for _, record := range capture.Snapshot() {
@@ -235,8 +235,8 @@ func requirePanicLog(t *testing.T, capture *test.CaptureHandler, panicMessage, s
 
 		require.Equal(t, slog.LevelError, record.Level)
 		require.Equal(t, "http", record.Attrs["system"].String())
-		require.Equal(t, service, record.Attrs["service"].String())
-		require.Equal(t, "get", record.Attrs["method"].String())
+		require.Equal(t, route, record.Attrs["http.route"].String())
+		require.Equal(t, "get", record.Attrs["http.request.method"].String())
 		require.NotEmpty(t, record.Attrs["request_id"].String())
 
 		return

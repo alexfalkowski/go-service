@@ -12,7 +12,12 @@ import (
 	"github.com/alexfalkowski/go-service/v3/internal/test"
 	"github.com/alexfalkowski/go-service/v3/meta"
 	"github.com/alexfalkowski/go-service/v3/net/http"
+	"github.com/alexfalkowski/go-service/v3/net/http/client"
+	"github.com/alexfalkowski/go-service/v3/net/http/content/stream"
+	httpmeta "github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v3/net/http/status"
+	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
 	httplogger "github.com/alexfalkowski/go-service/v3/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v3/transport/http/token"
@@ -43,11 +48,80 @@ func TestHandlerLogsResponse(t *testing.T) {
 			})
 
 			require.Contains(t, logs.String(), `"level":"`+tt.level+`"`)
-			require.Contains(t, logs.String(), `"msg":"http: say-hello greeter"`)
+			require.Contains(t, logs.String(), `"msg":"http: get /greeter/say-hello"`)
 			require.Contains(t, logs.String(), `"system":"http"`)
-			require.Contains(t, logs.String(), `"service":"greeter"`)
-			require.Contains(t, logs.String(), `"method":"say-hello"`)
+			require.Contains(t, logs.String(), `"http.request.method":"get"`)
+			require.Contains(t, logs.String(), `"url.path":"/greeter/say-hello"`)
+			require.NotContains(t, logs.String(), `"http.route":`)
 			require.Contains(t, logs.String(), `"code":`+strconv.Itoa(tt.code))
+		})
+	}
+}
+
+func TestHandlerLogsMatchedRoute(t *testing.T) {
+	var logs bytes.Buffer
+	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+	mux, policy := http.NewServeMux(), http.NewRoutePolicy()
+	router := http.NewRouter(mux, policy)
+	router.HandleRoute("GET example.com/repos/{owner}/{repo}", http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.WriteHeader(http.StatusNoContent)
+	}))
+	metadata := httpmeta.NewHandler(test.UserAgent, test.Version, test.StaticIDGenerator("request-id"), mux, 1024)
+	chain := http.NewChainedHandlers(metadata, httplogger.NewHandler(policy, &logger.Logger{Logger: slogLogger}))
+	chain.UseHandler(mux)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodHead, "https://example.com/repos/alexfalkowski/abgleich?token=secret", http.NoBody)
+	res := httptest.NewRecorder()
+	chain.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusNoContent, res.Code)
+	require.Contains(t, logs.String(), `"msg":"http: head /repos/{owner}/{repo}"`)
+	require.Contains(t, logs.String(), `"http.request.method":"head"`)
+	require.Contains(t, logs.String(), `"http.route":"/repos/{owner}/{repo}"`)
+	require.Contains(t, logs.String(), `"url.path":"/repos/alexfalkowski/abgleich"`)
+	require.NotContains(t, logs.String(), "token=secret")
+}
+
+func TestHandlerLogsRPCOnlyForRegisteredRPCRoutes(t *testing.T) {
+	const path = "/greet.v1.Greeter/SayHello"
+	tests := []struct {
+		name    string
+		message string
+		rpc     bool
+	}{
+		{name: "ordinary POST", message: strings.Concat("http: post ", path)},
+		{name: "RPC POST", message: "http: greet.v1.Greeter/SayHello", rpc: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var logs bytes.Buffer
+			slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+			mux, policy := http.NewServeMux(), http.NewRoutePolicy()
+			router := http.NewRouter(mux, policy)
+			if tt.rpc {
+				server := rpc.NewServer(router, test.UnaryContent, test.StreamContent, stream.Options{})
+				server.Route(path, test.NoContent)
+			} else {
+				router.HandleRoute(strings.Concat("POST ", path), http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+					res.WriteHeader(http.StatusNoContent)
+				}))
+			}
+			metadata := httpmeta.NewHandler(test.UserAgent, test.Version, test.StaticIDGenerator("request-id"), mux, 1024)
+			chain := http.NewChainedHandlers(metadata, httplogger.NewHandler(policy, &logger.Logger{Logger: slogLogger}))
+			chain.UseHandler(mux)
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, path, bytes.NewBufferString(`{}`))
+			res := httptest.NewRecorder()
+			chain.ServeHTTP(res, req)
+
+			require.Less(t, res.Code, 400)
+			require.Contains(t, logs.String(), strings.Concat(`"msg":"`, tt.message, `"`))
+			require.Contains(t, logs.String(), `"http.request.method":"post"`)
+			if tt.rpc {
+				require.Contains(t, logs.String(), `"service":"greet.v1.Greeter"`)
+				require.Contains(t, logs.String(), `"method":"SayHello"`)
+			} else {
+				require.NotContains(t, logs.String(), `"service":`)
+				require.NotContains(t, logs.String(), `"method":`)
+			}
 		})
 	}
 }
@@ -145,7 +219,7 @@ func TestHandlerSuppressesAbortHandlerPanicLog(t *testing.T) {
 	})
 
 	require.NotContains(t, logs.String(), `"msg":"http: panic"`)
-	require.Contains(t, logs.String(), `"msg":"http: say-hello greeter"`)
+	require.Contains(t, logs.String(), `"msg":"http: get /greeter/say-hello"`)
 	require.Contains(t, logs.String(), `"level":"INFO"`)
 	require.Contains(t, logs.String(), `"code":200`)
 	require.Contains(t, logs.String(), `"error":"stream aborted"`)
@@ -154,9 +228,9 @@ func TestHandlerSuppressesAbortHandlerPanicLog(t *testing.T) {
 func TestRoundTripperLogsTransportError(t *testing.T) {
 	var logs bytes.Buffer
 	transportErr := errors.New("dial failed")
-	base := &test.ErrorRoundTripper{Err: transportErr}
+	transport := &test.ErrorRoundTripper{Err: transportErr}
 	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
-	rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, base)
+	rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, transport)
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/users", http.NoBody)
 	require.NoError(t, err)
@@ -171,9 +245,9 @@ func TestRoundTripperLogsTransportError(t *testing.T) {
 func TestRoundTripperLogsStatusErrorCode(t *testing.T) {
 	var logs bytes.Buffer
 	err := status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
-	base := &test.ErrorRoundTripper{Err: err}
+	transport := &test.ErrorRoundTripper{Err: err}
 	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
-	rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, base)
+	rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, transport)
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/users", http.NoBody)
 	require.NoError(t, err)
@@ -199,21 +273,65 @@ func TestRoundTripperLogsResponse(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var logs bytes.Buffer
-			base := &test.StatusRoundTripper{Status: tt.code}
+			transport := &test.StatusRoundTripper{Status: tt.code}
 			slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
-			rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, base)
-			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/users", http.NoBody)
+			rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, transport)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://api.github.com/repos/alexfalkowski/abgleich?token=secret", http.NoBody)
 			require.NoError(t, err)
 
 			res, err := rt.RoundTrip(req)
 			require.NoError(t, err)
 			require.Equal(t, tt.code, res.StatusCode)
 			require.Contains(t, logs.String(), `"level":"`+tt.level+`"`)
-			require.Contains(t, logs.String(), `"msg":"http: get users"`)
+			require.Contains(t, logs.String(), `"msg":"http: get api.github.com/repos/alexfalkowski/abgleich"`)
 			require.Contains(t, logs.String(), `"system":"http"`)
-			require.Contains(t, logs.String(), `"service":"users"`)
-			require.Contains(t, logs.String(), `"method":"get"`)
+			require.Contains(t, logs.String(), `"server.address":"api.github.com"`)
+			require.Contains(t, logs.String(), `"http.request.method":"get"`)
+			require.Contains(t, logs.String(), `"url.path":"/repos/alexfalkowski/abgleich"`)
+			require.NotContains(t, logs.String(), `"service":`)
+			require.NotContains(t, logs.String(), `"method":`)
+			require.NotContains(t, logs.String(), "token=secret")
 			require.Contains(t, logs.String(), `"code":`+strconv.Itoa(tt.code))
 		})
 	}
+}
+
+func TestRoundTripperLogsURLTemplate(t *testing.T) {
+	var logs bytes.Buffer
+	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+	redirectTransport := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		if req.URL.Host == "api.github.com" {
+			res := test.ResponseWithStatus(http.StatusFound)
+			res.Header.Set(http.LocationKey, "https://example.com/repositories/123")
+			return res, nil
+		}
+		return test.ResponseWithStatus(http.StatusNoContent), nil
+	})
+	rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, redirectTransport)
+	ctx := httpmeta.WithURLTemplate(t.Context(), "/repos/{owner}/{repo}")
+	httpClient := test.NewContentClient(client.WithRoundTripper(rt), client.WithRedirect(client.RedirectFollow))
+
+	require.NoError(t, httpClient.Get(ctx, "https://api.github.com/repos/alexfalkowski/abgleich", client.Options{}))
+	require.Contains(t, logs.String(), `"msg":"http: get api.github.com/repos/{owner}/{repo}"`)
+	require.Contains(t, logs.String(), `"url.template":"/repos/{owner}/{repo}"`)
+	require.Contains(t, logs.String(), `"url.path":"/repos/alexfalkowski/abgleich"`)
+	require.Contains(t, logs.String(), `"msg":"http: get example.com/repositories/123"`)
+}
+
+func TestRoundTripperLogsRPCClientMethod(t *testing.T) {
+	var logs bytes.Buffer
+	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
+	rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, &test.StatusRoundTripper{Status: http.StatusNoContent})
+	httpClient := test.NewContentClient(client.WithRoundTripper(rt))
+	rpcClient := rpc.NewClient("https://example.com/api/", httpClient)
+	var res test.Response
+
+	err := rpcClient.Post(t.Context(), "greet.v1.Greeter/SayHello?name=Bob", &test.Request{Name: "Bob"}, &res)
+
+	require.NoError(t, err)
+	require.Contains(t, logs.String(), `"msg":"http: greet.v1.Greeter/SayHello"`)
+	require.Contains(t, logs.String(), `"service":"greet.v1.Greeter"`)
+	require.Contains(t, logs.String(), `"method":"SayHello"`)
+	require.Contains(t, logs.String(), `"http.request.method":"post"`)
+	require.Contains(t, logs.String(), `"url.path":"/api/greet.v1.Greeter/SayHello"`)
 }
