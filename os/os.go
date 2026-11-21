@@ -17,6 +17,30 @@ const ExitCodeFailure = 1
 // ExitCodeServeFailure indicates an asynchronous server Serve failure.
 const ExitCodeServeFailure = 2
 
+// OpenReadOnly aliases [os.O_RDONLY].
+const OpenReadOnly = os.O_RDONLY
+
+// OpenWriteOnly aliases [os.O_WRONLY].
+const OpenWriteOnly = os.O_WRONLY
+
+// OpenReadWrite aliases [os.O_RDWR].
+const OpenReadWrite = os.O_RDWR
+
+// OpenAppend aliases [os.O_APPEND].
+const OpenAppend = os.O_APPEND
+
+// OpenCreate aliases [os.O_CREATE].
+const OpenCreate = os.O_CREATE
+
+// OpenExclusive aliases [os.O_EXCL].
+const OpenExclusive = os.O_EXCL
+
+// OpenSync aliases [os.O_SYNC].
+const OpenSync = os.O_SYNC
+
+// OpenTruncate aliases [os.O_TRUNC].
+const OpenTruncate = os.O_TRUNC
+
 // Args is the process argument vector used by go-service CLI helpers.
 //
 // It is initialized from [os.Args] at package init time and is provided so
@@ -36,6 +60,26 @@ var Stdout = os.Stdout
 // It represents an open file descriptor and is provided so go-service code can
 // depend on go-service packages consistently.
 type File = os.File
+
+// PathError aliases [os.PathError], which reports errors from operations on a path.
+type PathError = os.PathError
+
+// LinkError aliases [os.LinkError], which records errors from link and rename operations.
+type LinkError = os.LinkError
+
+// Root aliases [os.Root] for filesystem operations within a directory tree.
+type Root = os.Root
+
+// OpenRoot wraps [os.OpenRoot] to open a directory for rooted filesystem
+// operations. The caller must close the returned root.
+func OpenRoot(name string) (*Root, error) {
+	return os.OpenRoot(name)
+}
+
+// OpenInRoot wraps [os.OpenInRoot] to open a file for reading within dir.
+func OpenInRoot(dir, name string) (*File, error) {
+	return os.OpenInRoot(dir, name)
+}
 
 // CreateTemp creates a new temporary file in the directory dir, opens it for
 // reading and writing, and returns the resulting *[File].

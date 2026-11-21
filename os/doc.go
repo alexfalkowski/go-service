@@ -72,6 +72,11 @@
 // go-service packages consistently, while still delegating to the underlying OS
 // implementation.
 //
+// Use [OpenRoot] for multiple operations within a directory tree and close the
+// returned [Root] when finished. Use flags such as [OpenReadOnly] or
+// [OpenWriteOnly] with the root's OpenFile method. [OpenInRoot] opens a single
+// file for reading within a directory tree.
+//
 // # Process exit codes
 //
 // [ExitCodeSuccess], [ExitCodeFailure], and [ExitCodeServeFailure] provide shared

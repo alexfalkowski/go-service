@@ -3,9 +3,70 @@ package os_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/io"
 	"github.com/alexfalkowski/go-service/v3/os"
 	"github.com/stretchr/testify/require"
 )
+
+func TestOpenRootAllowsFileOperationsWithinDirectory(t *testing.T) {
+	dir := t.TempDir()
+	root, err := os.OpenRoot(dir)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, root.Close())
+	})
+
+	file, err := root.OpenFile("file.txt", os.OpenWriteOnly|os.OpenCreate, 0o600)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, file.Close())
+	})
+	_, err = file.WriteString("contents")
+	require.NoError(t, err)
+
+	data, err := test.FS.ReadFile(test.FS.Join(dir, "file.txt"))
+	require.NoError(t, err)
+	require.Equal(t, "contents", string(data))
+}
+
+func TestOpenRootReportsMissingDirectory(t *testing.T) {
+	dir := test.FS.Join(t.TempDir(), "missing")
+
+	_, err := os.OpenRoot(dir)
+	require.ErrorIs(t, err, io.ErrNotExist)
+	var pathErr *os.PathError
+	require.ErrorAs(t, err, &pathErr)
+	require.Equal(t, dir, pathErr.Path)
+}
+
+func TestOpenInRootOpensFileForReading(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, test.FS.WriteFile(test.FS.Join(dir, "file.txt"), []byte("contents"), 0o600))
+
+	file, err := os.OpenInRoot(dir, "file.txt")
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, file.Close())
+	})
+
+	data, _, err := io.ReadAll(file)
+	require.NoError(t, err)
+	require.Equal(t, "contents", string(data))
+}
+
+func TestOpenInRootRejectsFileOutsideDirectory(t *testing.T) {
+	parent := t.TempDir()
+	dir := test.FS.Join(parent, "root")
+	require.NoError(t, test.FS.Mkdir(dir, 0o700))
+	require.NoError(t, test.FS.WriteFile(test.FS.Join(parent, "file.txt"), []byte("outside"), 0o600))
+
+	name := test.FS.Join("..", "file.txt")
+	_, err := os.OpenInRoot(dir, name)
+	var pathErr *os.PathError
+	require.ErrorAs(t, err, &pathErr)
+	require.Equal(t, name, pathErr.Path)
+}
 
 //nolint:usetesting
 func TestEnvironmentExposesSetAndUnsetVariables(t *testing.T) {
