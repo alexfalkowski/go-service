@@ -2,6 +2,14 @@ package uuid
 
 import "uuid"
 
+// UUID is an alias of [uuid.UUID].
+type UUID = uuid.UUID
+
+// Parse decodes a UUID string using [uuid.Parse].
+func Parse(s string) (UUID, error) {
+	return uuid.Parse(s)
+}
+
 // NewGenerator constructs a UUID generator.
 //
 // The returned generator produces UUIDv7 identifiers (time-ordered UUIDs) via [uuid.NewV7].

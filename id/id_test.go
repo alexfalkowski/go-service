@@ -1,9 +1,14 @@
 package id_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v3/id"
+	"github.com/alexfalkowski/go-service/v3/id/ksuid"
+	"github.com/alexfalkowski/go-service/v3/id/ulid"
+	"github.com/alexfalkowski/go-service/v3/id/uuid"
+	"github.com/alexfalkowski/go-service/v3/id/xid"
 	"github.com/alexfalkowski/go-service/v3/internal/test"
 	"github.com/stretchr/testify/require"
 )
@@ -37,4 +42,30 @@ func TestNewGeneratorReturnsDefaultGeneratorWithoutConfig(t *testing.T) {
 func TestNewGeneratorRejectsUnsupportedKind(t *testing.T) {
 	_, err := id.NewGenerator(&id.Config{Kind: "invalid"}, test.Generators)
 	require.ErrorIs(t, err, id.ErrNotFound)
+}
+
+func TestParsersRoundTripGeneratedIDs(t *testing.T) {
+	t.Run("uuid", func(t *testing.T) {
+		requireIDRoundTrip(t, test.Generators.Get("uuid").Generate(), uuid.Parse)
+	})
+	t.Run("ksuid", func(t *testing.T) {
+		requireIDRoundTrip(t, test.Generators.Get("ksuid").Generate(), ksuid.Parse)
+	})
+	t.Run("ulid", func(t *testing.T) {
+		requireIDRoundTrip(t, test.Generators.Get("ulid").Generate(), ulid.Parse)
+	})
+	t.Run("xid", func(t *testing.T) {
+		requireIDRoundTrip(t, test.Generators.Get("xid").Generate(), xid.Parse)
+	})
+}
+
+func requireIDRoundTrip[T fmt.Stringer](t *testing.T, text string, parse func(string) (T, error)) {
+	t.Helper()
+
+	parsed, err := parse(text)
+	require.NoError(t, err)
+	require.Equal(t, text, parsed.String())
+
+	_, err = parse("invalid")
+	require.Error(t, err)
 }

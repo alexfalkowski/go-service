@@ -1,8 +1,8 @@
-// Package ksuid provides KSUID-based ID generation helpers used by go-service.
+// Package ksuid provides KSUID generation and parsing helpers used by go-service.
 //
 // This package integrates KSUID generation behind the go-service ID abstraction.
 // KSUID values are operational identifiers with time-sortable characteristics;
 // they are not secret material or bearer tokens.
 //
-// Start with the package-level constructors.
+// Use [NewGenerator] to generate KSUID strings and [Parse] to decode them into a [KSUID].
 package ksuid

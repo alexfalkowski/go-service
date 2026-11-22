@@ -12,6 +12,9 @@
 // and [github.com/alexfalkowski/go-service/v3/id/xid]). The [Module] wiring constructs these
 // generators and registers them into a *[Map].
 //
+// Use [uuid.Parse], [ksuid.Parse], [ulid.Parse], or [xid.Parse] to parse ID text.
+// NanoIDs are plain strings.
+//
 // Generator kinds are selected for different operational properties. The "uuid" generator is the
 // default and is optimized for the request metadata hot path. The "xid" generator is intentionally
 // available for compact, roughly sortable identifiers, but callers should not treat XIDs as opaque
