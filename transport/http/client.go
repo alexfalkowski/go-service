@@ -2,19 +2,23 @@ package http
 
 import (
 	"github.com/alexfalkowski/go-service/v3/config/client"
+	"github.com/alexfalkowski/go-service/v3/context"
 	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/errors"
 	"github.com/alexfalkowski/go-service/v3/id"
 	"github.com/alexfalkowski/go-service/v3/id/uuid"
 	"github.com/alexfalkowski/go-service/v3/net/http"
 	"github.com/alexfalkowski/go-service/v3/net/http/compress"
 	"github.com/alexfalkowski/go-service/v3/net/http/meta"
+	"github.com/alexfalkowski/go-service/v3/net/url"
 	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/alexfalkowski/go-service/v3/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/v3/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v3/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v3/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v3/transport/http/token"
+	"github.com/alexfalkowski/go-signal/v2"
 )
 
 // ClientOption configures HTTP client construction.
@@ -32,6 +36,7 @@ type clientOptions struct {
 	gen           token.Generator
 	generator     id.Generator
 	roundTripper  http.RoundTripper
+	lifecycle     signal.Lifecycle
 	tls           *tls.Config
 	retry         *retry.Config
 	limiter       *limiter.Client
@@ -87,6 +92,17 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 func WithClientTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.timeout = timeout
+	})
+}
+
+// WithClientLifecycle closes the base transport's idle connections when lc stops.
+// It applies to clients constructed before lifecycle startup with [NewClient]
+// or [NewClientFromConfig]. A nil lifecycle disables registration. A custom
+// transport supplied through [WithClientRoundTripper] participates when it
+// implements CloseIdleConnections.
+func WithClientLifecycle(lc signal.Lifecycle) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.lifecycle = lc
 	})
 }
 
@@ -216,44 +232,18 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	resolved := options(opts...)
 
-	hrt, err := roundTripper(resolved)
+	base, err := roundTripper(resolved)
 	if err != nil {
 		return nil, err
 	}
 
-	if resolved.compression {
-		hrt = compress.Transport(hrt)
-	}
-
-	if resolved.gen != nil {
-		hrt = token.NewRoundTripper(resolved.id, resolved.gen, hrt)
-	}
-
-	if resolved.breaker != nil {
-		hrt = breaker.NewRoundTripper(hrt, resolved.breaker.Options()...)
-	}
-
-	if resolved.limiter != nil {
-		hrt = limiter.NewRoundTripper(resolved.limiter, hrt)
-	}
-
-	if resolved.retry != nil {
-		hrt = retry.NewRoundTripper(resolved.retry, hrt, resolved.retryPolicies...)
-	}
-
-	if resolved.logger != nil {
-		hrt = logger.NewRoundTripper(resolved.logger, hrt)
-	}
-
-	hrt = meta.NewRoundTripper(resolved.userAgent, resolved.generator, hrt)
-
-	return hrt, nil
+	return applyClientMiddleware(base, resolved), nil
 }
 
 // NewClient constructs a new [http.Client].
 //
 // The returned client:
-//   - uses the RoundTripper stack built by [NewRoundTripper], and
+//   - uses the middleware stack described by [NewRoundTripper], and
 //   - applies the configured client timeout (see [WithClientTimeout]).
 //
 // If token generation is enabled, the returned client uses [http.SameOriginRedirect] so cross-origin
@@ -264,23 +254,98 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 func NewClient(opts ...ClientOption) (*http.Client, error) {
 	resolved := options(opts...)
 
-	transport, err := NewRoundTripper(opts...)
+	rt, err := roundTripper(resolved)
 	if err != nil {
 		return nil, err
 	}
 
-	client := http.NewClient(transport, resolved.timeout)
+	client := http.NewClient(applyClientMiddleware(rt, resolved), resolved.timeout)
 	if resolved.gen != nil {
 		client.CheckRedirect = http.SameOriginRedirect
+	}
+
+	if resolved.lifecycle == nil {
+		return client, nil
+	}
+
+	// Like http.Client.CloseIdleConnections, check for the optional method.
+	// Check the underlying transport directly because middleware can hide it.
+	pool, ok := rt.(interface{ CloseIdleConnections() })
+	if ok {
+		resolved.lifecycle.Append(signal.Hook{
+			OnStop: func(context.Context) error {
+				pool.CloseIdleConnections()
+				return nil
+			},
+		})
 	}
 
 	return client, nil
 }
 
+// NewClientFromConfig constructs an HTTP client and returns its parsed endpoint
+// for use when building requests or configuring an SDK. An absent config or an
+// endpoint other than absolute HTTPS or loopback HTTP returns an error matching
+// [url.ErrInvalidSecureURL]. Construction makes no network requests.
+//
+// The config supplies timeout, TLS, and breaker settings. Explicit opts override
+// those settings and can add middleware such as retries or token injection.
+func NewClientFromConfig(cfg *client.Config, opts ...ClientOption) (*http.Client, *url.SecureURL, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil, errors.Prefix("http client endpoint", url.ErrInvalidSecureURL)
+	}
+
+	endpoint, err := url.ParseSecureURL(cfg.Endpoint)
+	if err != nil {
+		return nil, nil, errors.Prefix("http client endpoint", err)
+	}
+
+	opts = append([]ClientOption{
+		WithClientTimeout(cfg.Timeout),
+		WithClientTLS(cfg.TLS),
+		WithClientBreaker(breaker.NewConfig(cfg.Breaker)),
+	}, opts...)
+
+	conn, err := NewClient(opts...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return conn, endpoint, nil
+}
+
+func applyClientMiddleware(ht http.RoundTripper, resolved *clientOptions) http.RoundTripper {
+	if resolved.compression {
+		ht = compress.Transport(ht)
+	}
+
+	if resolved.gen != nil {
+		ht = token.NewRoundTripper(resolved.id, resolved.gen, ht)
+	}
+
+	if resolved.breaker != nil {
+		ht = breaker.NewRoundTripper(ht, resolved.breaker.Options()...)
+	}
+
+	if resolved.limiter != nil {
+		ht = limiter.NewRoundTripper(resolved.limiter, ht)
+	}
+
+	if resolved.retry != nil {
+		ht = retry.NewRoundTripper(resolved.retry, ht, resolved.retryPolicies...)
+	}
+
+	if resolved.logger != nil {
+		ht = logger.NewRoundTripper(resolved.logger, ht)
+	}
+
+	return meta.NewRoundTripper(resolved.userAgent, resolved.generator, ht)
+}
+
 func roundTripper(resolved *clientOptions) (http.RoundTripper, error) {
-	hrt := resolved.roundTripper
-	if hrt != nil {
-		return hrt, nil
+	ht := resolved.roundTripper
+	if ht != nil {
+		return ht, nil
 	}
 
 	if !resolved.tls.IsEnabled() {

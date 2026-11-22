@@ -19,6 +19,7 @@ import (
 	"github.com/alexfalkowski/go-service/v3/telemetry/otlp"
 	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/alexfalkowski/go-service/v3/transport"
+	"github.com/alexfalkowski/go-service/v3/transport/http"
 	"github.com/alexfalkowski/go-service/v3/transport/http/hooks"
 	"github.com/alexfalkowski/go-service/v3/transport/limiter"
 	"github.com/alexfalkowski/go-signal/v2"
@@ -78,6 +79,8 @@ var Server = signal.Module(
 	config.Module,
 	telemetry.Module,
 	cache.Module,
+	// Providers constructed by feature.Module can load HTTP client TLS files.
+	signal.Register(http.Register),
 	feature.Module,
 	sql.Module,
 	limiter.Module,
@@ -97,8 +100,8 @@ var Server = signal.Module(
 //   - [sql.Module] (SQL database wiring; currently PostgreSQL)
 //   - [limiter.Module] (rate limiter key map wiring)
 //
-// Unlike [Server], Client does not wire debug endpoints, transports, HTTP/gRPC health endpoints, or
-// HTTP hook transport adapters by default. Those can be added explicitly by composing additional
+// Client registers filesystem access for outbound HTTP client TLS. Enable server transports,
+// debug endpoints, HTTP/gRPC health endpoints, or HTTP hook transport adapters by composing additional
 // modules, such as [transport.Module] or [github.com/alexfalkowski/go-service/v3/transport/http/hooks.Module],
 // on top of Client if needed.
 //
@@ -108,6 +111,8 @@ var Client = signal.Module(
 	config.Module,
 	telemetry.Module,
 	cache.Module,
+	// Providers constructed by feature.Module can load HTTP client TLS files.
+	signal.Register(http.Register),
 	feature.Module,
 	hooks.Module,
 	sql.Module,

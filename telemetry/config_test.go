@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v3/encoding/json"
 	"github.com/alexfalkowski/go-service/v3/encoding/toml"
 	"github.com/alexfalkowski/go-service/v3/encoding/yaml"
+	"github.com/alexfalkowski/go-service/v3/internal/test"
 	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/alexfalkowski/go-service/v3/telemetry"
 	"github.com/alexfalkowski/go-service/v3/telemetry/logger"
@@ -19,19 +20,11 @@ import (
 func TestConfigDecodesExporterEndpoints(t *testing.T) {
 	t.Parallel()
 
-	const object = `{
-		"logger": {"endpoint": "localhost:4317"},
-		"metrics": {"endpoint": "http://localhost:4318/v1/metrics"},
-		"tracer": {"endpoint": "https://collector.example.com/v1/traces"}
-	}`
-	const tables = `
-[logger]
-endpoint = "localhost:4317"
-[metrics]
-endpoint = "http://localhost:4318/v1/metrics"
-[tracer]
-endpoint = "https://collector.example.com/v1/traces"
-`
+	object, err := test.FS.ReadFile(test.Path("configs/valid_telemetry_endpoints.json"))
+	require.NoError(t, err)
+	tables, err := test.FS.ReadFile(test.Path("configs/valid_telemetry_endpoints.toml"))
+	require.NoError(t, err)
+
 	want := telemetry.Config{
 		Logger:  &logger.Config{Endpoint: "localhost:4317"},
 		Metrics: &metrics.Config{Endpoint: "http://localhost:4318/v1/metrics"},
@@ -39,7 +32,7 @@ endpoint = "https://collector.example.com/v1/traces"
 	}
 	tests := []struct {
 		name      string
-		data      string
+		data      []byte
 		unmarshal func([]byte, any) error
 	}{
 		{name: "JSON", data: object, unmarshal: json.Unmarshal},
@@ -53,10 +46,10 @@ endpoint = "https://collector.example.com/v1/traces"
 			t.Parallel()
 
 			var cfg telemetry.Config
-			require.NoError(t, tt.unmarshal([]byte(tt.data), &cfg))
+			require.NoError(t, tt.unmarshal(tt.data, &cfg))
 			require.Equal(t, want, cfg)
 
-			legacy := strings.ReplaceAll(tt.data, "endpoint", "url")
+			legacy := strings.ReplaceAll(bytes.String(tt.data), "endpoint", "url")
 			require.Error(t, tt.unmarshal([]byte(legacy), &cfg))
 		})
 	}

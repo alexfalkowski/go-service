@@ -38,10 +38,15 @@
 //
 // # Client wiring
 //
-// [NewClient] constructs an `*http.Client` whose `Transport` is assembled by [NewRoundTripper]. The
-// resulting client can include metadata propagation, optional logging, optional token injection, optional
-// retries, optional circuit breaking, and optional client-side rate limiting, depending on the provided
-// client options.
+// [NewClient] constructs an `*http.Client` using the middleware stack described by [NewRoundTripper].
+// The stack can include metadata propagation, logging, token injection, retries, circuit breaking, and
+// client-side rate limiting, depending on the provided options.
+//
+// [NewClientFromConfig] uses the configured endpoint, timeout, TLS, and breaker settings from
+// [github.com/alexfalkowski/go-service/v3/config/client.Config]. It returns the validated base URL
+// alongside the HTTP client so an SDK can use both. Supply retry policy through [WithClientRetry].
+// To close idle connections at application shutdown, use [WithClientLifecycle] with either constructor.
+// Construct the client before registering consumers so they stop before the pool closes.
 //
 // # Manual composition note (TLS filesystem)
 //
@@ -51,7 +56,8 @@
 // (for example `file:<path>` or `env:VAR`) when materializing the
 // runtime `*crypto/tls.Config`.
 //
-// When you use [Module] (directly or through higher-level bundles such as [github.com/alexfalkowski/go-service/v3/module.Server]), DI performs
-// this registration for you. Call [Register] yourself only when you intentionally compose the HTTP transport
-// package manually outside the standard module graph.
+// The standard [github.com/alexfalkowski/go-service/v3/module.Server] and
+// [github.com/alexfalkowski/go-service/v3/module.Client] bundles register the filesystem before constructing OpenFeature
+// providers. [Module] also registers it for direct HTTP transport composition. For manual setup, call
+// [Register] before constructing a TLS client or server that reads file sources.
 package http

@@ -1,0 +1,5 @@
+{
+  "logger": {"endpoint": "localhost:4317"},
+  "metrics": {"endpoint": "http://localhost:4318/v1/metrics"},
+  "tracer": {"endpoint": "https://collector.example.com/v1/traces"}
+}
