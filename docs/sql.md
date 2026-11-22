@@ -8,7 +8,10 @@ Postgres config embeds common pool + DSN config (`database/sql/config.Config`), 
 
 `module.Server` and `module.Client` both include `sql.Module`, which currently wires PostgreSQL support via `database/sql/pg.Module`.
 
-Enablement is presence-based: a nil `sql` block or a nil `sql.pg` block disables SQL wiring. When enabled, the pgx stdlib driver is registered under the name `pg`, and reader/writer DSNs are resolved using the source-string rules described in [Source strings](../README.md#-source-strings-secrets-dsns-paths). Enabled PostgreSQL config must provide at least one non-empty `reader.dsns[].url` or `writer.dsns[].url`. Driver instrumentation is installed when tracing or metrics are enabled, OpenTelemetry `database/sql` stats metrics are registered when metrics are enabled, and the resulting pools are closed on lifecycle stop.
+Enablement is presence-based: a nil `sql` block or a nil `sql.pg` block disables SQL wiring. When enabled, the pgx stdlib driver is registered under the name `pg`, and reader/writer DSNs are resolved using the source-string rules described in [Source strings](../README.md#-source-strings-secrets-dsns-paths). Enabled PostgreSQL config must provide at least one non-empty `reader.dsns[].source` or `writer.dsns[].source`. Driver instrumentation is installed when tracing or metrics are enabled, OpenTelemetry `database/sql` stats metrics are registered when metrics are enabled, and the resulting pools are closed on lifecycle stop.
+
+When migrating an existing configuration, rename `url` to `source` in each DSN
+entry. In Go, use `DSN.Source` and `DSN.Resolve`.
 
 SQL wiring creates `database/sql` pool handles and applies pool settings, but it
 does not ping PostgreSQL during construction. Call `DBs.Ping`, `DBs.PingWriter`,
@@ -23,7 +26,7 @@ sql:
   pg:
     reader:
       dsns:
-        - url: env:PG_READER_DSN
+        - source: env:PG_READER_DSN
       settings:
         max_open_conns: 20
         max_idle_conns: 10
@@ -31,7 +34,7 @@ sql:
         conn_max_lifetime: 1h
     writer:
       dsns:
-        - url: env:PG_WRITER_DSN
+        - source: env:PG_WRITER_DSN
       settings:
         max_open_conns: 3
         max_idle_conns: 2
@@ -39,14 +42,14 @@ sql:
         conn_max_lifetime: 30m
 ```
 
-Example (literal DSN; not recommended for production secrets):
+A literal DSN can use a PostgreSQL URL or a keyword/value connection string.
 
 ```yaml
 sql:
   pg:
     writer:
       dsns:
-        - url: postgres://user:pass@localhost:5432/dbname?sslmode=disable
+        - source: host=localhost dbname=example
       settings:
         max_open_conns: 10
         max_idle_conns: 5

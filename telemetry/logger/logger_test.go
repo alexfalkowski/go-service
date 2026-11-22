@@ -310,8 +310,8 @@ func TestNewLoggerRejectsInvalidLevel(t *testing.T) {
 func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
 	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{
-		Kind: "otlp",
-		URL:  "http://collector.example.com/v1/logs",
+		Kind:     "otlp",
+		Endpoint: "http://collector.example.com/v1/logs",
 		Headers: header.Map{
 			http.AuthorizationKey: "Bearer token",
 		},
@@ -334,7 +334,7 @@ func TestOTLPOverGRPCLogger(t *testing.T) {
 	cfg := &logger.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
-		URL:      "localhost:4317",
+		Endpoint: "localhost:4317",
 	}
 	params := logger.LoggerParams{
 		Lifecycle:   lc,
@@ -356,7 +356,7 @@ func TestRejectsInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 	cfg := &logger.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
-		URL:      "collector.example.com:4317",
+		Endpoint: "collector.example.com:4317",
 		Headers: header.Map{
 			http.AuthorizationKey: "Bearer token",
 		},
@@ -379,7 +379,7 @@ func TestOTLPOverGRPCLoggerWithTLSHeaders(t *testing.T) {
 	cfg := &logger.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
-		URL:      "collector.example.com:4317",
+		Endpoint: "collector.example.com:4317",
 		TLS:      &tls.Config{ServerName: "collector.example.com"},
 		Headers: header.Map{
 			http.AuthorizationKey: "Bearer token",
@@ -430,7 +430,7 @@ func TestOTLPOverGRPCLoggerWithBatchTuning(t *testing.T) {
 	cfg := &logger.Config{
 		Kind:               "otlp",
 		Protocol:           "grpc",
-		URL:                "localhost:4317",
+		Endpoint:           "localhost:4317",
 		BatchTimeout:       time.Second,
 		ExportTimeout:      time.Second,
 		MaxQueueSize:       1024,
@@ -454,9 +454,9 @@ func TestOTLPOverGRPCLoggerWithBatchTuning(t *testing.T) {
 func TestOTLPLoggerUsesConfiguredLevel(t *testing.T) {
 	lc := signaltest.NewLifecycle(t)
 	cfg := &logger.Config{
-		Kind:  "otlp",
-		Level: "error",
-		URL:   "https://localhost:4318/v1/logs",
+		Kind:     "otlp",
+		Level:    "error",
+		Endpoint: "https://localhost:4318/v1/logs",
 	}
 	params := logger.LoggerParams{
 		Lifecycle:   lc,

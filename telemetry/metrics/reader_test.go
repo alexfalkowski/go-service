@@ -148,8 +148,8 @@ func gatherFamilyNames(t *testing.T) []string {
 func TestRejectsInvalidOTLPEndpoint(t *testing.T) {
 	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{
-		Kind: "otlp",
-		URL:  "http://collector.example.com/v1/metrics",
+		Kind:     "otlp",
+		Endpoint: "http://collector.example.com/v1/metrics",
 		Headers: header.Map{
 			http.AuthorizationKey: "Bearer token",
 		},
@@ -164,7 +164,7 @@ func TestOTLPOverGRPCReader(t *testing.T) {
 	cfg := &metrics.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
-		URL:      "localhost:4317",
+		Endpoint: "localhost:4317",
 	}
 
 	reader, err := metrics.NewReader(metrics.ReaderParams{Lifecycle: lc, Config: cfg, FS: test.FS, Name: test.Name})
@@ -178,7 +178,7 @@ func TestRejectsInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 	cfg := &metrics.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
-		URL:      "collector.example.com:4317",
+		Endpoint: "collector.example.com:4317",
 		Headers: header.Map{
 			http.AuthorizationKey: "Bearer token",
 		},
@@ -193,7 +193,7 @@ func TestOTLPOverGRPCReaderWithTLSHeaders(t *testing.T) {
 	cfg := &metrics.Config{
 		Kind:     "otlp",
 		Protocol: "grpc",
-		URL:      "collector.example.com:4317",
+		Endpoint: "collector.example.com:4317",
 		TLS:      &tls.Config{ServerName: "collector.example.com"},
 		Headers: header.Map{
 			http.AuthorizationKey: "Bearer token",

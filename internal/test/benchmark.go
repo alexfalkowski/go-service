@@ -46,7 +46,7 @@ func EnableTracer(tb testing.TB) {
 
 	require.NoError(tb, tracer.Register(tracer.TracerParams{
 		Lifecycle:   signaltest.NewLifecycle(tb),
-		Config:      &tracer.Config{Kind: "otlp", URL: otlpHTTPSURL + "/v1/traces"},
+		Config:      &tracer.Config{Kind: "otlp", Endpoint: otlpHTTPSURL + "/v1/traces"},
 		ID:          ID,
 		Name:        Name,
 		Version:     Version,

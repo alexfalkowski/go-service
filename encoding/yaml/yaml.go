@@ -8,6 +8,12 @@ import (
 	yaml "go.yaml.in/yaml/v3"
 )
 
+// Node is an alias for [go.yaml.in/yaml/v3.Node] for use in custom YAML decoders.
+type Node = yaml.Node
+
+// ScalarNode is the node kind for a single YAML value.
+const ScalarNode = yaml.ScalarNode
+
 var defaultEncoder = &Encoder{}
 
 // NewEncoder constructs a YAML encoder.

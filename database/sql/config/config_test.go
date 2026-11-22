@@ -3,11 +3,30 @@ package config_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v3/bytes"
 	"github.com/alexfalkowski/go-service/v3/database/sql/config"
+	"github.com/alexfalkowski/go-service/v3/encoding/json"
 	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/stretchr/testify/require"
 )
+
+func TestDSNSourceJSON(t *testing.T) {
+	const source = "host=localhost dbname=example"
+	const encoded = `{"source":"` + source + `"}`
+	var dsn config.DSN
+	require.NoError(t, json.Unmarshal(strings.Bytes(encoded), &dsn))
+
+	data, err := dsn.Resolve(test.FS)
+	require.NoError(t, err)
+	require.Equal(t, source, bytes.String(data))
+
+	encodedDSN, err := json.Marshal(dsn)
+	require.NoError(t, err)
+	require.JSONEq(t, encoded, bytes.String(encodedDSN))
+	require.Error(t, json.Unmarshal(strings.Bytes(`{"url":"`+source+`"}`), &dsn))
+}
 
 func TestConfigRejectsInvalidPoolSettings(t *testing.T) {
 	tests := []struct {

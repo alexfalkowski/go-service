@@ -71,16 +71,16 @@ func TestOpenRejectsInvalidDSNConfiguration(t *testing.T) {
 		{
 			name: "invalid writer",
 			config: test.NewPGConfigWithDSNs(
-				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
-				[]config.DSN{{URL: test.FilePath("secrets/none")}},
+				[]config.DSN{{Source: test.FilePath("secrets/pg")}},
+				[]config.DSN{{Source: test.FilePath("secrets/none")}},
 			),
 			wantErr: io.ErrNotExist,
 		},
 		{
 			name: "invalid reader",
 			config: test.NewPGConfigWithDSNs(
-				[]config.DSN{{URL: test.FilePath("secrets/none")}},
-				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
+				[]config.DSN{{Source: test.FilePath("secrets/none")}},
+				[]config.DSN{{Source: test.FilePath("secrets/pg")}},
 			),
 			wantErr: io.ErrNotExist,
 		},
@@ -92,7 +92,7 @@ func TestOpenRejectsInvalidDSNConfiguration(t *testing.T) {
 		{
 			name: "empty writer dsn",
 			config: test.NewPGConfigWithDSNs(
-				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
+				[]config.DSN{{Source: test.FilePath("secrets/pg")}},
 				[]config.DSN{{}},
 			),
 			wantErr: driver.ErrEmptyDSN,
@@ -100,8 +100,8 @@ func TestOpenRejectsInvalidDSNConfiguration(t *testing.T) {
 		{
 			name: "empty reader dsn",
 			config: test.NewPGConfigWithDSNs(
-				[]config.DSN{{URL: "env:PG_EMPTY_DSN"}},
-				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
+				[]config.DSN{{Source: "env:PG_EMPTY_DSN"}},
+				[]config.DSN{{Source: test.FilePath("secrets/pg")}},
 			),
 			wantErr: driver.ErrEmptyDSN,
 		},
@@ -376,9 +376,9 @@ func TestRejectsInvalidSQLPort(t *testing.T) {
 	lc.RequireStop()
 }
 
-func newPool(url string) *config.Pool {
+func newPool(source string) *config.Pool {
 	return &config.Pool{
-		DSNs: []config.DSN{{URL: url}},
+		DSNs: []config.DSN{{Source: source}},
 		Settings: &config.PoolSettings{
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,

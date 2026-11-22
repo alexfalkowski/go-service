@@ -9,7 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidateEndpoint(t *testing.T) {
+func TestResolveEndpoint(t *testing.T) {
+	const zonedAddress = "https://[fe80::1%25é]:4318/v1/traces"
 	headers := map[string]string{http.AuthorizationKey: "Bearer token"}
 
 	tests := []struct {
@@ -17,12 +18,16 @@ func TestValidateEndpoint(t *testing.T) {
 		wantErr  error
 		name     string
 	}{
-		{name: "secure HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "https://collector.example.com/v1/traces", Headers: headers}},
+		{name: "secure HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "HTTPS://collector.example.com/v1/%74races", Headers: headers}},
+		{name: "HTTPS with IPv6 zone", endpoint: otlp.Endpoint{Protocol: "http", Address: "https://[fe80::1%25en0]:4318/v1/traces", Headers: headers}},
+		{name: "non-ASCII IPv6 zone with headers", endpoint: otlp.Endpoint{Protocol: "http", Address: zonedAddress, Headers: headers}},
+		{name: "non-ASCII IPv6 zone without headers", endpoint: otlp.Endpoint{Protocol: "http", Address: zonedAddress}},
 		{name: "lowercase localhost HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://localhost:4318/v1/traces", Headers: headers}},
 		{name: "mixed case localhost HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://Localhost:4318/v1/traces", Headers: headers}},
 		{name: "uppercase localhost HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://LOCALHOST:4318/v1/traces", Headers: headers}},
 		{name: "loopback IP HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://127.0.0.1:4318/v1/traces", Headers: headers}},
 		{name: "headerless HTTP", endpoint: otlp.Endpoint{Protocol: "http", Address: "http://collector.example.com/v1/traces"}},
+		{name: "headerless HTTPS", endpoint: otlp.Endpoint{Protocol: "http", Address: "https://collector.example.com/v1/traces"}},
 		{name: "loopback grpc", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "localhost:4317", Headers: headers}},
 		{name: "mixed case localhost grpc", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "Localhost:4317", Headers: headers}},
 		{name: "headerless grpc", endpoint: otlp.Endpoint{Protocol: "grpc", Address: "collector.example.com:4317"}},
@@ -33,40 +38,42 @@ func TestValidateEndpoint(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := otlp.ValidateEndpoint(tt.endpoint)
+			address, err := otlp.ResolveEndpoint(tt.endpoint)
 			if tt.wantErr == nil {
 				require.NoError(t, err)
+				require.Equal(t, tt.endpoint.Address, address)
 				return
 			}
 
 			require.ErrorIs(t, err, tt.wantErr)
+			require.Empty(t, address)
 		})
 	}
 }
 
-func TestValidateEndpointInvalidURL(t *testing.T) {
-	err := otlp.ValidateEndpoint(otlp.Endpoint{
+func TestResolveEndpointInvalidURL(t *testing.T) {
+	_, err := otlp.ResolveEndpoint(otlp.Endpoint{
 		Protocol: "http",
 		Address:  "http://%",
 		Headers:  map[string]string{http.AuthorizationKey: "Bearer token"},
 	})
 
-	require.Error(t, err)
-	require.NotErrorIs(t, err, otlp.ErrInsecureEndpoint)
+	require.ErrorIs(t, err, otlp.ErrInvalidEndpoint)
 }
 
-func TestValidateEndpointRejectsInvalidEndpoint(t *testing.T) {
+func TestResolveEndpointRejectsInvalidEndpoint(t *testing.T) {
 	httpTests := []struct {
 		name    string
 		address string
 	}{
 		{name: "rejects unsupported URL scheme", address: "htps://collector.example.com/v1/traces"},
 		{name: "rejects URL without host", address: "https:///v1/traces"},
+		{name: "rejects URL with port and no hostname", address: "https://:4318/v1/traces"},
 	}
 
 	for _, tt := range httpTests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: tt.address})
+			_, err := otlp.ResolveEndpoint(otlp.Endpoint{Protocol: "http", Address: tt.address})
 
 			require.ErrorIs(t, err, otlp.ErrInvalidEndpoint)
 		})
@@ -85,34 +92,31 @@ func TestValidateEndpointRejectsInvalidEndpoint(t *testing.T) {
 
 	for _, tt := range grpcTests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "grpc", Address: tt.address})
+			_, err := otlp.ResolveEndpoint(otlp.Endpoint{Protocol: "grpc", Address: tt.address})
 
 			require.ErrorIs(t, err, otlp.ErrInvalidEndpoint)
 		})
 	}
 }
 
-func TestValidateEndpointRequiresEndpoint(t *testing.T) {
+func TestResolveEndpointRequiresEndpoint(t *testing.T) {
 	headers := map[string]string{http.AuthorizationKey: "Bearer token"}
 
-	require.ErrorIs(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Headers: headers}), otlp.ErrMissingEndpoint)
-	require.NoError(t, otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "https://collector.example.com/v1/traces", Headers: headers}))
-
-	err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "http", Address: "http://collector.example.com/v1/traces", Headers: headers})
-	require.ErrorIs(t, err, otlp.ErrInsecureEndpoint)
+	_, err := otlp.ResolveEndpoint(otlp.Endpoint{Protocol: "http", Headers: headers})
+	require.ErrorIs(t, err, otlp.ErrMissingEndpoint)
 }
 
-func TestValidateEndpointRejectsInvalidProtocol(t *testing.T) {
-	err := otlp.ValidateEndpoint(otlp.Endpoint{Protocol: "wrong", Address: "collector.example.com:4317"})
+func TestResolveEndpointRejectsInvalidProtocol(t *testing.T) {
+	_, err := otlp.ResolveEndpoint(otlp.Endpoint{Protocol: "wrong", Address: "collector.example.com:4317"})
 
 	require.ErrorIs(t, err, otlp.ErrInvalidProtocol)
 }
 
-func TestValidateEndpointIgnoresEnv(t *testing.T) {
+func TestResolveEndpointIgnoresEnv(t *testing.T) {
 	t.Setenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", "https://collector.example.com/v1/traces")
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://collector.example.com")
 
-	err := otlp.ValidateEndpoint(otlp.Endpoint{
+	_, err := otlp.ResolveEndpoint(otlp.Endpoint{
 		Protocol: "http",
 		Headers:  map[string]string{http.AuthorizationKey: "Bearer token"},
 	})

@@ -46,7 +46,7 @@ sql:
   pg:
     reader:
       dsns:
-        - url: file:../test/secrets/pg
+        - source: file:../test/secrets/pg
       settings:
         max_open_conns: 8
         max_idle_conns: 4
@@ -54,7 +54,7 @@ sql:
         conn_max_lifetime: 1h
     writer:
       dsns:
-        - url: file:../test/secrets/pg
+        - source: file:../test/secrets/pg
       settings:
         max_open_conns: 3
         max_idle_conns: 2
@@ -86,7 +86,7 @@ telemetry:
   tracer:
     kind: otlp
     protocol: http
-    url: http://localhost:4318/v1/traces
+    endpoint: http://localhost:4318/v1/traces
     tls:
       ca: file:../test/certs/rootCA.pem
       cert: file:../test/certs/client-cert.pem

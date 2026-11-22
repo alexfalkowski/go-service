@@ -38,7 +38,7 @@ type Pool struct {
 
 	// DSNs is the set of datasource names for this role.
 	//
-	// Each DSN URL is a "source string" resolved via [os.FS.ReadSource], so it can be:
+	// Each [DSN.Source] is a "source string" resolved via [os.FS.ReadSource], so it can be:
 	//   - "env:NAME" to read the DSN from an environment variable,
 	//   - "file:/path/to/dsn" to read the DSN from a file, or
 	//   - any other value treated as a literal DSN string.
@@ -66,18 +66,18 @@ type PoolSettings struct {
 
 // DSN is a SQL datasource name (connection string) configuration.
 type DSN struct {
-	// URL is a go-service "source string" for the datasource name/connection string.
+	// Source is a go-service "source string" for the connection string.
 	//
 	// It is resolved via [os.FS.ReadSource], so it can be:
 	//   - "env:NAME" to read from an environment variable,
 	//   - "file:/path/to/dsn" to read from a file, or
 	//   - any other value treated as a literal connection string.
-	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
+	Source string `yaml:"source,omitempty" json:"source,omitempty" toml:"source,omitempty"`
 }
 
-// GetURL resolves and returns the configured DSN URL bytes from its source string.
+// Resolve returns the connection string bytes from [DSN.Source].
 //
-// It delegates to [os.FS.ReadSource] with [DSN.URL] and returns any read/resolve error from that operation.
-func (d *DSN) GetURL(fs *os.FS) ([]byte, error) {
-	return fs.ReadSource(d.URL)
+// It delegates to [os.FS.ReadSource] and returns any error from that operation.
+func (d *DSN) Resolve(fs *os.FS) ([]byte, error) {
+	return fs.ReadSource(d.Source)
 }

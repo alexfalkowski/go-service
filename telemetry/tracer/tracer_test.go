@@ -112,7 +112,7 @@ func TestIsEnabledReflectsInstalledTracerProvider(t *testing.T) {
 
 	require.NoError(t, tracer.Register(tracer.TracerParams{
 		Lifecycle:   signaltest.NewLifecycle(t),
-		Config:      &tracer.Config{Kind: "otlp", URL: "https://localhost:4318/v1/traces"},
+		Config:      &tracer.Config{Kind: "otlp", Endpoint: "https://localhost:4318/v1/traces"},
 		ID:          test.ID,
 		Name:        test.Name,
 		Version:     test.Version,
@@ -149,7 +149,7 @@ func TestRegisterStopResetsGlobalProvider(t *testing.T) {
 	lc := signaltest.NewLifecycle(t)
 	require.NoError(t, tracer.Register(tracer.TracerParams{
 		Lifecycle:   lc,
-		Config:      &tracer.Config{Kind: "otlp", URL: "https://localhost:4318/v1/traces"},
+		Config:      &tracer.Config{Kind: "otlp", Endpoint: "https://localhost:4318/v1/traces"},
 		ID:          test.ID,
 		Name:        test.Name,
 		Version:     test.Version,
@@ -232,9 +232,9 @@ func TestRegisterInvalidSampler(t *testing.T) {
 			err := tracer.Register(tracer.TracerParams{
 				Lifecycle: signaltest.NewLifecycle(t),
 				Config: &tracer.Config{
-					Kind:    "otlp",
-					URL:     "https://localhost:4318/v1/traces",
-					Sampler: tt.sampler,
+					Kind:     "otlp",
+					Endpoint: "https://localhost:4318/v1/traces",
+					Sampler:  tt.sampler,
 				},
 				ID:          test.ID,
 				Name:        test.Name,
@@ -261,8 +261,8 @@ func TestRegisterInvalidOTLPEndpoint(t *testing.T) {
 	err := tracer.Register(tracer.TracerParams{
 		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &tracer.Config{
-			Kind: "otlp",
-			URL:  "http://collector.example.com/v1/traces",
+			Kind:     "otlp",
+			Endpoint: "http://collector.example.com/v1/traces",
 			Headers: header.Map{
 				http.AuthorizationKey: "Bearer token",
 			},
@@ -294,8 +294,8 @@ func TestRegisterOTLPOverHTTPExporterDoesNotFollowRedirects(t *testing.T) {
 	require.NoError(t, tracer.Register(tracer.TracerParams{
 		Lifecycle: lifecycle,
 		Config: &tracer.Config{
-			Kind: "otlp",
-			URL:  trusted.URL + "/v1/traces",
+			Kind:     "otlp",
+			Endpoint: trusted.URL + "/v1/traces",
 			Headers: header.Map{
 				http.AuthorizationKey: "Bearer token",
 			},
@@ -335,7 +335,7 @@ func TestRegisterOTLPOverGRPCExporter(t *testing.T) {
 		Config: &tracer.Config{
 			Kind:     "otlp",
 			Protocol: "grpc",
-			URL:      "localhost:4317",
+			Endpoint: "localhost:4317",
 		},
 		ID:          test.ID,
 		Name:        test.Name,
@@ -353,7 +353,7 @@ func TestRegisterInvalidOTLPOverGRPCEndpoint(t *testing.T) {
 		Config: &tracer.Config{
 			Kind:     "otlp",
 			Protocol: "grpc",
-			URL:      "collector.example.com:4317",
+			Endpoint: "collector.example.com:4317",
 			Headers: header.Map{
 				http.AuthorizationKey: "Bearer token",
 			},
@@ -373,7 +373,7 @@ func TestRegisterOTLPOverGRPCExporterWithTLSHeaders(t *testing.T) {
 		Config: &tracer.Config{
 			Kind:     "otlp",
 			Protocol: "grpc",
-			URL:      "collector.example.com:4317",
+			Endpoint: "collector.example.com:4317",
 			TLS:      &tls.Config{ServerName: "collector.example.com"},
 			Headers: header.Map{
 				http.AuthorizationKey: "Bearer token",
@@ -393,13 +393,13 @@ func TestRegisterOTLPOverGRPCExporterWithTLSHeaders(t *testing.T) {
 func TestRegisterOTLPEndpointAddressSecurity(t *testing.T) {
 	headers := header.Map{http.AuthorizationKey: "Bearer token"}
 	tests := []struct {
-		wantErr error
-		name    string
-		url     string
+		wantErr  error
+		name     string
+		endpoint string
 	}{
-		{name: "IPV6 loopback", url: "http://[::1]:4318/v1/traces"},
-		{name: "private IPV4", url: "http://10.0.0.10:4318/v1/traces", wantErr: otlp.ErrInsecureEndpoint},
-		{name: "unique local IPV6", url: "http://[fd00::1]:4318/v1/traces", wantErr: otlp.ErrInsecureEndpoint},
+		{name: "IPV6 loopback", endpoint: "http://[::1]:4318/v1/traces"},
+		{name: "private IPV4", endpoint: "http://10.0.0.10:4318/v1/traces", wantErr: otlp.ErrInsecureEndpoint},
+		{name: "unique local IPV6", endpoint: "http://[fd00::1]:4318/v1/traces", wantErr: otlp.ErrInsecureEndpoint},
 	}
 
 	for _, tt := range tests {
@@ -408,9 +408,9 @@ func TestRegisterOTLPEndpointAddressSecurity(t *testing.T) {
 			err := tracer.Register(tracer.TracerParams{
 				Lifecycle: lc,
 				Config: &tracer.Config{
-					Kind:    "otlp",
-					URL:     tt.url,
-					Headers: headers,
+					Kind:     "otlp",
+					Endpoint: tt.endpoint,
+					Headers:  headers,
 				},
 				ID:          test.ID,
 				Name:        test.Name,
@@ -461,9 +461,9 @@ func requireSamplerRecording(t *testing.T, sampler *tracer.SamplerConfig, ctx co
 	require.NoError(t, tracer.Register(tracer.TracerParams{
 		Lifecycle: signaltest.NewLifecycle(t),
 		Config: &tracer.Config{
-			Kind:    "otlp",
-			URL:     "https://localhost:4318/v1/traces",
-			Sampler: sampler,
+			Kind:     "otlp",
+			Endpoint: "https://localhost:4318/v1/traces",
+			Sampler:  sampler,
 		},
 		ID:          test.ID,
 		Name:        test.Name,
@@ -487,7 +487,7 @@ func TestRegisterOTLPOverGRPCExporterWithBatchTuning(t *testing.T) {
 		Config: &tracer.Config{
 			Kind:               "otlp",
 			Protocol:           "grpc",
-			URL:                "localhost:4317",
+			Endpoint:           "localhost:4317",
 			BatchTimeout:       time.Second,
 			ExportTimeout:      time.Second,
 			MaxQueueSize:       1024,

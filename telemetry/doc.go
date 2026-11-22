@@ -56,8 +56,8 @@
 // OTLP/gRPC exporters use host:port endpoints. Header-bearing remote gRPC endpoints
 // require the signal's TLS config; loopback gRPC endpoints may still use cleartext.
 //
-// OTLP endpoints must be supplied through go-service config fields such as telemetry.logger.url,
-// telemetry.metrics.url, and telemetry.tracer.url. Standard OpenTelemetry endpoint environment variables
+// OTLP endpoints must be supplied through go-service config fields such as telemetry.logger.endpoint,
+// telemetry.metrics.endpoint, and telemetry.tracer.endpoint. Standard OpenTelemetry endpoint environment variables
 // such as OTEL_EXPORTER_OTLP_ENDPOINT are not used as fallback sources by this package.
 //
 // # Global propagation

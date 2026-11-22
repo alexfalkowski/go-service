@@ -103,13 +103,17 @@ telemetry:
 
 ### OTLP logger
 
+Rename `url` to `endpoint` under `telemetry.logger`, `telemetry.metrics`, and
+`telemetry.tracer` when migrating an existing config. In Go config literals and
+field access, use `Endpoint`.
+
 ```yaml
 telemetry:
   logger:
     kind: otlp
     level: info
     protocol: http
-    url: http://localhost:4318/v1/logs
+    endpoint: http://localhost:4318/v1/logs
     http_timeout: 10s
     batch_timeout: 5s
     export_timeout: 30s
@@ -133,7 +137,7 @@ telemetry:
 >
 > OTLP/gRPC exporters use `protocol: grpc` and a `host:port` endpoint such as `localhost:4317`. Header-bearing remote gRPC endpoints require the signal's `tls` config; loopback gRPC endpoints may still use cleartext.
 >
-> OTLP exporter endpoints must be set in go-service config fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and `telemetry.tracer.url`. Standard OpenTelemetry endpoint environment variables such as `OTEL_EXPORTER_OTLP_ENDPOINT` are not used as fallback sources.
+> OTLP exporter endpoints must be set in go-service config fields such as `telemetry.logger.endpoint`, `telemetry.metrics.endpoint`, and `telemetry.tracer.endpoint`. Standard OpenTelemetry endpoint environment variables such as `OTEL_EXPORTER_OTLP_ENDPOINT` are not used as fallback sources.
 > Configure OTLP/HTTP request timeouts and TLS material with `http_timeout` and `tls`; corresponding OpenTelemetry timeout and certificate environment variables are not projected into go-service config.
 
 OTLP exporters can use the same TLS source-string model as other go-service clients. HTTP exporters require an `https://` URL for TLS, while gRPC exporters use `protocol: grpc`:
@@ -143,7 +147,7 @@ telemetry:
   tracer:
     kind: otlp
     protocol: grpc
-    url: collector.example.com:4317
+    endpoint: collector.example.com:4317
     tls:
       ca: file:/etc/otel/ca.pem
       cert: file:/etc/otel/client.crt
@@ -191,7 +195,7 @@ telemetry:
   metrics:
     kind: otlp
     protocol: http
-    url: http://localhost:9009/otlp/v1/metrics
+    endpoint: http://localhost:9009/otlp/v1/metrics
     http_timeout: 10s
     interval: 30s
     timeout: 5s
@@ -242,7 +246,7 @@ telemetry:
   tracer:
     kind: otlp
     protocol: http
-    url: http://localhost:4318/v1/traces
+    endpoint: http://localhost:4318/v1/traces
     http_timeout: 10s
     batch_timeout: 5s
     export_timeout: 30s
@@ -261,7 +265,7 @@ telemetry:
 > `http_timeout` bounds one OTLP/HTTP export request. It defaults to `10s` when unset or zero and does not apply to OTLP/gRPC.
 >
 > OTLP exporters default to `protocol: http`. Set `protocol: grpc` and use a
-> `host:port` `url`, such as `localhost:4317`, to export through OTLP/gRPC.
+> `host:port` value for `endpoint`, such as `localhost:4317`, to export through OTLP/gRPC.
 >
 > Supported sampler kinds:
 >

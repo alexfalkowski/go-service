@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/v3/config/client"
 	"github.com/alexfalkowski/go-service/v3/context"
 	"github.com/alexfalkowski/go-service/v3/net/grpc"
-	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-signal/v2"
@@ -18,16 +17,17 @@ import (
 )
 
 func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
-	if err := otlp.ValidateEndpoint(otlp.Endpoint{
+	address, err := otlp.ResolveEndpoint(otlp.Endpoint{
 		Protocol: params.Config.GetProtocol(),
-		Address:  params.Config.URL,
+		Address:  params.Config.Endpoint,
 		Headers:  params.Config.Headers,
 		TLS:      params.Config.TLS,
-	}); err != nil {
+	})
+	if err != nil {
 		return nil, err
 	}
 
-	exporter, err := newOtlpExporter(params)
+	exporter, err := newOtlpExporter(params, address)
 	if err != nil {
 		return nil, err
 	}
@@ -58,10 +58,10 @@ func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
 	return slog.New(&levelHandler{handler: handler, level: level(params.Config)}), nil
 }
 
-func newOtlpExporter(params LoggerParams) (log.Exporter, error) {
+func newOtlpExporter(params LoggerParams, address string) (log.Exporter, error) {
 	switch params.Config.GetProtocol() {
 	case otlp.ProtocolGRPC:
-		opts := []otlploggrpc.Option{otlploggrpc.WithHeaders(params.Config.Headers)}
+		opts := []otlploggrpc.Option{otlploggrpc.WithHeaders(params.Config.Headers), otlploggrpc.WithEndpoint(address)}
 		if params.Config.TLS == nil {
 			opts = append(opts, otlploggrpc.WithInsecure())
 		} else {
@@ -70,9 +70,6 @@ func newOtlpExporter(params LoggerParams) (log.Exporter, error) {
 				return nil, err
 			}
 			opts = append(opts, otlploggrpc.WithTLSCredentials(grpc.NewTLS(conf)))
-		}
-		if !strings.IsEmpty(params.Config.URL) {
-			opts = append(opts, otlploggrpc.WithEndpoint(params.Config.URL))
 		}
 		return otlploggrpc.New(context.Background(), opts...)
 	default:
@@ -83,9 +80,7 @@ func newOtlpExporter(params LoggerParams) (log.Exporter, error) {
 		opts := []otlploghttp.Option{
 			otlploghttp.WithHTTPClient(httpClient),
 			otlploghttp.WithHeaders(params.Config.Headers),
-		}
-		if !strings.IsEmpty(params.Config.URL) {
-			opts = append(opts, otlploghttp.WithEndpointURL(params.Config.URL))
+			otlploghttp.WithEndpointURL(address),
 		}
 		return otlploghttp.New(context.Background(), opts...)
 	}
