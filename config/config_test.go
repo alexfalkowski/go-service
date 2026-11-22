@@ -391,7 +391,7 @@ func verifyFeatureConfig(t *testing.T, cfg *config.Config) {
 
 	require.Equal(t, "development", cfg.Environment.String())
 	require.True(t, cfg.Feature.IsEnabled())
-	require.Equal(t, "localhost:9000", cfg.Feature.Address)
+	require.Equal(t, "localhost:9000", cfg.Feature.Endpoint)
 	require.Equal(t, 10*time.Second, cfg.Feature.Timeout)
 	require.Equal(t, uint32(2), cfg.Feature.Breaker.MaxRequests)
 	require.Equal(t, 15*time.Second, cfg.Feature.Breaker.Interval)
@@ -469,7 +469,7 @@ func verifyTimeConfig(t *testing.T, cfg *config.Config) {
 	t.Helper()
 
 	require.Equal(t, "nts", cfg.Time.Kind)
-	require.Equal(t, "time.cloudflare.com", cfg.Time.Address)
+	require.Equal(t, "time.cloudflare.com", cfg.Time.Endpoint)
 }
 
 func verifyGRPCConfig(t *testing.T, cfg *config.Config) {

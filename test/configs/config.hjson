@@ -31,7 +31,7 @@
     }
   }
   feature: {
-    address: "localhost:9000"
+    endpoint: "localhost:9000"
     breaker: {
       max_requests: 2
       interval: "15s"
@@ -143,7 +143,7 @@
   }
   time: {
     kind: nts
-    address: "time.cloudflare.com"
+    endpoint: "time.cloudflare.com"
   }
   transport: {
     access: {

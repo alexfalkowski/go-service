@@ -4,7 +4,7 @@
 
 The `feature.Config` embeds client-side config (`config/client.Config`), so it supports:
 
-- `address`
+- `endpoint`
 - `timeout`
 - `retry`
 - `breaker`
@@ -17,7 +17,7 @@ Example:
 
 ```yaml
 feature:
-  address: localhost:9000
+  endpoint: localhost:9000
   timeout: 10s
   breaker:
     max_requests: 2

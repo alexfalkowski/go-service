@@ -401,7 +401,7 @@ embeds `config/client.Config` has its own `breaker` block under that client conf
 
 ```yaml
 feature:
-  address: localhost:9000
+  endpoint: localhost:9000
   breaker:
     max_requests: 2
     interval: 15s
@@ -432,7 +432,7 @@ unbroken run of failures:
 
 ```yaml
 feature:
-  address: localhost:9000
+  endpoint: localhost:9000
   breaker:
     failure_ratio: 0.5
     min_requests: 10
@@ -456,7 +456,7 @@ only because it is one such client config:
 
 ```yaml
 feature:
-  address: localhost:9000
+  endpoint: localhost:9000
   retry:
     timeout: 1s
     backoff: 100ms
@@ -500,7 +500,7 @@ uncapped:
 
 ```yaml
 feature:
-  address: localhost:9000
+  endpoint: localhost:9000
   retry:
     backoff: 1s
     strategy: exponential

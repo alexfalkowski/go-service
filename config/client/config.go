@@ -32,8 +32,9 @@ type Config struct {
 	// Options provides client/transport-specific options as key-value pairs.
 	Options options.Map `yaml:"options,omitempty" json:"options,omitempty" toml:"options,omitempty"`
 
-	// Address is the remote address for the client to connect to (for example "host:port").
-	Address string `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
+	// Endpoint is the remote destination for the client. The consumer determines
+	// the format, such as an HTTP base URL or a gRPC target.
+	Endpoint string `yaml:"endpoint,omitempty" json:"endpoint,omitempty" toml:"endpoint,omitempty"`
 
 	// Timeout is the client request timeout duration.
 	//
