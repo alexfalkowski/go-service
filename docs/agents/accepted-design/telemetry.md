@@ -6,8 +6,8 @@ and carry the same mandatory weight.
 - `telemetry.RegisterPropagation(...)` installs the global OpenTelemetry
   propagator.
 - OTLP exporter endpoints intentionally come from explicit go-service config
-  fields such as `telemetry.logger.url`, `telemetry.metrics.url`, and
-  `telemetry.tracer.url`. Standard OpenTelemetry endpoint environment variables
+  fields such as `telemetry.logger.endpoint`, `telemetry.metrics.endpoint`, and
+  `telemetry.tracer.endpoint`. Standard OpenTelemetry endpoint environment variables
   such as `OTEL_EXPORTER_OTLP_ENDPOINT` are not fallback sources and should not
   be projected into config by default. Operators that want env-managed endpoints
   should set the go-service config values through their deployment/config

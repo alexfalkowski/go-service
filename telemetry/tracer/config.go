@@ -46,13 +46,13 @@ type Config struct {
 	// This field only applies when Kind is "otlp".
 	Protocol string `yaml:"protocol,omitempty" json:"protocol,omitempty" toml:"protocol,omitempty" validate:"omitempty,oneof=http grpc"`
 
-	// URL is the destination endpoint for the selected Kind, when applicable.
+	// Endpoint is the configured destination for OTLP export.
 	//
 	// For "otlp" over HTTP, this is the required OTLP/HTTP traces endpoint URL.
 	// For "otlp" over gRPC, this is the required collector host:port endpoint.
 	// Standard OpenTelemetry endpoint environment variables are not used as fallbacks;
 	// configure this value explicitly through go-service config.
-	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
+	Endpoint string `yaml:"endpoint,omitempty" json:"endpoint,omitempty" toml:"endpoint,omitempty"`
 
 	// HTTPTimeout is the maximum duration allowed for one OTLP/HTTP export request.
 	//

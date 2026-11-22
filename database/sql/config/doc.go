@@ -13,7 +13,7 @@
 //
 // # DSNs and source strings
 //
-// Reader and writer DSNs are configured through [Pool.DSNs]. Each DSN URL is expressed as a
+// Reader and writer DSNs are configured through [Pool.DSNs]. Each [DSN.Source] is a
 // go-service "source string" (resolved via [github.com/alexfalkowski/go-service/v3/os.FS.ReadSource]), so it can be:
 //   - "env:NAME" to read from an environment variable,
 //   - "file:/path/to/dsn" to read from a file, or

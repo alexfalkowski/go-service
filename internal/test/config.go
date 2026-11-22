@@ -269,9 +269,9 @@ func NewSecureTransportConfig() *transport.Config {
 // NewOTLPLoggerConfig returns the OTLP logger config used by telemetry-heavy integration tests.
 func NewOTLPLoggerConfig() *logger.Config {
 	return &logger.Config{
-		Kind:  "otlp",
-		Level: "debug",
-		URL:   otlpHTTPURL + "/v1/logs",
+		Kind:     "otlp",
+		Level:    "debug",
+		Endpoint: otlpHTTPURL + "/v1/logs",
 		Headers: header.Map{
 			http.AuthorizationKey: FilePath("secrets/telemetry"),
 		},
@@ -312,8 +312,8 @@ func NewPrometheusMetricsConfig() *metrics.Config {
 // NewOTLPMetricsConfig returns the OTLP metrics exporter config backed by the shared telemetry secret fixture.
 func NewOTLPMetricsConfig() *metrics.Config {
 	return &metrics.Config{
-		Kind: "otlp",
-		URL:  otlpHTTPURL + "/v1/metrics",
+		Kind:     "otlp",
+		Endpoint: otlpHTTPURL + "/v1/metrics",
 		Headers: header.Map{
 			http.AuthorizationKey: FilePath("secrets/telemetry"),
 		},
@@ -323,8 +323,8 @@ func NewOTLPMetricsConfig() *metrics.Config {
 // NewOTLPTracerConfig returns the OTLP trace exporter config backed by the shared telemetry secret fixture.
 func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
-		Kind: "otlp",
-		URL:  otlpHTTPURL + "/v1/traces",
+		Kind:     "otlp",
+		Endpoint: otlpHTTPURL + "/v1/traces",
 		Headers: header.Map{
 			http.AuthorizationKey: FilePath("secrets/telemetry"),
 		},
@@ -334,8 +334,8 @@ func NewOTLPTracerConfig() *tracer.Config {
 // NewPGConfig returns the Postgres config used by database-backed integration tests.
 func NewPGConfig() *pg.Config {
 	return NewPGConfigWithDSNs(
-		[]sql.DSN{{URL: FilePath("secrets/pg")}},
-		[]sql.DSN{{URL: FilePath("secrets/pg")}},
+		[]sql.DSN{{Source: FilePath("secrets/pg")}},
+		[]sql.DSN{{Source: FilePath("secrets/pg")}},
 	)
 }
 

@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v3/errors"
 	"github.com/alexfalkowski/go-service/v3/net/grpc"
 	"github.com/alexfalkowski/go-service/v3/os"
-	"github.com/alexfalkowski/go-service/v3/strings"
 	"github.com/alexfalkowski/go-service/v3/telemetry/internal/otlp"
 	"github.com/alexfalkowski/go-signal/v2"
 	"github.com/prometheus/otlptranslator"
@@ -73,16 +72,17 @@ func NewReader(params ReaderParams) (metric.Reader, error) {
 func newMetricReader(name env.Name, fs *os.FS, cfg *Config) (metric.Reader, error) {
 	switch cfg.Kind {
 	case "otlp":
-		if err := otlp.ValidateEndpoint(otlp.Endpoint{
+		address, err := otlp.ResolveEndpoint(otlp.Endpoint{
 			Protocol: cfg.GetProtocol(),
-			Address:  cfg.URL,
+			Address:  cfg.Endpoint,
 			Headers:  cfg.Headers,
 			TLS:      cfg.TLS,
-		}); err != nil {
+		})
+		if err != nil {
 			return nil, prefix(err)
 		}
 
-		exporter, err := newOTLPExporter(fs, cfg)
+		exporter, err := newOTLPExporter(fs, cfg, address)
 		if err != nil {
 			return nil, prefix(err)
 		}
@@ -118,10 +118,10 @@ func prometheusOptions(cfg *PrometheusConfig) []prometheus.Option {
 	return opts
 }
 
-func newOTLPExporter(fs *os.FS, cfg *Config) (metric.Exporter, error) {
+func newOTLPExporter(fs *os.FS, cfg *Config, address string) (metric.Exporter, error) {
 	switch cfg.GetProtocol() {
 	case otlp.ProtocolGRPC:
-		opts := []otlpmetricgrpc.Option{otlpmetricgrpc.WithHeaders(cfg.Headers)}
+		opts := []otlpmetricgrpc.Option{otlpmetricgrpc.WithHeaders(cfg.Headers), otlpmetricgrpc.WithEndpoint(address)}
 		if cfg.TLS == nil {
 			opts = append(opts, otlpmetricgrpc.WithInsecure())
 		} else {
@@ -130,9 +130,6 @@ func newOTLPExporter(fs *os.FS, cfg *Config) (metric.Exporter, error) {
 				return nil, err
 			}
 			opts = append(opts, otlpmetricgrpc.WithTLSCredentials(grpc.NewTLS(conf)))
-		}
-		if !strings.IsEmpty(cfg.URL) {
-			opts = append(opts, otlpmetricgrpc.WithEndpoint(cfg.URL))
 		}
 		return otlpmetricgrpc.New(context.Background(), opts...)
 	default:
@@ -143,9 +140,7 @@ func newOTLPExporter(fs *os.FS, cfg *Config) (metric.Exporter, error) {
 		opts := []otlpmetrichttp.Option{
 			otlpmetrichttp.WithHTTPClient(httpClient),
 			otlpmetrichttp.WithHeaders(cfg.Headers),
-		}
-		if !strings.IsEmpty(cfg.URL) {
-			opts = append(opts, otlpmetrichttp.WithEndpointURL(cfg.URL))
+			otlpmetrichttp.WithEndpointURL(address),
 		}
 		return otlpmetrichttp.New(context.Background(), opts...)
 	}

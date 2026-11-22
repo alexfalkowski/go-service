@@ -135,15 +135,15 @@ func resolveDSNs(fs *os.FS, pool *config.Pool) ([]string, error) {
 	resolved := make([]string, len(pool.DSNs))
 
 	for i, dsn := range pool.DSNs {
-		url, err := dsn.GetURL(fs)
+		data, err := dsn.Resolve(fs)
 		if err != nil {
 			return nil, err
 		}
-		if len(url) == 0 {
+		if len(data) == 0 {
 			return nil, ErrEmptyDSN
 		}
 
-		resolved[i] = bytes.String(url)
+		resolved[i] = bytes.String(data)
 	}
 
 	return resolved, nil

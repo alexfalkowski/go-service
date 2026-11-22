@@ -1,8 +1,6 @@
 package otlp
 
 import (
-	"net/netip"
-
 	"github.com/alexfalkowski/go-service/v3/context"
 	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v3/errors"
@@ -48,61 +46,67 @@ type Endpoint struct {
 	Address string
 }
 
-// ValidateEndpoint validates an explicitly configured OTLP endpoint.
-func ValidateEndpoint(endpoint Endpoint) error {
+// ResolveEndpoint validates an explicitly configured OTLP endpoint and returns the address for the exporter.
+// It returns the original address so the exporter parses the same input that was validated.
+func ResolveEndpoint(endpoint Endpoint) (string, error) {
 	if strings.IsEmpty(endpoint.Address) {
-		return ErrMissingEndpoint
+		return strings.Empty, ErrMissingEndpoint
 	}
 
 	switch endpoint.Protocol {
 	case ProtocolHTTP:
-		return validateHTTP(endpoint)
+		return resolveHTTP(endpoint)
 	case ProtocolGRPC:
-		return validateGRPC(endpoint)
+		return resolveGRPC(endpoint)
 	default:
-		return ErrInvalidProtocol
+		return strings.Empty, ErrInvalidProtocol
 	}
 }
 
-func validateHTTP(endpoint Endpoint) error {
-	u, err := url.Parse(endpoint.Address)
+func resolveHTTP(endpoint Endpoint) (string, error) {
+	if len(endpoint.Headers) == 0 {
+		return resolveHeaderlessHTTP(endpoint.Address)
+	}
+
+	_, err := url.ParseSecureURL(endpoint.Address)
+	if errors.Is(err, url.ErrInsecureURL) {
+		return strings.Empty, ErrInsecureEndpoint
+	}
 	if err != nil {
-		return err
+		return strings.Empty, ErrInvalidEndpoint
 	}
 
-	if (u.Scheme != "http" && u.Scheme != "https") || strings.IsEmpty(u.Host) {
-		return ErrInvalidEndpoint
-	}
-
-	if u.Scheme != "http" || len(endpoint.Headers) == 0 || isLoopback(u.Hostname()) {
-		return nil
-	}
-
-	return ErrInsecureEndpoint
+	return endpoint.Address, nil
 }
 
-func validateGRPC(endpoint Endpoint) error {
+func resolveHeaderlessHTTP(address string) (string, error) {
+	u, err := url.Parse(address)
+	if err != nil {
+		return strings.Empty, err
+	}
+
+	httpScheme := u.Scheme == "http" || u.Scheme == "https"
+	if !httpScheme || strings.IsEmpty(u.Hostname()) {
+		return strings.Empty, ErrInvalidEndpoint
+	}
+
+	return address, nil
+}
+
+func resolveGRPC(endpoint Endpoint) (string, error) {
 	host, port, err := net.SplitHostPort(endpoint.Address)
 	if err != nil || strings.IsEmpty(host) || strings.IsEmpty(port) {
-		return ErrInvalidEndpoint
+		return strings.Empty, ErrInvalidEndpoint
 	}
+
 	portNumber, err := net.LookupPort(context.Background(), "tcp", port)
 	if err != nil || portNumber == 0 {
-		return ErrInvalidEndpoint
+		return strings.Empty, ErrInvalidEndpoint
 	}
 
-	if len(endpoint.Headers) == 0 || endpoint.TLS != nil || isLoopback(host) {
-		return nil
+	if len(endpoint.Headers) == 0 || endpoint.TLS != nil || net.IsLoopbackHost(host) {
+		return endpoint.Address, nil
 	}
 
-	return ErrInsecureEndpoint
-}
-
-func isLoopback(host string) bool {
-	if strings.ToLower(host) == "localhost" {
-		return true
-	}
-
-	addr, err := netip.ParseAddr(host)
-	return err == nil && addr.IsLoopback()
+	return strings.Empty, ErrInsecureEndpoint
 }

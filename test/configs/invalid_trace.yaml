@@ -37,14 +37,14 @@ sql:
   pg:
     reader:
       dsns:
-        - url: file:../test/secrets/pg
+        - source: file:../test/secrets/pg
       settings:
         max_open_conns: 5
         max_idle_conns: 5
         conn_max_lifetime: 1h
     writer:
       dsns:
-        - url: file:../test/secrets/pg
+        - source: file:../test/secrets/pg
       settings:
         max_open_conns: 5
         max_idle_conns: 5
@@ -58,7 +58,7 @@ telemetry:
   tracer:
     kind: otlp
     protocol: wrong
-    url: "this is not a URL"
+    endpoint: "invalid endpoint"
     headers:
       Authorization: file:../test/secrets/telemetry
 time:

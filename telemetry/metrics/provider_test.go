@@ -274,7 +274,7 @@ func TestOTLPReaderUsesConfiguredInterval(t *testing.T) {
 	lc := signaltest.NewLifecycle(t)
 	cfg := &metrics.Config{
 		Kind:     "otlp",
-		URL:      server.URL,
+		Endpoint: server.URL,
 		Interval: time.Second,
 		Timeout:  time.Second,
 	}

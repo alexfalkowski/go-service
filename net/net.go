@@ -2,6 +2,7 @@ package net
 
 import (
 	"net"
+	"net/netip"
 
 	"github.com/alexfalkowski/go-service/v3/context"
 	"github.com/alexfalkowski/go-service/v3/strings"
@@ -97,6 +98,17 @@ func Host(addr string) string {
 		return addr
 	}
 	return host
+}
+
+// IsLoopbackHost reports whether host is localhost (case-insensitive) or a loopback IP literal.
+// Pass the hostname without a port or IPv6 brackets. This function does no DNS lookup.
+func IsLoopbackHost(host string) bool {
+	if strings.ToLower(host) == "localhost" {
+		return true
+	}
+
+	addr, err := netip.ParseAddr(host)
+	return err == nil && addr.IsLoopback()
 }
 
 // SplitHostPort splits addr into host and port using the standard host:port rules.

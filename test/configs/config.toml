@@ -61,7 +61,7 @@ conn_max_idle_time = "20m"
 conn_max_lifetime = "1h"
 
 [[sql.pg.reader.dsns]]
-url = "file:../test/secrets/pg"
+source = "file:../test/secrets/pg"
 
 [sql.pg.writer.settings]
 max_open_conns = 3
@@ -70,7 +70,7 @@ conn_max_idle_time = "10m"
 conn_max_lifetime = "30m"
 
 [[sql.pg.writer.dsns]]
-url = "file:../test/secrets/pg"
+source = "file:../test/secrets/pg"
 
 [telemetry.logger]
 kind = "text"
@@ -102,7 +102,7 @@ formats = ["tracecontext", "baggage", "b3"]
 [telemetry.tracer]
 kind = "otlp"
 protocol = "http"
-url = "http://localhost:4318/v1/traces"
+endpoint = "http://localhost:4318/v1/traces"
 
 [telemetry.tracer.tls]
 ca = "file:../test/certs/rootCA.pem"

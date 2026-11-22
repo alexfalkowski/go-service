@@ -233,7 +233,7 @@ func TestDBsPingReturnsDeadlineWhenWaitingForConnection(t *testing.T) {
 
 func newPool(maxOpenConns int) *config.Pool {
 	return &config.Pool{
-		DSNs: []config.DSN{{URL: "benchmark"}},
+		DSNs: []config.DSN{{Source: "benchmark"}},
 		Settings: &config.PoolSettings{
 			MaxOpenConns: maxOpenConns,
 			MaxIdleConns: maxOpenConns,
