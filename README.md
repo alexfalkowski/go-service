@@ -335,7 +335,7 @@ See [docs/cache.md](docs/cache.md) for the config shape, driver semantics, size/
 
 ## 🚩 Feature flags (OpenFeature)
 
-`feature.Config` embeds client-side config (`config/client.Config`): address, timeout, retry, breaker, limiter, TLS, token, and options. This repository does not construct a built-in OpenFeature provider from this config — supply your own `openfeature.FeatureProvider` and `feature.Module` registers it with the SDK lifecycle.
+`feature.Config` embeds client-side config (`config/client.Config`) for endpoint, timeout, retry, breaker, limiter, TLS, token, and options. This repository does not construct a built-in OpenFeature provider from this config — supply your own `openfeature.FeatureProvider` and `feature.Module` registers it with the SDK lifecycle.
 
 See [docs/feature-flags.md](docs/feature-flags.md) for a full config example and provider-wiring notes.
 
@@ -431,7 +431,7 @@ Time config:
 ```yaml
 time:
   kind: nts
-  address: time.cloudflare.com
+  endpoint: time.cloudflare.com
   timeout: 2s
 ```
 
@@ -442,7 +442,7 @@ Supported kinds:
 
 Omit the `time` block to disable network time. If the block is present, `kind`
 must be `ntp` or `nts`; empty or unknown kinds fail startup with the time
-provider not found error. `address` is provider-specific and is used when the
+provider not found error. `endpoint` identifies the server or pool used when the
 network time provider performs I/O. `timeout` bounds network operations for the
 selected provider; a zero value uses the upstream client's default timeout, and
 negative values are invalid.

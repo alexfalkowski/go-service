@@ -20,9 +20,8 @@ var ErrNotFound = errors.New("time: network not found")
 //
 // If cfg.Kind is empty or not recognized, NewNetwork returns (nil, ErrNotFound).
 //
-// Note: Address validation is provider-specific. NewNetwork does not validate
-// cfg.Address; providers typically return an error from [Network.Now] when the
-// address is empty or invalid.
+// Endpoint validation is provider-specific. The provider typically returns an
+// error from [Network.Now] when the endpoint is empty or invalid.
 func NewNetwork(cfg *Config) (Network, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -30,9 +29,9 @@ func NewNetwork(cfg *Config) (Network, error) {
 
 	switch cfg.Kind {
 	case "ntp":
-		return NewNTPNetwork(cfg.Address, cfg.Timeout), nil
+		return NewNTPNetwork(cfg.Endpoint, cfg.Timeout), nil
 	case "nts":
-		return NewNTSNetwork(cfg.Address, cfg.Timeout), nil
+		return NewNTSNetwork(cfg.Endpoint, cfg.Timeout), nil
 	default:
 		return nil, ErrNotFound
 	}

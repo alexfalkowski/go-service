@@ -8,8 +8,8 @@ import (
 
 func TestNetworkNowReturnsTimeFromReachableNTSServer(t *testing.T) {
 	requireAnyNetworkNow(t,
-		&time.Config{Kind: "nts", Address: "time.cloudflare.com", Timeout: 2 * time.Second},
-		&time.Config{Kind: "nts", Address: "nts.netnod.se", Timeout: 2 * time.Second},
+		&time.Config{Kind: "nts", Endpoint: "time.cloudflare.com", Timeout: 2 * time.Second},
+		&time.Config{Kind: "nts", Endpoint: "nts.netnod.se", Timeout: 2 * time.Second},
 	)
 }
 

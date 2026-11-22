@@ -21,7 +21,7 @@ crypto:
     public: file:../test/secrets/rsa_public
     private: file:../test/secrets/rsa_private
 feature:
-  address: localhost:9000
+  endpoint: localhost:9000
   breaker:
     max_requests: 2
     interval: 15s
@@ -99,7 +99,7 @@ telemetry:
       Authorization: file:../test/secrets/telemetry
 time:
   kind: nts
-  address: time.cloudflare.com
+  endpoint: time.cloudflare.com
 transport:
   access:
     model: file:../test/configs/rbac.conf

@@ -8,9 +8,9 @@ import (
 
 func TestNetworkNowReturnsTimeFromReachableNTPServer(t *testing.T) {
 	requireAnyNetworkNow(t,
-		&time.Config{Kind: "ntp", Address: "0.beevik-ntp.pool.ntp.org", Timeout: 2 * time.Second},
-		&time.Config{Kind: "ntp", Address: "1.beevik-ntp.pool.ntp.org", Timeout: 2 * time.Second},
-		&time.Config{Kind: "ntp", Address: "time.cloudflare.com", Timeout: 2 * time.Second},
+		&time.Config{Kind: "ntp", Endpoint: "0.beevik-ntp.pool.ntp.org", Timeout: 2 * time.Second},
+		&time.Config{Kind: "ntp", Endpoint: "1.beevik-ntp.pool.ntp.org", Timeout: 2 * time.Second},
+		&time.Config{Kind: "ntp", Endpoint: "time.cloudflare.com", Timeout: 2 * time.Second},
 	)
 }
 

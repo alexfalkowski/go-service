@@ -72,9 +72,9 @@ func NewReader(params ReaderParams) (metric.Reader, error) {
 func newMetricReader(name env.Name, fs *os.FS, cfg *Config) (metric.Reader, error) {
 	switch cfg.Kind {
 	case "otlp":
-		address, err := otlp.ResolveEndpoint(otlp.Endpoint{
+		address, err := otlp.ResolveEndpoint(otlp.Config{
 			Protocol: cfg.GetProtocol(),
-			Address:  cfg.Endpoint,
+			Endpoint: cfg.Endpoint,
 			Headers:  cfg.Headers,
 			TLS:      cfg.TLS,
 		})

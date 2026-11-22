@@ -29,8 +29,8 @@ var ErrInvalidProtocol = errors.New("otlp: invalid protocol")
 // non-local cleartext endpoint.
 var ErrInsecureEndpoint = errors.New("otlp: insecure endpoint")
 
-// Endpoint describes an explicitly configured OTLP endpoint.
-type Endpoint struct {
+// Config describes an OTLP destination and the settings used to validate it.
+type Config struct {
 	// TLS configures TLS for gRPC exporters.
 	TLS *tls.Config
 
@@ -40,35 +40,35 @@ type Endpoint struct {
 	// Protocol selects the OTLP exporter protocol.
 	Protocol string
 
-	// Address is the configured OTLP destination.
+	// Endpoint is the configured OTLP destination.
 	//
 	// HTTP exporters expect a URL. gRPC exporters expect host:port.
-	Address string
+	Endpoint string
 }
 
-// ResolveEndpoint validates an explicitly configured OTLP endpoint and returns the address for the exporter.
-// It returns the original address so the exporter parses the same input that was validated.
-func ResolveEndpoint(endpoint Endpoint) (string, error) {
-	if strings.IsEmpty(endpoint.Address) {
+// ResolveEndpoint validates an explicitly configured OTLP endpoint and returns
+// its original value so the exporter parses the same input.
+func ResolveEndpoint(cfg Config) (string, error) {
+	if strings.IsEmpty(cfg.Endpoint) {
 		return strings.Empty, ErrMissingEndpoint
 	}
 
-	switch endpoint.Protocol {
+	switch cfg.Protocol {
 	case ProtocolHTTP:
-		return resolveHTTP(endpoint)
+		return resolveHTTP(cfg)
 	case ProtocolGRPC:
-		return resolveGRPC(endpoint)
+		return resolveGRPC(cfg)
 	default:
 		return strings.Empty, ErrInvalidProtocol
 	}
 }
 
-func resolveHTTP(endpoint Endpoint) (string, error) {
-	if len(endpoint.Headers) == 0 {
-		return resolveHeaderlessHTTP(endpoint.Address)
+func resolveHTTP(cfg Config) (string, error) {
+	if len(cfg.Headers) == 0 {
+		return resolveHeaderlessHTTP(cfg.Endpoint)
 	}
 
-	_, err := url.ParseSecureURL(endpoint.Address)
+	_, err := url.ParseSecureURL(cfg.Endpoint)
 	if errors.Is(err, url.ErrInsecureURL) {
 		return strings.Empty, ErrInsecureEndpoint
 	}
@@ -76,7 +76,7 @@ func resolveHTTP(endpoint Endpoint) (string, error) {
 		return strings.Empty, ErrInvalidEndpoint
 	}
 
-	return endpoint.Address, nil
+	return cfg.Endpoint, nil
 }
 
 func resolveHeaderlessHTTP(address string) (string, error) {
@@ -93,8 +93,8 @@ func resolveHeaderlessHTTP(address string) (string, error) {
 	return address, nil
 }
 
-func resolveGRPC(endpoint Endpoint) (string, error) {
-	host, port, err := net.SplitHostPort(endpoint.Address)
+func resolveGRPC(cfg Config) (string, error) {
+	host, port, err := net.SplitHostPort(cfg.Endpoint)
 	if err != nil || strings.IsEmpty(host) || strings.IsEmpty(port) {
 		return strings.Empty, ErrInvalidEndpoint
 	}
@@ -104,8 +104,8 @@ func resolveGRPC(endpoint Endpoint) (string, error) {
 		return strings.Empty, ErrInvalidEndpoint
 	}
 
-	if len(endpoint.Headers) == 0 || endpoint.TLS != nil || net.IsLoopbackHost(host) {
-		return endpoint.Address, nil
+	if len(cfg.Headers) == 0 || cfg.TLS != nil || net.IsLoopbackHost(host) {
+		return cfg.Endpoint, nil
 	}
 
 	return strings.Empty, ErrInsecureEndpoint

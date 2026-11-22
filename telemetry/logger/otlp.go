@@ -17,9 +17,9 @@ import (
 )
 
 func newOtlpLogger(params LoggerParams) (*slog.Logger, error) {
-	address, err := otlp.ResolveEndpoint(otlp.Endpoint{
+	address, err := otlp.ResolveEndpoint(otlp.Config{
 		Protocol: params.Config.GetProtocol(),
-		Address:  params.Config.Endpoint,
+		Endpoint: params.Config.Endpoint,
 		Headers:  params.Config.Headers,
 		TLS:      params.Config.TLS,
 	})

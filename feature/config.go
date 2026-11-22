@@ -5,7 +5,7 @@ import "github.com/alexfalkowski/go-service/v3/config/client"
 // Config carries optional settings for service-owned OpenFeature integrations.
 //
 // It embeds [client.Config] to reuse common client-side configuration fields that may be
-// shared across feature-related integrations (for example address, timeout, TLS, retry/limiter,
+// shared across feature-related integrations (for example endpoint, timeout, TLS, retry/limiter,
 // and key-value options).
 //
 // The feature package does not consume Config directly or construct a provider from it. Services that

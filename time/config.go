@@ -3,7 +3,7 @@ package time
 // Config configures a network time provider.
 //
 // This configuration is consumed by NewNetwork, which selects a concrete Network
-// implementation based on Kind and passes Address to that implementation.
+// implementation based on Kind and passes Endpoint to that implementation.
 //
 // # Enablement
 //
@@ -22,11 +22,11 @@ package time
 //
 // If Kind is empty or unrecognized, NewNetwork returns [ErrNotFound].
 //
-// # Address
+// # Endpoint
 //
-// Address is the provider/server address passed to the selected implementation.
+// Endpoint is the destination passed to the selected implementation.
 // The expected format is implementation-specific (for example a hostname or
-// pool name). If Address is empty or invalid, the provider will typically return
+// pool name). If Endpoint is empty or invalid, the provider will typically return
 // an error when Now is called.
 //
 // # Timeout
@@ -39,11 +39,11 @@ type Config struct {
 	// If Kind is empty or unknown, NewNetwork returns [ErrNotFound].
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 
-	// Address is the provider address passed to the selected implementation.
+	// Endpoint is the destination for the selected network time provider.
 	//
 	// The expected format is implementation-specific. For example, NTP may accept
 	// pool hostnames, and NTS may accept hostnames of NTS-enabled servers.
-	Address string `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
+	Endpoint string `yaml:"endpoint,omitempty" json:"endpoint,omitempty" toml:"endpoint,omitempty"`
 
 	// Timeout bounds network operations performed by the selected provider.
 	//
