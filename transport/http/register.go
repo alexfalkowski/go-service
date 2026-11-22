@@ -13,12 +13,10 @@ var fs *os.FS
 // "source strings" (for example `file:<path>` or `env:VAR`) via the
 // [os.FS.ReadSource] helper when materializing a runtime `*crypto/tls.Config`.
 //
-// In the standard go-service module graph, this registration is performed automatically by [Module]
-// (and therefore by higher-level bundles such as [github.com/alexfalkowski/go-service/v3/module.Server]). Call Register directly only when you
-// intentionally compose HTTP transport pieces manually outside that graph.
-//
-// If TLS is enabled and registration has not happened before constructing HTTP clients or servers, TLS
-// config construction may fail to load key material.
+// The standard [github.com/alexfalkowski/go-service/v3/module.Server] and
+// [github.com/alexfalkowski/go-service/v3/module.Client] bundles register the filesystem before constructing OpenFeature
+// providers. [Module] also registers it for direct HTTP transport composition. For manual setup, call
+// Register before constructing a TLS client or server that reads file sources.
 func Register(f *os.FS) {
 	fs = f
 }
