@@ -2,6 +2,14 @@ package xid
 
 import "github.com/rs/xid"
 
+// ID is an alias of [xid.ID].
+type ID = xid.ID
+
+// Parse decodes an XID string using [xid.FromString].
+func Parse(s string) (ID, error) {
+	return xid.FromString(s)
+}
+
 // NewGenerator constructs an XID generator.
 //
 // The returned generator produces XID identifiers (globally unique identifiers that are compact and

@@ -5,6 +5,14 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
+// KSUID is an alias of [ksuid.KSUID].
+type KSUID = ksuid.KSUID
+
+// Parse decodes a KSUID string using [ksuid.Parse].
+func Parse(s string) (KSUID, error) {
+	return ksuid.Parse(s)
+}
+
 // NewGenerator constructs a KSUID generator.
 //
 // The returned generator produces KSUID identifiers (K-Sortable Unique Identifiers)

@@ -7,6 +7,15 @@ import (
 	"github.com/oklog/ulid"
 )
 
+// ULID is an alias of [ulid.ULID].
+type ULID = ulid.ULID
+
+// Parse decodes a ULID string using [ulid.Parse].
+// It assumes the input uses valid base32 characters.
+func Parse(s string) (ULID, error) {
+	return ulid.Parse(s)
+}
+
 // NewGenerator constructs a ULID generator.
 //
 // The returned generator produces ULIDs (Universally Unique Lexicographically Sortable Identifiers).
