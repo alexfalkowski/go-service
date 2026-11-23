@@ -12,6 +12,89 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestEscapeAndUnescape checks the distinct rules for path and query components.
+func TestEscapeAndUnescape(t *testing.T) {
+	t.Parallel()
+
+	const raw = "a/b c+"
+	tests := []struct {
+		name     string
+		escaped  string
+		escape   func(string) string
+		unescape func(string) (string, error)
+	}{
+		{name: "path segment", escaped: "a%2Fb%20c+", escape: url.PathEscape, unescape: url.PathUnescape},
+		{name: "query component", escaped: "a%2Fb+c%2B", escape: url.QueryEscape, unescape: url.QueryUnescape},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, tt.escaped, tt.escape(raw))
+			decoded, err := tt.unescape(tt.escaped)
+			require.NoError(t, err)
+			require.Equal(t, raw, decoded)
+
+			_, err = tt.unescape("%ZZ")
+			require.ErrorIs(t, err, url.EscapeError("%ZZ"))
+		})
+	}
+}
+
+// TestJoinPathPreservesEscapedSegment checks that an escaped slash stays within one segment.
+func TestJoinPathPreservesEscapedSegment(t *testing.T) {
+	t.Parallel()
+
+	joined, err := url.JoinPath("https://example.com/items/", url.PathEscape("a/b"))
+	require.NoError(t, err)
+	require.Equal(t, "https://example.com/items/a%2Fb", joined)
+}
+
+// TestParseQuery checks that valid parameters survive a malformed escape.
+func TestParseQuery(t *testing.T) {
+	t.Parallel()
+
+	const query = "tag=a&tag=b&q=a+b"
+	want := url.Values{"tag": {"a", "b"}, "q": {"a b"}}
+
+	values, err := url.ParseQuery(query)
+	require.NoError(t, err)
+	require.Equal(t, want, values)
+
+	values, err = url.ParseQuery(query + "&bad=%ZZ")
+	require.ErrorIs(t, err, url.EscapeError("%ZZ"))
+	require.Equal(t, want, values)
+}
+
+// TestParseRequestURI checks request-target parsing and typed URL errors.
+func TestParseRequestURI(t *testing.T) {
+	t.Parallel()
+
+	const target = "/items/a%2Fb?q=1"
+	parsed, err := url.ParseRequestURI(target)
+	require.NoError(t, err)
+	require.Equal(t, target, parsed.RequestURI())
+
+	_, err = url.ParseRequestURI("items/a")
+	var parseErr *url.Error
+	require.ErrorAs(t, err, &parseErr)
+	require.Equal(t, "items/a", parseErr.URL)
+
+	_, err = url.ParseRequestURI("https://example.com|/items")
+	require.ErrorIs(t, err, url.InvalidHostError("|"))
+}
+
+// TestUserinfo checks credentials constructed for a URL.
+func TestUserinfo(t *testing.T) {
+	t.Parallel()
+
+	address := url.URL{Scheme: "https", Host: "example.com", User: url.User("alice")}
+	require.Equal(t, "https://alice@example.com", address.String())
+
+	address.User = url.UserPassword("alice", "p@ss")
+	require.Equal(t, "https://alice:p%40ss@example.com", address.String())
+}
+
 func TestSplitPathSeparatesBaseAndTail(t *testing.T) {
 	t.Parallel()
 
