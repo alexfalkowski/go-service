@@ -13,17 +13,72 @@ import (
 	"github.com/alexfalkowski/go-service/v3/strings"
 )
 
+// Error is an alias for [net/url.Error].
+type Error = url.Error
+
+// EscapeError is an alias for [net/url.EscapeError].
+type EscapeError = url.EscapeError
+
+// InvalidHostError is an alias for [net/url.InvalidHostError].
+type InvalidHostError = url.InvalidHostError
+
 // URL is an alias for [net/url.URL].
 type URL = url.URL
+
+// Userinfo is an alias for [net/url.Userinfo].
+type Userinfo = url.Userinfo
+
+// Values is an alias for [net/url.Values].
+type Values = url.Values
 
 // Parse parses a raw URL into a URL structure.
 func Parse(rawURL string) (*URL, error) {
 	return url.Parse(rawURL)
 }
 
+// ParseRequestURI wraps [net/url.ParseRequestURI] to parse an HTTP request URI.
+func ParseRequestURI(rawURL string) (*URL, error) {
+	return url.ParseRequestURI(rawURL)
+}
+
+// ParseQuery wraps [net/url.ParseQuery] to decode URL query parameters.
+func ParseQuery(query string) (Values, error) {
+	return url.ParseQuery(query)
+}
+
 // JoinPath returns a URL string with the provided path elements joined to base.
 func JoinPath(base string, elem ...string) (string, error) {
 	return url.JoinPath(base, elem...)
+}
+
+// PathEscape wraps [net/url.PathEscape] to escape a single URL path segment.
+func PathEscape(s string) string {
+	return url.PathEscape(s)
+}
+
+// PathUnescape wraps [net/url.PathUnescape] to decode an escaped URL path segment.
+func PathUnescape(s string) (string, error) {
+	return url.PathUnescape(s)
+}
+
+// QueryEscape wraps [net/url.QueryEscape] to escape a URL query component.
+func QueryEscape(s string) string {
+	return url.QueryEscape(s)
+}
+
+// QueryUnescape wraps [net/url.QueryUnescape] to decode an escaped URL query component.
+func QueryUnescape(s string) (string, error) {
+	return url.QueryUnescape(s)
+}
+
+// User wraps [net/url.User] to construct URL user information with a username.
+func User(username string) *Userinfo {
+	return url.User(username)
+}
+
+// UserPassword wraps [net/url.UserPassword] to construct URL user information with a username and password.
+func UserPassword(username, password string) *Userinfo {
+	return url.UserPassword(username, password)
 }
 
 // SplitPath splits a slash-prefixed path into its first segment and the remaining path.
