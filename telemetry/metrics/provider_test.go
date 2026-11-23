@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v3/context"
 	"github.com/alexfalkowski/go-service/v3/internal/test"
 	"github.com/alexfalkowski/go-service/v3/net/http"
 	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
@@ -13,6 +14,34 @@ import (
 	sync "github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 )
+
+func TestObservableGaugeCallback(t *testing.T) {
+	reader := test.EnableMetricsReader(t)
+	meter := metrics.NewMeter(test.Name, test.Version, metrics.GetMeterProvider())
+	gauge, err := meter.Int64ObservableGauge("test.queue.size", metrics.WithUnit("By"), metrics.WithDescription("Pending queue size"))
+	require.NoError(t, err)
+
+	queue := attributes.Key("queue").String("archive")
+	registration, err := meter.RegisterCallback(func(_ context.Context, observer metrics.Observer) error {
+		observer.ObserveInt64(gauge, 128, metrics.WithAttributes(queue))
+		return nil
+	}, gauge)
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, registration.Unregister()) })
+
+	var result metrics.ResourceMetrics
+	require.NoError(t, reader.Collect(t.Context(), &result))
+
+	collected := collectMetric(t, result, "test.queue.size")
+	require.Equal(t, "By", collected.Unit)
+	require.Equal(t, "Pending queue size", collected.Description)
+	data, ok := collected.Data.(metrics.Gauge[int64])
+	require.True(t, ok)
+	require.Len(t, data.DataPoints, 1)
+	point := data.DataPoints[0]
+	require.Equal(t, int64(128), point.Value)
+	require.Equal(t, []attributes.KeyValue{queue}, point.Attributes.ToSlice())
+}
 
 func TestIsEnabledReflectsInstalledMeterProvider(t *testing.T) {
 	t.Cleanup(func() {

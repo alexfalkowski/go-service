@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"github.com/alexfalkowski/go-service/v3/env"
+	"github.com/alexfalkowski/go-service/v3/telemetry/attributes"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/embedded"
@@ -22,11 +23,26 @@ type Registration = metric.Registration
 // Callback is an alias for [metric.Callback].
 type Callback = metric.Callback
 
+// Observer is an alias for [metric.Observer].
+type Observer = metric.Observer
+
 // Observable is an alias for [metric.Observable].
 type Observable = metric.Observable
 
 // EmbeddedMeter is an alias for [embedded.Meter].
 type EmbeddedMeter = embedded.Meter
+
+// InstrumentOption is an alias for [metric.InstrumentOption].
+type InstrumentOption = metric.InstrumentOption
+
+// ObserveOption is an alias for [metric.ObserveOption].
+type ObserveOption = metric.ObserveOption
+
+// MeasurementOption is an alias for [metric.MeasurementOption].
+type MeasurementOption = metric.MeasurementOption
+
+// Int64Observable is an alias for [metric.Int64Observable].
+type Int64Observable = metric.Int64Observable
 
 // Int64Counter is an alias for [metric.Int64Counter].
 type Int64Counter = metric.Int64Counter
@@ -69,6 +85,9 @@ type Int64Gauge = metric.Int64Gauge
 
 // Int64GaugeOption is an alias for [metric.Int64GaugeOption].
 type Int64GaugeOption = metric.Int64GaugeOption
+
+// Float64Observable is an alias for [metric.Float64Observable].
+type Float64Observable = metric.Float64Observable
 
 // Float64Counter is an alias for [metric.Float64Counter].
 type Float64Counter = metric.Float64Counter
@@ -132,6 +151,21 @@ type Sum[T int64 | float64] = metricdata.Sum[T]
 
 // Histogram is an alias for [metricdata.Histogram].
 type Histogram[T int64 | float64] = metricdata.Histogram[T]
+
+// WithUnit sets the instrument unit using a case-sensitive UCUM code.
+func WithUnit(unit string) InstrumentOption {
+	return metric.WithUnit(unit)
+}
+
+// WithDescription sets the instrument description.
+func WithDescription(description string) InstrumentOption {
+	return metric.WithDescription(description)
+}
+
+// WithAttributes attaches attributes to a measurement.
+func WithAttributes(attrs ...attributes.KeyValue) MeasurementOption {
+	return metric.WithAttributes(attrs...)
+}
 
 // NewMeter returns a Meter from provider using the service name and version.
 //

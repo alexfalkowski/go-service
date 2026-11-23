@@ -14,6 +14,13 @@
 // implementation details (exporters/readers, resource attributes, lifecycle hooks)
 // in one place.
 //
+// # Application metrics
+//
+// Use a [Meter] to create observable instruments with [WithUnit] and [WithDescription].
+// Register a [Callback] with those instruments and report measurements through its
+// [Observer], using [WithAttributes] to attach attributes to individual measurements.
+// Call Unregister on the returned [Registration] when the instruments are no longer needed.
+//
 // # Enablement model
 //
 // Metrics are enabled by presence:

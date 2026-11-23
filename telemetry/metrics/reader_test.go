@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-signal/v2/signaltest"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel/metric"
 )
 
 func TestRejectsInvalidReader(t *testing.T) {
@@ -80,7 +79,7 @@ func TestPrometheusReaderShapesOutput(t *testing.T) {
 		Environment: test.Environment,
 	})
 
-	histogram, err := provider.Meter(test.Name.String()).Float64Histogram("prometheus_reader_shapes_output_duration", metric.WithUnit("s"))
+	histogram, err := provider.Meter(test.Name.String()).Float64Histogram("prometheus_reader_shapes_output_duration", metrics.WithUnit("s"))
 	require.NoError(t, err)
 	histogram.Record(t.Context(), 0.3)
 
@@ -121,7 +120,7 @@ func TestPrometheusReaderKeepsDefaultOutput(t *testing.T) {
 		Environment: test.Environment,
 	})
 
-	histogram, err := provider.Meter(test.Name.String()).Float64Histogram("prometheus_reader_keeps_default_output_duration", metric.WithUnit("s"))
+	histogram, err := provider.Meter(test.Name.String()).Float64Histogram("prometheus_reader_keeps_default_output_duration", metrics.WithUnit("s"))
 	require.NoError(t, err)
 	histogram.Record(t.Context(), 0.3)
 
