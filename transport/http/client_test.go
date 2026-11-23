@@ -8,9 +8,11 @@ import (
 	tls "github.com/alexfalkowski/go-service/v3/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v3/env"
 	"github.com/alexfalkowski/go-service/v3/internal/test"
+	"github.com/alexfalkowski/go-service/v3/io"
 	"github.com/alexfalkowski/go-service/v3/net/http"
 	"github.com/alexfalkowski/go-service/v3/net/http/status"
 	"github.com/alexfalkowski/go-service/v3/net/url"
+	"github.com/alexfalkowski/go-service/v3/os"
 	"github.com/alexfalkowski/go-service/v3/time"
 	transporthttp "github.com/alexfalkowski/go-service/v3/transport/http"
 	"github.com/alexfalkowski/go-service/v3/transport/http/breaker"
@@ -18,6 +20,7 @@ import (
 	httpretry "github.com/alexfalkowski/go-service/v3/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v3/transport/limiter"
 	"github.com/alexfalkowski/go-signal/v2/signaltest"
+	"github.com/avfs/avfs/vfs/memfs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -51,6 +54,29 @@ func TestNewClientFromConfigRejectsInvalidEndpoint(t *testing.T) {
 			require.Nil(t, endpoint)
 		})
 	}
+}
+
+func TestNewClientFromConfigLoadsCAFromSuppliedFS(t *testing.T) {
+	transporthttp.Register(nil)
+	t.Cleanup(func() { transporthttp.Register(test.FS) })
+
+	const caPath = "client-ca.pem"
+	fs := &os.FS{VFS: memfs.New()}
+	cfg := &client.Config{Endpoint: "https://example.com", TLS: &tls.Config{CA: "file:" + caPath}}
+
+	_, _, err := transporthttp.NewClientFromConfig(cfg, transporthttp.WithClientFS(fs))
+	require.ErrorIs(t, err, io.ErrNotExist)
+
+	ca, err := test.FS.ReadFile(test.Path("certs/rootCA.pem"))
+	require.NoError(t, err)
+	require.NoError(t, fs.WriteFile(caPath, ca, 0o600))
+
+	_, _, err = transporthttp.NewClientFromConfig(cfg, transporthttp.WithClientFS(fs))
+	require.NoError(t, err, "the supplied filesystem works before registration")
+
+	transporthttp.Register(test.FS)
+	_, _, err = transporthttp.NewClientFromConfig(cfg, transporthttp.WithClientFS(fs))
+	require.NoError(t, err, "the supplied filesystem takes precedence over the registered filesystem")
 }
 
 func TestNewClientFromConfigUsesBreakerThreshold(t *testing.T) {
@@ -125,18 +151,21 @@ func TestNewClientValidatesTLSConfig(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, conn)
 	require.Nil(t, endpoint)
+
+	cfg.TLS = &tls.Config{CA: test.FilePath("certs/rootCA.pem")}
+	_, _, err = transporthttp.NewClientFromConfig(cfg, transporthttp.WithClientFS(nil))
+	require.NoError(t, err)
 }
 
 func TestClientRoundTripperBypassesTLSConfig(t *testing.T) {
-	transporthttp.Register(test.FS)
-
 	called := false
 	client, err := transporthttp.NewClient(
 		transporthttp.WithClientRoundTripper(test.RoundTripperFunc(func(*http.Request) (*http.Response, error) {
 			called = true
 			return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil
 		})),
-		transporthttp.WithClientTLS(&tls.Config{Cert: "bob", Key: "bob"}),
+		transporthttp.WithClientTLS(&tls.Config{CA: "file:client-ca.pem"}),
+		transporthttp.WithClientFS(test.ErrFS),
 	)
 	require.NoError(t, err)
 

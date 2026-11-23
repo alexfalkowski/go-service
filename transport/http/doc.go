@@ -50,14 +50,16 @@
 //
 // # Manual composition note (TLS filesystem)
 //
-// This package uses package-level registration to inject filesystem access used when constructing TLS
-// configuration. The registered filesystem is used by
+// Use [WithClientFS] to supply filesystem access when constructing a client with
+// TLS sources. The filesystem supplied to [Register] is the client fallback and
+// is used for servers. These filesystems are used by
 // [github.com/alexfalkowski/go-service/v3/config/server.NewConfig] and [github.com/alexfalkowski/go-service/v3/config/client.NewConfig] to resolve TLS "source strings"
 // (for example `file:<path>` or `env:VAR`) when materializing the
 // runtime `*crypto/tls.Config`.
 //
 // The standard [github.com/alexfalkowski/go-service/v3/module.Server] and
 // [github.com/alexfalkowski/go-service/v3/module.Client] bundles register the filesystem before constructing OpenFeature
-// providers. [Module] also registers it for direct HTTP transport composition. For manual setup, call
-// [Register] before constructing a TLS client or server that reads file sources.
+// providers. [Module] also registers it for direct HTTP transport composition.
+// For manual setup, call [Register] before constructing a TLS server that reads
+// file sources or an HTTP client that relies on the fallback filesystem.
 package http

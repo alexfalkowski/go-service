@@ -361,9 +361,9 @@ local or platform-secured traffic; configure client TLS for calls outside that t
 > [!IMPORTANT]
 > If you are using `go-service-template` or composing server transport bundles such as `module.Server` or `transport.Module`, the required transport registration is handled for you by DI.
 >
-> `module.Client` does not wire transports by default. When a client process constructs HTTP or gRPC TLS config from source strings such as `file:`, call the relevant transport-level `Register(...)` functions, such as `transport/http.Register(...)` or `transport/grpc.Register(...)`.
+> `module.Client` registers the filesystem for outbound HTTP client TLS. To construct an HTTP client before registration, pass `http.WithClientFS(fs)` to `http.NewClientFromConfig` from `transport/http`. The supplied filesystem resolves TLS sources such as `file:` when constructing the default client transport.
 >
-> You only need to call transport-level `Register(...)` functions yourself when you intentionally wire transports manually or compose lower-level packages outside the transport module graph.
+> With manual transport wiring, call `transport/http.Register(...)` for HTTP server TLS and for clients that rely on the fallback filesystem. Call `transport/grpc.Register(...)` for gRPC TLS when the transport module does not handle registration.
 >
 > If you are wiring server lifecycle manually, use `net/server.Register(...)`.
 

@@ -3,7 +3,10 @@
 These entries are part of the [accepted design index](../accepted-design.md)
 and carry the same mandatory weight.
 
-- Manual transport TLS setup must call the HTTP and gRPC transport register functions; `transport.Module` does this on the normal path.
+- Manual transport TLS setup uses the HTTP and gRPC transport register
+  functions. `transport.Module` does this on the normal path. Outbound HTTP
+  clients can supply their filesystem with `transport/http.WithClientFS` and
+  resolve TLS sources before registration.
 - Runtime TLS material, like other resolved configuration, is intentionally
   materialized once at startup; the leaf certificate and CA pools are pinned for
   the process lifetime. This framework targets container platforms where

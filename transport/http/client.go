@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v3/net/http/compress"
 	"github.com/alexfalkowski/go-service/v3/net/http/meta"
 	"github.com/alexfalkowski/go-service/v3/net/url"
+	"github.com/alexfalkowski/go-service/v3/os"
 	"github.com/alexfalkowski/go-service/v3/time"
 	"github.com/alexfalkowski/go-service/v3/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/v3/transport/http/limiter"
@@ -38,6 +39,7 @@ type clientOptions struct {
 	roundTripper  http.RoundTripper
 	lifecycle     signal.Lifecycle
 	tls           *tls.Config
+	fs            *os.FS
 	retry         *retry.Config
 	limiter       *limiter.Client
 	logger        *logger.Logger
@@ -168,14 +170,22 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 
 // WithClientTLS enables TLS for the default HTTP transport selection.
 //
-// This option only affects transport selection when [WithClientRoundTripper] is not used. When a base
-// round tripper is provided explicitly, it is used as-is.
-//
-// If TLS is enabled and no base round tripper is provided, TLS config is constructed using the package-
-// registered filesystem dependency (see [Register] in this package) to resolve TLS source strings.
+// The default transport resolves TLS sources using [WithClientFS] or the filesystem
+// supplied to [Register]. A custom transport supplied with [WithClientRoundTripper]
+// handles its own TLS configuration.
 func WithClientTLS(sec *tls.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tls = sec
+	})
+}
+
+// WithClientFS supplies the filesystem for resolving TLS sources when constructing
+// the default HTTP client transport. A nil filesystem uses the filesystem supplied
+// to [Register]. A custom transport supplied with [WithClientRoundTripper] handles
+// its own TLS configuration.
+func WithClientFS(fs *os.FS) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.fs = fs
 	})
 }
 
@@ -208,8 +218,8 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 // Base transport selection:
 // If no base round tripper is configured (via [WithClientRoundTripper]), a transport is selected based on TLS:
 //   - if TLS is disabled: the default HTTP transport is used (`http.Transport(nil)`)
-//   - if TLS is enabled: TLS config is constructed using the registered filesystem (see [Register]) and used
-//     to construct a TLS-enabled transport (`http.Transport(conf)`).
+//   - if TLS is enabled: TLS config is constructed using the filesystem supplied with [WithClientFS],
+//     falling back to the registered filesystem (see [Register]), and used to construct `http.Transport(conf)`.
 //
 // Composition:
 // Middleware is applied by wrapping the base RoundTripper. The order in which wrappers are applied matters.
@@ -352,7 +362,12 @@ func roundTripper(resolved *clientOptions) (http.RoundTripper, error) {
 		return http.Transport(nil), nil
 	}
 
-	conf, err := client.NewConfig(fs, resolved.tls)
+	clientFS := resolved.fs
+	if clientFS == nil {
+		clientFS = fs
+	}
+
+	conf, err := client.NewConfig(clientFS, resolved.tls)
 	if err != nil {
 		return nil, err
 	}
