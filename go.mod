@@ -30,7 +30,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.13.0
 	github.com/jellydator/ttlcache/v3 v3.4.1
-	github.com/klauspost/compress v1.20.4
+	github.com/klauspost/compress v1.20.5
 	github.com/lmittmann/tint v1.2.1
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/nicksnyder/go-i18n/v2 v2.7.0
