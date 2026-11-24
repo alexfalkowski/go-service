@@ -39,8 +39,8 @@ require (
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.8
 	github.com/prometheus/client_golang v1.25.0
 	github.com/prometheus/otlptranslator v1.0.0
-	github.com/redis/go-redis/extra/redisotel/v9 v9.23.0
-	github.com/redis/go-redis/v9 v9.23.0
+	github.com/redis/go-redis/extra/redisotel/v9 v9.24.0
+	github.com/redis/go-redis/v9 v9.24.0
 	github.com/rs/xid v1.6.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sethvargo/go-limiter v1.2.0
@@ -74,7 +74,7 @@ require (
 	golang.org/x/crypto v0.59.0
 	golang.org/x/net v0.63.0
 	golang.org/x/text v0.44.0
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20261110000943-09e21b237f2c
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261123191846-1e707ab9fbc2
 	google.golang.org/grpc v1.85.0
 	google.golang.org/protobuf v1.36.12
 )
@@ -116,7 +116,7 @@ require (
 	github.com/prometheus/client_model v0.6.3 // indirect
 	github.com/prometheus/common v0.73.1 // indirect
 	github.com/prometheus/procfs v0.23.0 // indirect
-	github.com/redis/go-redis/extra/rediscmd/v9 v9.23.0 // indirect
+	github.com/redis/go-redis/extra/rediscmd/v9 v9.24.0 // indirect
 	github.com/secure-io/siv-go v0.0.0-20180922214919-5ff40651e2c4 // indirect
 	github.com/shirou/gopsutil/v4 v4.26.10 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
