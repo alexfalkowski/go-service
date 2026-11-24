@@ -2,11 +2,6 @@ package time
 
 import "time"
 
-// RFC3339 is the RFC3339 time format layout.
-//
-// It is an alias of [time.RFC3339].
-const RFC3339 = time.RFC3339
-
 // Ticker is the go-service ticker type used across the repository.
 //
 // It is a type alias of [time.Ticker], meaning it has identical semantics and method
@@ -33,6 +28,12 @@ func After(d Duration) <-chan Time {
 	return time.After(d.Duration())
 }
 
+// AfterFunc schedules f to run in its own goroutine after d and returns a [Timer]
+// whose Stop method can cancel a pending call. It wraps [time.AfterFunc].
+func AfterFunc(d Duration, f func()) *Timer {
+	return time.AfterFunc(d.Duration(), f)
+}
+
 // NewTimer returns a new [Timer] that will send the current time on its channel
 // after at least duration d.
 //
@@ -49,6 +50,12 @@ func NewTicker(d Duration) *Ticker {
 	return time.NewTicker(d.Duration())
 }
 
+// Tick wraps [time.Tick] and returns the channel for ticks spaced by d.
+// It returns a nil channel when d is zero or negative.
+func Tick(d Duration) <-chan Time {
+	return time.Tick(d.Duration())
+}
+
 // Now returns the current local time.
 //
 // This is a thin wrapper around [time.Now] and does not change semantics.
@@ -56,11 +63,22 @@ func Now() Time {
 	return time.Now()
 }
 
-// Unix returns the local Time corresponding to the given Unix time, sec seconds since January 1, 1970 UTC.
-//
-// This is a thin wrapper around [time.Unix] and does not change semantics.
+// Unix returns the local time sec seconds after the Unix epoch, with zero
+// fractional seconds. It wraps [time.Unix].
 func Unix(sec int64) Time {
 	return time.Unix(sec, 0)
+}
+
+// UnixMilli wraps [time.UnixMilli] and returns the local time msec milliseconds
+// after the Unix epoch.
+func UnixMilli(msec int64) Time {
+	return time.UnixMilli(msec)
+}
+
+// UnixMicro wraps [time.UnixMicro] and returns the local time usec microseconds
+// after the Unix epoch.
+func UnixMicro(usec int64) Time {
+	return time.UnixMicro(usec)
 }
 
 // Since returns the time elapsed since t.
