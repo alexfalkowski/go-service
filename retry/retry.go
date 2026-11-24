@@ -6,7 +6,8 @@ import (
 	retry "github.com/sethvargo/go-retry"
 )
 
-// Backoff aliases the upstream retry backoff interface.
+// Backoff aliases the upstream [retry.Backoff] function.
+// The attempt index starts at zero for the wait after the initial call.
 type Backoff = retry.Backoff
 
 // RetryFunc aliases the upstream retry function type.
@@ -18,8 +19,9 @@ type RetryFuncValue[T any] = retry.RetryFuncValue[T]
 // NewBackoff creates a backoff for the given strategy using base as the starting duration.
 //
 // Supported strategies are "constant" (the default), "exponential", and "fibonacci".
-// An empty or unrecognized strategy falls back to a constant backoff. It forwards to the
-// upstream retry package and panics when base is less than or equal to zero.
+// An empty or unrecognized strategy falls back to a constant backoff.
+// The fibonacci strategy uses base multiples of 1, 1, 2, 3, 5, and so on.
+// It panics when base is less than or equal to zero.
 func NewBackoff(strategy string, base time.Duration) Backoff {
 	switch strategy {
 	case "exponential":
@@ -63,16 +65,18 @@ func WithCappedDuration(maxDuration time.Duration, next Backoff) Backoff {
 
 // Do wraps f with b and retries errors marked by [RetryableError].
 //
-// It forwards ctx to each call of f. If ctx is canceled before or during a
-// backoff wait, Do returns ctx.Err().
+// It forwards ctx to each call of f. If ctx is done before the first call or
+// during a backoff wait, Do returns [context.Cause] joined with the last
+// retryable error, if any.
 func Do(ctx context.Context, b Backoff, f RetryFunc) error {
 	return retry.Do(ctx, b, f)
 }
 
 // DoValue wraps f with b and retries errors marked by [RetryableError], returning the produced value.
 //
-// It forwards ctx to each call of f. If ctx is canceled before or during a
-// backoff wait, DoValue returns the zero value of T with ctx.Err().
+// It forwards ctx to each call of f. If ctx is done before the first call or
+// during a backoff wait, DoValue returns the zero value of T and the same
+// cancellation error as [Do].
 func DoValue[T any](ctx context.Context, b Backoff, f RetryFuncValue[T]) (T, error) {
 	return retry.DoValue(ctx, b, f)
 }

@@ -95,14 +95,10 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 		}
 
 		strategyBackoff := cappedBackoff(strategy, backoff, maxBackoff)
-
-		// growthBackoff mirrors strategyBackoff's construction so the RetryInfo gate can peek the
-		// backoff that will actually precede the next attempt, growing per attempt for exponential
-		// and fibonacci strategies rather than staying pinned to the static base.
-		growthBackoff := cappedBackoff(strategy, backoff, maxBackoff)
-
 		retries := retry.WithJitterPercent(config.DefaultJitterPercent, strategyBackoff)
 		retries = retry.WithMaxRetries(maxAttempts-1, retries)
+
+		var attemptIndex uint64
 		return retry.Do(ctx, retries, func(ctx context.Context) error {
 			err := attempt(ctx)
 			if err == nil || status.IsLocalError(err) {
@@ -112,11 +108,12 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 				return err
 			}
 
-			next, _ := growthBackoff.Next()
+			next, _ := strategyBackoff(attemptIndex)
 			if retryInfoDelayExceedsBackoff(err, time.Duration(next)) {
 				return err
 			}
 
+			attemptIndex++
 			return retry.RetryableError(err)
 		})
 	}

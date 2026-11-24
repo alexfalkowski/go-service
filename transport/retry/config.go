@@ -29,9 +29,10 @@ const MaxAttempts uint64 = 10
 type Config struct {
 	// Strategy selects the backoff growth applied between attempts.
 	//
-	// Supported values are "constant" (the default), "exponential", and "fibonacci".
-	// Backoff is the base duration: constant reuses it for every wait, while exponential
-	// and fibonacci grow it on each attempt. An empty value applies the constant strategy.
+	// The constant strategy reuses Backoff for every wait. The exponential strategy
+	// starts at Backoff and doubles it on each retry. The fibonacci strategy uses Backoff
+	// for the first two waits, then sums the previous two waits. An empty value applies
+	// the constant strategy.
 	Strategy string `yaml:"strategy,omitempty" json:"strategy,omitempty" toml:"strategy,omitempty" validate:"omitempty,oneof=constant exponential fibonacci"`
 
 	// Timeout is a transport-specific timeout duration.
@@ -53,13 +54,10 @@ type Config struct {
 	// A zero value applies DefaultBackoff. Negative values are invalid.
 	Backoff time.Duration `yaml:"backoff,omitempty" json:"backoff,omitempty" toml:"backoff,omitempty" validate:"gte=0"`
 
-	// MaxBackoff caps the per-attempt backoff duration for the exponential and fibonacci
-	// strategies. Without a cap, those strategies grow the wait between attempts
-	// unboundedly (aside from any overall context or client timeout).
+	// MaxBackoff caps the per-attempt backoff duration before jitter.
 	//
 	// Value encoding: Go duration string (for example "5s", "30s").
-	// A zero value leaves backoff growth uncapped, preserving today's behavior. Negative
-	// values are invalid.
+	// A zero value leaves backoff growth uncapped. Negative values are invalid.
 	MaxBackoff time.Duration `yaml:"max_backoff,omitempty" json:"max_backoff,omitempty" toml:"max_backoff,omitempty" validate:"gte=0"`
 
 	// Attempts is the maximum number of attempts, including the initial attempt.
