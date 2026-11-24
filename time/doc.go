@@ -4,14 +4,7 @@
 // This package serves two purposes:
 //
 //  1. Standard library compatibility via wrappers and aliases.
-//     It re-exports a small subset of the Go standard library time API so code across
-//     go-service can consistently import go-service packages while still using the
-//     underlying time semantics.
-//
-//     Exported types include [Time] (an alias of time.Time), [Timer] and [Ticker]
-//     (aliases of time.Timer and time.Ticker), [Duration] (a named type over
-//     time.Duration), common duration constants ([Second], [Minute], [Hour],
-//     etc.), and [RFC3339].
+//     It exposes standard Go time operations through the go-service import path.
 //
 //  2. Optional network time sourcing.
 //     In environments where local wall-clock time may drift or needs stronger
@@ -20,21 +13,14 @@
 //
 // # Standard library compatibility
 //
-// The following identifiers are thin wrappers around the standard library and do not
-// materially change semantics:
+// [Time], [Location], [Timer], and [Ticker] alias the corresponding standard
+// library types. [Duration] wraps [time.Duration] with text and JSON marshaling
+// that uses Go duration strings.
 //
-//   - [Time] aliases [time.Time].
-//   - [Duration] wraps [time.Duration] and adds Text/JSON marshaling helpers while
-//     preserving Go duration string semantics.
-//   - [After], [Now], [Since], [Until], [Sleep], [NewTimer], [NewTicker], and
-//     [ParseDuration] forward to time.After, time.Now, time.Since, time.Until,
-//     time.Sleep, time.NewTimer, time.NewTicker, and time.ParseDuration
-//     respectively.
-//   - Constants such as [Second], [Minute], [Hour], and [RFC3339] mirror the
-//     standard library values.
-//
-// Use these when you want to keep dependencies within the go-service module while
-// remaining close to the standard library time types.
+// Use [Parse] and [ParseInLocation] with standard layouts such as [RFC3339]
+// and [DateOnly]. Construct timestamps with [Date], [Unix] (whole seconds),
+// [UnixMilli], or [UnixMicro]. Timer helpers such as [AfterFunc], [NewTimer],
+// [NewTicker], and [Tick] accept the package's [Duration].
 //
 // # Strict helpers
 //
