@@ -20,15 +20,15 @@ func TestNewBackoffProducesStrategyDelays(t *testing.T) {
 		{name: "constant", strategy: "constant", want: []time.Duration{base, base, base}},
 		{name: "unknown defaults to constant", strategy: "bogus", want: []time.Duration{base, base, base}},
 		{name: "exponential", strategy: "exponential", want: []time.Duration{base, 2 * base, 4 * base}},
-		{name: "fibonacci", strategy: "fibonacci", want: []time.Duration{base, 2 * base, 3 * base}},
+		{name: "fibonacci", strategy: "fibonacci", want: []time.Duration{base, base, 2 * base, 3 * base, 5 * base}},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			backoff := retry.NewBackoff(tt.strategy, base)
 
-			for _, want := range tt.want {
-				next, stop := backoff.Next()
+			for attempt, want := range tt.want {
+				next, stop := backoff(uint64(attempt))
 
 				require.False(t, stop, "strategy backoff should not stop before max retries")
 				require.Equal(t, want, time.Duration(next))
@@ -41,11 +41,11 @@ func TestWithCappedDurationBoundsGrowingBackoff(t *testing.T) {
 	backoff := retry.WithCappedDuration(4*time.Millisecond, retry.NewBackoff("exponential", time.Millisecond))
 
 	want := []time.Duration{time.Millisecond, 2 * time.Millisecond, 4 * time.Millisecond, 4 * time.Millisecond}
-	for _, w := range want {
-		next, stop := backoff.Next()
+	for attempt, duration := range want {
+		next, stop := backoff(uint64(attempt))
 
 		require.False(t, stop, "capped backoff should not stop before max retries")
-		require.Equal(t, w, time.Duration(next))
+		require.Equal(t, duration, time.Duration(next))
 	}
 }
 
@@ -54,7 +54,7 @@ func TestWithJitterPercentBoundsBackoff(t *testing.T) {
 
 	durations := map[time.Duration]struct{}{}
 	for range 100 {
-		next, stop := backoff.Next()
+		next, stop := backoff(0)
 		duration := time.Duration(next)
 
 		require.False(t, stop, "jittered constant backoff should not stop")

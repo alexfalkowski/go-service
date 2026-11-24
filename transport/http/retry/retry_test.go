@@ -225,6 +225,7 @@ func TestRoundTripperDoesNotRetryWhenRetryAfterExceedsMinimumBackoff(t *testing.
 
 func TestRoundTripperHonorsGrownBackoffForRetryAfter(t *testing.T) {
 	tests := []struct {
+		firstErr   error
 		name       string
 		retryAfter string
 		calls      int
@@ -232,6 +233,7 @@ func TestRoundTripperHonorsGrownBackoffForRetryAfter(t *testing.T) {
 	}{
 		{name: "below the grown backoff retries", retryAfter: "1", calls: 3, finalCode: http.StatusOK},
 		{name: "above the grown backoff still suppresses", retryAfter: "2", calls: 2, finalCode: http.StatusTooManyRequests},
+		{name: "transport errors advance the backoff", firstErr: io.ErrUnexpectedEOF, retryAfter: "1", calls: 3, finalCode: http.StatusOK},
 	}
 
 	for _, tt := range tests {
@@ -242,6 +244,10 @@ func TestRoundTripperHonorsGrownBackoffForRetryAfter(t *testing.T) {
 					calls++
 					switch calls {
 					case 1:
+						if tt.firstErr != nil {
+							return nil, tt.firstErr
+						}
+
 						return test.ResponseWithStatus(http.StatusTooManyRequests), nil
 					case 2:
 						res := test.ResponseWithStatus(http.StatusTooManyRequests)

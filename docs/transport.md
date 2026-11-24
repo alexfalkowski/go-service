@@ -481,11 +481,11 @@ of `0` or `1` means no retry beyond the first attempt; values above `10` are
 rejected during config validation. `backoff` is the base delay between retry
 attempts.
 
-`strategy` selects how `backoff` grows between attempts: `constant` (the
-default) reuses the base delay for every wait, `exponential` doubles it on each
-attempt, and `fibonacci` grows it along the Fibonacci sequence. An unset value
-applies `constant`, jitter is applied on top of the chosen strategy, and any
-other value is rejected during config validation.
+The `constant` strategy reuses the base delay for every wait. The `exponential`
+strategy starts at the base delay and doubles it on each retry. The `fibonacci`
+strategy uses base multiples of 1, 1, 2, 3, 5, and so on. An unset `strategy`
+uses `constant`. All strategies apply jitter, and config validation rejects
+unsupported values.
 
 `timeout` is transport-specific. gRPC unary retries apply it per attempt, so
 total elapsed time can include multiple attempt timeouts plus backoff unless the
@@ -493,10 +493,9 @@ caller context ends first. HTTP retries do not create a retry-owned per-attempt
 timeout; bound outbound HTTP calls with the request context or
 `http.Client.Timeout`.
 
-`max_backoff` caps the per-attempt backoff duration, applied before jitter. It
-is most useful with `exponential` and `fibonacci` growth, which otherwise grow
-unbounded across attempts. A zero value (the default) leaves backoff
-uncapped:
+`max_backoff` caps the per-attempt backoff duration before jitter. With
+`exponential` or `fibonacci`, the cap limits how far the delay can grow across
+attempts. A zero value (the default) leaves backoff uncapped.
 
 ```yaml
 feature:

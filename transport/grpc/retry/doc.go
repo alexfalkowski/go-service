@@ -11,8 +11,8 @@
 //
 // RetryInfo handling: when a retryable gRPC status error includes google.rpc RetryInfo with a retry_delay
 // greater than the minimum jittered backoff that will precede the next attempt, the error is returned without
-// another attempt. For exponential and fibonacci strategies this grows per attempt, matching the real backoff
-// schedule rather than the static base. Missing, zero, or shorter retry_delay values do not suppress a retry.
+// another attempt. The comparison uses the backoff for that attempt, including growth from the configured strategy.
+// Missing, zero, or shorter retry_delay values do not suppress a retry.
 //
 // Locally produced client-control errors marked by `net/grpc/status.LocalError` are
 // terminal. An unmarked response with the same gRPC code remains governed by
