@@ -47,10 +47,18 @@ func WithCacheControl(value string) StaticOption {
 	})
 }
 
-// WithStaticUnauthenticated marks a static route as not requiring transport token authentication.
+// WithStaticUnauthenticated exempts a static route from transport token authentication and access checks.
 func WithStaticUnauthenticated() StaticOption {
 	return staticOptionFunc(func(options *staticOptions) {
 		options.unauthenticated = true
+	})
+}
+
+// WithStaticAuthenticated applies the transport's configured token authentication and access policy to a static route.
+// It overrides an earlier [WithStaticUnauthenticated] option.
+func WithStaticAuthenticated() StaticOption {
+	return staticOptionFunc(func(options *staticOptions) {
+		options.unauthenticated = false
 	})
 }
 

@@ -30,6 +30,9 @@ type ServerParams struct {
 	// FunctionMap is the template function map used when parsing templates.
 	//
 	// It is typically constructed via go-sprout and used to provide common template helpers.
+	// When Assets is supplied, FunctionMap must be initialized. NewServer sets
+	// assetURL in this map during startup.
+	// Give servers with different asset sets separate maps.
 	FunctionMap sprout.FunctionMap
 
 	// FileSystem is the filesystem used to load template files and static files.
@@ -49,6 +52,10 @@ type ServerParams struct {
 	// Catalog enables request-localized messages in templates through .Localizer.
 	// Applications provide a catalog during startup; omitting it leaves .Localizer nil.
 	Catalog *i18n.Catalog `optional:"true"`
+
+	// Assets enables assetURL in views and mounts asset routes when MVC is defined.
+	// Applications optionally provide it during startup.
+	Assets *Assets `optional:"true"`
 }
 
 // NewServer constructs a Server from params.
@@ -62,10 +69,13 @@ type ServerParams struct {
 //
 // Pool must be non-nil. Standard go-service module wiring provides it from [sync.Module].
 //
+// When Assets is supplied, NewServer installs assetURL in FunctionMap and mounts the asset routes
+// if MVC is defined.
+//
 // If MVC is not defined, routing helpers (Route/Get/Post/etc. and static helpers) return false and do not
 // register handlers.
 func NewServer(params ServerParams) *Server {
-	return &Server{
+	server := &Server{
 		router:     params.Router,
 		fmap:       params.FunctionMap,
 		fileSystem: params.FileSystem,
@@ -73,6 +83,16 @@ func NewServer(params ServerParams) *Server {
 		layout:     params.Layout,
 		catalog:    params.Catalog,
 	}
+
+	if params.Assets != nil {
+		server.fmap["assetURL"] = params.Assets.assetURL
+
+		if server.IsDefined() {
+			server.registerAssets(params.Assets)
+		}
+	}
+
+	return server
 }
 
 // Server registers MVC routes and renders views for an HTTP router.

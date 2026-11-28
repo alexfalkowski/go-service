@@ -35,4 +35,12 @@
 // translations fall back to the default language; missing messages or variable
 // errors fail rendering before the response body is written. Without a catalog,
 // Localizer is nil and localization does not change response headers.
+//
+// # Static assets
+//
+// Provide [Assets] through [ServerParams.Assets]. [NewServer] mounts the assets at startup when MVC is
+// defined. The assetURL template function resolves the name of a declared asset to its versioned URL.
+// Pass [StaticOption] values to [NewAssets] to configure authentication and caching for the asset routes.
+// When a request supplies a version, it must match the asset's fingerprint. A mismatch returns a
+// 404 with Cache-Control: no-store.
 package mvc
