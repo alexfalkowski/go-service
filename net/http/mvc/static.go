@@ -26,7 +26,7 @@ func (s *Server) StaticFile(pattern, name string, opts ...StaticOption) bool {
 		s.serveFile(req.Context(), res, name, options)
 	}
 
-	s.router.HandleRoute(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler), options.httpOptions()...)
+	s.registerStatic(pattern, handler, options)
 	return true
 }
 
@@ -55,8 +55,12 @@ func (s *Server) StaticPathValue(pattern, value, prefix string, opts ...StaticOp
 		s.serveFile(req.Context(), res, name, options)
 	}
 
-	s.router.HandleRoute(strings.Join(strings.Space, http.MethodGet, pattern), http.HandlerFunc(handler), options.httpOptions()...)
+	s.registerStatic(pattern, handler, options)
 	return true
+}
+
+func (s *Server) registerStatic(pattern string, handler http.HandlerFunc, options *staticOptions) {
+	s.router.HandleRoute(strings.Join(strings.Space, http.MethodGet, pattern), handler, options.httpOptions()...)
 }
 
 func (s *Server) serveFile(ctx context.Context, res http.ResponseWriter, name string, options *staticOptions) {
@@ -80,14 +84,14 @@ func (s *Server) serveFile(ctx context.Context, res http.ResponseWriter, name st
 	}
 
 	setStaticCacheControl(res, options)
-	writeStaticFile(res, name, f, info)
+	writeStaticFile(res, name, f, info.Size())
 }
 
-func writeStaticFile(res http.ResponseWriter, name string, f io.File, info io.FileInfo) {
-	setStaticContentLength(res, info.Size())
+func writeStaticFile(res http.ResponseWriter, name string, reader io.Reader, size int64) {
+	setStaticContentLength(res, size)
 	setStaticContentType(res, name)
 	res.WriteHeader(http.StatusOK)
-	_, _ = io.Copy(res, f)
+	_, _ = io.Copy(res, reader)
 }
 
 func staticStatusCode(err error) int {

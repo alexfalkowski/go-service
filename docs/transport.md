@@ -209,6 +209,80 @@ When an MVC controller returns an error, `mvc.Server.Route` renders the returned
 
 The raw error string remains available to templates as `mvcModelError` metadata for compatibility. Rendering that metadata can expose diagnostic details, so prefer `.Model.Message` for client-visible error pages.
 
+## HTTP MVC assets
+
+Declare assets with `mvc.NewAssets`. Use the same embedded `io.FS` that
+provides the MVC views. Each asset has a name used in templates and a source.
+Set `File` for an asset served as-is or `Manifest` for an asset assembled at startup.
+
+```go
+// NewAssets loads and fingerprints the embedded Logs assets at startup.
+func NewAssets(fsys io.FS) (*mvc.Assets, error) {
+    assets := []mvc.Asset{
+        {Name: "logs.css", File: "static/logs.css"},
+        {Name: "logs.js", Manifest: "scripts/logs.js.tmpl"},
+    }
+
+    return mvc.NewAssets(fsys, "/assets", assets, mvc.WithStaticUnauthenticated())
+}
+```
+
+In the app's go-signal module, add `signal.Constructor(NewAssets)`. MVC mounts
+the asset routes at startup when a filesystem and a valid layout are configured.
+Direct callers pass the assets through `mvc.ServerParams.Assets` and supply an
+initialized `mvc.ServerParams.FunctionMap` to `mvc.NewServer`.
+Asset routes follow the app's configured token authentication and access
+policy by default. Pass `mvc.WithStaticUnauthenticated()` for public assets.
+Pass `mvc.WithStaticAuthenticated()` after an unauthenticated option to restore
+the app's policy. Serve separate static files with `server.StaticFile`.
+
+During the first rolling deployment from `server.StaticFile` to `mvc.NewAssets`,
+a legacy replica can serve cacheable old bytes under a new fingerprint. Choose
+a rollout sequence before publishing new asset URLs.
+
+- **Keep the existing prefix.** Replace the manual routes with `mvc.NewAssets`
+  on each replica. Keep the asset bytes and the URLs rendered by templates stable
+  until every replica serving the prefix validates fingerprints. Then publish
+  the new asset versions.
+- **Use a new prefix.** Choose a prefix outside all legacy static routes,
+  including wildcard routes. Mount the new prefix on every replica while
+  templates continue to render the old URLs. Switch templates to the new prefix
+  once every replica serves it. Keep the old routes available for pages that
+  still reference them.
+
+If the MVC-provided `assetURL` would change the URLs during the first stage,
+keep templates on literal legacy URLs or a separately named legacy helper.
+Remove the app's legacy `assetURL` decorator when templates switch to using
+the MVC-provided helper.
+
+A JavaScript or CSS manifest is a Go text template. Its `include` function inserts
+the file's raw contents at that position. Include paths are relative to the root
+of the embedded filesystem. The manifest controls script order and CSS cascade
+order. Embed the manifest and its fragments in the app's filesystem.
+The ordinary Go build includes them through `//go:embed`.
+
+```gotemplate
+{{include "scripts/time.js"}}
+{{include "scripts/logs.js"}}
+```
+
+The layout can reference the assets by name.
+
+```gotemplate
+<link rel="stylesheet" href="{{assetURL "logs.css"}}">
+<script defer src="{{assetURL "logs.js"}}"></script>
+```
+
+Each URL has the form `/assets/logs.js?v=<sha256>`. MVC hashes the final bytes
+during construction and serves those bytes from memory. Requests without `v`
+serve the current asset. If supplied, `v` must appear once and match the served
+bytes. A malformed query or version mismatch returns `404` with
+`Cache-Control: no-store`. Pass `mvc.WithCacheControl` to `mvc.NewAssets` to set
+the cache header for successful responses.
+
+A missing file or a manifest error fails construction. An unknown name passed
+to `assetURL` fails view rendering.
+
 ## HTTP MVC localization
 
 MVC supports application-owned translation catalogs through `i18n.NewCatalog`.
